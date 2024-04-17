@@ -24,7 +24,7 @@ window#waybar {
 }
 
 /* Modules with border radius */
-#custom-wofi,
+#custom-lightdark,
 #workspaces,
 #window,
 #clock,
@@ -79,7 +79,7 @@ window#waybar.empty #window {
     color: white;
 }
 
-#custom-wofi,
+#custom-lightdark,
 #custom-powermenu{
     padding: 0px 13px 0px 9px;
 }

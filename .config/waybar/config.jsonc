@@ -7,7 +7,7 @@
     "spacing": 4, // Gaps between modules (4px)
     // Choose the order of the modules
     "modules-left": [
-        "custom/wofi",
+        "custom/lightdark",
         "hyprland/workspaces",
         "hyprland/window"
     ],
@@ -22,10 +22,11 @@
         "custom/powermenu"
     ],
     // Modules configuration
-    "custom/wofi": {
-        "format": "",
-        "on-click": "exec wofi --show drun",
-        "tooltip": "Wofi application launcher"    
+    "custom/lightdark": {
+        "format": "",
+	"format-alt": "",
+        "on-click": "exec ~/.config/hypr/scripts/LightDarkModeSwitch.sh",
+        "tooltip-format": "Light/Dark Mode Switch"    
     },
     "hyprland/workspaces": {
         "format": "{icon}",
