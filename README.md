@@ -119,5 +119,8 @@ visual-studio-code-bin
 alias code='code--enable-features=UseOzonePlatform --ozone-platform=wayland'
 alias pmclean='pacman -Qdtq | sudo pacman -Rns -' # Remove unsed packages
 alias pmlist="pacman -Qe | awk '!/linux|apple|t2|tiny-dfr|lib/' | cut -d ' ' -f1"
-
 ```
+
+## Notes
+- Enable NTP (timedatectl set-ntp true)
+- Automatic tiny-dfr restart after suspend
