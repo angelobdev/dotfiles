@@ -1,14 +1,15 @@
 // -*- mode: jsonc -*-
 {
-    // "layer": "top", // Waybar at top layer
-    // "position": "bottom", // Waybar position (top|bottom|left|right)
+    "layer": "top", // Waybar at top layer
+    "position": "top", // Waybar position (top|bottom|left|right)
     "height": 30, // Waybar height (to be removed for auto height)
     // "width": 1280, // Waybar width
-    "spacing": 4, // Gaps between modules (4px)
+    "spacing": 2, // Gaps between modules (4px)
+
     // Choose the order of the modules
     "modules-left": [
-        "custom/lightdark",
         "hyprland/workspaces",
+        "custom/lightdark",
         "hyprland/window"
     ],
     "modules-center": [
@@ -21,12 +22,14 @@
         "tray",
         "custom/powermenu"
     ],
+
     // Modules configuration
     "custom/lightdark": {
         "format": "",
 	"format-alt": "",
-        "on-click": "exec ~/.config/hypr/scripts/LightDarkModeSwitch.sh",
-        "tooltip-format": "Light/Dark Mode Switch"    
+	"tooltip":true,
+        "tooltip-format": "Light/Dark Mode Switch",
+        "on-click": "exec ~/.config/hypr/scripts/LightDarkModeSwitch.sh"
     },
     "hyprland/workspaces": {
         "format": "{icon}",
@@ -74,7 +77,8 @@
     },
     "temperature": {
         "thermal-zone": 2,
-        "format": " {temperatureC}°C"
+        "format": " {temperatureC}°C",
+	"tooltip":false
     },
     "tray": {
         "icon-size": 16,
@@ -96,7 +100,7 @@
         "format-icons": ["", "", "", "", ""],
         "format-charging": " {icon}   {capacity}%",
         "format-full": " {icon}   100%",
-        "interval": 30,
+        "interval": 5,
         "states": {
             "warning": 25,
             "critical": 10

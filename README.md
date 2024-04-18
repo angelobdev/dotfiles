@@ -55,6 +55,7 @@ brightnessctl
 inotify-tools
 pavucontrol
 network-manager-applet
+cliphist
 
 # Fonts
 otf-font-awesome
@@ -84,6 +85,7 @@ discord
 # Needed
 blueman
 libinput-gestures
+hyprshot
 wlogout
 
 # Optional
