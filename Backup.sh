@@ -5,6 +5,8 @@ CONFIG_FOLDER="$HOME/.config"
 folders=(
     alacritty
     dunst
+    gtk-3\.0
+    #gtk-4\.0
     hypr
     nwg-look
     qt5ct
@@ -28,7 +30,8 @@ if [[ "$1" = "--save" ]]; then
 
     for folder in ${folders[@]}; do
         printf "$folder..."
-        cp -R $CONFIG_FOLDER/$folder/* .config/$folder
+        mkdir -p .config/$folder/
+        cp -R $CONFIG_FOLDER/$folder/* .config/$folder/
         printf "Done!\n"
     done
 
