@@ -56,6 +56,7 @@ inotify-tools
 pavucontrol
 network-manager-applet
 cliphist
+udiskie
 
 # Fonts
 otf-font-awesome
