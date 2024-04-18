@@ -6,11 +6,7 @@ folders=(
     alacritty
     dunst
     gtk-3\.0
-    #gtk-4\.0
     hypr
-    nwg-look
-    qt5ct
-    qt6ct
     waybar
     wlogout
     wofi
