@@ -99,14 +99,16 @@
         "format": "{icon}   {capacity}%",
         "format-icons": ["", "", "", "", ""],
         "format-charging": " {icon}   {capacity}%",
-        "format-full": " {icon}   100%",
-        "interval": 5,
+        "format-full": " {icon}    Charged",
+	"tooltip-format": "{timeTo}",
+        "interval": 1,
         "states": {
             "warning": 25,
             "critical": 10
         },
-        "tooltip": false,
-        "on-click": "2"
+        "on-click": "2",
+	"design-capacity": false,
+	"full-at": 75
     },
     "custom/powermenu": {
         "format": "",
