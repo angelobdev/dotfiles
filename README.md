@@ -57,6 +57,7 @@ pavucontrol
 network-manager-applet
 cliphist
 udiskie
+xsettingsd
 
 # Fonts
 otf-font-awesome
