@@ -29,7 +29,7 @@ window#waybar {
 #clock,
 #temperature,
 #tray,
-#wireplumber,
+#pulseaudio,
 #battery,
 #custom-powermenu{
     margin: 5px 2px 0px 2px;
@@ -43,7 +43,7 @@ window#waybar {
         linear-gradient(to right, rgba(51, 204, 255, 0.93), rgba(0, 255, 153, 0.93)) border-box;
 
     border: 2px solid transparent;
-    border-radius: 16px;
+    border-radius: 10px;
 }
 
 /* LEFT MODULES */

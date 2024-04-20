@@ -16,6 +16,9 @@ pipewire
 pipewire-pulse
 wireplumber
 xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+xdg-desktop-portal-kde
+xdg-desktop-portal-wlr
 polkit-kde-agent
 qt5-wayland
 qt6-wayland
@@ -58,6 +61,7 @@ network-manager-applet
 cliphist
 udiskie
 xsettingsd
+easyeffects
 
 # Fonts
 otf-font-awesome

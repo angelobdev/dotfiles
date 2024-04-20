@@ -17,7 +17,7 @@
     ],
     "modules-right": [
         "temperature",
-        "wireplumber",
+        "pulseaudio",
         "battery",
         "tray",
         "custom/powermenu"
@@ -46,8 +46,10 @@
         "rewrite": {
             "google-chrome": "Chrome",
             "code-url-handler": "Code",
-            "org.gnome.Software": "Software"
-        },
+            "org.gnome.Software": "Software",
+	    "com.github.wwmm.easyeffects": "EasyEffects",
+	    "obsidian": "Obsidian"
+	},
         "separate-outputs": true
     },
     "clock": {
@@ -84,10 +86,10 @@
         "icon-size": 16,
         "spacing": 6
     },
-    "wireplumber": {
+    "pulseaudio": {
         "format": "{icon}    {volume}%",
         "format-muted": "",
-        "on-click": "pavucontrol",
+        "on-click": "~/.config/waybar/scripts/audio_switcher.py",
         "format-icons": [
             "",
             "",
