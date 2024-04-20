@@ -10,6 +10,7 @@ folders=(
     waybar
     wlogout
     wofi
+    xsettingsd
 )
 
 files=(
