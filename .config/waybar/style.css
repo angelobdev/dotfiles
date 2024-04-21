@@ -24,6 +24,7 @@ window#waybar {
 
 /* Modules with border radius */
 #custom-lightdark,
+#custom-silent,
 #workspaces,
 #window,
 #clock,
