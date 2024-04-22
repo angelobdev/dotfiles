@@ -8,6 +8,7 @@ folders=(
     gtk-3\.0
     hypr
     waybar
+    wireplumber
     wlogout
     wofi
     xsettingsd
