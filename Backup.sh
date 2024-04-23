@@ -1,8 +1,9 @@
 #!/bin/bash
 
-CONFIG_FOLDER="$HOME/.config"
+# Configuration files
+CONFIG_DIR=".config"
 
-folders=(
+config_dirs=(
     alacritty
     dunst
     gtk-3\.0
@@ -14,7 +15,7 @@ folders=(
     xsettingsd
 )
 
-files=(
+config_files=(
     chrome-flags.conf
     chromium-flags.conf
     electron-flags.conf
@@ -22,27 +23,36 @@ files=(
     electron25-flags.conf
 )
 
+# Local files
+LOCAL_DIR=".local"
+
 if [[ "$1" = "--save" ]]; then
     
     echo "Saving..."
 
-    for folder in ${folders[@]}; do
-        printf "$folder..."
-        mkdir -p .config/$folder/
-        cp -R $CONFIG_FOLDER/$folder/* .config/$folder/
+    # Config dirs
+    for dir in ${config_dirs[@]}; do
+        printf "$dir..."
+
+        mkdir -p $CONFIG_DIR/$dir/
+        cp -R $HOME/$CONFIG_DIR/$dir/* $CONFIG_DIR/$dir/
+        
         printf "Done!\n"
     done
 
-    for file in ${files[@]}; do
+    # Config files
+    for file in ${config_files[@]}; do
         printf "$file..."
-        cp $CONFIG_FOLDER/$file .config/
+
+        cp $HOME/$CONFIG_DIR/$file $CONFIG_DIR/
+        
         printf "Done!\n"
     done
 
 elif [[ "$1" = "--load" ]]; then
     
     echo "Loading..."
-    cp -R .config/* $CONFIG_FOLDER
+    cp -R $CONFIG_DIR/* $HOME/$CONFIG_DIR
     echo "Done"
 
 else
