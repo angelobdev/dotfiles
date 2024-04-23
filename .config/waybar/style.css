@@ -30,7 +30,7 @@ window#waybar {
 #clock,
 #temperature,
 #tray,
-#pulseaudio,
+#wireplumber,
 #battery,
 #custom-powermenu{
     margin: 5px 2px 0px 2px;

@@ -18,7 +18,7 @@
     ],
     "modules-right": [
         "temperature",
-        "pulseaudio",
+        "wireplumber",
         "battery",
         "tray",
         "custom/powermenu"
@@ -93,7 +93,7 @@
         "icon-size": 16,
         "spacing": 6
     },
-    "pulseaudio": {
+    "wireplumber": {
         "format": "{icon}    {volume}%",
         "format-muted": "",
         "on-click": "~/.config/waybar/scripts/audio_switcher.py",

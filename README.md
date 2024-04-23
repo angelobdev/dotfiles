@@ -12,9 +12,7 @@ hyprpaper
 
 # Hyprland Must-Have
 dunst
-pipewire
-pipewire-pulse
-wireplumber
+
 xdg-desktop-portal-hyprland
 xdg-desktop-portal-gtk
 xdg-desktop-portal-kde
@@ -22,6 +20,12 @@ xdg-desktop-portal-wlr
 polkit-kde-agent
 qt5-wayland
 qt6-wayland
+
+# Audio
+pipewire
+pipewire-alsa
+pipewire-jack
+wireplumber
 
 # Desktop Manager
 sddm
