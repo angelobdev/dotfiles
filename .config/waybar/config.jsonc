@@ -96,7 +96,7 @@
     "wireplumber": {
         "format": "{icon}    {volume}%",
         "format-muted": "",
-        "on-click": "~/.config/waybar/scripts/audio_switcher.py",
+        "on-click": "~/.config/waybar/scripts/Switcher.sh",
         "format-icons": [
             "",
             "",
