@@ -55,7 +55,8 @@
             "code-url-handler": "Code",
             "org.gnome.Software": "Software",
 	    "com.github.wwmm.easyeffects": "EasyEffects",
-	    "obsidian": "Obsidian"
+	    "obsidian": "Obsidian",
+	    "chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default": "WhatsApp"
 	},
         "separate-outputs": true
     },
