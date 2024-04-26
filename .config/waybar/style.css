@@ -1,3 +1,5 @@
+@import url("../../.cache/wal/colors-waybar.css");
+
 * {
     border: none;
     border-radius: 0px;
@@ -10,76 +12,97 @@ window#waybar {
     background: transparent;
     padding: 0;
     margin: 0;
-    color: white;
+    color: @color15;
 }
 
 .modules-left {
     margin-left: 10px;
 }
 
-
 .modules-right {
     margin-right: 10px;
 }
 
-/* Modules with border radius */
+/* Modules Box */
+#workspaces,
 #custom-lightdark,
 #custom-silent,
-#workspaces,
-#window,
 #clock,
 #temperature,
-#tray,
 #wireplumber,
-#battery,
-#custom-powermenu{
+#upower,
+#tray,
+#custom-powermenu {
     margin: 5px 2px 0px 2px;
     padding: 0px 10px 0px 10px;
-    /* border: 2px solid white; */
 
     background:
         /* Background */
-        linear-gradient(rgba(24, 24, 24, 1), rgba(24, 24, 24, 1)) padding-box,
+        linear-gradient(@background, @background) padding-box,
         /* Border */
-        linear-gradient(to right, rgba(51, 204, 255, 0.93), rgba(0, 255, 153, 0.93)) border-box;
+        linear-gradient(to right, @color3, @color4, @color5) border-box;
+
 
     border: 2px solid transparent;
-    border-radius: 10px;
+    border-radius: 0.8em;
 }
 
-/* LEFT MODULES */
+/* Window */
+/* window #waybar .empty #window {
+	opacity: 1;
+}*/
 
-/* WORKSPACE */
+/* ### PER-MODULE CUSTOMIZATIONS ### */
+
+/* 1) Workspaces */
+#workspaces {
+    padding: 2px 4px 2px 4px;
+}
+
 #workspaces button {
-    background-color: transparent;
-    border-radius: 16px;
-    margin: 2px;
-    padding: 0px 4px;
-    color: white;
+    background: @color4;
+    color: @color8;
+
+    padding: 0px 5px 0px 4px;
+    margin: 0px 2px 0px 2px;
+    border-radius: 0.5em;
 }
 
 #workspaces button:hover {
-    background-color: rgba(255, 255, 255, 0.8);
-    color: black;
+    background: @color3;
 }
 
 #workspaces button.active {
-    background-color: white;
-    color:black;
+    color: @color15;
 }
 
-/* WINDOW */
-window#waybar.empty #window {
-    opacity: 0;
-}
-
-/* TRAY */
-#tray menu {
-    background: black;
-    color: white;
-}
-
-#custom-lightdark,
-#custom-powermenu{
+/* 2) Light/Dark Switch */
+#custom-lightdark {
     padding: 0px 14px 0px 8px;
 }
+
+/* 3) Silent Mode (Notifications Switch) */
+
+/* 4) Clock */
+
+/* 5) Temperature */
+
+/* 6) Wireplumber */
+
+/* 7) UPower (Battery) */
+
+#upower image {
+    margin-right: 4px
+}
+
+/* 8) Tray */
+#tray menu {
+    background: @background;
+    color: @color15;
+}
+
+/* 9) Logout (wlogout) */
+#custom-powermenu {
+     padding: 0px 12px 0px 8px;
+}
+

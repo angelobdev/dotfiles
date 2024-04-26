@@ -10,8 +10,8 @@
     "modules-left": [
         "hyprland/workspaces",
         "custom/lightdark",
-	"custom/silent",
-        "hyprland/window"
+	"custom/silent"
+        //"hyprland/window"
     ],
     "modules-center": [
         "clock"
@@ -19,7 +19,7 @@
     "modules-right": [
         "temperature",
         "wireplumber",
-        "battery",
+        "upower",
         "tray",
         "custom/powermenu"
     ],
@@ -56,7 +56,8 @@
             "org.gnome.Software": "Software",
 	    "com.github.wwmm.easyeffects": "EasyEffects",
 	    "obsidian": "Obsidian",
-	    "chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default": "WhatsApp"
+	    "chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default": "WhatsApp",
+	    "blueman-manager": "Bluetooth"
 	},
         "separate-outputs": true
     },
@@ -103,22 +104,15 @@
             "",
             ""
         ],
-        "reverse-scrolling": 0
+        "reverse-scrolling": 1
     },
-    "battery": {
-        "format": "{icon}   {capacity}%",
-        "format-icons": ["", "", "", "", ""],
-        "format-charging": " {icon}   {capacity}%",
-        "format-full": " {icon}    Charged",
-	"tooltip-format": "{timeTo}",
-        "interval": 1,
-        "states": {
-            "warning": 25,
-            "critical": 10
-        },
-        "on-click": "2",
-	"design-capacity": false,
-	"full-at": 75
+    "upower": {
+        "icon-size": 16,
+	"format-alt": "{percentage}",
+        "hide-if-empty": false,
+        "tooltip": true,
+        "tooltip-spacing": 16,
+	"on-click": "tlpui"
     },
     "custom/powermenu": {
         "format": "",

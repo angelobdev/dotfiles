@@ -1,62 +1,105 @@
 #!/bin/bash
 
-# Configuration files
-CONFIG_DIR=".config"
+# Configuration file
+config="directories.conf"
 
-config_dirs=(
-    alacritty
-    dunst
-    gtk-3\.0
-    hypr
-    waybar
-    wireplumber
-    wlogout
-    wofi
-    xsettingsd
-)
+# Saving arguments
+option=$1
 
-config_files=(
-    chrome-flags.conf
-    chromium-flags.conf
-    electron-flags.conf
-    electron13-flags.conf
-    electron25-flags.conf
-)
+# Main Function
+function backup(){
+    mode=$1
 
-# Local files
-LOCAL_DIR=".local"
+    while IFS= read line; do
 
-if [[ "$1" = "--save" ]]; then
-    
+        # Skipping comments and blank lines
+        first_char=${line:0:1}
+        if [[ "$first_char" == '#' || "$first_char" == '' ]]; then
+            continue
+        # Getting base directory
+        elif [[ "$first_char" == 'D' ]]; then
+            base_dir=$(echo "$line" | cut -d ' ' -f2)
+            echo "Copying '$base_dir' directory..."
+            continue
+        fi
+
+        # Checking if file or directory
+        if [[ $base_dir ]]; then
+
+            # Getting dir/file name
+            dir_file=$(echo "$line" | tr -d ' ')
+
+            # Saving/Loading
+            if [[ "$mode" == "s" ]]; then
+                single_save "$base_dir" "$dir_file"
+            elif [[ "$mode" == "l" ]]; then
+                single_load "$base_dir" "$dir_file"
+            else
+                invalid_option
+            fi
+
+        fi
+
+    done < "$config"
+
+}
+
+# Helper functions
+function single_save() {
+    base_dir=$1
+    dir_file=$2
+
+    printf "$base_dir/$dir_file ... "
+
+    # Path is a file
+    if [ -f "$HOME/$base_dir/$dir_file" ]; then
+
+        # Copying...
+        cp $HOME/$base_dir/$dir_file $base_dir/
+        
+    # Path is a directory
+    elif [ -d "$HOME/$base_dir/$dir_file" ]; then
+        
+        # Copying...
+        mkdir -p $base_dir/$dir_file
+        cp -R $HOME/$base_dir/$dir_file/* $base_dir/$dir_file/
+    fi
+
+    echo "done!"
+}
+
+function single_load() {
+    echo "Unsupported!"
+}
+
+# Options functions
+function help() {
+    echo -e "Options:"
+    echo -e "--help\t\tShows this help dialog"
+    echo -e "--save\t\tSave files defined in the '$config' file"
+    echo -e "--load\t\tLoads files defined in the '$config' file"
+}
+
+function invalid_option() {
+    if [[ "$1" == "" ]]; then
+        echo -e "You need to specify an argument...\n"
+    else
+        echo -e "'$1' is not a valid argument...\n"
+    fi
+    help
+}
+
+# Main
+if [[ "$option" == "--help" ]]; then
+    help
+elif [[ "$option" == "--save" ]]; then
     echo "Saving..."
-
-    # Config dirs
-    for dir in ${config_dirs[@]}; do
-        printf "$dir..."
-
-        mkdir -p $CONFIG_DIR/$dir/
-        cp -R $HOME/$CONFIG_DIR/$dir/* $CONFIG_DIR/$dir/
-        
-        printf "Done!\n"
-    done
-
-    # Config files
-    for file in ${config_files[@]}; do
-        printf "$file..."
-
-        cp $HOME/$CONFIG_DIR/$file $CONFIG_DIR/
-        
-        printf "Done!\n"
-    done
-
-elif [[ "$1" = "--load" ]]; then
-    
-    echo "Loading..."
-    cp -R $CONFIG_DIR/* $HOME/$CONFIG_DIR
-    echo "Done"
-
+    backup s
+    echo "Done!"
+elif [[ "$option" == "--load" ]]; then
+    # backup l
+    echo "Loading is unsupported!"
+    exit;
 else
-
-    echo "Please specify an option!"
-
+    invalid_option $option
 fi
