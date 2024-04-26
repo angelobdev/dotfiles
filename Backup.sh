@@ -2,6 +2,7 @@
 
 # Configuration file
 config_file="config/directories.conf"
+pkgs_file="config/packages.conf"
 out_dir="dots"
 
 # Saving arguments
@@ -17,8 +18,8 @@ function backup() {
         if [[ "$first_char" == '#' || "$first_char" == '' ]]; then
             continue
         # Getting base directory
-        elif [[ "$first_char" == 'D' ]]; then
-            base_dir=$(echo "$line" | cut -d ' ' -f2)
+        elif [[ "$first_char" == '[' ]]; then
+            base_dir=$(echo "$line" | sed 's/\[//' | sed 's/\]//')
             echo "Copying '$base_dir' directory..."
             continue
         fi
@@ -55,10 +56,11 @@ function backup() {
 
 # Options functions
 function help() {
-    echo -e "Options:"
-    echo -e "--help\t\tShows this help dialog"
-    echo -e "--save\t\tSaves files defined in the '$config_file' file!"
-    echo -e "--load\t\tLoads files in the '$out_dir' directory into home!"
+    echo "Options:"
+    echo "--help     Shows this help dialog"
+    echo "--install  Installs packages defined in the '$pkgs_file' file!"
+    echo "--save     Saves files defined in the '$config_file' file!"
+    echo "--load     Loads files in the '$out_dir' directory into home!"
 }
 
 function invalid_option() {
@@ -80,6 +82,9 @@ elif [[ "$option" == "--save" ]]; then
 elif [[ "$option" == "--load" ]]; then
     # cp -R dots/* $HOME
     echo "Loading is unsupported!"
+    exit;
+elif [[ "$option" == "--install" ]]; then
+    echo "Install is unsupported"
     exit;
 else
     invalid_option $option
