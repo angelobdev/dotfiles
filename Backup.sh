@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration file
-config="config/directories.conf"
+config_file="config/directories.conf"
 out_dir="dots"
 
 # Saving arguments
@@ -50,14 +50,14 @@ function backup() {
 
         echo "done!"
 
-    done < "$config"
+    done < "$config_file"
 }
 
 # Options functions
 function help() {
     echo -e "Options:"
     echo -e "--help\t\tShows this help dialog"
-    echo -e "--save\t\tSaves files defined in the '$config' file!"
+    echo -e "--save\t\tSaves files defined in the '$config_file' file!"
     echo -e "--load\t\tLoads files in the '$out_dir' directory into home!"
 }
 
