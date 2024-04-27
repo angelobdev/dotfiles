@@ -1,26 +1,37 @@
 @import url("../../.cache/wal/colors-waybar.css");
 
+/********************************************************************************/
+/*                                                                              */
+/*  This config has been written by angelobdev                                  */
+/*  It should be used in a properly configured Hyprland environment.            */
+/*                                                                              */
+/*  Look at the full configuration here: https://github.com/angelobdev/dotfiles */
+/*                                                                              */
+/*  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      */
+/*                                                                              */
+/********************************************************************************/
+
 * {
-    border: none;
-    border-radius: 0px;
-    font-family: Roboto, FontAwesome, sans-serif;
-    font-size: 14px;
-    min-height: 0;
+  border: none;
+  border-radius: 0px;
+  font-family: Roboto, FontAwesome, sans-serif;
+  font-size: 14px;
+  min-height: 0;
 }
 
 window#waybar {
-    background: transparent;
-    padding: 0;
-    margin: 0;
-    color: @color15;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: @color15;
 }
 
 .modules-left {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 
 .modules-right {
-    margin-right: 10px;
+  margin-right: 10px;
 }
 
 /* Modules Box */
@@ -33,18 +44,17 @@ window#waybar {
 #upower,
 #tray,
 #custom-powermenu {
-    margin: 5px 2px 0px 2px;
-    padding: 0px 10px 0px 10px;
+  margin: 5px 2px 0px 2px;
+  padding: 0px 10px 0px 10px;
 
-    background:
-        /* Background */
-        linear-gradient(@background, @background) padding-box,
-        /* Border */
-        linear-gradient(to right, @color3, @color4, @color5, @color6) border-box;
+  background:
+        /* Background */ linear-gradient(@background, @background)
+      padding-box,
+    /* Border */ linear-gradient(to right, @color3, @color4, @color5, @color6)
+      border-box;
 
-
-    border: 2px solid transparent;
-    border-radius: 0.8em;
+  border: 2px solid transparent;
+  border-radius: 0.8em;
 }
 
 /* Window */
@@ -56,29 +66,29 @@ window#waybar {
 
 /* 1) Workspaces */
 #workspaces {
-    padding: 2px 4px 2px 4px;
+  padding: 2px 4px 2px 4px;
 }
 
 #workspaces button {
-    background: @color4;
-    color: @color8;
+  background: @color4;
+  color: @color8;
 
-    padding: 0px 5px 0px 4px;
-    margin: 0px 2px 0px 2px;
-    border-radius: 0.5em;
+  padding: 0px 5px 0px 4px;
+  margin: 0px 2px 0px 2px;
+  border-radius: 0.5em;
 }
 
 #workspaces button:hover {
-    background: @color3;
+  background: @color3;
 }
 
 #workspaces button.active {
-    color: @color15;
+  color: @color15;
 }
 
 /* 2) Light/Dark Switch */
 #custom-lightdark {
-    padding: 0px 14px 0px 8px;
+  padding: 0px 14px 0px 8px;
 }
 
 /* 3) Silent Mode (Notifications Switch) */
@@ -92,17 +102,16 @@ window#waybar {
 /* 7) UPower (Battery) */
 
 #upower image {
-    margin-right: 4px
+  margin-right: 4px;
 }
 
 /* 8) Tray */
 #tray menu {
-    background: @background;
-    color: @color15;
+  background: @background;
+  color: @color15;
 }
 
 /* 9) Logout (wlogout) */
 #custom-powermenu {
-     padding: 0px 12px 0px 8px;
+  padding: 0px 12px 0px 8px;
 }
-

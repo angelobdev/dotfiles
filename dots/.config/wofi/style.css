@@ -2,13 +2,23 @@
 
 @import url("../../.cache/wal/colors.css");
 
+/********************************************************************************/
+/*                                                                              */
+/*  This config has been written by angelobdev                                  */
+/*  It should be used in a properly configured Hyprland environment.            */
+/*                                                                              */
+/*  Look at the full configuration here: https://github.com/angelobdev/dotfiles */
+/*                                                                              */
+/*  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      */
+/*                                                                              */
+/********************************************************************************/
+
 /* window */
 #window {
   border: double 2px transparent;
   border-radius: 0.8em;
-  background-image:
-  	linear-gradient(--wofi-color0, --wofi-color0),
-    	linear-gradient(to right, --wofi-color3, --wofi-color4, --wofi-color5);
+  background-image: linear-gradient(--wofi-color0, --wofi-color0),
+    linear-gradient(to right, --wofi-color3, --wofi-color4, --wofi-color5);
   background-origin: border-box;
   background-clip: content-box, border-box;
 }
@@ -50,9 +60,8 @@
 #entry:selected {
   border: double 2px transparent;
   border-radius: 0.4em;
-  background-image:
-  	linear-gradient(--wofi-color3, --wofi-color3),
-    	linear-gradient(to right, --wofi-color4, --wofi-color5, --wofi-color6);
+  background-image: linear-gradient(--wofi-color3, --wofi-color3),
+    linear-gradient(to right, --wofi-color4, --wofi-color5, --wofi-color6);
   background-origin: border-box;
   background-clip: padding-box, border-box;
 }

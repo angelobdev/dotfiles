@@ -1,122 +1,128 @@
 // -*- mode: jsonc -*-
+
+//******************************************************************************//
+//                                                                              //
+//  This config file has been written by angelobdev                             //
+//  It should be used in a properly configured Hyprland environment.            //
+//                                                                              //
+//  Look at the full configuration here: https://github.com/angelobdev/dotfiles //
+//                                                                              //
+//  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      //
+//                                                                              //
+//******************************************************************************//
+
 {
-    "layer": "top", // Waybar at top layer
-    "position": "top", // Waybar position (top|bottom|left|right)
-    "height": 30, // Waybar height (to be removed for auto height)
-    // "width": 1280, // Waybar width
-    "spacing": 2, // Gaps between modules (4px)
+  "layer": "top", // Waybar at top layer
+  "position": "top", // Waybar position (top|bottom|left|right)
+  "height": 30, // Waybar height (to be removed for auto height)
+  // "width": 1280, // Waybar width
+  "spacing": 2, // Gaps between modules (4px)
 
-    // Choose the order of the modules
-    "modules-left": [
-        "hyprland/workspaces",
-        "custom/lightdark",
-	"custom/silent"
-        //"hyprland/window"
-    ],
-    "modules-center": [
-        "clock"
-    ],
-    "modules-right": [
-        "temperature",
-        "wireplumber",
-        "upower",
-        "tray",
-        "custom/powermenu"
-    ],
+  // Choose the order of the modules
+  "modules-left": [
+    "hyprland/workspaces",
+    "custom/lightdark",
+    "custom/silent"
+    //"hyprland/window"
+  ],
+  "modules-center": ["clock"],
+  "modules-right": [
+    "temperature",
+    "wireplumber",
+    "upower",
+    "tray",
+    "custom/powermenu"
+  ],
 
-    // Modules configuration
-    "custom/silent":{
-	"format": "",
-	"format-alt": "",
-	"tooltip-format": "Enable/Disable Notifications",
-	"on-click": "exec ~/.config/hypr/scripts/NotifyToggle.sh"
-    },
-    "custom/lightdark": {
-        "format": "",
-	"format-alt": "",
-	"tooltip":true,
-        "tooltip-format": "Light/Dark Mode Switch",
-        "on-click": "exec ~/.config/hypr/scripts/LightDarkModeSwitch.sh"
-    },
-    "hyprland/workspaces": {
-        "format": "{icon}",
-        "format-icons": {
-            "1": "",
-            "2": "",
-            "3": "",
-            "4": "",
-            "5": ""
-        }
-    },
-    "hyprland/window": {
-        "format": "{class}",
-        "rewrite": {
-            "google-chrome": "Chrome",
-            "code-url-handler": "Code",
-            "org.gnome.Software": "Software",
-	    "com.github.wwmm.easyeffects": "EasyEffects",
-	    "obsidian": "Obsidian",
-	    "chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default": "WhatsApp",
-	    "blueman-manager": "Bluetooth"
-	},
-        "separate-outputs": true
-    },
-    "clock": {
-        "format": "{:%H:%M}",
-        "format-alt": "  {:%A, %B %d, %Y (%R)} ",
-        "tooltip-format": "<tt><small>{calendar}</small></tt>",
-        "calendar": {
-            "mode": "month",
-            "mode-mon-col": 3,
-            "weeks-pos": "right",
-            "on-scroll": 1,
-            "format": {
-                "months": "<span color='#ffead3'><b>{}</b></span>",
-                "days": "<span color='#ecc6d9'><b>{}</b></span>",
-                "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
-                "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
-                "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
-            }
-        },
-        "actions": {
-            "on-click-right": "mode",
-            "on-click-forward": "tz_up",
-            "on-click-backward": "tz_down",
-            "on-scroll-up": "shift_up",
-            "on-scroll-down": "shift_down"
-        }
-    },
-    "temperature": {
-        "thermal-zone": 2,
-        "format": " {temperatureC}°C",
-	"tooltip":false
-    },
-    "tray": {
-        "icon-size": 16,
-        "spacing": 6
-    },
-    "wireplumber": {
-        "format": "{icon}    {volume}%",
-        "format-muted": "",
-        "on-click": "~/.config/waybar/scripts/Switcher.sh",
-        "format-icons": [
-            "",
-            "",
-            ""
-        ],
-        "reverse-scrolling": 1
-    },
-    "upower": {
-        "icon-size": 16,
-	"format-alt": "{percentage}",
-        "hide-if-empty": false,
-        "tooltip": true,
-        "tooltip-spacing": 16,
-	"on-click": "tlpui"
-    },
-    "custom/powermenu": {
-        "format": "",
-        "tooltip": false,
-        "on-click": "exec wlogout -b 5 -p layer-shell"
+  // Modules configuration
+  "custom/silent": {
+    "format": "",
+    "format-alt": "",
+    "tooltip-format": "Enable/Disable Notifications",
+    "on-click": "exec ~/.config/hypr/scripts/NotifyToggle.sh"
+  },
+  "custom/lightdark": {
+    "format": "",
+    "format-alt": "",
+    "tooltip": true,
+    "tooltip-format": "Light/Dark Mode Switch",
+    "on-click": "exec ~/.config/hypr/scripts/LightDarkModeSwitch.sh"
+  },
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "format-icons": {
+      "1": "",
+      "2": "",
+      "3": "",
+      "4": "",
+      "5": ""
     }
+  },
+  "hyprland/window": {
+    "format": "{class}",
+    "rewrite": {
+      "google-chrome": "Chrome",
+      "code-url-handler": "Code",
+      "org.gnome.Software": "Software",
+      "com.github.wwmm.easyeffects": "EasyEffects",
+      "obsidian": "Obsidian",
+      "chrome-hnpfjngllnobngcgfapefoaidbinmjnm-Default": "WhatsApp",
+      "blueman-manager": "Bluetooth"
+    },
+    "separate-outputs": true
+  },
+  "clock": {
+    "format": "{:%H:%M}",
+    "format-alt": "  {:%A, %B %d, %Y (%R)} ",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "on-scroll": 1,
+      "format": {
+        "months": "<span color='#ffead3'><b>{}</b></span>",
+        "days": "<span color='#ecc6d9'><b>{}</b></span>",
+        "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+        "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+      }
+    },
+    "actions": {
+      "on-click-right": "mode",
+      "on-click-forward": "tz_up",
+      "on-click-backward": "tz_down",
+      "on-scroll-up": "shift_up",
+      "on-scroll-down": "shift_down"
+    }
+  },
+  "temperature": {
+    "thermal-zone": 2,
+    "format": " {temperatureC}°C",
+    "tooltip": false
+  },
+  "tray": {
+    "icon-size": 16,
+    "spacing": 6
+  },
+  "wireplumber": {
+    "format": "{icon}    {volume}%",
+    "format-muted": "",
+    "on-click": "~/.config/waybar/scripts/Switcher.sh",
+    "format-icons": ["", "", ""],
+    "reverse-scrolling": 1
+  },
+  "upower": {
+    "icon-size": 16,
+    "format-alt": "{percentage}",
+    "hide-if-empty": false,
+    "tooltip": true,
+    "tooltip-spacing": 16,
+    "on-click": "tlpui"
+  },
+  "custom/powermenu": {
+    "format": "",
+    "tooltip": false,
+    "on-click": "exec wlogout -b 5 -p layer-shell"
+  }
 }

@@ -1,70 +1,91 @@
 @import url("../../.cache/wal/colors-waybar.css");
 
+/********************************************************************************/
+/*                                                                              */
+/*  This config has been written by angelobdev                                  */
+/*  It should be used in a properly configured Hyprland environment.            */
+/*                                                                              */
+/*  Look at the full configuration here: https://github.com/angelobdev/dotfiles */
+/*                                                                              */
+/*  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      */
+/*                                                                              */
+/********************************************************************************/
+
 * {
-	background-image: none;
-	transition: 0.2s;
-	outline-style: none;
-	margin: 0;
-	padding: 0;
+  background-image: none;
+  transition: 0.2s;
+  outline-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 window {
-	background-color: rgba(0, 0, 0, .5);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 button {
-	background-color: @background;
+  background-color: @background;
 
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: 25%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 25%;
 
-	font-weight: 800;
-	font-style: normal;
-	font-size: 1rem;
-	text-shadow: none;
-	color: @color3;
+  font-weight: 800;
+  font-style: normal;
+  font-size: 1rem;
+  text-shadow: none;
+  color: @color3;
 
-	border-width: 2px;
-	border-style: solid;
-	border-color: @color4;
-	/*rgba(0, 255, 153, 0.93);*/
-	border-radius: 1rem;
+  border-width: 2px;
+  border-style: solid;
+  border-color: @color4;
+  /*rgba(0, 255, 153, 0.93);*/
+  border-radius: 1rem;
 
-	padding-bottom: 10px;
-	margin: 140px 10px;
+  padding-bottom: 10px;
+  margin: 140px 10px;
 }
 
 button:hover {
-	background-color: @color12;
+  background-color: @color12;
 }
 
 #lock {
-	background-image: image(url("./icons/lock.svg"),
-			url("/usr/share/wlogout/icons/lock.png"),
-			url("/usr/local/share/wlogout/icons/lock.png"));
+  background-image: image(
+    url("./icons/lock.svg"),
+    url("/usr/share/wlogout/icons/lock.png"),
+    url("/usr/local/share/wlogout/icons/lock.png")
+  );
 }
 
 #logout {
-	background-image: image(url("./icons/logout.svg"),
-			url("/usr/share/wlogout/icons/logout.png"),
-			url("/usr/local/share/wlogout/icons/logout.png"));
+  background-image: image(
+    url("./icons/logout.svg"),
+    url("/usr/share/wlogout/icons/logout.png"),
+    url("/usr/local/share/wlogout/icons/logout.png")
+  );
 }
 
 #suspend {
-	background-image: image(url("./icons/suspend.svg"),
-			url("/usr/share/wlogout/icons/suspend.png"),
-			url("/usr/local/share/wlogout/icons/suspend.png"));
+  background-image: image(
+    url("./icons/suspend.svg"),
+    url("/usr/share/wlogout/icons/suspend.png"),
+    url("/usr/local/share/wlogout/icons/suspend.png")
+  );
 }
 
 #shutdown {
-	background-image: image(url("./icons/shutdown.svg"),
-			url("/usr/share/wlogout/icons/shutdown.png"),
-			url("/usr/local/share/wlogout/icons/shutdown.png"));
+  background-image: image(
+    url("./icons/shutdown.svg"),
+    url("/usr/share/wlogout/icons/shutdown.png"),
+    url("/usr/local/share/wlogout/icons/shutdown.png")
+  );
 }
 
 #reboot {
-	background-image: image(url("./icons/reboot.svg"),
-			url("/usr/share/wlogout/icons/reboot.png"),
-			url("/usr/local/share/wlogout/icons/reboot.png"));
+  background-image: image(
+    url("./icons/reboot.svg"),
+    url("/usr/share/wlogout/icons/reboot.png"),
+    url("/usr/local/share/wlogout/icons/reboot.png")
+  );
 }

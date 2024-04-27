@@ -1,5 +1,16 @@
 #!/bin/bash
 
+#################################################################################
+#                                                                               #
+#   This script has been written by angelobdev                                  #
+#   It should be used in a properly configured Hyprland environment.            #
+#                                                                               #
+#   Look at the full configuration here: https://github.com/angelobdev/dotfiles #
+#                                                                               #
+#   The project (as well as this script) goes under the GNU GPLv3 LICENSE.      #
+#                                                                               #
+#################################################################################
+
 lid_closed=$(cat /proc/acpi/button/lid/LID0/state | grep closed)
 
 if [[ $lid_closed ]]; then
