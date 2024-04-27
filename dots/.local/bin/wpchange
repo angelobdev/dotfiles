@@ -1,7 +1,11 @@
-#!/bin/env bash
+#!/bin/bash
 
 # Changing wallpaper
+echo "Changing backgroud..."
 ln -f "$1" .config/hypr/wallpapers/current.png
 
 # Reload
-exec $HOME/.config/hypr/scripts/ChangePalette.sh &>/dev/null
+echo "Reloading..."
+exec $HOME/.config/hypr/scripts/ChangePalette.sh
+
+echo "Done!"
