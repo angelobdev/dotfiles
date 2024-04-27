@@ -111,17 +111,16 @@ source $ZSH/oh-my-zsh.sh
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # Aliases
-alias code='code --enable-features=UseOzonePlatform --ozone-platform=wayland'
-alias pmclean='pacman -Qdtq | sudo pacman -Rns -' # Remove unsed packages
-alias pmlist="pacman -Qe | awk '!/linux|apple|t2|tiny-dfr|lib/' | cut -d ' ' -f1"
+source $HOME/.config/zsh/aliases.sh
 
-# PATH
-export PATH=$PATH:$HOME/.local/bin
+# Path
+source $HOME/.config/zsh/path.sh
+
+# Node Version Manager
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
