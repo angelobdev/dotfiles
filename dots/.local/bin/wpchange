@@ -1,0 +1,7 @@
+#!/bin/env bash
+
+# Changing wallpaper
+ln -f "$1" .config/hypr/wallpapers/current.png
+
+# Reload
+exec $HOME/.config/hypr/scripts/ChangePalette.sh &>/dev/null
