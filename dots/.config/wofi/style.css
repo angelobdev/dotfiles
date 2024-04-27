@@ -1,23 +1,27 @@
 /* https://cloudninja.pw/docs/wofi.html */
 
+@import url("../../.cache/wal/colors.css");
+
 window {
     border: 2px solid transparent;
     background:
         /* Background */
-        linear-gradient(rgba(24, 24, 24, 1), rgba(24, 24, 24, 1)) padding-box,
+        linear-gradient(--wofi-color0, --wofi-color0) padding-box,
         /* Border */
-        linear-gradient(to right, rgba(51, 204, 255, 0.93), rgba(0, 255, 153, 0.93)) border-box;
+        linear-gradient(to right, --wofi-color3, --wofi-color4, --wofi-color5, --wofi-color6) border-box;
 	border-radius: 8px;
 }
 
 #input {
-    border: 1px solid white;
+    border: 1px solid --wofi-color5;
     background-color: #555555;
     font-size: 18px;
     border-radius: 4px;
 }
 
-#inner-box {}
+#inner-box {
+	/*border:none;*/
+}
 
 #outer-box {
     margin: 10px;
@@ -34,13 +38,13 @@ window {
 }
 
 #entry:selected {
-	border: 1px solid transparent;
+	border: 2px solid transparent;
     border-radius: 4px;
 	background:
         /* Background */
-        linear-gradient(rgba(68, 68, 68, 1), rgba(68, 68, 68, 1)) padding-box,
+        linear-gradient(--wofi-color12, --wofi-color12) padding-box,
         /* Border */
-        linear-gradient(to right, rgba(51, 204, 255, 0.93), rgba(0, 255, 153, 0.93)) border-box;
+        linear-gradient(to right, --wofi-color3, --wofi-color4, --wofi-color5, --wofi-color6) border-box;
     color: black;
 }
 

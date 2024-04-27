@@ -40,7 +40,7 @@ window#waybar {
         /* Background */
         linear-gradient(@background, @background) padding-box,
         /* Border */
-        linear-gradient(to right, @color3, @color4, @color5) border-box;
+        linear-gradient(to right, @color3, @color4, @color5, @color6) border-box;
 
 
     border: 2px solid transparent;
