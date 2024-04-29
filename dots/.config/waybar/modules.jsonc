@@ -1,0 +1,152 @@
+//******************************************************************************//
+//                                                                              //
+//  This config file has been written by angelobdev                             //
+//  It should be used in a properly configured Hyprland environment.            //
+//                                                                              //
+//  Look at the full configuration here: https://github.com/angelobdev/dotfiles //
+//                                                                              //
+//  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      //
+//                                                                              //
+//******************************************************************************//
+
+{
+  // *** LEFT MODULES *** //
+
+  "hyprland/workspaces": {
+    "format": "{windows}",
+    "format-window-separator": " | ",
+    "window-rewrite-default": "",
+    "window-rewrite": {
+      "google-chrome": "",
+      "thunar": "",
+      "code": "󰨞",
+      "alacritty": "",
+      "obsidian": "",
+      "spotify": "",
+      "title<.*software.*>": ""
+    }
+  },
+
+  "group/hardware": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 500,
+      "children-class": "not-power",
+      "transition-left-to-right": true
+    },
+    "modules": ["temperature", "cpu", "memory"]
+  },
+
+  "cpu": {
+    "interval": 5,
+    "format": " {}% ",
+    "max-length": 10
+  },
+
+  "memory": {
+    "interval": 5,
+    "format": " {}%",
+    "max-length": 10
+  },
+
+  "temperature": {
+    "thermal-zone": 2,
+    "format": " {temperatureC}°C ",
+    "tooltip": false
+  },
+
+  "custom/silent": {
+    "format": "",
+    "format-alt": "",
+    "tooltip-format": "Enable/Disable Notifications",
+    "on-click": "exec ~/.config/hypr/scripts/NotifyToggle.sh"
+  },
+
+  // *** RIGHT MODULES *** //
+
+  "privacy": {
+    "icon-spacing": 4,
+    "icon-size": 14,
+    "transition-duration": 250,
+    "modules": [
+      {
+        "type": "screenshare",
+        "tooltip": true,
+        "tooltip-icon-size": 24
+      },
+      {
+        "type": "audio-out",
+        "tooltip": true,
+        "tooltip-icon-size": 24
+      },
+      {
+        "type": "audio-in",
+        "tooltip": true,
+        "tooltip-icon-size": 24
+      }
+    ]
+  },
+
+  "clock": {
+    "format": "{:%H:%M}",
+    "format-alt": "  {:%A, %B %d, %Y (%R)} ",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "on-scroll": 1,
+      "format": {
+        "months": "<span color='#ffead3'><b>{}</b></span>",
+        "days": "<span color='#ecc6d9'><b>{}</b></span>",
+        "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+        "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+      }
+    },
+    "actions": {
+      "on-click-right": "mode",
+      "on-click-forward": "tz_up",
+      "on-click-backward": "tz_down",
+      "on-scroll-up": "shift_up",
+      "on-scroll-down": "shift_down"
+    }
+  },
+
+  "systemd-failed-units": {
+    "hide-on-ok": true, // Do not hide if there is zero failed units.
+    "format": " {nr_failed}",
+    "system": true, // Monitor failed systemwide units.
+    "user": true // Ignore failed user units.
+  },
+
+  // *** RIGHT MODULES *** //
+
+  "tray": {
+    "icon-size": 14,
+    "spacing": 6
+  },
+
+  "wireplumber": {
+    "format": "{icon}  {volume}%",
+    "format-muted": "",
+    "on-click": "~/.config/waybar/scripts/Switcher.sh",
+    "format-icons": ["", "", ""],
+    "reverse-scrolling": 1
+  },
+
+  "upower": {
+    "icon-size": 12,
+    "format-alt": "{percentage}",
+    "hide-if-empty": false,
+    "tooltip": true,
+    "tooltip-spacing": 16,
+    "on-click": "tlpui"
+  },
+
+  "custom/powermenu": {
+    "format": "",
+    "tooltip": false,
+    "on-click": "exec wlogout -b 5 -p layer-shell"
+  }
+}

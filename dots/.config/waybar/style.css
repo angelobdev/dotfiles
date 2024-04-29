@@ -14,9 +14,10 @@
 * {
   border: none;
   border-radius: 0px;
-  font-family: Roboto, FontAwesome, sans-serif;
-  font-size: 14px;
+  font-family: "JetBrains Mono", FontAwesome, sans-serif;
+  font-size: 13px;
   min-height: 0;
+  background: transparent;
 }
 
 window#waybar {
@@ -26,27 +27,36 @@ window#waybar {
   color: @color15;
 }
 
-.modules-left {
-  margin-left: 10px;
+window#waybar.hidden {
+  opacity: 0.5;
+}
+window#waybar.empty {
+  background-color: transparent;
 }
 
-.modules-right {
-  margin-right: 10px;
+window#waybar.empty #window {
+  padding: 0px;
+  border: 0px;
+  background-color: transparent;
+}
+
+tooltip {
+  background:
+  /* Background */ linear-gradient(@background, @background)
+      padding-box,
+    /* Border */ linear-gradient(to right, @color3, @color4, @color5, @color6)
+      border-box;
+
+  border: 2px solid transparent;
+  border-radius: 0.8em;
+
+  color: @color15;
 }
 
 /* Modules Box */
-#workspaces,
-#custom-lightdark,
-#custom-silent,
-#clock,
-#temperature,
-#wireplumber,
-#upower,
-#tray,
-#custom-powermenu {
-  margin: 5px 2px 0px 2px;
-  padding: 0px 10px 0px 10px;
-
+.modules-left,
+.modules-center,
+.modules-right {
   background:
         /* Background */ linear-gradient(@background, @background)
       padding-box,
@@ -55,57 +65,55 @@ window#waybar {
 
   border: 2px solid transparent;
   border-radius: 0.8em;
+
+  margin: 5px 10px 0px 10px;
 }
 
-/* Window */
-/* window #waybar .empty #window {
-	opacity: 1;
-}*/
+.modules-left {
+  padding: 0px 5px 0px 2px;
+}
+
+.modules-center {
+  padding: 0px 4px 0px 4px;
+}
+
+.modules-right {
+  padding: 0px 4px 0px 5px;
+}
 
 /* ### PER-MODULE CUSTOMIZATIONS ### */
 
-/* 1) Workspaces */
+/* Workspaces */
 #workspaces {
-  padding: 2px 4px 2px 4px;
+  margin: 2px 0px 2px 0px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0.4rem;
 }
 
 #workspaces button {
-  background: @color4;
+  background: transparent;
   color: @color8;
 
-  padding: 0px 5px 0px 4px;
-  margin: 0px 2px 0px 2px;
-  border-radius: 0.5em;
+  padding: 0px 2px 0px 2px;
+  margin: 0;
 }
 
 #workspaces button:hover {
   background: @color3;
+  color: @color14;
 }
 
 #workspaces button.active {
   color: @color15;
 }
 
-/* 2) Light/Dark Switch */
-#custom-lightdark {
-  padding: 0px 14px 0px 8px;
-}
-
-/* 3) Silent Mode (Notifications Switch) */
-
-/* 4) Clock */
-
-/* 5) Temperature */
-
-/* 6) Wireplumber */
-
-/* 7) UPower (Battery) */
+/* UPower (Battery) */
 
 #upower image {
   margin-right: 4px;
 }
 
-/* 8) Tray */
+/* Tray */
 #tray menu {
   background: @background;
   color: @color15;
@@ -113,5 +121,5 @@ window#waybar {
 
 /* 9) Logout (wlogout) */
 #custom-powermenu {
-  padding: 0px 12px 0px 8px;
+  padding: 0px 6px 0px 2px;
 }
