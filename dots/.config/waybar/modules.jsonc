@@ -19,11 +19,12 @@
     "window-rewrite": {
       "google-chrome": "",
       "thunar": "",
-      "code": "󰨞",
-      "alacritty": "",
+      "code": "<span size=\"large\">󰨞</span>",
+      "alacritty": "<span size=\"x-large\"></span>",
       "obsidian": "",
       "spotify": "",
-      "title<.*software.*>": "",
+      "title<.*software.*>": "",
+      "easyeffects": "<span size=\"large\"></span>",
       "discord": ""
     }
   },
@@ -40,7 +41,7 @@
 
   "cpu": {
     "interval": 5,
-    "format": " {}% ",
+    "format": "  {}% ",
     "max-length": 10
   },
 
@@ -129,7 +130,7 @@
   },
 
   "wireplumber": {
-    "format": "{icon}  {volume}%",
+    "format": "{icon}    {volume}%",
     "format-muted": "",
     "on-click": "~/.config/waybar/scripts/Switcher.sh",
     "format-icons": ["", "", ""],

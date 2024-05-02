@@ -9,64 +9,29 @@ bold.family = "FiraCode NerdFont Mono"
 italic.family = "FiraCode NerdFont Mono"
 bold_italic.family = "FiraCode NerdFont Mono"
 [colors.primary]
-background = "#020102"
-foreground = "#bfbfbf"
+background = '#0E0D12'
+foreground = '#b5a8c8'
 
 [colors.cursor]
-text = "#020102"
-cursor = "#bfbfbf"
-
-[colors.vi_mode_cursor]
-text = "#020102"
-cursor = "#bfbfbf"
-
-[colors.search.matches]
-foreground = "#020102"
-background = "#bfbfbf"
-
-[colors.search.focused_match]
-foreground = "CellBackground"
-background = "CellForeground"
-
-[colors.line_indicator]
-foreground = "None"
-background = "None"
-
-[colors.footer_bar]
-foreground = "#414041"
-background = "#bfbfbf"
-
-[colors.selection]
-text = "CellBackground"
-background = "CellForeground"
+text = '#b5a8c8'
+cursor = '#b5a8c8'
 
 [colors.normal]
-black = "#020102"
-red = "#CF3E31"
-green = "#9A6168"
-yellow = "#F1BA40"
-blue = "#617488"
-magenta = "#A0738A"
-cyan = "#4C9EB9"
-white = "#bfbfbf"
+black   = '#0E0D12'
+red     = '#533B4F'
+green   = '#39425C'
+yellow  = '#33466D'
+blue    = '#504B6A'
+magenta = '#B45C2F'
+cyan    = '#F49B52'
+white   = '#b5a8c8'
 
 [colors.bright]
-black = "#414041"
-red = "#CF3E31"
-green = "#9A6168"
-yellow = "#F1BA40"
-blue = "#617488"
-magenta = "#A0738A"
-cyan = "#4C9EB9"
-white = "#bfbfbf"
-
-[colors.dim]
-black = "#bfbfbf"
-red = "#CF3E31"
-green = "#A0738A"
-yellow = "#F1BA40"
-blue = "#617488"
-magenta = "#9A6168"
-cyan = "#4C9EB9"
-white = "#414041"
-
+black   = '#7e758c'
+red     = '#533B4F'
+green   = '#39425C'
+yellow  = '#33466D'
+blue    = '#504B6A'
+magenta = '#B45C2F'
+cyan    = '#F49B52'
+white   = '#b5a8c8'
