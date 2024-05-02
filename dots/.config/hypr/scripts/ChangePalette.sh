@@ -65,7 +65,8 @@ cp "$theme_dir/$gtk_dir/gtk-dark.css" 		"$theme_dir/$gtk_dir/gtk-dark.css.bak"
 mv "$theme_dir/$gtk_dir/gtk.css" 		"$theme_dir/$gtk_dir/gtk-dark.css"
 mv "$theme_dir/$gtk_dir/gtk-dark.css.bak" 	"$theme_dir/$gtk_dir/gtk.css"
 
-# *** DONE ***
+# xsettingsd
+echo "Xft/DPI 225280" >> "$HOME/.config/xsettingsd/xsettingsd.conf"
 
 # *** DONE ***
 printc "Done!"
