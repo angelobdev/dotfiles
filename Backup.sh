@@ -80,9 +80,8 @@ elif [[ "$option" == "--save" ]]; then
     backup s
     echo "Done!"
 elif [[ "$option" == "--load" ]]; then
-    # cp -R dots/* $HOME
-    echo "Loading is unsupported!"
-    exit;
+    cp -a "$(pwd)/dots/." "$HOME/"
+    
 elif [[ "$option" == "--install" ]]; then
     echo "Install is unsupported"
     exit;

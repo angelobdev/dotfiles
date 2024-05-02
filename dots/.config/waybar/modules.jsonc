@@ -60,8 +60,16 @@
   "custom/silent": {
     "format": "",
     "format-alt": "",
+    "tooltip": true,
     "tooltip-format": "Enable/Disable Notifications",
     "on-click": "exec ~/.config/hypr/scripts/NotifyToggle.sh"
+  },
+
+  "custom/lightdark": {
+    "format": "",
+    "format-alt": "",
+    "tooltip-format": "Enable/Disable Notifications",
+    "on-click": "exec ~/.config/hypr/scripts/LightDarkModeSwitch.sh"
   },
 
   // *** RIGHT MODULES *** //

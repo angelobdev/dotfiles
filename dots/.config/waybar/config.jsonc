@@ -16,7 +16,12 @@
   "spacing": 10, // Gaps between modules (px)
 
   // Choose the order of the modules
-  "modules-left": ["hyprland/workspaces", "group/hardware", "custom/silent"],
+  "modules-left": [
+    "hyprland/workspaces",
+    "group/hardware",
+    "custom/silent",
+    "custom/lightdark"
+  ],
   "modules-center": ["privacy", "clock", "systemd-failed-units"],
   "modules-right": ["tray", "wireplumber", "upower", "custom/powermenu"]
 }
