@@ -66,7 +66,11 @@ mv "$theme_dir/$gtk_dir/gtk.css" 		"$theme_dir/$gtk_dir/gtk-dark.css"
 mv "$theme_dir/$gtk_dir/gtk-dark.css.bak" 	"$theme_dir/$gtk_dir/gtk.css"
 
 # xsettingsd
-echo "Xft/DPI 225280" >> "$HOME/.config/xsettingsd/xsettingsd.conf"
+dpi=$(cat "$HOME/.config/xsettingsd/xsettingsd.conf" | tail -n1 | cut -d ' ' -f1 | cut -d '/' -f2)
+if [[ dpi == "DPI" ]]; then
+	echo "Xft/DPI 225280" >> "$HOME/.config/xsettingsd/xsettingsd.conf"
+fi
+
 
 # *** DONE ***
 printc "Done!"
