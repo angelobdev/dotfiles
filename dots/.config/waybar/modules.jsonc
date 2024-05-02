@@ -130,6 +130,15 @@
     "user": true // Ignore failed user units.
   },
 
+  "custom/spotify": {
+    "exec": "/usr/bin/python3 ~/.config/waybar/scripts/MediaPlayer.py --player spotify",
+    "format": "{}  ",
+    "return-type": "json",
+    "on-click": "playerctl play-pause",
+    "on-scroll-up": "playerctl next",
+    "on-scroll-down": "playerctl previous"
+  },
+
   // *** RIGHT MODULES *** //
 
   "tray": {

@@ -23,5 +23,11 @@
     "custom/lightdark"
   ],
   "modules-center": ["privacy", "clock", "systemd-failed-units"],
-  "modules-right": ["tray", "wireplumber", "upower", "custom/powermenu"]
+  "modules-right": [
+    "custom/spotify",
+    "tray",
+    "wireplumber",
+    "upower",
+    "custom/powermenu"
+  ]
 }

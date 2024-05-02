@@ -111,6 +111,14 @@ tooltip {
   color: @color15;
 }
 
+/* Spotify */
+#custom-spotify {
+  padding: 0 10px;
+  margin: 0 4px;
+  background-color: #1db954;
+  color: black;
+}
+
 /* UPower (Battery) */
 
 #upower image {
@@ -123,7 +131,7 @@ tooltip {
   color: @color15;
 }
 
-/* 9) Logout (wlogout) */
+/* Logout (wlogout) */
 #custom-powermenu {
   padding: 0px 6px 0px 2px;
 }
