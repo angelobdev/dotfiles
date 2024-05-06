@@ -14,7 +14,7 @@
 
   "hyprland/workspaces": {
     "format": "{windows}",
-    "format-window-separator": " | ",
+    "format-window-separator": " <span size=\"x-large\">|</span> ",
     "window-rewrite-default": "",
     "window-rewrite": {
       "google-chrome": "",
@@ -25,7 +25,8 @@
       "spotify": "",
       "title<.*software.*>": "",
       "easyeffects": "<span size=\"large\"></span>",
-      "discord": ""
+      "discord": "",
+      "steam": ""
     }
   },
 
@@ -58,16 +59,16 @@
   },
 
   "custom/silent": {
-    "format": "",
-    "format-alt": "",
+    "format": "<span size=\"medium\"></span>",
+    "format-alt": "<span size=\"medium\"></span>",
     "tooltip": true,
     "tooltip-format": "Enable/Disable Notifications",
     "on-click": "exec ~/.config/hypr/scripts/NotifyToggle.sh"
   },
 
   "custom/lightdark": {
-    "format": "",
-    "format-alt": "",
+    "format": "<span size=\"medium\"></span>",
+    "format-alt": "<span size=\"medium\"></span>",
     "tooltip-format": "Enable/Disable Notifications",
     "on-click": "exec ~/.config/hypr/scripts/LightDarkModeSwitch.sh"
   },
@@ -132,7 +133,7 @@
 
   "custom/spotify": {
     "exec": "/usr/bin/python3 ~/.config/waybar/scripts/MediaPlayer.py --player spotify",
-    "format": "{}  ",
+    "format": "  {}",
     "return-type": "json",
     "on-click": "playerctl play-pause",
     "on-scroll-up": "playerctl next",
@@ -148,7 +149,7 @@
 
   "wireplumber": {
     "format": "{icon}    {volume}%",
-    "format-muted": "",
+    "format-muted": " Muted",
     "on-click": "~/.config/waybar/scripts/Switcher.sh",
     "format-icons": ["", "", ""],
     "reverse-scrolling": 1
@@ -164,7 +165,7 @@
   },
 
   "custom/powermenu": {
-    "format": "",
+    "format": "<span size=\"large\"></span>",
     "tooltip": false,
     "on-click": "exec wlogout -b 5 -p layer-shell"
   }

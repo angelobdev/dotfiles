@@ -26,5 +26,5 @@ if [[ $lid_closed ]]; then
 	fi
 else
 	# If the lid is opened...
-	hyprctl keyword monitor "eDP-1, 2880x1800@60, 0x0, 2"
+	hyprctl keyword monitor "eDP-1, 2880x1800@60, 1920x0, 2"
 fi
