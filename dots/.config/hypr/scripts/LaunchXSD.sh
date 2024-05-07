@@ -11,12 +11,12 @@
 #                                                                               #
 #################################################################################
 
-CONFIG_FILES="$HOME/.config/dunst/dunstrc"
+CONFIG_FILES="$HOME/.config/xsettingsd/xsettingsd.conf"
 
-trap "killall dunst" EXIT
+trap "killall xsettingsd" EXIT
 
 while true; do
-    dunst &
+    xsettingsd &
     inotifywait -e create,modify $CONFIG_FILES
-    killall dunst
+    killall xsettingsd
 done

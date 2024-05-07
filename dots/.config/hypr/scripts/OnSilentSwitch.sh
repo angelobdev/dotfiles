@@ -1,25 +1,24 @@
-# VARIABLES
+#!/bin/bash
 
 #################################################################################
 #                                                                               #
-#   This config has been written by angelobdev                                  #
+#   This script has been written by angelobdev                                  #
 #   It should be used in a properly configured Hyprland environment.            #
 #                                                                               #
 #   Look at the full configuration here: https://github.com/angelobdev/dotfiles #
 #                                                                               #
-#   The project (as well as this config) goes under the GNU GPLv3 LICENSE.      #
+#   The project (as well as this script) goes under the GNU GPLv3 LICENSE.      #
 #                                                                               #
 #################################################################################
 
-# Scripts Directory
-$scriptsDir = ~/.config/hypr/scripts
+silent_file="$HOME/.config/hypr/settings/silent"
 
-# Applications
-$terminal = alacritty
-$fileManager = thunar
-$browser = google-chrome-stable
-$menu = $scriptsDir/LaunchWofi.sh
+if [[ -f "$silent_file" ]]; then
+	rm "$silent_file"
+	makoctl mode -r do-not-disturb
+else
+	touch "$silent_file"
+	makoctl mode -a do-not-disturb
+fi
 
-# Commands
-$lock = hyprlock
-$logout = $scriptsDir/Logout.sh
+dunstctl set-paused toggle

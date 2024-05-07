@@ -26,7 +26,9 @@
       "title<.*software.*>": "",
       "easyeffects": "<span size=\"large\"></span>",
       "discord": "",
-      "steam": ""
+      "steam": "",
+      "telegram": "",
+      "title<.*WhatsApp.*>":""
     }
   },
 
@@ -63,14 +65,14 @@
     "format-alt": "<span size=\"medium\"></span>",
     "tooltip": true,
     "tooltip-format": "Enable/Disable Notifications",
-    "on-click": "exec ~/.config/hypr/scripts/NotifyToggle.sh"
+    "on-click": "exec ~/.config/hypr/scripts/OnSilentSwitch.sh"
   },
 
   "custom/lightdark": {
     "format": "<span size=\"medium\"></span>",
     "format-alt": "<span size=\"medium\"></span>",
     "tooltip-format": "Enable/Disable Notifications",
-    "on-click": "exec ~/.config/hypr/scripts/LightDarkModeSwitch.sh"
+    "on-click": "exec ~/.config/hypr/scripts/OnLDMSwitch.sh"
   },
 
   // *** RIGHT MODULES *** //
