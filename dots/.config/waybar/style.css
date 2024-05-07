@@ -49,7 +49,7 @@ window#waybar.empty #window {
 
 tooltip {
   background:
-  /* Background */ linear-gradient(@background, @background)
+  /* Background */ linear-gradient(@theme_base_color, @theme_base_color)
       padding-box,
     /* Border */ linear-gradient(to right, @color3, @color4, @color5, @color6)
       border-box;
@@ -57,7 +57,7 @@ tooltip {
   border: 2px solid transparent;
   border-radius: 0.8em;
 
-  color: @color15;
+  color: @theme_text_color;
 }
 
 /* Modules Box */
@@ -150,6 +150,7 @@ tooltip {
 }
 
 /* Custom modules */
+#custom-hints,
 #custom-powermenu,
 #custom-silent,
 #custom-lightdark {
@@ -164,6 +165,7 @@ tooltip {
   transition: 0.4s;
 }
 
+#custom-hints:hover,
 #custom-powermenu:hover,
 #custom-silent:hover,
 #custom-lightdark:hover {

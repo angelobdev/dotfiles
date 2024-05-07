@@ -12,6 +12,11 @@
 {
   // *** LEFT MODULES *** //
 
+  "custom/hints":{
+    "format": "<span size=\"medium\"></span>",
+    "on-click": "exec yad"
+  },
+
   "hyprland/workspaces": {
     "format": "{windows}",
     "format-window-separator": " <span size=\"x-large\">|</span> ",
@@ -61,8 +66,8 @@
   },
 
   "custom/silent": {
-    "format": "<span size=\"medium\"></span>",
-    "format-alt": "<span size=\"medium\"></span>",
+    "format": "<span font=\"FontAwesome 6 Free Solid\" size=\"large\"></span>",
+    "format-alt": "<span font=\"FontAwesome 6 Free Solid\" size=\"large\"></span>",
     "tooltip": true,
     "tooltip-format": "Enable/Disable Notifications",
     "on-click": "exec ~/.config/hypr/scripts/OnSilentSwitch.sh"
@@ -102,7 +107,7 @@
 
   "clock": {
     "format": "{:%H:%M}",
-    "format-alt": "  {:%A, %B %d, %Y (%R)} ",
+    "format-alt": "{:%A - %B %d, %Y (%R)} ",
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
     "calendar": {
       "mode": "month",
@@ -128,7 +133,7 @@
 
   "systemd-failed-units": {
     "hide-on-ok": true,
-    "format": " {nr_failed}"	,
+    "format": "|  <span size=\"medium\"></span>   {nr_failed_system} / {nr_failed_user}",
     "system": true, 		// Monitor failed system units.
     "user": true 		// Monitor failed user units.
   },
@@ -151,7 +156,7 @@
 
   "wireplumber": {
     "format": "{icon}    {volume}%",
-    "format-muted": " Muted",
+    "format-muted": "<span font=\"FontAwesome 6 Free Solid\" size=\"medium\"></span> Muted",
     "on-click": "~/.config/waybar/scripts/Switcher.sh",
     "format-icons": ["", "", ""],
     "reverse-scrolling": 1
@@ -167,7 +172,7 @@
   },
 
   "custom/powermenu": {
-    "format": "<span size=\"large\"></span>",
+    "format": "<span font=\"FontAwesome 6 Free Solid\" size=\"medium\"></span>",
     "tooltip": false,
     "on-click": "exec wlogout -b 5 -p layer-shell"
   }
