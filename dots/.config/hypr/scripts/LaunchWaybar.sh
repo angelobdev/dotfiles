@@ -16,7 +16,7 @@ CONFIG_FILES="$HOME/.config/waybar/config.jsonc $HOME/.config/waybar/modules.jso
 trap "killall waybar" EXIT
 
 while true; do
-    waybar &
+    nohup waybar &> /dev/null &
     inotifywait -e create,modify $CONFIG_FILES
     killall waybar
 done

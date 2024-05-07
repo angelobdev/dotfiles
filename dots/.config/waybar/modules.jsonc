@@ -75,7 +75,7 @@
     "on-click": "exec ~/.config/hypr/scripts/OnLDMSwitch.sh"
   },
 
-  // *** RIGHT MODULES *** //
+  // *** CENTER MODULES *** //
 
   "privacy": {
     "icon-spacing": 4,
@@ -127,10 +127,10 @@
   },
 
   "systemd-failed-units": {
-    "hide-on-ok": true, // Do not hide if there is zero failed units.
-    "format": " {nr_failed}",
-    "system": true, // Monitor failed systemwide units.
-    "user": true // Ignore failed user units.
+    "hide-on-ok": true,
+    "format": " {nr_failed}"	,
+    "system": true, 		// Monitor failed system units.
+    "user": true 		// Monitor failed user units.
   },
 
   "custom/spotify": {

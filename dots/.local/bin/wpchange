@@ -17,6 +17,6 @@ ln -f "$1" .config/hypr/wallpapers/current.png
 
 # Reload
 echo "Reloading..."
-exec $HOME/.config/hypr/scripts/ChangePalette.sh
+exec $HOME/.config/hypr/scripts/CmdPywal.sh
 
 echo "Done!"

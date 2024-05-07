@@ -15,12 +15,12 @@
 config_dir="$HOME/.config"
 cache_dir="$HOME/.cache"
 
-# Include Pywal Colors
-. "$cache_dir/wal/colors.sh"
-
 # Generating theme using PyWal
-printc "Generating theme..."
+rm -r "$cache_dir/wal"
 wal -i "$config_dir/hypr/wallpapers/current.png" -q -s -t
+
+# Include pywal colors
+. "$cache_dir/wal/colors.sh"
 
 # *** Applying theme *** #
 
@@ -41,7 +41,7 @@ cat "$config_dir/alacritty/alacritty.base.toml" >> "$config_dir/alacritty/alacri
 cat "$cache_dir/wal/colors-alacritty.toml" >> "$config_dir/alacritty/alacritty.toml"
 
 ### OOMOX ###
-/opt/oomox/plugins/theme_oomox/change_color.sh $HOME/.cache/wal/colors-oomox
+/opt/oomox/plugins/theme_oomox/change_color.sh $cache_dir/wal/colors-oomox
 
 # Switching oomox gtk dark/light theme
 theme_dir="$HOME/.themes/oomox-colors-oomox"
@@ -83,10 +83,6 @@ for color_name in "${!colors[@]}"; do
   # replace first occurance of each color in config file
   sed -i "0,/^$color_name.*/{s//$color_name=${colors[$color_name]}/}" $mako_config
 done
-
-killall mako
-nohup mako &> /dev/null &
-
 
 ### DONE ###
 notify-send -a "System" "Palette changed!"
