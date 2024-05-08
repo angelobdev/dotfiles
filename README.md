@@ -2,7 +2,7 @@
 
 ## Screenshots
 
-![Screenshot 1](https://i.imgur.com/xH0A2d5.png)
+![Screenshot 1](https://i.imgur.com/rhGCxl7.png)
 
 ## Install
 
