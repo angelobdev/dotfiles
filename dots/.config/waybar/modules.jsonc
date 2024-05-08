@@ -12,14 +12,9 @@
 {
   // *** LEFT MODULES *** //
 
-  "custom/hints":{
-    "format": "<span size=\"medium\"></span>",
-    "on-click": "exec yad"
-  },
-
   "hyprland/workspaces": {
     "format": "{windows}",
-    "format-window-separator": " <span size=\"x-large\">|</span> ",
+    "format-window-separator": "  ",
     "window-rewrite-default": "",
     "window-rewrite": {
       "google-chrome": "",
@@ -68,15 +63,14 @@
   "custom/silent": {
     "format": "<span font=\"FontAwesome 6 Free Solid\" size=\"large\"></span>",
     "format-alt": "<span font=\"FontAwesome 6 Free Solid\" size=\"large\"></span>",
-    "tooltip": true,
-    "tooltip-format": "Enable/Disable Notifications",
+    "tooltip": false,
     "on-click": "exec ~/.config/hypr/scripts/OnSilentSwitch.sh"
   },
 
   "custom/lightdark": {
     "format": "<span size=\"medium\"></span>",
     "format-alt": "<span size=\"medium\"></span>",
-    "tooltip-format": "Enable/Disable Notifications",
+    "tooltip": false,
     "on-click": "exec ~/.config/hypr/scripts/OnLDMSwitch.sh"
   },
 
@@ -138,9 +132,9 @@
     "user": true 		// Monitor failed user units.
   },
 
-  "custom/spotify": {
-    "exec": "/usr/bin/python3 ~/.config/waybar/scripts/MediaPlayer.py --player spotify",
-    "format": "  {}",
+  "custom/media": {
+    "exec": "/usr/bin/python3 ~/.config/waybar/scripts/MediaPlayer.py",
+    "format": "{}",
     "return-type": "json",
     "on-click": "playerctl play-pause",
     "on-scroll-up": "playerctl next",
@@ -151,7 +145,7 @@
 
   "tray": {
     "icon-size": 14,
-    "spacing": 6
+    "spacing": 4
   },
 
   "wireplumber": {
@@ -171,9 +165,42 @@
     "on-click": "tlpui"
   },
 
-  "custom/powermenu": {
-    "format": "<span font=\"FontAwesome 6 Free Solid\" size=\"medium\"></span>",
-    "tooltip": false,
-    "on-click": "exec wlogout -b 5 -p layer-shell"
-  }
+  "group/power": {
+    "orientation": "inherit",
+    "drawer": {
+        "transition-duration": 400,
+        "children-class": "not-power",
+        "transition-left-to-right": false
+    },
+    "modules": [
+        "custom/power",
+        "custom/quit",
+        "custom/lock",
+        "custom/reboot"
+    ]
+   },
+
+    "custom/quit": { 
+        "format": "<span font=\"Font Awesome 6 Free\" size=\"x-large\">󰗼</span>",
+        "tooltip": false,
+        "on-click": "hyprctl dispatch exit"
+    },
+
+    "custom/lock": {
+        "format": "<span font=\"Font Awesome 6 Free\" size=\"x-large\">󰍁</span>",
+        "tooltip": false,
+        "on-click": "hyprlock"
+    },
+
+    "custom/reboot": {
+        "format": "<span font=\"Font Awesome 6 Free\" size=\"x-large\">󰜉</span>",
+        "tooltip": false,
+        "on-click": "reboot"
+    },
+
+    "custom/power": {
+        "format": "<span font=\"Font Awesome 6 Free\" size=\"medium\"></span>",
+        "tooltip": false,
+        "on-click": "shutdown now"
+    }
 }

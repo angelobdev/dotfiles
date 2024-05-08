@@ -17,7 +17,6 @@
 
   // Choose the order of the modules
   "modules-left": [
-    "custom/hints",
     "hyprland/workspaces",
     "group/hardware",
     "custom/silent",
@@ -25,10 +24,10 @@
   ],
   "modules-center": ["privacy", "clock", "systemd-failed-units"],
   "modules-right": [
-    "custom/spotify",
+    "custom/media",
     "tray",
     "wireplumber",
     "upower",
-    "custom/powermenu"
+    "group/power"
   ]
 }

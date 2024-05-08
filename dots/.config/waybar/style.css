@@ -30,7 +30,7 @@ window#waybar {
   padding: 0;
   margin: 0;
   
-  color: @color15;
+  color: @theme_text_color;
 }
 
 window#waybar.hidden {
@@ -54,7 +54,7 @@ tooltip {
     /* Border */ linear-gradient(to right, @color3, @color4, @color5, @color6)
       border-box;
 
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   border-radius: 0.8em;
 
   color: @theme_text_color;
@@ -65,15 +65,15 @@ tooltip {
 .modules-center,
 .modules-right {
   background:
-        /* Background */ linear-gradient(@background, @background)
+        /* Background */ linear-gradient(@theme_base_color, @theme_base_color)
       padding-box,
     /* Border */ linear-gradient(to right, @color3, @color4, @color5, @color6)
       border-box;
 
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   border-radius: 12px;
 
-  margin: 4px 10px 0px 10px;
+  margin: 2px 4px 0px 4px;
 }
 
 .modules-left {
@@ -105,7 +105,7 @@ tooltip {
 
   border-radius: 8px;
 
-  padding: 0px 6px;
+  padding: 0px 2px;
   margin: 0;
 }
 
@@ -118,14 +118,14 @@ tooltip {
   color: @color15;
 }
 
-/* Spotify */
-#custom-spotify {
+/* Media Player */
+#custom-media {
   padding: 0px 4px 0px 4px;
   margin: 2px 0px 2px 0px;
   
-  background-color: #1db954;
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius:8px;
-  color: black;
+  color: @theme_text_color;
 }
 
 /* UPower (Battery) */
@@ -136,7 +136,7 @@ tooltip {
 
 /* Tray */
 #tray {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
   
   border-radius: 8px;
   
@@ -145,13 +145,11 @@ tooltip {
 }
 
 #tray menu {
-  background: @background;
-  color: @color15;
+  background: @theme_base_color;
+  color: @theme_text_color;
 }
 
 /* Custom modules */
-#custom-hints,
-#custom-powermenu,
 #custom-silent,
 #custom-lightdark {
   background: rgba(255, 255, 255, 0.1);
@@ -161,14 +159,47 @@ tooltip {
   
   border-radius: 8px;
   
-  color:@color5;
+  color:@color14;
   transition: 0.4s;
 }
 
-#custom-hints:hover,
-#custom-powermenu:hover,
 #custom-silent:hover,
 #custom-lightdark:hover {
   background: @color5;
   color:@color4;
+}
+
+#custom-power,
+#custom-reboot,
+#custom-lock,
+#custom-quit {
+    margin: 2px 0px 2px 2px;
+    padding: 0px 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 0.6rem;
+}
+
+
+#custom-power:hover,
+#custom-reboot:hover,
+#custom-lock:hover,
+#custom-quit:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transition: 0.2s;
+}
+
+#custom-power { 
+    color: #CA5232;
+}
+
+#custom-reboot {
+    color: #CA8332;
+}
+
+#custom-lock {
+    color: #B5CA32;
+}
+
+#custom-quit {
+    color: #32B3CA;
 }
