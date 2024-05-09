@@ -13,22 +13,22 @@
   // *** LEFT MODULES *** //
 
   "hyprland/workspaces": {
-    "format": "{windows}",
+    "format": "<span font='12'>{windows}</span>",
     "format-window-separator": "  ",
-    "window-rewrite-default": "",
+    "window-rewrite-default": "󰘔",
     "window-rewrite": {
-      "google-chrome": "",
-      "thunar": "",
-      "code": "<span size=\"large\">󰨞</span>",
-      "alacritty": "<span size=\"x-large\"></span>",
-      "obsidian": "",
-      "spotify": "",
-      "title<.*software.*>": "",
-      "easyeffects": "<span size=\"large\"></span>",
-      "discord": "",
-      "steam": "",
-      "telegram": "",
-      "title<.*WhatsApp.*>":""
+      "google-chrome": "󰊯",
+      "thunar": "",
+      "code": "󰘐",
+      "alacritty": "<span font='11' rise='2000'></span>",
+      "obsidian": "󰂺",
+      "spotify": "󰓇",
+      "title<.*software.*>": "󱇕",
+      "easyeffects": "󰝚",
+      "discord": "<span font='11' rise='1500'></span>",
+      "steam": "󰓓",
+      "telegram": "",
+      "title<.*WhatsApp.*>":"󰖣"
     }
   },
 
@@ -39,39 +39,53 @@
       "children-class": "not-power",
       "transition-left-to-right": true
     },
-    "modules": ["temperature", "cpu", "memory"]
+    "modules": ["temperature", "cpu", "memory", "disk"]
   },
 
   "cpu": {
     "interval": 5,
-    "format": "  {}% ",
-    "max-length": 10
+    "format": "<span font='10'>󰍛</span> {usage}% "
   },
 
   "memory": {
     "interval": 5,
-    "format": " {}%",
-    "max-length": 10
+    "format": "<span font='8' rise='1000'></span> {percentage}% ",
+    "tooltip-format": "{used}GiB / {total}GiB"
+  },
+
+  "disk": {
+    "interval": 5,
+    "format": "<span font='9'></span> {percentage_used}%",
+    "tooltip-format": "{used} / {total}",
+    "path": "/"
   },
 
   "temperature": {
-    "thermal-zone": 2,
-    "format": " {temperatureC}°C ",
+    "hwmon-path": "/sys/class/hwmon/hwmon6/temp1_input",
+    "format": "<span font='8' rise='1000'></span> {temperatureC}°C ",
     "tooltip": false
   },
 
   "custom/silent": {
-    "format": "<span font=\"FontAwesome 6 Free Solid\" size=\"large\"></span>",
-    "format-alt": "<span font=\"FontAwesome 6 Free Solid\" size=\"large\"></span>",
+    "format": "<span font='11'>󰂚</span>",
+    "format-alt": "<span font='11'>󰂛</span>",
     "tooltip": false,
     "on-click": "exec ~/.config/hypr/scripts/OnSilentSwitch.sh"
   },
 
   "custom/lightdark": {
-    "format": "<span size=\"medium\"></span>",
-    "format-alt": "<span size=\"medium\"></span>",
+    "format": "<span font='11'>󰌵</span>",
+    "format-alt": "<span font='11'>󰹏</span>",
     "tooltip": false,
     "on-click": "exec ~/.config/hypr/scripts/OnLDMSwitch.sh"
+  },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+        "activated": "<span font='11'>󰛐</span>",
+        "deactivated": "<span font='11'>󰛑</span>"
+    }
   },
 
   // *** CENTER MODULES *** //
@@ -106,7 +120,7 @@
     "calendar": {
       "mode": "month",
       "mode-mon-col": 3,
-      "weeks-pos": "right",
+      "weeks-pos": "left",
       "on-scroll": 1,
       "format": {
         "months": "<span color='#ffead3'><b>{}</b></span>",
@@ -118,8 +132,6 @@
     },
     "actions": {
       "on-click-right": "mode",
-      "on-click-forward": "tz_up",
-      "on-click-backward": "tz_down",
       "on-scroll-up": "shift_up",
       "on-scroll-down": "shift_down"
     }
@@ -127,7 +139,7 @@
 
   "systemd-failed-units": {
     "hide-on-ok": true,
-    "format": "|  <span size=\"medium\"></span>   {nr_failed_system} / {nr_failed_user}",
+    "format": "|  <span size=\"medium\">󰋔</span>   {nr_failed_system} / {nr_failed_user}",
     "system": true, 		// Monitor failed system units.
     "user": true 		// Monitor failed user units.
   },
@@ -145,14 +157,15 @@
 
   "tray": {
     "icon-size": 14,
+    "show-passive-items": true,
     "spacing": 4
   },
 
   "wireplumber": {
-    "format": "{icon}    {volume}%",
-    "format-muted": "<span font=\"FontAwesome 6 Free Solid\" size=\"medium\"></span> Muted",
+    "format": "<span font='12' rise='-1000'>{icon}</span> {volume}%",
+    "format-muted": "<span font='12' rise='-1000'>󰖁</span> Muted",
     "on-click": "exec ~/.config/waybar/scripts/Switcher.sh",
-    "format-icons": ["", "", ""],
+    "format-icons": ["󰕿", "󰖀", "󰕾"],
     "reverse-scrolling": 1
   },
 
@@ -181,25 +194,25 @@
    },
 
     "custom/logout": { 
-        "format": "<span font=\"Font Awesome 6 Free\" size=\"x-large\">󰗼</span>",
+        "format": "<span font='12'>󰍃</span>",
         "tooltip": false,
         "on-click": "sleep 1; hyprctl dispatch exit"
     },
 
     "custom/lock": {
-        "format": "<span font=\"Font Awesome 6 Free\" size=\"x-large\">󰍁</span>",
+        "format": "<span font='12'>󰍁</span>",
         "tooltip": false,
         "on-click": "hyprlock"
     },
 
     "custom/reboot": {
-        "format": "<span font=\"Font Awesome 6 Free\" size=\"x-large\">󰜉</span>",
+        "format": "<span font='12'>󰜉</span>",
         "tooltip": false,
         "on-click": "systemctl reboot"
     },
 
     "custom/poweroff": {
-        "format": "<span font=\"Font Awesome 6 Free\" size=\"medium\"></span>",
+        "format": "<span font='12'>󰐥</span>",
         "tooltip": false,
         "on-click": "systemctl poweroff"
     }

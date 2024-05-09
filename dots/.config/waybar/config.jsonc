@@ -21,7 +21,8 @@
     "hyprland/workspaces",
     "group/hardware",
     "custom/silent",
-    "custom/lightdark"
+    "custom/lightdark",
+    "idle_inhibitor"
   ],
   "modules-center": ["privacy", "clock", "systemd-failed-units"],
   "modules-right": [
