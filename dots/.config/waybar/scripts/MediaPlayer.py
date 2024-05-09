@@ -112,7 +112,10 @@ class PlayerManager:
         logger.debug(f"Metadata changed for player {player.props.player_name}")
         player_name = player.props.player_name
         artist = player.get_artist()
-        title = player.get_title()
+        # title = player.get_title()
+        max_chars=50
+        title_untrimmed = player.get_title()
+        title = (title_untrimmed[:max_chars] + '...') if len(title_untrimmed) > max_chars else title_untrimmed
 
         track_info = ""
         if player_name == "spotify" and "mpris:trackid" in metadata.keys() and ":ad:" in player.props.metadata["mpris:trackid"]:
