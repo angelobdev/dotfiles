@@ -151,7 +151,7 @@
   "wireplumber": {
     "format": "{icon}    {volume}%",
     "format-muted": "<span font=\"FontAwesome 6 Free Solid\" size=\"medium\"></span> Muted",
-    "on-click": "~/.config/waybar/scripts/Switcher.sh",
+    "on-click": "exec ~/.config/waybar/scripts/Switcher.sh",
     "format-icons": ["", "", ""],
     "reverse-scrolling": 1
   },
@@ -173,17 +173,17 @@
         "transition-left-to-right": false
     },
     "modules": [
-        "custom/power",
-        "custom/quit",
+        "custom/poweroff",
         "custom/lock",
+        "custom/logout",
         "custom/reboot"
     ]
    },
 
-    "custom/quit": { 
+    "custom/logout": { 
         "format": "<span font=\"Font Awesome 6 Free\" size=\"x-large\">󰗼</span>",
         "tooltip": false,
-        "on-click": "hyprctl dispatch exit"
+        "on-click": "sleep 1; hyprctl dispatch exit"
     },
 
     "custom/lock": {
@@ -195,12 +195,12 @@
     "custom/reboot": {
         "format": "<span font=\"Font Awesome 6 Free\" size=\"x-large\">󰜉</span>",
         "tooltip": false,
-        "on-click": "reboot"
+        "on-click": "systemctl reboot"
     },
 
-    "custom/power": {
+    "custom/poweroff": {
         "format": "<span font=\"Font Awesome 6 Free\" size=\"medium\"></span>",
         "tooltip": false,
-        "on-click": "shutdown now"
+        "on-click": "systemctl poweroff"
     }
 }

@@ -169,10 +169,10 @@ tooltip {
   color:@color4;
 }
 
-#custom-power,
+#custom-poweroff,
 #custom-reboot,
 #custom-lock,
-#custom-quit {
+#custom-logout {
     margin: 2px 0px 2px 2px;
     padding: 0px 6px;
     background: rgba(255, 255, 255, 0.2);
@@ -180,15 +180,15 @@ tooltip {
 }
 
 
-#custom-power:hover,
+#custom-poweroff:hover,
 #custom-reboot:hover,
 #custom-lock:hover,
-#custom-quit:hover {
+#custom-logout:hover {
     background: rgba(255, 255, 255, 0.4);
     transition: 0.2s;
 }
 
-#custom-power { 
+#custom-poweroff { 
     color: #CA5232;
 }
 
@@ -200,6 +200,6 @@ tooltip {
     color: #B5CA32;
 }
 
-#custom-quit {
+#custom-logout {
     color: #32B3CA;
 }

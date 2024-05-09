@@ -3,7 +3,7 @@ max-history=10
 sort=-time
 
 # Style
-font=Roboto 12
+font=Roboto 11
 background-color=#151010
 text-color=#c3c3c5
 
@@ -50,3 +50,6 @@ format=<b>%a</b>
 [mode=do-not-disturb]
 invisible=1
 
+# Apps
+[app-name=blueman]
+format=<b>Bluetooth</b>\n%s\n%b
