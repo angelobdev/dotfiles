@@ -30,7 +30,7 @@ window#waybar {
   padding: 0;
   margin: 0;
   
-  color: @theme_text_color;
+  color: @color15;
 }
 
 window#waybar.hidden {
@@ -49,7 +49,7 @@ window#waybar.empty #window {
 
 tooltip {
   background:
-  /* Background */ linear-gradient(@theme_base_color, @theme_base_color)
+  /* Background */ linear-gradient(@background, @background)
       padding-box,
     /* Border */ linear-gradient(to right, @color3, @color4, @color5, @color6)
       border-box;
@@ -57,7 +57,7 @@ tooltip {
   border: 1px solid transparent;
   border-radius: 0.8em;
 
-  color: @theme_text_color;
+  color: @color15;
 }
 
 /* Modules Box */
@@ -65,13 +65,13 @@ tooltip {
 .modules-center,
 .modules-right {
   background:
-        /* Background */ linear-gradient(@theme_base_color, @theme_base_color)
+        /* Background */ linear-gradient(@background, @background)
       padding-box,
     /* Border */ linear-gradient(to right, @color3, @color4, @color5, @color6)
       border-box;
 
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 0.8rem;
 
   margin: 2px 4px 0px 4px;
 }
@@ -96,14 +96,14 @@ tooltip {
   padding: 0;
 
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 0.6rem;
 }
 
 #workspaces button {
   background: transparent;
   color: @color8;
 
-  border-radius: 8px;
+  border-radius: 0.6rem;
 
   padding: 0px 2px;
   margin: 0;
@@ -124,8 +124,8 @@ tooltip {
   margin: 2px 0px 2px 0px;
   
   background-color: rgba(255, 255, 255, 0.1);
-  border-radius:8px;
-  color: @theme_text_color;
+  border-radius: 0.6rem;
+  color: @color15;
 }
 
 /* UPower (Battery) */
@@ -138,15 +138,15 @@ tooltip {
 #tray {
   background: rgba(255, 255, 255, 0.2);
   
-  border-radius: 8px;
+  border-radius: 0.6rem;
   
   margin: 2px 0px 2px 0px;
   padding: 0px 2px 0px 2px;
 }
 
 #tray menu {
-  background: @theme_base_color;
-  color: @theme_text_color;
+  background: @background;
+  color: @color15;
 }
 
 /* Custom modules */
@@ -157,7 +157,7 @@ tooltip {
   padding: 0px 6px 0px 6px;
   margin: 2px 0px 2px 0px;
   
-  border-radius: 8px;
+  border-radius: 0.6rem;
   
   color:@color14;
   transition: 0.4s;
