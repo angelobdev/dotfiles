@@ -159,7 +159,8 @@ tooltip {
 /* Left switches */
 #custom-silent,
 #custom-lightdark,
-#idle_inhibitor {
+#idle_inhibitor,
+#custom-fanswitch {
   background: rgba(255, 255, 255, 0.2);
   
   padding: 0px 6px 0px 6px;
@@ -173,7 +174,8 @@ tooltip {
 
 #custom-silent:hover,
 #custom-lightdark:hover,
-#idle_inhibitor:hover {
+#idle_inhibitor:hover
+#custom-fanswitch:hover{
   background: rgba(255, 255, 255, 0.1);
   color:@color5;
 }

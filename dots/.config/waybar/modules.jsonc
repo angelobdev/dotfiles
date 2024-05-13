@@ -88,6 +88,11 @@
     }
   },
 
+  "custom/fanswitch":{
+    "format": "<span font='11'>󰈐</span>",
+    "on-click": "exec ~/.config/hypr/scripts/OnFanSwitch.sh"
+  },
+
   // *** CENTER MODULES *** //
 
   "privacy": {

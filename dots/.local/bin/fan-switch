@@ -1,0 +1,13 @@
+#!/bin/bash
+
+config_file="/etc/t2fand.conf"
+
+mode=$(cat "$config_file" | grep always | cut -d '=' -f2 | sed 's/ //' | tail -n1)
+
+if [[ "$mode" == "false" ]]; then
+	sudo sed -i "s/false/true/" /etc/t2fand.conf
+else
+	sudo sed -i "s/true/false/" /etc/t2fand.conf
+fi
+
+sudo systemctl restart t2fanrd.service

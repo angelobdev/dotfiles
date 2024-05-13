@@ -22,7 +22,8 @@
     "group/hardware",
     "custom/silent",
     "custom/lightdark",
-    "idle_inhibitor"
+    "idle_inhibitor",
+    "custom/fanswitch"
   ],
   "modules-center": ["privacy", "clock", "systemd-failed-units"],
   "modules-right": [
