@@ -6,7 +6,6 @@
   --wofi-color0: #1e90ff;
 }
 
-
 /********************************************************************************/
 /*                                                                              */
 /*  This config has been written by angelobdev                                  */
@@ -20,17 +19,15 @@
 
 /* window */
 #window {
-  border: double 1px transparent;
   border-radius: 0.8em;
-  background-image: linear-gradient(--wofi-color0, --wofi-color0),
-    linear-gradient(to right, --wofi-color3, --wofi-color4, --wofi-color5);
-  background-origin: border-box;
-  background-clip: content-box, border-box;
+  background-color: transparent;
+  border: 1px solid white;
 }
 
 /* window > outer-box */
 #outer-box {
   margin: 10px;
+  border-radius: 0.8rem;
 }
 
 /* window > outer-box > input */
@@ -63,12 +60,8 @@
 }
 
 #entry:selected {
-  border: double 1px transparent;
+  border: double 1px white;
   border-radius: 0.4em;
-  background-image: linear-gradient(--wofi-color3, --wofi-color3),
-    linear-gradient(to right, --wofi-color4, --wofi-color5, --wofi-color6);
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
 }
 
 /* window > outer-box > scroll >> inner-box > entry > image */
