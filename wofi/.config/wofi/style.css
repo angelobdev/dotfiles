@@ -1,0 +1,84 @@
+/* https://cloudninja.pw/docs/wofi.html */
+
+/*@import url("../../.cache/wal/colors.css");*/
+
+:root {
+  --wofi-color0: #1e90ff;
+}
+
+
+/********************************************************************************/
+/*                                                                              */
+/*  This config has been written by angelobdev                                  */
+/*  It should be used in a properly configured Hyprland environment.            */
+/*                                                                              */
+/*  Look at the full configuration here: https://github.com/angelobdev/dotfiles */
+/*                                                                              */
+/*  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      */
+/*                                                                              */
+/********************************************************************************/
+
+/* window */
+#window {
+  border: double 1px transparent;
+  border-radius: 0.8em;
+  background-image: linear-gradient(--wofi-color0, --wofi-color0),
+    linear-gradient(to right, --wofi-color3, --wofi-color4, --wofi-color5);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+}
+
+/* window > outer-box */
+#outer-box {
+  margin: 10px;
+}
+
+/* window > outer-box > input */
+#input {
+  background-color: --wofi-color8;
+  border: 1px solid --wofi-color1;
+  border-radius: 0.4em;
+
+  padding: 0.4em 0.4em;
+
+  font-size: 16px;
+  color: --wofi-color15;
+}
+
+/* window > outer-box > scroll */
+#scroll {
+  margin-top: 10px;
+  font-size: 16px;
+  color: --wofi-color15;
+}
+
+/* window > outer-box > scroll >> inner-box */
+#inner-box {
+  background: transparent;
+}
+
+/* window > outer-box > scroll >> inner-box > entry */
+#entry {
+  background: transparent;
+}
+
+#entry:selected {
+  border: double 1px transparent;
+  border-radius: 0.4em;
+  background-image: linear-gradient(--wofi-color3, --wofi-color3),
+    linear-gradient(to right, --wofi-color4, --wofi-color5, --wofi-color6);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* window > outer-box > scroll >> inner-box > entry > image */
+#img {
+  margin-right: 10px;
+  background-color: transparent;
+}
+
+/* window > outer-box > scroll >> inner-box > entry > label */
+#text {
+  border: 0px;
+  background-color: transparent;
+}

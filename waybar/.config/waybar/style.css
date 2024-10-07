@@ -1,0 +1,204 @@
+/*@import url("../../.cache/wal/colors-waybar.css");*/
+
+/********************************************************************************/
+/*                                                                              */
+/*  This config has been written by angelobdev                                  */
+/*  It should be used in a properly configured Hyprland environment.            */
+/*                                                                              */
+/*  Look at the full configuration here: https://github.com/angelobdev/dotfiles */
+/*                                                                              */
+/*  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      */
+/*                                                                              */
+/********************************************************************************/
+
+* {
+  border: none;
+  border-radius: 0px;
+
+  font-family: "Roboto", "Symbols Nerd Font", sans-serif;
+  font-size: 0.8rem;
+
+  background: transparent;
+  color: white;
+
+  padding: 0;
+  margin: 0;
+}
+
+window#waybar {
+  background: transparent;
+}
+
+window#waybar.hidden {
+  opacity: 0.5;
+}
+
+window#waybar.empty {
+  background: transparent;
+}
+
+window#waybar.empty #window {
+  padding: 0px;
+  border: 0px;
+  background-color: transparent;
+}
+
+tooltip {
+  background: #1f0751;
+
+  border: 1px solid white;
+  border-radius: 0.8rem;
+
+  color: white;
+}
+
+/* Modules Box */
+.modules-left,
+.modules-center,
+.modules-right {
+  margin: 0px 4px;
+}
+
+.modules-left {
+  padding: 0px 2px;
+}
+
+.modules-center {
+  padding: 0px 4px;
+}
+
+.modules-right {
+  padding: 0px 2px;
+}
+
+/* ### PER-MODULE CUSTOMIZATIONS ### */
+
+/* # Left Modules # */
+
+/* Workspaces */
+#workspaces {
+  padding: 0 2px;
+  border-bottom: 1px solid white;
+}
+
+#workspaces button {
+  background: transparent;
+  color: white;
+
+  padding: 0px 2px;
+  margin: 0;
+
+  transition: 0.2s;
+}
+
+#workspaces button:hover {
+  background: transparent;
+}
+
+#workspaces button.active {
+  transition: 0.2s;
+}
+
+#workspaces button.persistent {
+  background: transparent;
+}
+
+#cpu,
+#memory,
+#disk,
+#temperature {
+  border-bottom: 1px solid white;
+  /* margin: 0 2px; */
+}
+
+/* # Center Modules # */
+
+/* # Right Modules # */
+
+/* Media Player */
+#custom-media {
+  padding: 0px 4px;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Tray */
+#tray {
+  border-bottom: 1px solid white;
+  padding: 0px 2px;
+}
+
+#tray menu {
+  background: rgba(96, 26, 112, 0.6);
+}
+
+/* Switches */
+#custom-silent,
+#idle_inhibitor {
+  background: transparent;
+
+  padding: 0px 6px;
+
+  border-bottom: 1px solid white;
+  border-radius: 0;
+
+  transition: 0.4s;
+}
+
+#custom-silent:hover,
+#idle_inhibitor:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Volume */
+#wireplumber {
+  border-bottom: 1px solid white;
+}
+
+/* UPower (Battery) */
+#upower {
+  border-bottom: 1px solid white;
+}
+
+#upower image {
+  margin-right: 4px;
+}
+
+/* Clock */
+#clock {
+  border-bottom: 1px solid white;
+}
+
+/* Power options */
+
+#custom-poweroff,
+#custom-reboot,
+#custom-lock,
+#custom-logout {
+  /* margin: 0px 2px; */
+  padding: 0px 6px;
+  border-bottom: 1px solid white;
+}
+
+#custom-poweroff:hover,
+#custom-reboot:hover,
+#custom-lock:hover,
+#custom-logout:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transition: 0.2s;
+}
+
+/* #custom-poweroff {
+  color: @color1;
+}
+
+#custom-reboot {
+  color: @color3;
+}
+
+#custom-lock {
+  color: @color4;
+}
+
+#custom-logout {
+  color: @color5;
+} */

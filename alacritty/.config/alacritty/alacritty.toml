@@ -1,0 +1,14 @@
+[window]
+padding = {x = 4, y = 4}
+opacity = 0.8
+blur = true
+
+[font]
+size=12
+normal.family = "FiraCode NerdFont Mono"
+bold.family = "FiraCode NerdFont Mono"
+italic.family = "FiraCode NerdFont Mono"
+bold_italic.family = "FiraCode NerdFont Mono"
+
+[colors]
+primary.background = "#0E0409"

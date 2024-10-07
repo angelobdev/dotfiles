@@ -1,0 +1,40 @@
+//******************************************************************************//
+//                                                                              //
+//  This config file has been written by angelobdev                             //
+//  It should be used in a properly configured Hyprland environment.            //
+//                                                                              //
+//  Look at the full configuration here: https://github.com/angelobdev/dotfiles //
+//                                                                              //
+//  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      //
+//                                                                              //
+//******************************************************************************//
+
+{
+  "include": "~/.config/waybar/modules.jsonc",
+  "layer": "top",
+  "position": "top", // Waybar position (top|bottom|left|right)
+  "height": 10, // Waybar height (to be removed for auto height)
+  "spacing": 4, // Gaps between modules (px)
+  "mode": "dock",
+
+  // Choose the order of the modules
+  "modules-left": [
+    "hyprland/workspaces",
+    "custom/silent",
+    "idle_inhibitor",
+    "group/hardware",
+    "privacy",
+    "systemd-failed-units"
+  ],
+  "modules-center": ["hyprland/window"],
+  "modules-right": [
+    "custom/media",
+    "tray",
+    "wireplumber",
+    "upower",
+    "clock",
+    "group/power"
+  ],
+  "margin": "0",
+  "reload_style_on_change": true
+}
