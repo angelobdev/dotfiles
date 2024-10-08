@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Notify function
+function notify(){
+       notify-send --app-name "Hyprpaper" "$1"
+}
+
 # Getting current wallpaper
 hyprpaperConfig="$HOME/.config/hypr/hyprpaper.conf"
 current=$(cat "$hyprpaperConfig" | grep preload | cut -d '=' -f2 | sed 's/ //')
@@ -18,18 +23,18 @@ case $? in
 			statusWallpaper=$(hyprctl hyprpaper wallpaper ",$file")
 
                      if [[ "$statusPreload" == "ok" && "$statusWallpaper" == "ok" ]]; then
-                            notify-send "Wallpaper changed!"
+                            notify "Wallpaper changed!"
                             sed -i "s|$current|$file|" "$hyprpaperConfig"
                      else
-                            notify-send "Something went wrong!"
+                            notify "Something went wrong!"
                      fi
 
               else
-                    notify-send "Please select an image file!"
+                    notify "Please select an image file!"
               fi
               ;;
        1)
-              notify-send "No file selected!";;
+              notify "No file selected!";;
        -1)
-              notify-send "An unexpected error has occurred!";;
+              notify "An unexpected error has occurred!";;
 esac
