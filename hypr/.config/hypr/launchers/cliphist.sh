@@ -11,4 +11,4 @@
 #                                                                               #
 #################################################################################
 
-cliphist list | wofi --dmenu --allow-images -a -i --prompt "Search..." | cliphist decode | wl-copy
+cliphist list | wofi --dmenu -a -i --prompt "Search..." | cliphist decode | wl-copy

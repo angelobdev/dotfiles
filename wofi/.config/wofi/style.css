@@ -20,33 +20,27 @@
 /* window */
 #window {
   border-radius: 0.8em;
-  background-color: transparent;
+  background: transparent;
   border: 1px solid white;
 }
 
 /* window > outer-box */
 #outer-box {
-  margin: 10px;
+  margin: 0.8rem;
   border-radius: 0.8rem;
 }
 
 /* window > outer-box > input */
 #input {
-  background-color: --wofi-color8;
-  border: 1px solid --wofi-color1;
   border-radius: 0.4em;
-
   padding: 0.4em 0.4em;
-
-  font-size: 16px;
-  color: --wofi-color15;
+  font-size: 1rem;
 }
 
 /* window > outer-box > scroll */
 #scroll {
-  margin-top: 10px;
-  font-size: 16px;
-  color: --wofi-color15;
+  margin-top: 0.8rem;
+  font-size: 1rem;
 }
 
 /* window > outer-box > scroll >> inner-box */
@@ -66,12 +60,16 @@
 
 /* window > outer-box > scroll >> inner-box > entry > image */
 #img {
-  margin-right: 10px;
-  background-color: transparent;
+  margin-right: 0.9rem;
+  background: transparent;
 }
 
 /* window > outer-box > scroll >> inner-box > entry > label */
 #text {
-  border: 0px;
-  background-color: transparent;
+  border: none;
+  background: transparent;
+}
+
+#text:selected {
+  font-weight: bold;
 }
