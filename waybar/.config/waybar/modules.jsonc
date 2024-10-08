@@ -134,7 +134,7 @@
   "wireplumber": {
     "format": "<span font='13' rise='-1000'>{icon}</span> {volume}%",
     "format-muted": "<span font='12' rise='-1000'>󰖁</span> Muted",
-    "on-click": "exec ~/.config/waybar/scripts/Switcher.sh",
+    "on-click": "exec ~/.config/waybar/scripts/sinkSwitch.sh",
     "format-icons": ["󰕿", "󰖀", "󰕾"],
     "reverse-scrolling": 1
   },
@@ -150,7 +150,7 @@
 
   "clock": {
     "format": " <span font='8' rise='1000'></span>  {:%H:%M}",
-    "format-alt": " <span font='9'></span> {:%A - %B %d, %Y (%R)} ",
+    "format-alt": " <span font='9' rise='1000'></span> {:%A - %B %d, %Y (%R)} ",
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
     "calendar": {
       "mode": "month",
@@ -183,31 +183,38 @@
       "custom/poweroff",
       "custom/lock",
       "custom/logout",
+      "custom/suspend",
       "custom/reboot"
     ]
   },
 
-  "custom/logout": {
-    "format": "<span font='11'>󰍃</span>",
+  "custom/lock": {
+    "format": "<span font='10'></span>",
     "tooltip": false,
-    "on-click": "sleep 1; hyprctl dispatch exit"
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh lock"
   },
 
-  "custom/lock": {
-    "format": "<span font='11'>󰍁</span>",
+  "custom/logout": {
+    "format": "<span font='11'></span>",
     "tooltip": false,
-    "on-click": "hyprlock"
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh logout"
+  },
+
+  "custom/suspend": {
+    "format": "<span font='11'></span>",
+    "tooltip": false,
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh sleep"
   },
 
   "custom/reboot": {
     "format": "<span font='12'>󰜉</span>",
     "tooltip": false,
-    "on-click": "systemctl reboot"
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh reboot"
   },
 
   "custom/poweroff": {
     "format": "<span font='12'>󰐥</span>",
     "tooltip": false,
-    "on-click": "systemctl poweroff"
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh poweroff"
   }
 }

@@ -173,6 +173,7 @@ tooltip {
 #custom-poweroff,
 #custom-reboot,
 #custom-lock,
+#custom-suspend,
 #custom-logout {
   /* margin: 0px 2px; */
   padding: 0px 6px;
@@ -182,6 +183,7 @@ tooltip {
 #custom-poweroff:hover,
 #custom-reboot:hover,
 #custom-lock:hover,
+#custom-suspend:hover,
 #custom-logout:hover {
   background: rgba(255, 255, 255, 0.2);
   transition: 0.2s;
