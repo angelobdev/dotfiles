@@ -10,6 +10,8 @@
 //******************************************************************************//
 
 {
+  // *** Left Modules *** //
+
   "hyprland/workspaces": {
     "format": "{icon}",
     "format-icons": {
@@ -22,6 +24,21 @@
     }
   },
 
+  "custom/silent": {
+    "format": "<span font='11'>󰂚</span>",
+    "format-alt": "<span font='11'>󰂛</span>",
+    "tooltip": false,
+    "on-click": "makoctl mode -t do-not-disturb"
+  },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "<span font='11'>󰛐</span>",
+      "deactivated": "<span font='11'>󰛑</span>"
+    }
+  },
+
   "group/hardware": {
     "orientation": "inherit",
     "drawer": {
@@ -30,6 +47,12 @@
       "transition-left-to-right": true
     },
     "modules": ["temperature", "cpu", "memory", "disk"]
+  },
+
+  "temperature": {
+    "hwmon-path": "/sys/class/hwmon/hwmon6/temp1_input",
+    "format": "<span font='8' rise='1000'></span> {temperatureC}°C ",
+    "tooltip": false
   },
 
   "cpu": {
@@ -49,14 +72,6 @@
     "tooltip-format": "{used} / {total}",
     "path": "/"
   },
-
-  "temperature": {
-    "hwmon-path": "/sys/class/hwmon/hwmon6/temp1_input",
-    "format": "<span font='8' rise='1000'></span> {temperatureC}°C ",
-    "tooltip": false
-  },
-
-  // *** CENTER MODULES *** //
 
   "privacy": {
     "icon-spacing": 4,
@@ -88,6 +103,17 @@
     "user": true // Monitor failed user units.
   },
 
+  // *** Center Modules *** //
+
+  "hyprland/window": {
+    "format": "{}",
+    "rewrite": {
+      "(.*) — Zen Browser": "🌎 $1",
+      "(.*) - (.*) - Visual Studio Code": "💻️ $2/$1"
+    },
+    "separate-outputs": true
+  },
+
   // *** RIGHT MODULES *** //
 
   "custom/media": {
@@ -103,21 +129,6 @@
     "icon-size": 14,
     "show-passive-items": true,
     "spacing": 4
-  },
-
-  "custom/silent": {
-    "format": "<span font='11'>󰂚</span>",
-    "format-alt": "<span font='11'>󰂛</span>",
-    "tooltip": false,
-    "on-click": "makoctl mode -t do-not-disturb"
-  },
-
-  "idle_inhibitor": {
-    "format": "{icon}",
-    "format-icons": {
-      "activated": "<span font='11'>󰛐</span>",
-      "deactivated": "<span font='11'>󰛑</span>"
-    }
   },
 
   "wireplumber": {
