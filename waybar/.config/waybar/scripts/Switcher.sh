@@ -39,8 +39,10 @@ while IFS= read line; do
 
     # Checking if current default
     if [[ "${id:0:1}" == '*' ]]; then
-        device="<b>  $device</b>"
+        device="<b>🟢 $device</b>"
         id=${id:2} # Removing * char
+    else
+        device="<b>🔴 $device</b>"
     fi
 
     # Adding sink to dictionary
@@ -67,7 +69,7 @@ choice=$(echo "$output" | wofi \
                             --sort-order=default \
                             --location=top_right \
                             --width=30% \
-                            --lines=$((n_lines+1)) \
+                            --lines=$((n_lines+2)) \
                             --xoffset=-30 \
                             --yoffset=10 \
                             --prompt="Choose the device..." \
