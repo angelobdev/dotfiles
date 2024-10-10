@@ -16,6 +16,7 @@ brightnessctl
 cliphist
 clipnotify
 eza
+fastfetch
 hypridle
 hyprland
 hyprlock
@@ -33,6 +34,7 @@ pipewire-alsa
 pipewire-jack
 pipewire-pulse
 polkit-gnome
+trash-cli
 qt5ct
 qt5-wayland
 qt6ct
@@ -68,6 +70,14 @@ stow */
 ```
 
 **_NOTE:_** GNU stow is required.
+
+## Theming
+
+**GTK theme:** WhiteSur-Dark  
+**Cursor theme:** macOS  
+**Icons:** Papirus  
+**Display font:** SF Pro Display  
+**Terminal font:** FiraCode Mono (Nerd Fonts)
 
 ---
 
