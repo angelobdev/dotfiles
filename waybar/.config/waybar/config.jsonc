@@ -28,7 +28,6 @@
   ],
   "modules-center": ["hyprland/window"],
   "modules-right": [
-    "custom/media",
     "tray",
     "wireplumber",
     "upower",
