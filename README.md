@@ -7,6 +7,7 @@ This is the backup of my dotfiles
 ![Hyprland](screenshot.png)
 
 ## Packages
+
 ```sh
 alacritty
 bat
@@ -50,6 +51,8 @@ xdg-desktop-portal-hyprland
 zenity
 zsh
 ```
+
+**NOTE:** Some packages are from AUR so use a helper like [yay](https://github.com/Jguer/yay) or [paru](https://github.com/Morganamilo/paru).
 
 ## Installation
 
