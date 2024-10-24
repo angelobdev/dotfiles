@@ -11,11 +11,10 @@
 #                                                                               #
 #################################################################################
 
-CONFIG_FILES="$HOME/.config/mako/config"
-
-nohup mako &> /dev/null &
+CONFIG_FILES="$HOME/.config/dunst/dunstrc"
 
 while true; do
+    nohup dunst &> /dev/null &
     inotifywait -e create,modify $CONFIG_FILES
-    makoctl reload
+    killall dunst
 done

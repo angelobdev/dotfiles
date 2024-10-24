@@ -1,10 +1,22 @@
 #!/bin/bash
 
 vol_notify(){
-    current_volume=$(echo$(($(wpctl get-volume @DEFAULT_AUDIO_SINK@ | cut -d ' ' -f2) * 100)) | sed 's/\.//')
-    notify-send "Volume: $current_volume%"
-    # notify-send -h int:value:$(${current_volume}) "Ciao"
-}
+    wpvol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | cut -d ' ' -f2)
+    current_volume=$(bc -l <<< "$wpvol * 100" | cut -d '.' -f1)
+
+    icon_name="audio-volume-high"
+    # if [[ $current_volume == 0]]; then
+    #     icon_name="audio-volume-muted"
+    # elif [[ $current_volume > 0 ]]; then
+    #     icon_name="audio-volume-low"
+    # elif [[ $current_volume > 40]]; then
+    #     icon_name="audio-volume-medium"
+    # elif [[ $current_volume > 80]]; then
+    #     icon_name="audio-volume-high"
+    # fi
+
+    notify-send " " -h int:value:$current_volume -h string:synchronous:volume -c progress -i "$icon_name" -a "Volume"
+} 
 
 up(){
     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1
