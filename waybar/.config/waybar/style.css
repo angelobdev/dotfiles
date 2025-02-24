@@ -15,18 +15,19 @@
   border: none;
   border-radius: 0px;
 
-  font-family: "Roboto", "Symbols Nerd Font", sans-serif;
-  font-size: 0.8rem;
+  font-family: "FiraCode Nerd Font", "Symbols Nerd Font", sans-serif;
+  font-size: 0.9rem;
 
   background: transparent;
   color: white;
 
   padding: 0;
-  margin: 0;
+  margin: 0 2px;
 }
 
 window#waybar {
   background: transparent;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
 }
 
 window#waybar.hidden {
@@ -44,7 +45,7 @@ window#waybar.empty #window {
 }
 
 tooltip {
-  background: #1f0751;
+  background: rgba(0, 0, 0, 0.8);
 
   border: 1px solid white;
   border-radius: 0.8rem;
@@ -54,9 +55,10 @@ tooltip {
 
 /* Modules Box */
 .modules-left,
-.modules-center,
 .modules-right {
-  margin: 0px 4px;
+  margin: 4px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 0.8rem;
 }
 
 .modules-left {
@@ -78,7 +80,7 @@ tooltip {
 /* Workspaces */
 #workspaces {
   padding: 0 2px;
-  border-bottom: 1px solid white;
+  /* border-bottom: 1px solid white; */
 }
 
 #workspaces button {
@@ -107,7 +109,7 @@ tooltip {
 #memory,
 #disk,
 #temperature {
-  border-bottom: 1px solid white;
+  /* border-bottom: 1px solid white; */
   /* margin: 0 2px; */
 }
 
@@ -123,12 +125,14 @@ tooltip {
 
 /* Tray */
 #tray {
-  border-bottom: 1px solid white;
+  /* border-bottom: 1px solid white; */
   padding: 0px 2px;
 }
 
 #tray menu {
-  background: rgba(96, 26, 112, 0.6);
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 0.8rem;
+  border: none;
 }
 
 /* Switches */
@@ -138,7 +142,7 @@ tooltip {
 
   padding: 0px 6px;
 
-  border-bottom: 1px solid white;
+  /* border-bottom: 1px solid white; */
   border-radius: 0;
 
   transition: 0.4s;
@@ -151,12 +155,12 @@ tooltip {
 
 /* Volume */
 #wireplumber {
-  border-bottom: 1px solid white;
+  /* border-bottom: 1px solid white; */
 }
 
 /* UPower (Battery) */
 #upower {
-  border-bottom: 1px solid white;
+  /* border-bottom: 1px solid white; */
 }
 
 #upower image {
@@ -165,7 +169,7 @@ tooltip {
 
 /* Clock */
 #clock {
-  border-bottom: 1px solid white;
+  /* border-bottom: 1px solid white; */
 }
 
 /* Power options */
@@ -177,10 +181,10 @@ tooltip {
 #custom-logout {
   /* margin: 0px 2px; */
   padding: 0px 6px;
-  border-bottom: 1px solid white;
+  /* border-bottom: 1px solid white; */
 }
 
-#custom-poweroff:hover,
+#custom-poweroff:hover
 #custom-reboot:hover,
 #custom-lock:hover,
 #custom-suspend:hover,

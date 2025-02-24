@@ -22,9 +22,7 @@
     "hyprland/workspaces",
     "custom/silent",
     "idle_inhibitor",
-    "group/hardware",
-    "privacy",
-    "systemd-failed-units"
+    "group/hardware"
   ],
   "modules-center": ["hyprland/window"],
   "modules-right": [

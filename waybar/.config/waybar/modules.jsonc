@@ -65,35 +65,12 @@
     "format": "<span font='8' rise='1000'></span> {percentage}% ",
     "tooltip-format": "{used}GiB / {total}GiB"
   },
-
+  
   "disk": {
     "interval": 5,
     "format": "<span font='9'></span> {percentage_used}%",
     "tooltip-format": "{used} / {total}",
     "path": "/"
-  },
-
-  "privacy": {
-    "icon-spacing": 4,
-    "icon-size": 14,
-    "transition-duration": 250,
-    "modules": [
-      {
-        "type": "screenshare",
-        "tooltip": true,
-        "tooltip-icon-size": 24
-      },
-      {
-        "type": "audio-out",
-        "tooltip": true,
-        "tooltip-icon-size": 24
-      },
-      {
-        "type": "audio-in",
-        "tooltip": true,
-        "tooltip-icon-size": 24
-      }
-    ]
   },
 
   "systemd-failed-units": {
@@ -132,11 +109,12 @@
   },
 
   "wireplumber": {
-    "format": "<span font='13' rise='-1000'>{icon}</span> {volume}%",
+    "format": "<span font='13' rise='-1000'>{icon}</span>",
     "format-muted": "<span font='12' rise='-1000'>󰖁</span> Muted",
     "on-click": "exec ~/.config/waybar/scripts/sinkSwitch.sh",
     "format-icons": ["󰕿", "󰖀", "󰕾"],
-    "reverse-scrolling": 1
+    "reverse-scrolling": 1,
+    "tooltip-format": "{node_name} / {volume}%"
   },
 
   "upower": {
