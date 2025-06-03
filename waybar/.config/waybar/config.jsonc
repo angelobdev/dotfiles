@@ -18,18 +18,14 @@
   "mode": "dock",
 
   // Choose the order of the modules
-  "modules-left": [
-    "hyprland/workspaces",
-    "custom/silent",
-    "idle_inhibitor",
-    "group/hardware"
-  ],
+  "modules-left": ["hyprland/workspaces", "clock", "upower", "group/hardware"],
   "modules-center": ["hyprland/window"],
   "modules-right": [
     "tray",
     "wireplumber",
-    "upower",
-    "clock",
+    "idle_inhibitor",
+    "custom/silent",
+    "user",
     "group/power"
   ],
   "margin": "0",

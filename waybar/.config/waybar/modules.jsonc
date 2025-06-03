@@ -20,7 +20,7 @@
     },
     "persistent-workspaces": {
       "*": 4, // 5 workspaces by default on every monitor
-      "DP-1": 3 // but only three on HDMI-A-1
+      "DP-4": 3 // but only three on HDMI-A-1
     }
   },
 
@@ -65,7 +65,7 @@
     "format": "<span font='8' rise='1000'></span> {percentage}% ",
     "tooltip-format": "{used}GiB / {total}GiB"
   },
-  
+
   "disk": {
     "interval": 5,
     "format": "<span font='9'></span> {percentage_used}%",
@@ -179,7 +179,7 @@
   },
 
   "custom/suspend": {
-    "format": "<span font='11'></span>",
+    "format": "<span font='12'></span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh sleep"
   },
@@ -194,5 +194,13 @@
     "format": "<span font='12'>󰐥</span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh poweroff"
+  },
+
+  "user": {
+    "format": "{user}",
+    "interval": -1,
+    "height": 30,
+    "width": 30,
+    "icon": false
   }
 }
