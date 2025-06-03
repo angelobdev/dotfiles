@@ -15,28 +15,44 @@
   "hyprland/workspaces": {
     "format": "{icon}",
     "format-icons": {
-      "active": "",
+      "active": "",
       "default": ""
     },
     "persistent-workspaces": {
-      "*": 4, // 5 workspaces by default on every monitor
-      "DP-4": 3 // but only three on HDMI-A-1
+      "*": 5
     }
   },
 
-  "custom/silent": {
-    "format": "<span font='11'>󰂚</span>",
-    "format-alt": "<span font='11'>󰂛</span>",
-    "tooltip": false,
-    "on-click": "makoctl mode -t do-not-disturb"
+  "clock": {
+    "format": " <span font='8' rise='1000'></span> {:%H:%M}",
+    "format-alt": " <span font='9' rise='1000'></span> {:%A - %B %d, %Y (%R)}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "left",
+      "on-scroll": 1,
+      "format": {
+        "months": "<span color='#ffead3'><b>{}</b></span>",
+        "days": "<span color='#ecc6d9'><b>{}</b></span>",
+        "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+        "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+      }
+    },
+    "actions": {
+      "on-click-right": "mode",
+      "on-scroll-up": "shift_up",
+      "on-scroll-down": "shift_down"
+    }
   },
 
-  "idle_inhibitor": {
-    "format": "{icon}",
-    "format-icons": {
-      "activated": "<span font='11'>󰛐</span>",
-      "deactivated": "<span font='11'>󰛑</span>"
-    }
+  "upower": {
+    "icon-size": 12,
+    "format-alt": "{percentage}",
+    "hide-if-empty": false,
+    "tooltip": true,
+    "tooltip-spacing": 16
   },
 
   "group/hardware": {
@@ -73,13 +89,6 @@
     "path": "/"
   },
 
-  "systemd-failed-units": {
-    "hide-on-ok": true,
-    "format": "|  <span size=\"medium\">󰋔</span>   {nr_failed_system} / {nr_failed_user}",
-    "system": true, // Monitor failed system units.
-    "user": true // Monitor failed user units.
-  },
-
   // *** Center Modules *** //
 
   "hyprland/window": {
@@ -93,19 +102,57 @@
 
   // *** RIGHT MODULES *** //
 
-  "custom/media": {
-    "exec": "/usr/bin/python3 ~/.config/waybar/scripts/MediaPlayer.py",
-    "format": "{}",
-    "return-type": "json",
-    "on-click": "playerctl play-pause",
-    "on-scroll-up": "playerctl next",
-    "on-scroll-down": "playerctl previous"
+  "group/controls": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 500,
+      "children-class": "not-power",
+      "transition-left-to-right": true
+    },
+    "modules": [
+      "custom/controls-label",
+      "custom/silent",
+      "power-profiles-daemon",
+      "idle_inhibitor"
+    ]
+  },
+
+  "custom/controls-label": {
+    "format": "<span font='10'> </span>",
+    "tooltip": false
+  },
+
+  "custom/silent": {
+    "format": "<span font='10'>󰂚</span>",
+    "format-alt": "<span font='10'>󰂛</span>",
+    "tooltip": false,
+    "on-click": "makoctl mode -t do-not-disturb"
+  },
+
+  "power-profiles-daemon": {
+    "format": "{icon}",
+    "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+    "tooltip": true,
+    "format-icons": {
+      "default": "<span font='9'></span>",
+      "performance": "<span font='9'></span>",
+      "balanced": "<span font='8' rise='1000'> </span>",
+      "power-saver": "<span font='10'> </span>"
+    }
+  },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "<span font='10'>󰛐</span>",
+      "deactivated": "<span font='10'>󰛑</span>"
+    }
   },
 
   "tray": {
-    "icon-size": 15,
+    "icon-size": 14,
     "show-passive-items": true,
-    "spacing": 4
+    "spacing": 8
   },
 
   "wireplumber": {
@@ -117,37 +164,17 @@
     "tooltip-format": "{node_name} / {volume}%"
   },
 
-  "upower": {
-    "icon-size": 13,
-    "format-alt": "{percentage}",
-    "hide-if-empty": false,
-    "tooltip": true,
-    "tooltip-spacing": 16,
-    "on-click": "tlpui"
+  "hyprland/language": {
+    "format": "{}",
+    "format-en": "🇺🇸",
+    "format-it": "🇮🇹",
+    "keyboard-name": "at-translated-set-2-keyboard"
   },
 
-  "clock": {
-    "format": " <span font='8' rise='1000'></span>  {:%H:%M}",
-    "format-alt": " <span font='9' rise='1000'></span> {:%A - %B %d, %Y (%R)} ",
-    "tooltip-format": "<tt><small>{calendar}</small></tt>",
-    "calendar": {
-      "mode": "month",
-      "mode-mon-col": 3,
-      "weeks-pos": "left",
-      "on-scroll": 1,
-      "format": {
-        "months": "<span color='#ffead3'><b>{}</b></span>",
-        "days": "<span color='#ecc6d9'><b>{}</b></span>",
-        "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
-        "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
-        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
-      }
-    },
-    "actions": {
-      "on-click-right": "mode",
-      "on-scroll-up": "shift_up",
-      "on-scroll-down": "shift_down"
-    }
+  "user": {
+    "format": "{user}",
+    "interval": -1,
+    "icon": false
   },
 
   "group/power": {
@@ -167,40 +194,32 @@
   },
 
   "custom/lock": {
-    "format": "<span font='10'></span>",
+    "format": "Lock <span font='8' rise='1000'></span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh lock"
   },
 
   "custom/logout": {
-    "format": "<span font='11'></span>",
+    "format": "Logout <span font='10' rise='0'></span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh logout"
   },
 
   "custom/suspend": {
-    "format": "<span font='12'></span>",
+    "format": "Sleep <span font='10' rise='0'></span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh sleep"
   },
 
   "custom/reboot": {
-    "format": "<span font='12'>󰜉</span>",
+    "format": "Reboot <span font='11'>󰜉</span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh reboot"
   },
 
   "custom/poweroff": {
-    "format": "<span font='12'>󰐥</span>",
+    "format": "<span font='12' rise='-1000'>󰐥</span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh poweroff"
-  },
-
-  "user": {
-    "format": "{user}",
-    "interval": -1,
-    "height": 30,
-    "width": 30,
-    "icon": false
   }
 }

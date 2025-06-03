@@ -21,10 +21,10 @@
   "modules-left": ["hyprland/workspaces", "clock", "upower", "group/hardware"],
   "modules-center": ["hyprland/window"],
   "modules-right": [
+    "group/controls",
     "tray",
     "wireplumber",
-    "idle_inhibitor",
-    "custom/silent",
+    "hyprland/language",
     "user",
     "group/power"
   ],

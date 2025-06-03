@@ -11,6 +11,8 @@
 /*                                                                              */
 /********************************************************************************/
 
+/* Waybar Style */
+
 * {
   border: none;
   border-radius: 0px;
@@ -27,7 +29,7 @@
 
 window#waybar {
   background: rgba(0, 0, 0, 0.5);
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid white;
 }
 
 window#waybar.hidden {
@@ -78,8 +80,8 @@ tooltip {
 
 /* Workspaces */
 #workspaces {
-  padding: 0 2px;
-  /* border-bottom: 1px solid white; */
+  padding: 0 8px 0 2px;
+  border-right: 1px solid white;
 }
 
 #workspaces button {
@@ -104,30 +106,70 @@ tooltip {
   background: transparent;
 }
 
-/* 
-#cpu,
-#memory,
-#disk,
+/* Clock */
+#clock {
+  /* border-bottom: 1px solid white; */
+  border-right: 1px solid white;
+  padding: 0 12px 0 0;
+  margin: 0;
+  color: rgb(164, 90, 213);
+}
+
+/* UPower (Battery) */
+#upower {
+  /* border-bottom: 1px solid white; */
+  border-right: 1px solid white;
+  padding: 0 6px 0 0;
+  margin: 0;
+}
+
+#upower image {
+  color: rgb(33, 177, 199);
+}
+
+/* Group Hardware */
 #temperature {
-  border-bottom: 1px solid white;
-  margin: 0 2px;
-} 
-*/
+  color: rgba(253, 255, 121, 0.5);
+}
+
+#cpu {
+  color: rgba(255, 174, 120, 0.5);
+}
+
+#memory {
+  color: rgba(121, 255, 230, 0.5);
+}
+
+#disk {
+  color: rgba(246, 193, 255, 0.502);
+}
 
 /* # Center Modules # */
 
 /* # Right Modules # */
 
-/* Media Player */
-#custom-media {
-  padding: 0px 4px;
-  background-color: rgba(255, 255, 255, 0.1);
+/* Controls */
+#custom-controls-label {
+  color: rgb(255, 217, 0);
+}
+
+#custom-silent {
+  padding: 0px 12px;
+}
+
+#power-profiles-daemon {
+  padding: 0px 8px;
+}
+
+#idle_inhibitor {
+  padding: 0px 8px;
 }
 
 /* Tray */
 #tray {
   /* border-bottom: 1px solid white; */
-  padding: 0px 2px;
+  padding: 0px 2px 0 6px;
+  border-left: 1px solid white;
 }
 
 #tray menu {
@@ -136,56 +178,55 @@ tooltip {
   border: none;
 }
 
-/* Switches */
-#custom-silent,
-#idle_inhibitor {
-  background: transparent;
-
-  padding: 0px 6px;
-
-  /* border-bottom: 1px solid white; */
-  border-radius: 0;
-
-  transition: 0.4s;
-}
-
-#custom-silent:hover,
-#idle_inhibitor:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
 /* Volume */
 #wireplumber {
-  /* border-bottom: 1px solid white; */
-}
-
-/* UPower (Battery) */
-#upower {
-  /* border-bottom: 1px solid white; */
-}
-
-#upower image {
-  margin-right: 4px;
-}
-
-/* Clock */
-#clock {
-  /* border-bottom: 1px solid white; */
+  border-right: 1px solid white;
+  padding-right: 10px;
 }
 
 /* Power options */
+
+#custom-poweroff {
+  color: rgb(225, 83, 83);
+}
+
+#custom-reboot {
+  color: rgb(219, 144, 64);
+}
+
+#custom-suspend {
+  color: rgb(240, 243, 89);
+}
+
+#custom-logout {
+  color: rgb(108, 199, 117);
+}
+
+#custom-lock {
+  color: rgb(94, 172, 220);
+}
 
 #custom-poweroff,
 #custom-reboot,
 #custom-lock,
 #custom-suspend,
 #custom-logout {
-  /* margin: 0px 2px; */
   padding: 0px 6px;
-  /* border-bottom: 1px solid white; */
+  border-radius: 0.4rem;
 }
 
-#custom-poweroff:hover
+#custom-poweroff {
+  margin: 4px 0px;
+}
+
+#custom-reboot,
+#custom-lock,
+#custom-suspend,
+#custom-logout {
+  margin: 4px 4px;
+}
+
+#custom-poweroff:hover,
 #custom-reboot:hover,
 #custom-lock:hover,
 #custom-suspend:hover,
@@ -209,3 +250,8 @@ tooltip {
 #custom-logout {
   color: @color5;
 } */
+
+#user {
+  border-right: 1px solid white;
+  padding-right: 8px;
+}
