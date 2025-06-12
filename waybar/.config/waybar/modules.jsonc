@@ -94,9 +94,11 @@
   "hyprland/window": {
     "format": "{}",
     "rewrite": {
-      "(.*) — Zen Browser": "🌎 $1",
-      "(.*) - (.*) - Visual Studio Code": "💻️ $2/$1"
+      "(.*) - (.*) - (.*) Edge": "$1",
+      "(.*) - (.*) - Visual Studio Code": "$2/$1"
     },
+    "icon": true,
+    "icon-size": 14,
     "separate-outputs": true
   },
 
