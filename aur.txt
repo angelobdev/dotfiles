@@ -1,0 +1,10 @@
+1password
+auto-cpufreq
+curseforge
+hyprshot
+microsoft-edge-stable-bin
+paru
+paru-debug
+smile
+spotify
+visual-studio-code-bin
