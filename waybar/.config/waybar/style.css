@@ -14,22 +14,16 @@
 /* Waybar Style */
 
 * {
-  border: none;
-  border-radius: 0px;
-
   font-family: "FiraCode Nerd Font", "Symbols Nerd Font", sans-serif;
   font-size: 0.9rem;
-
-  background: transparent;
   color: white;
-
-  padding: 0;
   margin: 0 2px;
+  padding: 0;
 }
 
 window#waybar {
-  background: rgba(0, 0, 0, 0.5);
-  border-bottom: 1px solid white;
+  background: transparent;
+  border: 0;
 }
 
 window#waybar.hidden {
@@ -37,20 +31,17 @@ window#waybar.hidden {
 }
 
 window#waybar.empty {
-  background: transparent;
+  background: #333;
 }
 
 window#waybar.empty #window {
   padding: 0px;
-  border: 0px;
-  background-color: transparent;
 }
 
 tooltip {
-  background: rgba(0, 0, 0, 0.8);
+  background: #333;
 
   border: 1px solid white;
-  border-radius: 0.4rem;
 
   color: white;
 }
@@ -59,68 +50,72 @@ tooltip {
 .modules-left,
 .modules-center,
 .modules-right {
-  margin: 0;
+  background-color: transparent;
+  border: 1px solid white;
+  border-radius: 0.5rem;
+  background-color: #333;
 }
 
 .modules-left {
-  padding: 0px 2px;
-}
-
-.modules-center {
   padding: 0px 4px;
 }
 
+.modules-center {
+  padding: 0;
+}
+
 .modules-right {
-  padding: 0px 2px;
+  padding: 0px 8px;
 }
 
 /* ### PER-MODULE CUSTOMIZATIONS ### */
 
-/* # Left Modules # */
-
 /* Workspaces */
 #workspaces {
-  padding: 0 8px 0 2px;
-  border-right: 1px solid white;
+  padding: 2px;
+  margin: 0;
 }
 
 #workspaces button {
   background: transparent;
   color: white;
-
-  padding: 0px 2px;
+  padding: 0;
   margin: 0;
-
-  transition: 0.2s;
 }
 
 #workspaces button:hover {
-  background: transparent;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 #workspaces button.active {
-  transition: 0.2s;
+  background: rgba(209, 199, 15, 0.2);
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 #workspaces button.persistent {
-  background: transparent;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 /* Clock */
 #clock {
-  /* border-bottom: 1px solid white; */
-  border-right: 1px solid white;
-  padding: 0 12px 0 0;
+  padding: 0 4px 0 0;
   margin: 0;
-  color: rgb(164, 90, 213);
+  color: white;
 }
 
 /* UPower (Battery) */
 #upower {
-  /* border-bottom: 1px solid white; */
-  border-right: 1px solid white;
-  padding: 0 6px 0 0;
+  padding: 0 12px 0 0;
   margin: 0;
+  border-right: 1px solid white;
 }
 
 #upower image {
@@ -144,13 +139,11 @@ tooltip {
   color: rgba(246, 193, 255, 0.502);
 }
 
-/* # Center Modules # */
-
-/* # Right Modules # */
-
 /* Controls */
 #custom-controls-label {
-  color: rgb(255, 217, 0);
+  color: #5294e2;
+  border-right: 1px solid white;
+  padding: 0 0.5rem 0 0.4rem;
 }
 
 #custom-silent {
@@ -167,20 +160,24 @@ tooltip {
 
 /* Tray */
 #tray {
-  /* border-bottom: 1px solid white; */
   padding: 0px 2px 0 6px;
-  border-left: 1px solid white;
 }
 
 #tray menu {
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 0.4rem;
-  border: none;
+  background: #333;
+  border: 1px solid white;
+
+  padding: 0.4rem 0.2rem;
+}
+
+#tray > .passive,
+.active,
+.needs-attention {
+  padding: 0 6px 0 0;
 }
 
 /* Volume */
 #wireplumber {
-  border-right: 1px solid white;
   padding-right: 10px;
 }
 
@@ -212,11 +209,10 @@ tooltip {
 #custom-suspend,
 #custom-logout {
   padding: 0px 6px;
-  border-radius: 0.4rem;
 }
 
 #custom-poweroff {
-  margin: 4px 0px;
+  margin: 4px -2px 4px 0;
 }
 
 #custom-reboot,
@@ -232,26 +228,6 @@ tooltip {
 #custom-suspend:hover,
 #custom-logout:hover {
   background: rgba(255, 255, 255, 0.2);
+  border-radius: 0.4rem;
   transition: 0.2s;
-}
-
-/* #custom-poweroff {
-  color: @color1;
-}
-
-#custom-reboot {
-  color: @color3;
-}
-
-#custom-lock {
-  color: @color4;
-}
-
-#custom-logout {
-  color: @color5;
-} */
-
-#user {
-  border-right: 1px solid white;
-  padding-right: 8px;
 }

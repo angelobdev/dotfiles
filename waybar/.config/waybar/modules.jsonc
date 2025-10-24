@@ -13,13 +13,13 @@
   // *** Left Modules *** //
 
   "hyprland/workspaces": {
-    "format": "{icon}",
-    "format-icons": {
-      "active": "",
-      "default": ""
-    },
-    "persistent-workspaces": {
-      "*": 5
+    "format": "{windows}",
+    "format-window-separator": "|",
+    "workspace-taskbar": {
+      "enable": true,
+      "update-active-window": true,
+      "format": "{icon}",
+      "icon-size": 16
     }
   },
 
@@ -120,7 +120,7 @@
   },
 
   "custom/controls-label": {
-    "format": "<span font='10'> </span>",
+    "format": "<span font='10'> </span>",
     "tooltip": false
   },
 
