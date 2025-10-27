@@ -20,7 +20,7 @@
 /* window */
 #window {
   border-radius: 0.8em;
-  background: transparent;
+  background: #333;
   border: 1px solid white;
 }
 
@@ -28,6 +28,7 @@
 #outer-box {
   margin: 0.8rem;
   border-radius: 0.8rem;
+  background-color: transparent;
 }
 
 /* window > outer-box > input */
@@ -35,6 +36,7 @@
   border-radius: 0.4em;
   padding: 0.4em 0.4em;
   font-size: 1rem;
+  background-color: #222;
 }
 
 /* window > outer-box > scroll */
@@ -45,17 +47,19 @@
 
 /* window > outer-box > scroll >> inner-box */
 #inner-box {
-  background: transparent;
+  background: #444;
+  border-radius: 0.4rem;
 }
 
 /* window > outer-box > scroll >> inner-box > entry */
 #entry {
   background: transparent;
+  border-radius: 0.4rem;
 }
 
 #entry:selected {
-  border: double 1px white;
-  border-radius: 0.4em;
+  background: #555;
+  border-radius: 0.4rem;
 }
 
 /* window > outer-box > scroll >> inner-box > entry > image */

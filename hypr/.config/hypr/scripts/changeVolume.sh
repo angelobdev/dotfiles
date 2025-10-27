@@ -1,21 +1,26 @@
 #!/bin/bash
 
+icon_path="/usr/share/icons/Papirus-Dark/24x24/actions"
+
 vol_notify(){
     wpvol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | cut -d ' ' -f2)
     current_volume=$(bc -l <<< "$wpvol * 100" | cut -d '.' -f1)
 
     icon_name="audio-volume-high"
-    # if [[ $current_volume == 0]]; then
-    #     icon_name="audio-volume-muted"
-    # elif [[ $current_volume > 0 ]]; then
-    #     icon_name="audio-volume-low"
-    # elif [[ $current_volume > 40]]; then
-    #     icon_name="audio-volume-medium"
-    # elif [[ $current_volume > 80]]; then
-    #     icon_name="audio-volume-high"
-    # fi
 
-    notify-send " " -h int:value:$current_volume -h string:synchronous:volume -c progress -i "$icon_name" -a "Volume"
+    if [[ $current_volume == 0 ]]; then
+        icon_name="audio-volume-muted"
+    elif [[ $current_volume > 0 ]]; then
+        icon_name="audio-volume-low"
+    elif [[ $current_volume > 40 ]]; then
+        icon_name="audio-volume-medium"
+    elif [[ $current_volume > 80 ]]; then
+        icon_name="audio-volume-high"
+    fi
+
+    icon_file_name="${icon_path}/${icon_name}.svg"
+
+    notify-send " " -h int:value:$current_volume -h string:synchronous:volume -c progress -h string:image-path:$icon_file_name -a "Volume"
 } 
 
 up(){
@@ -32,10 +37,15 @@ mute(){
     wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
     muted=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep "MUTED")
 
+
     if [[ "$muted" ]]; then
-        notify-send -a "Wireplumber" "Sink muted"
+        dunstctl close-all
+        icon_file_name="${icon_path}/audio-volume-muted.svg"
+        notify-send -h string:image-path:$icon_file_name -a "Volume" "Muted"
     else
-        notify-send -a "Wireplumber" "Sink unmuted"
+        dunstctl close-all
+        icon_file_name="${icon_path}/audio-volume-high.svg"
+        notify-send -h string:image-path:$icon_file_name -a "Volume" "Unmuted"
     fi
 }
 
