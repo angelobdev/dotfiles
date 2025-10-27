@@ -40,9 +40,7 @@ window#waybar.empty #window {
 
 tooltip {
   background: #333;
-
   border: 1px solid white;
-
   color: white;
 }
 
@@ -50,7 +48,6 @@ tooltip {
 .modules-left,
 .modules-center,
 .modules-right {
-  background-color: transparent;
   border: 1px solid white;
   border-radius: 0.5rem;
   background-color: #333;
@@ -109,12 +106,14 @@ tooltip {
   padding: 0 4px 0 0;
   margin: 0;
   color: white;
+  border-left: 1px solid white;
 }
 
 /* UPower (Battery) */
 #upower {
-  padding: 0 12px 0 0;
+  padding: 0 6px;
   margin: 0;
+  border-left: 1px solid white;
   border-right: 1px solid white;
 }
 
@@ -142,8 +141,7 @@ tooltip {
 /* Controls */
 #custom-controls-label {
   color: #5294e2;
-  border-right: 1px solid white;
-  padding: 0 0.5rem 0 0.4rem;
+  padding: 0 0.2rem 0 0.5rem;
 }
 
 #custom-silent {
@@ -166,14 +164,7 @@ tooltip {
 #tray menu {
   background: #333;
   border: 1px solid white;
-
   padding: 0.4rem 0.2rem;
-}
-
-#tray > .passive,
-.active,
-.needs-attention {
-  padding: 0 6px 0 0;
 }
 
 /* Volume */
@@ -182,7 +173,6 @@ tooltip {
 }
 
 /* Power options */
-
 #custom-poweroff {
   color: rgb(225, 83, 83);
 }

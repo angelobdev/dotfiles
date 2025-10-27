@@ -131,17 +131,17 @@
     "on-click": "makoctl mode -t do-not-disturb"
   },
 
-  "power-profiles-daemon": {
-    "format": "{icon}",
-    "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
-    "tooltip": true,
-    "format-icons": {
-      "default": "<span font='9'></span>",
-      "performance": "<span font='9'></span>",
-      "balanced": "<span font='8' rise='1000'> </span>",
-      "power-saver": "<span font='10'> </span>"
-    }
-  },
+  // "power-profiles-daemon": {
+  //   "format": "{icon}",
+  //   "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+  //   "tooltip": true,
+  //   "format-icons": {
+  //     "default": "<span font='9'></span>",
+  //     "performance": "<span font='9'></span>",
+  //     "balanced": "<span font='8' rise='1000'> </span>",
+  //     "power-saver": "<span font='10'> </span>"
+  //   }
+  // },
 
   "idle_inhibitor": {
     "format": "{icon}",
@@ -154,7 +154,8 @@
   "tray": {
     "icon-size": 14,
     "show-passive-items": true,
-    "spacing": 8
+    "spacing": 8,
+    "expand": true
   },
 
   "wireplumber": {
