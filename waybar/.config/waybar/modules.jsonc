@@ -1,0 +1,260 @@
+//******************************************************************************//
+//                                                                              //
+//  This config file has been written by angelobdev                             //
+//  It should be used in a properly configured Hyprland environment.            //
+//                                                                              //
+//  Look at the full configuration here: https://github.com/angelobdev/dotfiles //
+//                                                                              //
+//  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      //
+//                                                                              //
+//******************************************************************************//
+
+{
+  // *** Left Modules *** //
+
+  "hyprland/workspaces": {
+    "format": "{icon}",
+    "format-window-separator": "|",
+    "workspace-taskbar": {
+      "enable": true,
+      "update-active-window": true,
+      "format": "{icon}",
+      "icon-size": 16
+    }
+  },
+
+  "clock": {
+    "format": " <span font='8' rise='1000'></span> {:%H:%M}",
+    "format-alt": " <span font='9' rise='1000'></span> {:%A - %B %d, %Y (%R)}",
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "left",
+      "on-scroll": 1,
+      "format": {
+        "months": "<span color='#ffead3'><b>{}</b></span>",
+        "days": "<span color='#ecc6d9'><b>{}</b></span>",
+        "weeks": "<span color='#99ffdd'><b>W{}</b></span>",
+        "weekdays": "<span color='#ffcc66'><b>{}</b></span>",
+        "today": "<span color='#ff6699'><b><u>{}</u></b></span>"
+      }
+    },
+    "actions": {
+      "on-click-right": "mode",
+      "on-scroll-up": "shift_up",
+      "on-scroll-down": "shift_down"
+    }
+  },
+
+  "battery": {
+    "bat": "BAT0",
+    "interval": 60,
+    "states": {
+      "warning": 30,
+      "critical": 15
+    },
+    "format": "{icon} {capacity}%",
+    "format-icons": ["", "", "", "", ""],
+    "max-length": 25
+  },
+
+  "group/hardware": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 500,
+      "children-class": "not-power",
+      "transition-left-to-right": true
+    },
+    "modules": ["temperature", "cpu", "memory", "disk"]
+  },
+
+  "temperature": {
+    "hwmon-path": "/sys/class/hwmon/hwmon6/temp1_input",
+    "format": "<span font='8' rise='1000'></span> {temperatureC}°C ",
+    "tooltip": false
+  },
+
+  "cpu": {
+    "interval": 5,
+    "format": "<span font='10'>󰍛</span> {usage}% "
+  },
+
+  "memory": {
+    "interval": 5,
+    "format": "<span font='8' rise='1000'></span> {percentage}% ",
+    "tooltip-format": "{used}GiB / {total}GiB"
+  },
+
+  "disk": {
+    "interval": 5,
+    "format": "<span font='9'></span> {percentage_used}%",
+    "tooltip-format": "{used} / {total}",
+    "path": "/"
+  },
+
+  // *** Center Modules *** //
+
+  "hyprland/window": {
+    "format": "{}",
+    "rewrite": {
+      "(.*) - (.*) - (.*) Edge": "$1",
+      "(.*) - (.*) - Visual Studio Code": "$2/$1"
+    },
+    "icon": true,
+    "icon-size": 14,
+    "separate-outputs": true
+  },
+
+  // *** RIGHT MODULES *** //
+
+  "group/controls": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 500,
+      "children-class": "not-power",
+      "transition-left-to-right": true
+    },
+    "modules": [
+      "custom/controls-label",
+      "power-profiles-daemon",
+      "idle_inhibitor",
+      "tray"
+    ]
+  },
+
+  "custom/controls-label": {
+    "format": "<span font='10'> </span>",
+    "tooltip": false
+  },
+
+  "custom/notification": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "󱅫",
+      "none": "",
+      "dnd-notification": " ",
+      "dnd-none": "󰂛",
+      "inhibited-notification": " ",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": " ",
+      "dnd-inhibited-none": " "
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "sleep 0.1 && swaync-client -t -sw",
+    "on-click-right": "sleep 0.1 && swaync-client -d -sw",
+    "escape": true
+  },
+
+  "power-profiles-daemon": {
+    "format": "{icon}",
+    "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
+    "tooltip": true,
+    "format-icons": {
+      "default": "<span font='9'></span>",
+      "performance": "<span font='9'></span>",
+      "balanced": "<span font='8' rise='1000'> </span>",
+      "power-saver": "<span font='10'> </span>"
+    }
+  },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "<span font='10'>󰛐</span>",
+      "deactivated": "<span font='10'>󰛑</span>"
+    }
+  },
+
+  "tray": {
+    "icon-size": 14,
+    "show-passive-items": true,
+    "spacing": 8,
+    "expand": true
+  },
+
+  "network": {
+    "interface": "wlan0",
+    "format": "{}",
+    "format-wifi": " ",
+    "format-ethernet": "{ipaddr}/{cidr} 󰊗",
+    "format-disconnected": "", //An empty format will hide the module.
+    "tooltip-format": "{ifname} via {gwaddr} 󰊗",
+    "tooltip-format-wifi": "{essid} ({signalStrength}%) ",
+    "tooltip-format-ethernet": "{ifname} ",
+    "tooltip-format-disconnected": "Disconnected",
+    "max-length": 50,
+    "on-click": "nm-connection-editor",
+    "on-click-right": "nmtui"
+  },
+
+  "bluetooth": {
+    // "controller": "controller1", // specify the alias of the controller if there are more than 1 on the system
+    "format": "",
+    "format-disabled": "󰂲", // an empty format will hide the module
+    "format-connected": " {num_connections} connected",
+    "tooltip-format": "{controller_alias}\t{controller_address}",
+    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+    "on-click": "blueman-manager",
+    "on-click-right": "rfkill toggle bluetooth"
+  },
+
+  "wireplumber": {
+    "format": "<span font='13' rise='-1000'>{icon}</span>",
+    "format-muted": "<span font='12' rise='-1000'>󰖁</span> Muted",
+    "on-click": "exec ~/.config/waybar/scripts/sinkSwitch.sh",
+    "format-icons": ["󰕿", "󰖀", "󰕾"],
+    "reverse-scrolling": 1,
+    "tooltip-format": "{node_name} / {volume}%"
+  },
+
+  "group/power": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-duration": 400,
+      "children-class": "not-power",
+      "transition-left-to-right": false
+    },
+    "modules": [
+      "custom/poweroff",
+      "custom/lock",
+      "custom/logout",
+      "custom/suspend",
+      "custom/reboot"
+    ]
+  },
+
+  "custom/lock": {
+    "format": "Lock <span font='8' rise='1000'></span>",
+    "tooltip": false,
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh lock"
+  },
+
+  "custom/logout": {
+    "format": "Logout <span font='10' rise='0'></span>",
+    "tooltip": false,
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh logout"
+  },
+
+  "custom/suspend": {
+    "format": "Sleep <span font='10' rise='0'></span>",
+    "tooltip": false,
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh sleep"
+  },
+
+  "custom/reboot": {
+    "format": "Reboot <span font='11'>󰜉</span>",
+    "tooltip": false,
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh reboot"
+  },
+
+  "custom/poweroff": {
+    "format": "<span font='12' rise='-1000'>󰐥</span>",
+    "tooltip": false,
+    "on-click": "exec ~/.config/waybar/scripts/askPower.sh poweroff"
+  }
+}

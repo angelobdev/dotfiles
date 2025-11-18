@@ -1,0 +1,32 @@
+//******************************************************************************//
+//                                                                              //
+//  This config file has been written by angelobdev                             //
+//  It should be used in a properly configured Hyprland environment.            //
+//                                                                              //
+//  Look at the full configuration here: https://github.com/angelobdev/dotfiles //
+//                                                                              //
+//  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      //
+//                                                                              //
+//******************************************************************************//
+
+{
+  "include": "~/.config/waybar/modules.jsonc",
+  "layer": "top",
+  "position": "top", // Waybar position (top|bottom|left|right)
+  "height": 32, // Waybar height (to be removed for auto height)
+  "spacing": 4, // Gaps between modules (px)
+  "mode": "dock",
+
+  // Choose the order of the modules
+  "modules-left": ["group/controls", "clock", "battery", "group/hardware"],
+  "modules-center": ["hyprland/workspaces"],
+  "modules-right": [
+    "network",
+    "bluetooth",
+    "wireplumber",
+    "custom/notification",
+    "group/power"
+  ],
+  "margin": "8",
+  "reload_style_on_change": true
+}

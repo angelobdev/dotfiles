@@ -1,0 +1,285 @@
+/********************************************************************************/
+/*                                                                              */
+/*  SwayNC style matching modern Waybar and Hyprland aesthetic                  */
+/*  Glassmorphic design with gradient borders                                   */
+/*                                                                              */
+/********************************************************************************/
+
+* {
+  font-family: "FiraCode Nerd Font", sans-serif;
+  font-size: 13px;
+  color: #e0e0e0;
+}
+
+/* Main notification center window */
+.notification-center {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  margin: 16px;
+  padding: 0;
+  background-image: 
+    linear-gradient(rgba(26, 27, 38, 0.85), rgba(26, 27, 38, 0.85)),
+    linear-gradient(135deg, rgba(130, 170, 255, 0.6), rgba(180, 120, 255, 0.6));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+/* Header */
+.notification-center-header {
+  background: transparent;
+  padding: 12px;
+  border-bottom: 1px solid rgba(130, 170, 255, 0.3);
+}
+
+.notification-center-header-label {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Control center buttons (Clear all, DND) */
+.control-center-clear-all,
+.control-center-dnd {
+  background: transparent;
+  color: #82aaff;
+  border: 1px solid rgba(130, 170, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 4px;
+  transition: all 300ms ease;
+}
+
+.control-center-clear-all:hover,
+.control-center-dnd:hover {
+  background: rgba(130, 170, 255, 0.25);
+  border-color: rgba(130, 170, 255, 0.5);
+}
+
+.control-center-dnd:checked {
+  background: linear-gradient(135deg, rgba(255, 217, 61, 0.3), rgba(255, 169, 77, 0.3));
+  border-color: rgba(255, 217, 61, 0.5);
+  color: #ffd93d;
+}
+
+/* Notification list */
+.notification-list {
+  background: transparent;
+  padding: 8px;
+}
+
+/* Individual notifications */
+.notification {
+  background: rgba(26, 27, 38, 0.7);
+  border: 1px solid rgba(130, 170, 255, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 6px 0;
+  transition: all 300ms ease;
+}
+
+.notification:hover {
+  background: rgba(26, 27, 38, 0.85);
+  border-color: rgba(130, 170, 255, 0.5);
+}
+
+/* Notification with critical urgency */
+.notification.critical {
+  background: rgba(255, 107, 107, 0.15);
+  border-color: rgba(255, 107, 107, 0.5);
+}
+
+.notification.critical:hover {
+  background: rgba(255, 107, 107, 0.25);
+  border-color: rgba(255, 107, 107, 0.7);
+}
+
+/* Notification summary (title) */
+.notification-summary {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* Notification body */
+.notification-body {
+  color: #e0e0e0;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Notification time */
+.notification-time {
+  color: rgba(224, 224, 224, 0.6);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* Notification app name */
+.notification-app-name {
+  color: #82aaff;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Notification icon */
+.notification-icon {
+  -gtk-icon-size: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  margin-right: 12px;
+  border-radius: 6px;
+}
+
+/* For inline icons in progress notifications */
+.notification image {
+  -gtk-icon-size: 32px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+/* Close button */
+.notification-close-button {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin: 4px;
+  transition: all 300ms ease;
+}
+
+.notification-close-button:hover {
+  background: rgba(255, 107, 107, 0.35);
+  border-color: rgba(255, 107, 107, 0.5);
+}
+
+/* Action buttons */
+.notification-action {
+  background: rgba(130, 170, 255, 0.15);
+  color: #82aaff;
+  border: 1px solid rgba(130, 170, 255, 0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin: 4px;
+  transition: all 300ms ease;
+}
+
+.notification-action:hover {
+  background: rgba(130, 170, 255, 0.25);
+  border-color: rgba(130, 170, 255, 0.5);
+}
+
+/* Inline reply */
+.inline-reply {
+  background: rgba(26, 27, 38, 0.9);
+  border: 1px solid rgba(130, 170, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px;
+  margin-top: 8px;
+  color: #e0e0e0;
+}
+
+.inline-reply:focus {
+  border-color: rgba(130, 170, 255, 0.6);
+  outline: none;
+}
+
+/* Notification group headers */
+.notification-group-header {
+  background: rgba(130, 170, 255, 0.1);
+  color: #82aaff;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 8px 0 4px 0;
+}
+
+/* Empty notification center */
+.blank-window {
+  background: transparent;
+  color: rgba(224, 224, 224, 0.5);
+  font-size: 14px;
+  padding: 40px;
+  text-align: center;
+}
+
+/* Scrollbar */
+scrollbar {
+  background: transparent;
+  border: none;
+}
+
+scrollbar slider {
+  background: rgba(130, 170, 255, 0.3);
+  border-radius: 6px;
+  min-width: 6px;
+  min-height: 40px;
+  transition: all 300ms ease;
+}
+
+scrollbar slider:hover {
+  background: rgba(130, 170, 255, 0.5);
+}
+
+scrollbar trough {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+/* Widget area (if using widgets) */
+.widget {
+  background: rgba(26, 27, 38, 0.7);
+  border: 1px solid rgba(130, 170, 255, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 6px 0;
+}
+
+.widget-title {
+  color: #82aaff;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+/* Volume/brightness sliders */
+scale {
+  background: transparent;
+}
+
+scale trough {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  min-height: 6px;
+}
+
+scale highlight {
+  background: linear-gradient(90deg, rgba(130, 170, 255, 0.6), rgba(180, 120, 255, 0.6));
+  border-radius: 6px;
+}
+
+scale slider {
+  background: #82aaff;
+  border: 2px solid rgba(130, 170, 255, 0.8);
+  border-radius: 50%;
+  min-width: 16px;
+  min-height: 16px;
+}
+
+/* Progress bars */
+progressbar {
+  background: transparent;
+}
+
+progressbar trough {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  min-height: 6px;
+}
+
+progressbar progress {
+  background: linear-gradient(90deg, rgba(130, 170, 255, 0.6), rgba(180, 120, 255, 0.6));
+  border-radius: 6px;
+}

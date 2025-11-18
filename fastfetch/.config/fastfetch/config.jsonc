@@ -1,0 +1,61 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  "display": {
+    "separator": "  ->  "
+  },
+  "modules": [
+    {
+      "type": "custom",
+      "format": "┌───────── \u001B[1mEat  , Sleep  , EndeavourOS  .\u001B[0m ─────────┐"
+    },
+    "break",
+    "title",
+    "break",
+    {
+      "type": "custom", // SystemStart
+      "format": "├─────────── \u001b[1mSystem Information\u001b[0m ───────────┤"
+    },
+    "break",
+    "host",
+    "bios",
+    "cpu",
+    "gpu",
+    "vulkan",
+    "disk",
+    "memory",
+    "swap",
+    "display",
+    "sound",
+    "break",
+    {
+      "type": "custom", // SoftwareStart
+      "format": "├─────────── \u001b[1mSoftware Information\u001b[0m ───────────┤"
+    },
+    "break",
+    "os",
+    "kernel",
+    "lm",
+    "de",
+    "wm",
+    "shell",
+    "terminal",
+    "terminalfont",
+    "font",
+    "theme",
+    "icons",
+    "packages",
+    "uptime",
+    "media",
+    "break",
+    {
+      "type": "custom",
+      "format": "└────────────────────── \u001B[1mThanks for fetching \u001B[0m─────────────────────────┘"
+    },
+    "break",
+    {
+      "type": "colors",
+      "paddingLeft": 26,
+      "symbol": "circle"
+    }
+  ]
+}

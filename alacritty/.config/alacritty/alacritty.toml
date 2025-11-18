@@ -1,0 +1,71 @@
+[window]
+padding = { x = 12, y = 12 }
+opacity = 0.85
+blur = true
+decorations = "None"
+dynamic_padding = true
+
+[font]
+size = 11
+normal.family = "FiraCode NerdFont Mono"
+bold.family = "FiraCode NerdFont Mono"
+italic.family = "FiraCode NerdFont Mono"
+bold_italic.family = "FiraCode NerdFont Mono"
+
+[colors]
+# Modern dark background matching Waybar
+primary.background = "#1a1b26"
+primary.foreground = "#e0e0e0"
+
+# Cursor colors
+cursor.text = "#1a1b26"
+cursor.cursor = "#82aaff"
+
+# Selection colors
+selection.text = "#ffffff"
+selection.background = "#82aadd"
+
+# Normal colors
+[colors.normal]
+black = "#1a1b26"
+red = "#ff6b6b"
+green = "#6dd47e"
+yellow = "#ffd93d"
+blue = "#82aaff"
+magenta = "#e6b3ff"
+cyan = "#79ffe6"
+white = "#e0e0e0"
+
+# Bright colors
+[colors.bright]
+black = "#4a4b56"
+red = "#ff8a8a"
+green = "#8ee69d"
+yellow = "#ffe66d"
+blue = "#a0c7ff"
+magenta = "#f0d0ff"
+cyan = "#a0fff0"
+white = "#ffffff"
+
+# Dim colors (for subtle text)
+[colors.dim]
+black = "#2a2b36"
+red = "#cc5555"
+green = "#57aa65"
+yellow = "#ccaa30"
+blue = "#6888cc"
+magenta = "#b890cc"
+cyan = "#60ccb8"
+white = "#b0b0b0"
+
+[cursor]
+style = { shape = "Block", blinking = "On" }
+blink_interval = 750
+unfocused_hollow = true
+
+[scrolling]
+history = 10000
+multiplier = 3
+
+[selection]
+save_to_clipboard = true

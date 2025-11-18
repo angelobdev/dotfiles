@@ -1,0 +1,141 @@
+/********************************************************************************/
+/*                                                                              */
+/*  Modern Wofi style matching Waybar and Hyprland aesthetic                    */
+/*  Glassmorphic design with gradient borders                                   */
+/*                                                                              */
+/********************************************************************************/
+
+* {
+  font-family: "FiraCode Nerd Font", sans-serif;
+  font-size: 13px;
+  color: #e0e0e0;
+}
+
+window {
+  background-color: rgba(26, 27, 38, 0.85);
+  border-radius: 12px;
+  border: 2px solid transparent;
+  color: #ffffff;
+  background-image: linear-gradient(
+      rgba(26, 27, 38, 0.9),
+      rgba(26, 27, 38, 0.9)
+    ),
+    linear-gradient(135deg, rgba(130, 170, 255, 0.6), rgba(180, 120, 255, 0.6));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+#outer-box {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+}
+
+#input {
+  margin: 8px;
+  padding: 10px 14px;
+  background: rgba(26, 27, 38, 0.9);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  color: #ffffff;
+  background-image: linear-gradient(
+      rgba(26, 27, 38, 0.9),
+      rgba(26, 27, 38, 0.9)
+    ),
+    linear-gradient(135deg, rgba(130, 170, 255, 0.6), rgba(180, 120, 255, 0.6));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+#input:focus {
+  background-image: linear-gradient(
+      rgba(26, 27, 38, 0.95),
+      rgba(26, 27, 38, 0.95)
+    ),
+    linear-gradient(135deg, rgba(130, 170, 255, 0.8), rgba(180, 120, 255, 0.8));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+#input image {
+  color: #82aaff;
+  margin-right: 8px;
+}
+
+#inner-box {
+  margin: 0;
+  padding: 8px;
+  background-color: rgba(26, 27, 38, 0.85);
+  background-image: linear-gradient(
+      rgba(26, 27, 38, 0.85),
+      rgba(26, 27, 38, 0.85)
+    ),
+    linear-gradient(135deg, rgba(130, 170, 255, 0.6), rgba(180, 120, 255, 0.6));
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+}
+
+#scroll {
+  margin: 0;
+  padding: 4px;
+}
+
+#text {
+  margin: 0;
+  padding: 0;
+  color: #e0e0e0;
+}
+
+#entry {
+  margin: 2px 0;
+  padding: 8px 12px;
+  background: transparent;
+  border-radius: 8px;
+  transition: all 300ms ease;
+}
+
+#entry:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#entry:selected {
+  background: linear-gradient(
+    135deg,
+    rgba(130, 170, 255, 0.3),
+    rgba(180, 120, 255, 0.3)
+  );
+  color: #ffffff;
+  font-weight: 500;
+  border: 1px solid rgba(130, 170, 255, 0.5);
+}
+
+#entry:selected #text {
+  color: #ffffff;
+}
+
+#entry image {
+  margin-right: 8px;
+  padding: 0;
+}
+
+/* Scrollbar styling */
+scrollbar {
+  background: transparent;
+  border: none;
+}
+
+scrollbar slider {
+  background: rgba(130, 170, 255, 0.3);
+  border-radius: 6px;
+  min-width: 6px;
+  min-height: 40px;
+}
+
+scrollbar slider:hover {
+  background: rgba(130, 170, 255, 0.5);
+}
+
+scrollbar trough {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
