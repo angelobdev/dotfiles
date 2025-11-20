@@ -12,5 +12,4 @@
 #################################################################################
 
 killall wofi
-# wofi --show drun --allow-images -a -i --prompt "Search..." --color "$HOME/.cache/wal/colors"
-wofi --show drun --allow-images -a -i --prompt "Search..."
+wofi --show drun --allow-images -a -i --prompt "Search..." --normal-window

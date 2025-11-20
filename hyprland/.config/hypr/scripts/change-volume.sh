@@ -121,42 +121,42 @@ vol_notify() {
 # Volume up
 up() {
     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ -l 1.0
-    vol_notify
+    # vol_notify
 }
 
 # Volume down
 down() {
     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- -l 1.0
-    vol_notify
+    # vol_notify
 }
 
 # Toggle mute
 mute() {
     wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
-    vol_notify
+    # vol_notify
 }
 
 # Microphone mute toggle
 mic_mute() {
     wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
-    local muted=$(wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -o "MUTED")
+    # local muted=$(wpctl get-volume @DEFAULT_AUDIO_SOURCE@ | grep -o "MUTED")
     
-    local icon
-    if [[ "$muted" == "MUTED" ]]; then
-        icon=$(get_volume_icon 0 "MUTED")
-        if [[ -f "$icon" ]]; then
-            notify-send -h "string:image-path:$icon" -a "Microphone" "Mic Muted"
-        else
-            notify-send -i "$icon" -a "Microphone" "Mic Muted"
-        fi
-    else
-        icon="audio-input-microphone"
-        if [[ -n "$icon_path" ]] && [[ -f "${icon_path}/${icon}.svg" ]]; then
-            notify-send -h "string:image-path:${icon_path}/${icon}.svg" -a "Microphone" "Mic Unmuted"
-        else
-            notify-send -i "$icon" -a "Microphone" "Mic Unmuted"
-        fi
-    fi
+    # local icon
+    # if [[ "$muted" == "MUTED" ]]; then
+    #     icon=$(get_volume_icon 0 "MUTED")
+    #     if [[ -f "$icon" ]]; then
+    #         notify-send -h "string:image-path:$icon" -a "Microphone" "Mic Muted"
+    #     else
+    #         notify-send -i "$icon" -a "Microphone" "Mic Muted"
+    #     fi
+    # else
+    #     icon="audio-input-microphone"
+    #     if [[ -n "$icon_path" ]] && [[ -f "${icon_path}/${icon}.svg" ]]; then
+    #         notify-send -h "string:image-path:${icon_path}/${icon}.svg" -a "Microphone" "Mic Unmuted"
+    #     else
+    #         notify-send -i "$icon" -a "Microphone" "Mic Unmuted"
+    #     fi
+    # fi
 }
 
 # Main command handler
