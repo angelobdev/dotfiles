@@ -177,7 +177,7 @@
   },
 
   "network": {
-    "interface": "wlan0",
+    "interface": "wlp0s20f3",
     "format": "{}",
     "format-wifi": " ",
     "format-ethernet": "{ipaddr}/{cidr} 󰊗",
