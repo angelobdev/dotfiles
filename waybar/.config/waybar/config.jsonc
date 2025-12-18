@@ -21,6 +21,7 @@
   "modules-left": ["group/controls", "clock", "battery", "group/hardware"],
   "modules-center": ["hyprland/workspaces"],
   "modules-right": [
+    "tray",
     "network",
     "bluetooth",
     "wireplumber",
