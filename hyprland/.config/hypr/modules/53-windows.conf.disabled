@@ -1,0 +1,99 @@
+##############################
+### WINDOWS AND WORKSPACES ###
+##############################
+
+# See https://wiki.hypr.land/Configuring/Window-Rules/ for more
+# See https://wiki.hypr.land/Configuring/Workspace-Rules/ for workspace rules
+
+# Ignore maximize requests from apps
+windowrule {
+  name = suppress-maximize
+
+  suppress_event = maximize
+
+  match:class = .*
+}
+
+# Fix dragging issues with XWayland
+windowrule {
+  name = xwayland-drag-fix
+
+  no_focus = on
+
+  match:class = ^$
+  match:title = ^$
+  match:xwayland = 1
+  match:float = 1
+  match:fullscreen = 0
+  match:pin = 0
+}
+
+# Smile - float
+windowrule {
+  name = smile-float
+
+  float = on
+
+  match:title = ^(Smile)
+}
+
+# Zenity - float
+windowrule {
+  name = zenity-float
+
+  float = on
+
+  match:class = ^(zenity)
+}
+
+# Picture-in-Picture
+windowrule {
+  name = firefox-pip
+
+  pin = on
+  float = on
+  size = (monitor_w*0.33) (monitor_h*0.33)
+  move = (monitor_w*0.66) (monitor_h*0.66)
+
+  match:title = ^(Picture-in-Picture)$
+}
+
+# Wallpaper selector
+windowrule {
+  name = wallpaper-selector
+  
+  float = on
+  size = (monitor_w*0.25) (monitor_h*0.5)
+
+  match:title = ^(Select a new Wallpaper)
+}
+
+# Network Connections
+windowrule {
+  name = network-connections
+  
+  float = on
+  size = (monitor_w*0.25) (monitor_h*0.5)
+  
+  match:title = ^(Network Connections)
+}
+
+# Bluetooth Devices
+windowrule {
+  name = bluetooth-devices
+
+  float = on
+  size = (monitor_w*0.25) (monitor_h*0.5)
+  
+  match:title = ^(Bluetooth Devices)
+}
+
+# Calculator
+windowrule {
+  name = calculator
+  
+  float = on
+  size = (monitor_w*0.25) (monitor_h*0.5)
+  
+  match:title = ^(Calculator)
+}

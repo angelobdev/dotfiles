@@ -124,7 +124,7 @@
   },
 
   "custom/controls-label": {
-    "format": "<span font='10'> </span>",
+    "format": "<span font='16'></span>",
     "tooltip": false
   },
 
@@ -172,7 +172,7 @@
   "tray": {
     "icon-size": 14,
     "show-passive-items": true,
-    "spacing": 8,
+    "spacing": 16,
     "expand": true
   },
 
@@ -206,7 +206,7 @@
   "wireplumber": {
     "format": "<span font='13' rise='-1000'>{icon}</span>",
     "format-muted": "<span font='12' rise='-1000'>󰖁</span> Muted",
-    "on-click": "exec ~/.config/waybar/scripts/sinkSwitch.sh",
+    "on-click": "pavucontrol",
     "format-icons": ["󰕿", "󰖀", "󰕾"],
     "reverse-scrolling": 1,
     "tooltip-format": "{node_name} / {volume}%"

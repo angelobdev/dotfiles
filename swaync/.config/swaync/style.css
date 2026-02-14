@@ -1,380 +1,184 @@
-/********************************************************************************/
-/*                                                                              */
-/*  SwayNC Modern Style - Transparent Panel with Glassmorphic Modules          */
-/*  Matching Waybar and Hyprland aesthetic                                     */
-/*                                                                              */
-/********************************************************************************/
-
 * {
-  font-family: "FiraCode Nerd Font", sans-serif;
-  font-size: 13px;
-  color: #e0e0e0;
-}
-
-window {
-  background: transparent;
-  background-color: transparent;
-}
-
-/* Main notification center window - FULLY TRANSPARENT */
-.notification-center {
-  background: none;
-  background-color: transparent;
-  border: none;
-  border-radius: 0;
-  margin: 10px;
-  padding: 0;
-}
-
-.notification-center-box {
-  background: transparent;
-}
-
-/* Header with glassmorphic effect */
-.notification-center-header {
-  background: rgba(26, 27, 38, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 16px;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  border: 2px solid transparent;
-  background-image: 
-    linear-gradient(rgba(26, 27, 38, 0.85), rgba(26, 27, 38, 0.85)),
-    linear-gradient(135deg, rgba(130, 170, 255, 0.6), rgba(180, 120, 255, 0.6));
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.notification-center-header-label {
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 15px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-/* Control center buttons (Clear all, DND) */
-.control-center-clear-all,
-.control-center-dnd {
-  background: rgba(130, 170, 255, 0.15);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #82aaff;
-  border: 1px solid rgba(130, 170, 255, 0.4);
-  border-radius: 10px;
-  padding: 10px 16px;
-  margin: 4px;
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 500;
-}
-
-.control-center-clear-all:hover,
-.control-center-dnd:hover {
-  background: rgba(130, 170, 255, 0.3);
-  border-color: rgba(130, 170, 255, 0.6);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(130, 170, 255, 0.3);
-}
-
-.control-center-dnd:checked {
-  background: linear-gradient(135deg, rgba(255, 217, 61, 0.25), rgba(255, 169, 77, 0.25));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-color: rgba(255, 217, 61, 0.6);
-  color: #ffd93d;
-  box-shadow: 0 4px 16px rgba(255, 217, 61, 0.3);
-}
-
-/* Notification list - FULLY TRANSPARENT */
-.notification-list {
-  background: none;
-  background-color: transparent;
-  padding: 0;
-}
-
-/* Additional transparency fixes */
-.floating-notifications,
-.notification-window,
-widget > box {
-  background: transparent;
-  background-color: transparent;
-}
-
-/* Individual notifications - GLASSMORPHIC MODULES */
-.notification {
-  background: rgba(26, 27, 38, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2px solid transparent;
-  border-radius: 12px;
-  padding: 14px;
-  margin: 8px 0;
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  background-image: 
-    linear-gradient(rgba(26, 27, 38, 0.85), rgba(26, 27, 38, 0.85)),
-    linear-gradient(135deg, rgba(130, 170, 255, 0.5), rgba(180, 120, 255, 0.5));
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
-}
-
-.notification:hover {
-  background-image: 
-    linear-gradient(rgba(26, 27, 38, 0.9), rgba(26, 27, 38, 0.9)),
-    linear-gradient(135deg, rgba(130, 170, 255, 0.7), rgba(180, 120, 255, 0.7));
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(130, 170, 255, 0.3);
-}
-
-/* Notification with critical urgency */
-.notification.critical {
-  background-image: 
-    linear-gradient(rgba(26, 27, 38, 0.85), rgba(26, 27, 38, 0.85)),
-    linear-gradient(135deg, rgba(255, 107, 107, 0.6), rgba(255, 87, 87, 0.6));
-  animation: pulse-critical 2s ease-in-out infinite;
-}
-
-@keyframes pulse-critical {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.85; }
-}
-
-.notification.critical:hover {
-  background-image: 
-    linear-gradient(rgba(26, 27, 38, 0.9), rgba(26, 27, 38, 0.9)),
-    linear-gradient(135deg, rgba(255, 107, 107, 0.8), rgba(255, 87, 87, 0.8));
-  box-shadow: 0 8px 32px rgba(255, 107, 107, 0.4);
-}
-
-/* Notification summary (title) */
-.notification-summary {
-  color: #ffffff;
-  font-weight: 600;
+  font-family: "JetBrainsMono Nerd Font", monospace;
   font-size: 14px;
-  margin-bottom: 6px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* Notification body */
-.notification-body {
-  color: #e0e0e0;
-  font-size: 12px;
-  margin-top: 6px;
-  line-height: 1.5;
+/* Base notification styling */
+.notification-row {
+  outline: none;
+  margin: 8px;
 }
 
-/* Notification time */
-.notification-time {
-  color: rgba(224, 224, 224, 0.5);
-  font-size: 11px;
-  margin-top: 6px;
-  font-weight: 400;
+.notification {
+  background: rgba(30, 30, 46, 0.95);
+  border-radius: 12px;
+  border: 2px solid rgba(137, 180, 250, 0.3);
+  padding: 12px;
+  margin: 0;
 }
 
-/* Notification app name */
-.notification-app-name {
-  color: #82aaff;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+/* OSD-specific notifications (bottom-center) */
+.notification[data-app-name="osd-volume"],
+.notification[data-app-name="osd-brightness"] {
+  margin: 0 auto 100px auto !important;
+  position: fixed !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  bottom: 0 !important;
+  top: unset !important;
+  background: rgba(30, 30, 46, 0.9);
+  border: 2px solid rgba(137, 180, 250, 0.5);
+  min-width: 300px;
+  max-width: 400px;
 }
 
-/* Notification icon */
-.notification-icon {
-  -gtk-icon-size: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  margin-right: 14px;
+/* OSD compact layout */
+.notification[data-app-name="osd-volume"] .notification-content,
+.notification[data-app-name="osd-brightness"] .notification-content {
+  padding: 8px;
+}
+
+.notification[data-app-name="osd-volume"] .notification-default-action,
+.notification[data-app-name="osd-brightness"] .notification-default-action {
+  margin: 0;
+  padding: 12px;
+}
+
+/* Hide close button for OSD */
+.notification[data-app-name="osd-volume"] .close-button,
+.notification[data-app-name="osd-brightness"] .close-button {
+  display: none;
+}
+
+/* Progress bar styling */
+.notification progressbar {
+  background-color: rgba(69, 71, 90, 0.5);
   border-radius: 8px;
+  min-height: 10px;
+  margin-top: 8px;
 }
 
-/* For inline icons in progress notifications */
-.notification image {
-  -gtk-icon-size: 36px;
-  min-width: 36px;
-  min-height: 36px;
+.notification progressbar progress {
+  background-color: #89b4fa;
+  border-radius: 8px;
+  border: none;
+}
+
+/* Make OSD progress bars more prominent */
+.notification[data-app-name="osd-volume"] progressbar,
+.notification[data-app-name="osd-brightness"] progressbar {
+  min-height: 12px;
+  margin-top: 10px;
+}
+
+/* Notification icons */
+.notification-icon {
+  margin-right: 12px;
+}
+
+.notification[data-app-name="osd-volume"] .notification-icon,
+.notification[data-app-name="osd-brightness"] .notification-icon {
+  margin-right: 16px;
+}
+
+/* Summary and body text */
+.summary {
+  font-weight: bold;
+  color: #cdd6f4;
+  font-size: 15px;
+}
+
+.body {
+  color: #bac2de;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* OSD text styling */
+.notification[data-app-name="osd-volume"] .summary,
+.notification[data-app-name="osd-brightness"] .summary {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.notification[data-app-name="osd-volume"] .body,
+.notification[data-app-name="osd-brightness"] .body {
+  font-size: 16px;
+  font-weight: bold;
+  color: #cdd6f4;
 }
 
 /* Close button */
-.notification-close-button {
-  background: rgba(255, 107, 107, 0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #ff6b6b;
-  border: 1px solid rgba(255, 107, 107, 0.4);
-  border-radius: 8px;
-  padding: 6px 10px;
-  margin: 4px;
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 500;
+.close-button {
+  background: rgba(243, 139, 168, 0.2);
+  color: #f38ba8;
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin-left: 8px;
 }
 
-.notification-close-button:hover {
-  background: rgba(255, 107, 107, 0.4);
-  border-color: rgba(255, 107, 107, 0.6);
-  transform: scale(1.05);
-  box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+.close-button:hover {
+  background: rgba(243, 139, 168, 0.4);
 }
 
-/* Action buttons */
-.notification-action {
-  background: rgba(130, 170, 255, 0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #82aaff;
-  border: 1px solid rgba(130, 170, 255, 0.4);
-  border-radius: 10px;
-  padding: 8px 14px;
-  margin: 4px;
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  font-weight: 500;
-}
-
-.notification-action:hover {
-  background: rgba(130, 170, 255, 0.35);
-  border-color: rgba(130, 170, 255, 0.6);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(130, 170, 255, 0.3);
-}
-
-/* Inline reply */
-.inline-reply {
-  background: rgba(26, 27, 38, 0.9);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(130, 170, 255, 0.3);
-  border-radius: 10px;
-  padding: 10px;
-  margin-top: 10px;
-  color: #e0e0e0;
-  transition: all 300ms ease;
-}
-
-.inline-reply:focus {
-  border-color: rgba(130, 170, 255, 0.7);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(130, 170, 255, 0.2);
-}
-
-/* Notification group headers */
-.notification-group-header {
-  background: rgba(130, 170, 255, 0.15);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #82aaff;
-  font-weight: 600;
-  padding: 10px 14px;
-  border-radius: 10px;
-  margin: 12px 0 6px 0;
-  border: 1px solid rgba(130, 170, 255, 0.3);
-}
-
-/* Empty notification center */
-.blank-window {
-  background: transparent;
-  color: rgba(224, 224, 224, 0.4);
-  font-size: 14px;
-  padding: 60px 20px;
-  text-align: center;
-  font-style: italic;
-}
-
-/* Scrollbar */
-scrollbar {
-  background: transparent;
-  border: none;
-}
-
-scrollbar slider {
-  background: rgba(130, 170, 255, 0.4);
-  border-radius: 8px;
-  min-width: 8px;
-  min-height: 40px;
-  transition: all 300ms ease;
-}
-
-scrollbar slider:hover {
-  background: rgba(130, 170, 255, 0.6);
-}
-
-scrollbar trough {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  margin: 4px;
-}
-
-/* Widget area (if using widgets) */
-.widget {
-  background: rgba(26, 27, 38, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2px solid transparent;
+/* Control Center */
+.control-center {
+  background: rgba(30, 30, 46, 0.95);
+  border: 2px solid rgba(137, 180, 250, 0.3);
   border-radius: 12px;
-  padding: 14px;
-  margin: 8px 0;
-  background-image: 
-    linear-gradient(rgba(26, 27, 38, 0.85), rgba(26, 27, 38, 0.85)),
-    linear-gradient(135deg, rgba(130, 170, 255, 0.5), rgba(180, 120, 255, 0.5));
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+}
+
+.control-center-list {
+  background: transparent;
 }
 
 .widget-title {
-  color: #82aaff;
-  font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 10px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: #cdd6f4;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 12px;
 }
 
-/* Volume/brightness sliders */
-scale {
-  background: transparent;
+.widget-title > button {
+  background: rgba(137, 180, 250, 0.2);
+  color: #89b4fa;
+  border-radius: 6px;
+  padding: 6px 12px;
+  border: none;
 }
 
-scale trough {
-  background: rgba(255, 255, 255, 0.1);
+.widget-title > button:hover {
+  background: rgba(137, 180, 250, 0.3);
+}
+
+/* DND widget */
+.widget-dnd {
+  padding: 12px;
+  margin: 8px;
+  background: rgba(49, 50, 68, 0.5);
   border-radius: 8px;
-  min-height: 8px;
 }
 
-scale highlight {
-  background: linear-gradient(90deg, rgba(130, 170, 255, 0.7), rgba(180, 120, 255, 0.7));
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(130, 170, 255, 0.3);
+.widget-dnd > switch {
+  background: rgba(69, 71, 90, 0.5);
+  border-radius: 20px;
 }
 
-scale slider {
-  background: #82aaff;
-  border: 2px solid rgba(130, 170, 255, 0.9);
-  border-radius: 50%;
-  min-width: 18px;
-  min-height: 18px;
-  box-shadow: 0 2px 8px rgba(130, 170, 255, 0.4);
-  transition: all 200ms ease;
+.widget-dnd > switch:checked {
+  background: #89b4fa;
 }
 
-scale slider:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(130, 170, 255, 0.5);
+/* Urgency levels */
+.notification.low {
+  border-color: rgba(137, 180, 250, 0.3);
 }
 
-/* Progress bars */
-progressbar {
-  background: transparent;
+.notification.normal {
+  border-color: rgba(137, 180, 250, 0.5);
 }
 
-progressbar trough {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  min-height: 8px;
-}
-
-progressbar progress {
-  background: linear-gradient(90deg, rgba(130, 170, 255, 0.7), rgba(180, 120, 255, 0.7));
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(130, 170, 255, 0.3);
+.notification.critical {
+  border-color: rgba(243, 139, 168, 0.8);
+  background: rgba(30, 30, 46, 0.98);
 }
