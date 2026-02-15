@@ -1,34 +1,117 @@
 {
   "$schema": "/etc/xdg/swaync/configSchema.json",
+
   "positionX": "right",
   "positionY": "top",
   "layer": "overlay",
   "control-center-layer": "top",
   "layer-shell": true,
-  "cssPriority": "application",
-  "notification-icon-size": 64,
+  "layer-shell-cover-screen": true,
+  "cssPriority": "user",
+  "ignore-gtk-theme": true,
+
+  "control-center-margin-top": 8,
+  "control-center-margin-bottom": 8,
+  "control-center-margin-right": 8,
+  "control-center-margin-left": 0,
+  "control-center-exclusive-zone": true,
+
+  "notification-2fa-action": true,
+  "notification-inline-replies": false,
+  "notification-body-image-height": 100,
+  "notification-body-image-width": 200,
+
   "timeout": 5,
-  "timeout-low": 2,
+  "timeout-low": 3,
   "timeout-critical": 0,
+
+  "fit-to-screen": false,
+  "control-center-height": 600,
+  "control-center-width": 340,
   "notification-window-width": 400,
+
   "keyboard-shortcuts": true,
   "image-visibility": "when-available",
   "transition-time": 200,
   "hide-on-clear": false,
   "hide-on-action": true,
-  "widgets": [
-    "title",
-    "dnd",
-    "notifications"
-  ],
+  "notification-grouping": true,
+  "relative-timestamps": true,
+  "script-fail-notify": true,
+  "text-empty": "No Notifications",
+
+  "widgets": ["title", "dnd", "mpris", "notifications"],
+
   "widget-config": {
     "title": {
       "text": "Notifications",
       "clear-all-button": true,
       "button-text": "Clear All"
     },
+
     "dnd": {
       "text": "Do Not Disturb"
+    },
+
+    "mpris": {
+      "show-album-art": "when-available",
+      "autohide": true,
+      "loop-carousel": true,
+      "blacklist": []
+    },
+
+    "volume": {
+      "label": "",
+      "show-per-app": true,
+      "show-per-app-icon": false,
+      "show-per-app-label": false,
+      "expand-per-app": false,
+      "empty-list-label": "No active audio",
+      "animation-type": "slide_down",
+      "animation-duration": 250
+    },
+
+    "backlight": {
+      "label": "󰃟",
+      "device": "intel_backlight",
+      "subsystem": "backlight",
+      "min": 5
+    },
+
+    "inhibitors": {
+      "text": "Inhibitors",
+      "clear-all-button": true,
+      "button-text": "Clear All"
+    }
+  },
+
+  "scripts": {
+    "spotify": {
+      "exec": "echo 'Spotify notification'",
+      "app-name": "Spotify",
+      "run-on": "receive"
+    },
+    "discord": {
+      "exec": "echo 'Discord notification'",
+      "app-name": "discord",
+      "run-on": "receive"
+    }
+  },
+
+  "notification-visibility": {
+    "spotify": {
+      "state": "enabled",
+      "urgency": "Low",
+      "app-name": "Spotify"
+    },
+    "muted-apps": {
+      "state": "muted",
+      "app-name": "(Slack|Teams)"
+    },
+    "critical-battery": {
+      "state": "enabled",
+      "urgency": "Critical",
+      "app-name": "battery"
     }
   }
 }
