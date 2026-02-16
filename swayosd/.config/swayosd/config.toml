@@ -1,34 +1,27 @@
-[osd]
-# Position: top-left, top-center, top-right, center-left, center, center-right, bottom-left, bottom-center, bottom-right
-position = "bottom-center"
-# Anchor: top, bottom, left, right, center
-anchor = "bottom"
-# Margin from edge in pixels
-margin-top = 0
-margin-bottom = 100
-margin-left = 0
-margin-right = 0
+[server]
+## style file for the OSD
+style = "~/.config/swayosd/style.css"
 
-# Display timeout in milliseconds
-timeout = 2000
+## on which height to show the OSD
+# top_margin = 0.85
 
-# Style
-background-color = "#1e1e2eF0"
-border-color = "#89b4fa80"
-border-size = 2
-border-radius = 12
+## The maximum volume that can be reached in %
+# max_volume = 150
 
-# Progress bar
-bar-color = "#89b4fa"
-bar-background-color = "#45475a"
-bar-height = 12
-bar-width = 300
+## The minimum brightness that can be reached in %
+min_brightness = 1
 
-# Icon settings
-icon-size = 48
-icon-spacing = 16
+## show percentage on the right of the OSD
+# show_percentage = true
 
-# Text
-text-color = "#cdd6f4"
-text-size = 16
-font = "JetBrainsMono Nerd Font"
+## set format for the media player OSD
+# playerctl_format = "{artist} - {title}"
+## Available values:
+## artist, albumArtist, title, album, trackNumber, discNumber, autoRating
+
+# If SwayOSD should automatically display the OSD when the keyboard backlight changes or not.
+# Note: Only displays the OSD if the hardware changed the keyboard brightness itself
+# (automatically or through a firmware-handled hotkey being pressed)
+keyboard_backlight = true
+
+[client]
