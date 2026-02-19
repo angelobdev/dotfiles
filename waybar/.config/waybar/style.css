@@ -25,12 +25,12 @@ window#waybar.empty #window {
 }
 
 tooltip {
-  background: #383838;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
+  border: 1px solid #3a3a3a;
+  background: #242424;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  margin: 64px;
   color: #ffffff;
-  padding: 8px 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Modules Box - GTK4 libadwaita HeaderBar style */
@@ -198,15 +198,46 @@ tooltip {
 
 /* Tray */
 #tray {
-  padding: 0px 6px 0px 10px;
+  padding: 0 6px 0 10px;
+  background: #242424;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 #tray menu {
-  background: #383838;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: 8px;
+  border: 1px solid #3a3a3a;
+  background: #242424;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.45);
+  margin: 64px;
+  color: #f6f5f4;
   padding: 6px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+#tray menu menuitem {
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+}
+
+#tray menu menuitem:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#tray menu menuitem:disabled {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+#tray > widget {
+  padding: 4px;
+  border-radius: 4px;
+  min-width: 16px;
+}
+
+#tray > widget:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* Network */

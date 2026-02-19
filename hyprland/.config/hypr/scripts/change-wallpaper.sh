@@ -7,7 +7,7 @@ function notify(){
 
 # Getting current wallpaper
 hyprpaperConfig="$HOME/.config/hypr/hyprpaper.conf"
-current=$(cat "$hyprpaperConfig" | grep preload | cut -d '=' -f2 | sed 's/ //')
+current=$(cat "$hyprpaperConfig" | grep path | cut -d '=' -f2 | sed 's/ //')
 
 # Asking for new wallpaper
 file=`zenity --title 'Select a new Wallpaper' --file-selection --file-filter="Images (PNG, JPEG) | *.png *.jpeg *.jpg"`
@@ -19,10 +19,9 @@ case $? in
 
               if [[ "$ext" == "png" ]]; then
 
-			statusPreload=$(hyprctl hyprpaper preload "$file")
 			statusWallpaper=$(hyprctl hyprpaper wallpaper ",$file")
 
-                     if [[ "$statusPreload" == "ok" && "$statusWallpaper" == "ok" ]]; then
+                     if [[ "$statusWallpaper" == "" ]]; then
                             notify "Wallpaper changed!"
                             sed -i "s|$current|$file|" "$hyprpaperConfig"
                      else

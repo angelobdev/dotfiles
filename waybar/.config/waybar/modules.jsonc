@@ -8,10 +8,8 @@
 //  The project (as well as this config) goes under the GNU GPLv3 LICENSE.      //
 //                                                                              //
 //******************************************************************************//
-
 {
   // *** Left Modules *** //
-
   "hyprland/workspaces": {
     "format": "{icon}",
     "format-window-separator": "|",
@@ -22,7 +20,6 @@
       "icon-size": 16
     }
   },
-
   "clock": {
     "format": " <span font='8' rise='1000'></span> {:%H:%M}",
     "format-alt": " <span font='9' rise='1000'></span> {:%A - %B %d, %Y (%R)}",
@@ -46,7 +43,6 @@
       "on-scroll-down": "shift_down"
     }
   },
-
   "battery": {
     "bat": "BAT0",
     "interval": 60,
@@ -55,10 +51,15 @@
       "critical": 15
     },
     "format": "{icon} {capacity}%",
-    "format-icons": ["", "", "", "", ""],
+    "format-icons": [
+      "",
+      "",
+      "",
+      "",
+      ""
+    ],
     "max-length": 25
   },
-
   "group/hardware": {
     "orientation": "inherit",
     "drawer": {
@@ -66,35 +67,34 @@
       "children-class": "not-power",
       "transition-left-to-right": true
     },
-    "modules": ["temperature", "cpu", "memory", "disk"]
+    "modules": [
+      "temperature",
+      "cpu",
+      "memory",
+      "disk"
+    ]
   },
-
   "temperature": {
     "hwmon-path": "/sys/class/hwmon/hwmon6/temp1_input",
     "format": "<span font='8' rise='1000'></span> {temperatureC}°C ",
     "tooltip": false
   },
-
   "cpu": {
     "interval": 5,
     "format": "<span font='10'>󰍛</span> {usage}% "
   },
-
   "memory": {
     "interval": 5,
     "format": "<span font='8' rise='1000'></span> {percentage}% ",
     "tooltip-format": "{used}GiB / {total}GiB"
   },
-
   "disk": {
     "interval": 5,
     "format": "<span font='9'></span> {percentage_used}%",
     "tooltip-format": "{used} / {total}",
     "path": "/"
   },
-
   // *** Center Modules *** //
-
   "hyprland/window": {
     "format": "{}",
     "rewrite": {
@@ -105,9 +105,7 @@
     "icon-size": 14,
     "separate-outputs": true
   },
-
   // *** RIGHT MODULES *** //
-
   "group/controls": {
     "orientation": "inherit",
     "drawer": {
@@ -122,12 +120,10 @@
       "tray"
     ]
   },
-
   "custom/controls-label": {
     "format": "<span font='16'></span>",
     "tooltip": false
   },
-
   "custom/notification": {
     "tooltip": false,
     "format": "{icon}",
@@ -148,34 +144,30 @@
     "on-click-right": "sleep 0.1 && swaync-client -d -sw",
     "escape": true
   },
-
   "power-profiles-daemon": {
     "format": "{icon}",
     "tooltip-format": "Power profile: {profile}\nDriver: {driver}",
     "tooltip": true,
     "format-icons": {
-      "default": "<span font='9'></span>",
-      "performance": "<span font='9'></span>",
-      "balanced": "<span font='8' rise='1000'> </span>",
-      "power-saver": "<span font='10'> </span>"
+      "default": "<span font='11'> </span>",
+      "performance": "<span font='11'> </span>",
+      "balanced": "<span font='10' rise='1000'></span>",
+      "power-saver": "<span font='12'></span>"
     }
   },
-
   "idle_inhibitor": {
     "format": "{icon}",
     "format-icons": {
-      "activated": "<span font='10'>󰛐</span>",
-      "deactivated": "<span font='10'>󰛑</span>"
+      "activated": "<span font='13'>󰛐</span>",
+      "deactivated": "<span font='13'>󰛑</span>"
     }
   },
-
   "tray": {
-    "icon-size": 14,
+    "icon-size": 24,
     "show-passive-items": true,
     "spacing": 16,
     "expand": true
   },
-
   "network": {
     "interface": "wlp0s20f3",
     "format": "{}",
@@ -190,7 +182,6 @@
     "on-click": "nm-connection-editor",
     "on-click-right": "nmtui"
   },
-
   "bluetooth": {
     // "controller": "controller1", // specify the alias of the controller if there are more than 1 on the system
     "format": "",
@@ -202,16 +193,18 @@
     "on-click": "blueman-manager",
     "on-click-right": "rfkill toggle bluetooth"
   },
-
   "wireplumber": {
     "format": "<span font='13' rise='-1000'>{icon}</span>",
     "format-muted": "<span font='12' rise='-1000'>󰖁</span> Muted",
     "on-click": "pavucontrol",
-    "format-icons": ["󰕿", "󰖀", "󰕾"],
+    "format-icons": [
+      "󰕿",
+      "󰖀",
+      "󰕾"
+    ],
     "reverse-scrolling": 1,
     "tooltip-format": "{node_name} / {volume}%"
   },
-
   "group/power": {
     "orientation": "inherit",
     "drawer": {
@@ -227,31 +220,26 @@
       "custom/reboot"
     ]
   },
-
   "custom/lock": {
     "format": "Lock <span font='8' rise='1000'></span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh lock"
   },
-
   "custom/logout": {
     "format": "Logout <span font='10' rise='0'></span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh logout"
   },
-
   "custom/suspend": {
     "format": "Sleep <span font='10' rise='0'></span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh sleep"
   },
-
   "custom/reboot": {
     "format": "Reboot <span font='11'>󰜉</span>",
     "tooltip": false,
     "on-click": "exec ~/.config/waybar/scripts/askPower.sh reboot"
   },
-
   "custom/poweroff": {
     "format": "<span font='12' rise='-1000'>󰐥</span>",
     "tooltip": false,
