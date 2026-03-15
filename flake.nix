@@ -3,24 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    hyprland = {
-      url = "github:hyprwm/Hyprland";
-    };
-
-    hyprgrass = {
-      url = "github:horriblename/hyprgrass";
-      inputs.hyprland.follows = "hyprland"; # pin to same version as system
     };
   };
 
@@ -30,8 +19,6 @@
       nixpkgs,
       home-manager,
       zen-browser,
-      hyprland,
-      hyprgrass,
       ...
     }:
     {
@@ -39,21 +26,13 @@
         system = "x86_64-linux";
         modules = [
           ./configuration.nix
-          hyprland.nixosModules.default
           home-manager.nixosModules.home-manager
           {
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
               backupFileExtension = "backup";
-              extraSpecialArgs = {
-                inherit
-                  self
-                  zen-browser
-                  hyprland
-                  hyprgrass
-                  ;
-              };
+              extraSpecialArgs = { inherit self zen-browser; }; # self gives modules repo-relative paths
               users.angelo = import ./home.nix;
             };
           }

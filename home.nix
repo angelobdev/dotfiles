@@ -3,8 +3,6 @@
   pkgs,
   self,
   zen-browser,
-  hyprland,
-  hyprgrass,
   ...
 }:
 {
@@ -21,6 +19,5 @@
     ./modules/home/desktop.nix
     ./modules/home/packages.nix
     ./modules/home/theme.nix
-    ./modules/home/hyprland.nix
   ];
 }
