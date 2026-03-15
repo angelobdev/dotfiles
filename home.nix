@@ -13,6 +13,5 @@
     ./modules/home/files.nix
     ./modules/home/desktop.nix 
     ./modules/home/packages.nix
-    ./modules/home/env.nix
   ];
 }
