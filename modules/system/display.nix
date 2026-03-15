@@ -11,7 +11,12 @@
     withUWSM        = true;
   };
 
-  # Start GNOME Keyring at login so NetworkManager can retrieve secrets
   services.gnome.gnome-keyring.enable = true;
   security.pam.services.sddm.enableGnomeKeyring = true;
+
+  xdg.portal = {
+    enable       = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = "*";
+  };
 }
