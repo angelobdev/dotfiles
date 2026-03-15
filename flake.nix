@@ -14,37 +14,33 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hyprland = {
+      url = "github:hyprwm/Hyprland";
+    };
+
     hyprgrass = {
       url = "github:horriblename/hyprgrass";
+      inputs.hyprland.follows = "hyprland"; # pin to same version as system
     };
-    
   };
 
-  outputs =
-    {
-      self,
-      nixpkgs,
-      home-manager,
-      zen-browser,
-      hyprgrass,
-      ...
-    }:
-    {
-      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ./configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              backupFileExtension = "backup";
-              extraSpecialArgs = { inherit self zen-browser hyprgrass; };
-              users.angelo = import ./home.nix;
-            };
-          }
-        ];
-      };
+  outputs = { self, nixpkgs, home-manager, zen-browser, hyprland, hyprgrass, ... }: {
+    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        ./configuration.nix
+        hyprland.nixosModules.hyprland   # ← use flake Hyprland, not nixpkgs
+        home-manager.nixosModules.home-manager
+        {
+          home-manager = {
+            useGlobalPkgs       = true;
+            useUserPackages     = true;
+            backupFileExtension = "backup";
+            extraSpecialArgs    = { inherit self zen-browser hyprland hyprgrass; };
+            users.angelo        = import ./home.nix;
+          };
+        }
+      ];
     };
+  };
 }

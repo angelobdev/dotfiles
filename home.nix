@@ -3,6 +3,8 @@
   pkgs,
   self,
   zen-browser,
+  hyprland,
+  hyprgrass,
   ...
 }:
 {
