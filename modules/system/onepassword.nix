@@ -1,0 +1,13 @@
+{ ... }:
+{
+  programs._1password.enable = true;
+  programs._1password-gui = {
+    enable             = true;
+    polkitPolicyOwners = [ "angelo" ]; # fixed: was "yourUsernameHere"
+  };
+
+  environment.etc."1password/custom_allowed_browsers" = {
+    text = "zen\n";
+    mode = "0755";
+  };
+}

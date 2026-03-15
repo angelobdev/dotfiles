@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #################################################################################
 #                                                                               #
@@ -11,5 +11,11 @@
 #                                                                               #
 #################################################################################
 
-killall wofi
-wofi --show drun --allow-images -a -i --prompt "Search..." --normal-window
+# Resolve wofi binary safely
+WOFI_CMD="${WOFI_CMD:-$(command -v wofi || echo /run/current-system/sw/bin/wofi)}"
+
+# Kill existing instances
+pkill -x wofi || true
+
+# Launch wofi
+exec "$WOFI_CMD" --show drun --allow-images -a -i --prompt "Search..." --normal-window
