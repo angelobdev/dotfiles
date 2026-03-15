@@ -43,6 +43,8 @@
       [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
       ZSH_AUTOSUGGEST_STRATEGY=(history completion)
       ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#888888"
+
+      alias rebuild="sudo nixos-rebuild switch --flake ~/.dotfiles#nixos"
     '';
   };
 
