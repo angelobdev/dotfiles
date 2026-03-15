@@ -11,5 +11,7 @@
     ./modules/home/zsh.nix
     ./modules/home/apps.nix
     ./modules/home/files.nix
+    ./modules/home/desktop.nix 
+    ./modules/home/packages.nix
   ];
 }
