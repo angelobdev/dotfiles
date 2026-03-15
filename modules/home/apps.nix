@@ -6,6 +6,8 @@
     userSettings = {
       "password-store" = "gnome-libsecret";
       "workbench.iconTheme" = "material-icon-theme";
+      "git.enableSmartCommit" = true;
+      "git.confirmSync" = false;
     };
   };
 
