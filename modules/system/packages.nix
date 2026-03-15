@@ -13,5 +13,9 @@
     git
     sddm-chili-theme
     stow
+    libheif
+    libheif.out
   ];
+
+  environment.pathsToLink = [ "share/thumbnailers" ];
 }
