@@ -10,7 +10,8 @@
     wofi
     hyprpaper
     udiskie
-    zenity           
+    zenity      
+    libsecret     
 
     # Apps
     fastfetch         
