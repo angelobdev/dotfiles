@@ -4,16 +4,12 @@
   programs.direnv.enable = true;
   
   services.udisks2.enable = true;
+  services.power-profiles-daemon.enable = true;
 
   environment.systemPackages = with pkgs; [
     neovim
     wget
     git
-    kitty
-    alacritty
-    waybar
-    wofi
-    hyprpaper
-    udiskie
+    sddm-chili-theme
   ];
 }
