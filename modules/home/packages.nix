@@ -15,7 +15,7 @@
     zenity
     libsecret
     nixd
-    nixfmt-rfc-style
+    nixfmt
 
     # Apps
     fastfetch
