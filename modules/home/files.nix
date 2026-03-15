@@ -10,9 +10,4 @@
     "waybar".source     = "${self}/config/waybar";
     "wofi".source       = "${self}/config/wofi";
   };
-
-  home.file."Pictures/Wallpapers" = {
-    source    = "${self}/files/wallpapers";
-    recursive = true; # fixed: was missing on all directory sources
-  };
 }

@@ -11,5 +11,6 @@
     wget
     git
     sddm-chili-theme
+    stow
   ];
 }
