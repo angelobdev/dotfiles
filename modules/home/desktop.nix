@@ -1,5 +1,8 @@
 { pkgs, ... }:
 {
+  # Top bar
+  programs.waybar.enable = true;
+
   # Notification daemon
   services.swaync.enable = true;
 
@@ -14,4 +17,11 @@
 
   # Clipboard manager — persists clipboard history
   services.cliphist.enable = true;
+
+  # Udiskie
+  services.udiskie = {
+    enable = true;
+    tray = "always"; # "always", "never", "auto"
+    automount = true;
+  };
 }
