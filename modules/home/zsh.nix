@@ -6,32 +6,37 @@
     enable = true;
 
     history = {
-      size       = 10000;
-      save       = 10000;
+      size = 10000;
+      save = 10000;
       ignoreDups = true;
-      share      = true;
+      share = true;
     };
 
     oh-my-zsh = {
-      enable  = true;
-      theme   = ""; # p10k overrides this
-      plugins = [ "git" "sudo" "history" "dirhistory" ];
+      enable = true;
+      theme = ""; # p10k overrides this
+      plugins = [
+        "git"
+        "sudo"
+        "history"
+        "dirhistory"
+      ];
     };
 
     plugins = [
       {
         name = "powerlevel10k";
-        src  = pkgs.zsh-powerlevel10k;
+        src = pkgs.zsh-powerlevel10k;
         file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
       }
       {
         name = "zsh-autosuggestions";
-        src  = pkgs.zsh-autosuggestions;
+        src = pkgs.zsh-autosuggestions;
         file = "share/zsh-autosuggestions/zsh-autosuggestions.zsh";
       }
       {
         name = "zsh-syntax-highlighting"; # must be last
-        src  = pkgs.zsh-syntax-highlighting;
+        src = pkgs.zsh-syntax-highlighting;
         file = "share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
       }
     ];

@@ -5,19 +5,19 @@
     enable = true;
 
     theme = {
-      name    = "adw-gtk3-dark";
+      name = "adw-gtk3-dark";
       package = pkgs.adw-gtk3;
     };
 
     iconTheme = {
-      name    = "Papirus-Dark";
+      name = "Papirus-Dark";
       package = pkgs.papirus-icon-theme;
     };
 
     cursorTheme = {
-      name    = "macOS";
+      name = "macOS";
       package = pkgs.apple-cursor;
-      size    = 24;
+      size = 24;
     };
 
     font = {
@@ -31,16 +31,16 @@
 
   # Qt follows GTK dark theme
   qt = {
-    enable             = true;
+    enable = true;
     platformTheme.name = "gtk";
-    style.name         = "adwaita-dark";
+    style.name = "adwaita-dark";
   };
 
   # Cursor for Hyprland/Wayland
   home.pointerCursor = {
-    name       = "macOS";
-    package    = pkgs.apple-cursor;
-    size       = 24;
+    name = "macOS";
+    package = pkgs.apple-cursor;
+    size = 24;
     gtk.enable = true;
     x11.enable = true;
   };
@@ -48,13 +48,13 @@
   # Monospace font (not covered by gtk.font)
   dconf.settings."org/gnome/desktop/interface" = {
     monospace-font-name = "FiraCode Nerd Font Mono 11";
-    color-scheme        = "prefer-dark";  # forces dark mode in libadwaita apps
+    color-scheme = "prefer-dark"; # forces dark mode in libadwaita apps
   };
 
   # Session env vars
   home.sessionVariables = {
-    GTK_THEME     = "adw-gtk3-dark";
+    GTK_THEME = "adw-gtk3-dark";
     XCURSOR_THEME = "macOS";
-    XCURSOR_SIZE  = "24";
+    XCURSOR_SIZE = "24";
   };
 }

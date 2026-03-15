@@ -1,8 +1,8 @@
 { pkgs, ... }:
 {
   services.displayManager.sddm = {
-    enable         = true;
-    theme          = "chili";
+    enable = true;
+    theme = "chili";
 
     wayland = {
       enable = true;
@@ -13,9 +13,9 @@
   services.displayManager.defaultSession = "hyprland-uwsm";
 
   programs.hyprland = {
-    enable          = true;
+    enable = true;
     xwayland.enable = true;
-    withUWSM        = true;
+    withUWSM = true;
   };
 
   # Fingerprint reader
@@ -28,8 +28,8 @@
   security.pam.services.login.enableGnomeKeyring = true;
 
   xdg.portal = {
-    enable        = true;
-    extraPortals  = [ pkgs.xdg-desktop-portal-gtk ];
+    enable = true;
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
     config.common.default = "*";
   };
 }

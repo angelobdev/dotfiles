@@ -4,24 +4,24 @@
 
   home.packages = with pkgs; [
     # System / Wayland utilities
-    wl-clipboard      
-    brightnessctl     
-    hyprshot          
-    hyprpicker        
+    wl-clipboard
+    brightnessctl
+    hyprshot
+    hyprpicker
     alacritty
     wofi
     hyprpaper
     udiskie
-    zenity      
-    libsecret     
-    nixd        
-    nixfmt-rfc-style 
+    zenity
+    libsecret
+    nixd
+    nixfmt-rfc-style
 
     # Apps
-    fastfetch         
-    nautilus          
+    fastfetch
+    nautilus
     gnome-calculator
     smile
-    zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default  
+    zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }

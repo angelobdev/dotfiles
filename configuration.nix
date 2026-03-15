@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   imports = [
     ./hardware-configuration.nix
@@ -13,12 +18,15 @@
 
   users.users.angelo = {
     isNormalUser = true;
-    extraGroups  = [ "wheel" ];
-    shell        = pkgs.zsh;
-    packages     = with pkgs; [ tree ];
+    extraGroups = [ "wheel" ];
+    shell = pkgs.zsh;
+    packages = with pkgs; [ tree ];
   };
 
   nixpkgs.config.allowUnfree = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   system.stateVersion = "25.11";
 }
