@@ -1,5 +1,6 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, zen-browser, ... }: 
 
+{
 	home.username = "angelo";
 	home.homeDirectory = "/home/angelo";
 	home.stateVersion = "25.11";
@@ -8,8 +9,12 @@
 	# PROGRAMS
 	programs.git = {
     enable = true;
-    userName = "Angelo Belcastro";
-    userEmail = "angelo.belcastro01@gmail.com";
+		settings = {
+			user = {
+				name = "Angelo Belcastro";
+				email = "angelo.belcastro01@gmail.com";
+			};
+		};
   };
 
 
@@ -24,7 +29,6 @@
 		enable = true;
 		profiles.default.extensions = with pkgs.vscode-extensions; [
 			dracula-theme.theme-dracula
-			vscodevim.vim
 			yzhang.markdown-all-in-one
 		];
 	};
@@ -34,7 +38,7 @@
 
 	# Packages
 	home.packages = with pkgs; [
-		neovim
+		zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
 	];
 
 }
