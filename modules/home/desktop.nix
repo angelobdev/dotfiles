@@ -17,4 +17,6 @@
 
   # Clipboard manager — persists clipboard history
   services.cliphist.enable = true;
+
+  wayland.windowManager.hyprland.systemd.enable = false;
 }

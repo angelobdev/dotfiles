@@ -2,16 +2,20 @@
 {
   home.packages = with pkgs; [
     # System / Wayland utilities
-    wl-clipboard      # wl-copy / wl-paste
-    brightnessctl     # backlight control
-    hyprshot          # screenshot tool
-    hyprpicker        # color picker
-    zenity            # GTK dialog boxes (used by scripts)
+    wl-clipboard      
+    brightnessctl     
+    hyprshot          
+    hyprpicker        
+    alacritty
+    wofi
+    hyprpaper
+    udiskie
+    zenity           
 
     # Apps
-    fastfetch         # system info
-    nautilus          # file manager
+    fastfetch         
+    nautilus          
     gnome-calculator
-    smile             # emoji picker
+    smile             
   ];
 }
