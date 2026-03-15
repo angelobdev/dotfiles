@@ -1,5 +1,7 @@
-{ pkgs, ... }:
+{ pkgs, zen-browser, ... }:
 {
+  programs.vscode.enable = true;
+
   home.packages = with pkgs; [
     # System / Wayland utilities
     wl-clipboard      
@@ -12,11 +14,14 @@
     udiskie
     zenity      
     libsecret     
+    nixd        
+    nixfmt-rfc-style 
 
     # Apps
     fastfetch         
     nautilus          
     gnome-calculator
-    smile             
+    smile
+    zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default  
   ];
 }
