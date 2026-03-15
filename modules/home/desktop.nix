@@ -26,4 +26,9 @@
     enable = true;
     components = [ "pkcs11" "secrets" "ssh" ];
   };
+
+  # Udiskie
+  services.udiskie = {
+    enable = true;
+  };
 }
