@@ -11,6 +11,8 @@
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    hyprgrass.url = "github:horriblename/hyprgrass";
+    hyprland.follows = "hyprgrass/hyprland";
   };
 
   outputs =
@@ -19,11 +21,14 @@
       nixpkgs,
       home-manager,
       zen-browser,
+      hyprland,
+      hyprgrass,
       ...
     }:
     {
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
+        specialArgs = { inherit hyprland; };
         modules = [
           ./configuration.nix
           home-manager.nixosModules.home-manager
@@ -32,7 +37,7 @@
               useGlobalPkgs = true;
               useUserPackages = true;
               backupFileExtension = "backup";
-              extraSpecialArgs = { inherit self zen-browser; }; # self gives modules repo-relative paths
+              extraSpecialArgs = { inherit self zen-browser hyprland hyprgrass; };
               users.angelo = import ./home.nix;
             };
           }
