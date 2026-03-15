@@ -6,6 +6,7 @@
   services.udisks2.enable = true;
   services.power-profiles-daemon.enable = true;
   services.gvfs.enable = true;
+  services.blueman.enable = true;
 
   environment.systemPackages = with pkgs; [
     neovim
