@@ -18,9 +18,6 @@
   # Clipboard manager — persists clipboard history
   services.cliphist.enable = true;
 
-  # Fix for Hyprland UWSM
-  wayland.windowManager.hyprland.systemd.enable = false;
-
   # Gnome keyring
   services.gnome-keyring = {
     enable = true;
