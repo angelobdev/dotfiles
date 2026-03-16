@@ -23,5 +23,6 @@
     gnome-calculator
     smile
     zen-browser.packages.${pkgs.stdenv.hostPlatform.system}.default
+    jetbrains-toolbox
   ];
 }
