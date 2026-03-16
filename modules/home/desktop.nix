@@ -4,7 +4,10 @@
   programs.waybar.enable = true;
 
   # Notification daemon
-  services.swaync.enable = true;
+  services.swaync = {
+    enable = true;
+    settings = builtins.fromJSON (builtins.readFile ../../config/swaync/config.json);
+  };
 
   # Idle daemon
   services.hypridle.enable = true;
