@@ -16,6 +16,8 @@
     libsecret
     nixd
     nixfmt
+    pavucontrol
+    networkmanagerapplet
 
     # Apps
     fastfetch
