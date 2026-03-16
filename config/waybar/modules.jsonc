@@ -121,7 +121,7 @@
     ]
   },
   "custom/controls-label": {
-    "format": "<span font='16'></span>",
+    "format": "<span font='16'>󱄅</span>",
     "tooltip": false
   },
   "custom/notification": {
