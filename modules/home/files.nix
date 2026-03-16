@@ -1,4 +1,4 @@
-{ self, ... }:
+{ self, config, ... }:
 {
   # Each entry maps a repo path → its ~/.config destination
   xdg.configFile = {
@@ -12,7 +12,8 @@
     "hypr/hyprpaper.conf".source = "${self}/config/hypr/hyprpaper.conf";
     "swaync".source = "${self}/config/swaync";
     "swayosd".source = "${self}/config/swayosd";
-    "waybar".source = "${self}/config/waybar";
+    # Live symlink — edits take effect without rebuilding
+    "waybar".source = config.lib.file.mkOutOfStoreSymlink "${self}/config/waybar";
     "wofi".source = "${self}/config/wofi";
   };
 }
