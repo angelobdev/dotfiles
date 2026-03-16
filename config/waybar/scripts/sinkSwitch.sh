@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 #################################################################################
 #                                                                               #
 #   This script has been written by angelobdev                                  #
