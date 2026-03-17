@@ -8,21 +8,27 @@
 }
 
 window#waybar {
-  background: transparent;
-  border: 0;
+  background-image: linear-gradient(
+    30deg,
+    rgba(18, 18, 18, 0.72),
+    rgba(34, 34, 34, 0.72)
+  );
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
 }
 
 window#waybar.hidden {
   opacity: 0.3;
 }
 
-window#waybar.empty {
+/* window#waybar.empty {
   background: #1e1e1e;
 }
 
 window#waybar.empty #window {
   padding: 0;
-}
+} */
 
 tooltip {
   border-radius: 8px;
@@ -34,15 +40,6 @@ tooltip {
 }
 
 /* Modules Box - GTK4 libadwaita HeaderBar style */
-.modules-left,
-.modules-center,
-.modules-right {
-  background: #242424;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-  margin-top: 4px;
-}
 
 .modules-left {
   padding: 4px 0 4px 4px;
@@ -94,36 +91,36 @@ tooltip {
 
 /* Clock - GTK4 style */
 #clock {
-  padding: 0px 12px 0px 10px;
+  padding: 0 12px 0 10px;
   margin: 0;
   color: #ffffff;
-  font-weight: 500;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-weight: 700;
 }
 
 /* UPower (Battery) */
 #battery {
-  padding: 0px 10px;
   margin: 0;
-  border-radius: 8px;
   transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #ffffff;
 }
 
 #battery.charging {
-  background: rgba(53, 132, 228, 0.2);
+  /* background: rgba(53, 132, 228, 0.2); */
   color: #99c1f1;
 }
 
+#battery.full {
+  /* background: rgba(53, 132, 228, 0.2); */
+  color: #bff199;
+}
+
 #battery.warning {
-  background: rgba(246, 211, 45, 0.2);
+  /* background: rgba(246, 211, 45, 0.2); */
   color: #f8e45c;
 }
 
 #battery.critical {
-  background: rgba(237, 51, 59, 0.2);
+  /* background: rgba(237, 51, 59, 0.2); */
   color: #f66151;
 }
 
@@ -131,7 +128,7 @@ tooltip {
 #temperature {
   color: #ffbe6f;
   padding: 0 10px 0 10px;
-  margin: 0 6px 0 0;
+  margin: 0 0 0 2px;
   background: rgba(230, 97, 0, 0.15);
   border-radius: 8px;
   border: 1px solid rgba(230, 97, 0, 0.25);
@@ -140,7 +137,7 @@ tooltip {
 #cpu {
   color: #f9f06b;
   padding: 0 10px 0 10px;
-  margin: 0 6px 0 0;
+  margin: 0 0 0 2px;
   background: rgba(249, 240, 107, 0.15);
   border-radius: 8px;
   border: 1px solid rgba(249, 240, 107, 0.25);
@@ -149,7 +146,7 @@ tooltip {
 #memory {
   color: #8ff0a4;
   padding: 0 10px 0 10px;
-  margin: 0 6px 0 0;
+  margin: 0 0 0 2px;
   background: rgba(87, 227, 137, 0.15);
   border-radius: 8px;
   border: 1px solid rgba(87, 227, 137, 0.25);
@@ -158,7 +155,7 @@ tooltip {
 #disk {
   color: #dc8add;
   padding: 0 10px 0 10px;
-  margin: 0 6px 0 0;
+  margin: 0 0 0 2px;
   background: rgba(192, 97, 203, 0.15);
   border-radius: 8px;
   border: 1px solid rgba(192, 97, 203, 0.25);
@@ -279,10 +276,7 @@ tooltip {
 
 /* Power options - GTK4 libadwaita style buttons */
 #custom-poweroff {
-  color: #ffffff;
-  background: #c01c28;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.1);
+  color: #c01c28;
 }
 
 #custom-reboot {
@@ -325,21 +319,19 @@ tooltip {
 }
 
 #custom-poweroff {
-  margin: 2px 3px 2px 0;
+  margin: 0 0 0 2px;
+  padding: 0 8px;
 }
 
 #custom-reboot,
 #custom-lock,
 #custom-suspend,
 #custom-logout {
-  margin: 2px 3px;
+  margin: 0 3px;
 }
 
 #custom-poweroff:hover {
-  background: #a51d2d;
-  box-shadow:
-    inset 0 1px rgba(255, 255, 255, 0.15),
-    0 1px 3px rgba(0, 0, 0, 0.3);
+  color: #a51d2d;
 }
 
 #custom-reboot:hover {

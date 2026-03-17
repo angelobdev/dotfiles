@@ -3,28 +3,23 @@
   # GTK theme
   gtk = {
     enable = true;
-
     theme = {
       name = "adw-gtk3-dark";
       package = pkgs.adw-gtk3;
     };
-
     iconTheme = {
       name = "Papirus-Dark";
       package = pkgs.papirus-icon-theme;
     };
-
     cursorTheme = {
       name = "macOS";
       package = pkgs.apple-cursor;
       size = 24;
     };
-
     font = {
-      name = "Adwaita";
+      name = "Cantarell";
       size = 11;
     };
-
     gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = true;
   };
@@ -45,13 +40,12 @@
     x11.enable = true;
   };
 
-  # Monospace font (not covered by gtk.font)
   dconf.settings."org/gnome/desktop/interface" = {
     monospace-font-name = "FiraCode Nerd Font Mono 11";
-    color-scheme = "prefer-dark"; # forces dark mode in libadwaita apps
+    color-scheme = "prefer-dark";
+    gtk-theme = "adw-gtk3-dark";
   };
 
-  # Session env vars
   home.sessionVariables = {
     GTK_THEME = "adw-gtk3-dark";
     XCURSOR_THEME = "macOS";

@@ -9,28 +9,36 @@
 //                                                                              //
 //******************************************************************************//
 {
-  "include": "~/.config/waybar/modules.jsonc",
+  "$schema": "https://raw.githubusercontent.com/Magniquick/waybar-config-schema/main/schema.json",
+  "include": [
+    "~/.config/waybar/modules.jsonc"
+  ],
+
   "layer": "top",
-  "position": "top", // Waybar position (top|bottom|left|right)
-  // "height": 32, // Waybar height (to be removed for auto height)
-  "spacing": 4, // Gaps between modules (px)
+  "position": "top",
+  "margin": "4px 4px 4px 4px",   // floating bar — space from screen edges
+  "spacing": 4,
   "mode": "dock",
-  // Choose the order of the modules
+
   "modules-left": [
     "group/controls",
-    "clock",
-    "battery",
-    "group/hardware"
+    "group/hardware",
+    "hyprland/workspaces",
+    "hyprland/window"
   ],
+
   "modules-center": [
-    "hyprland/workspaces"
+    "clock"
   ],
+
   "modules-right": [
     "network",
     "bluetooth",
     "wireplumber",
     "custom/notification",
+    "battery",
     "group/power"
   ],
+
   "reload_style_on_change": true
 }

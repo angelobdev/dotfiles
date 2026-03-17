@@ -39,8 +39,16 @@
   security.pam.services.login.enableGnomeKeyring = true;
 
   xdg.portal = {
+    xdgOpenUsePortal = true;
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
-    config.common.default = "*";
+    # wlr.enable = true;
+    # lxqt.enable = true;
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gnome
+      pkgs.xdg-desktop-portal-gtk
+      pkgs.kdePackages.xdg-desktop-portal-kde
+      pkgs.xdg-desktop-portal-wlr
+    ];
   };
+
 }
