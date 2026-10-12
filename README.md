@@ -4,16 +4,16 @@ Desktop custom per Fedora 44: Hyprland Lua, interfaccia QML in Quickshell e pacc
 
 ## Pacchetti
 
-| Stow | Contenuto |
-| --- | --- |
-| `hypr` | `~/.config/hypr/hyprland.lua` e moduli Lua |
-| `quickshell` | Barra, launcher, controlli, notifiche, power e agente Polkit |
-| `shell` | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper}` e helper Python per sfondi/luminosità |
-| `hypridle` | Timer e coordinamento lock/sospensione |
-| `hyprlock` | Blocco Wayland con autenticazione PAM |
-| `hyprpaper` | Sfondo Fedora 44 notturno, su ogni monitor |
-| `gtk` | Palette, font, icone e preferenza scura GTK 3/4 |
-| `qt` | Palette Fusion e icone per Qt 5/6 tramite qt5ct/qt6ct |
+| Stow         | Contenuto                                                                                          |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| `hypr`       | `~/.config/hypr/hyprland.lua` e moduli Lua                                                         |
+| `quickshell` | Barra, launcher, controlli, notifiche, power e agente Polkit                                       |
+| `shell`      | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper}` e helper Python per sfondi/luminosità |
+| `hypridle`   | Timer e coordinamento lock/sospensione                                                             |
+| `hyprlock`   | Blocco Wayland con autenticazione PAM                                                              |
+| `hyprpaper`  | Sfondo Fedora 44 notturno, su ogni monitor                                                         |
+| `gtk`        | Palette, font, icone e preferenza scura GTK 3/4                                                    |
+| `qt`         | Palette Fusion e icone per Qt 5/6 tramite qt5ct/qt6ct                                              |
 
 ## Installazione e aggiornamento
 
@@ -59,11 +59,11 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-dae
 
 `Super + L` e il pannello power eseguono `desktop-power lock`, che avvia hyprlock con autenticazione obbligatoria (`--grace 0`) e serializza le richieste. PAM usa `/etc/pam.d/hyprlock` fornito dal pacchetto Fedora.
 
-| Inattività | Azione |
-| --- | --- |
-| 5 minuti | Blocco della sessione |
-| 10 minuti | Spegnimento display (DPMS) |
-| 30 minuti | Sospensione |
+| Inattività | Azione                     |
+| ---------- | -------------------------- |
+| 5 minuti   | Blocco della sessione      |
+| 10 minuti  | Spegnimento display (DPMS) |
+| 30 minuti  | Sospensione                |
 
 Personalizzare `hypridle/.config/hypr/hypridle.conf`. Il daemon rispetta gli inibitori delle applicazioni. **Resta attivo** nel Control Center sospende blocco, DPMS e sospensione automatici tramite un inibitore Wayland sulle barre; continua a funzionare a pannello chiuso. Le azioni manuali restano disponibili. Il toggle parte disattivato e si azzera al riavvio della shell; il modulo configurabile si chiama `idle`. `inhibit_sleep = 3` fa attendere a logind il segnale Wayland di sessione bloccata prima del riposo, anche con il wrapper custom. `before_sleep_cmd` copre le richieste esterne e la chiusura del coperchio quando logind la associa alla sospensione. Al risveglio riaccende i display. `desktop-power suspend` rifiuta di procedere se hypridle non è attivo.
 
@@ -79,31 +79,31 @@ La shell usa superfici glass scure con blur e bordi sottili neutri. Hyprland non
 
 ## Scorciatoie
 
-| Tasti | Azione |
-| --- | --- |
-| `Super + B` | Browser (`zen-browser`) |
-| `Super + Invio` | Kitty |
-| `Super + Q` | Chiudi finestra |
-| `Super + Spazio` | Applicazioni |
-| `Super + Shift + C` | Centro di controllo |
-| `Super + Shift + E` | Rete e Wi-Fi |
-| `Super + Shift + V` | Volume e dispositivi audio |
-| `Super + Shift + B` | Batteria ed energia |
-| `Super + Shift + N` | Notifiche |
-| `Super + Shift + D` | Calendario |
-| `Super + Shift + H` | Hints / bind attivi |
-| `Super + Shift + Q` | Menu sessione |
-| `Super + Shift + W` | Scegli sfondo |
-| `Super + L` / `XF86Sleep` | Blocca / sospendi con lock |
-| `Super + Shift + R` | Riavvia Quickshell |
-| `Super + V` / `Super + F` | Floating / fullscreen |
-| `Super + P` / `Super + J` | Pseudo tiling / orientamento split |
-| `Super + frecce` / `Super + Shift + frecce` | Focus / sposta finestra |
-| `Super + 1…9,0` / `Super + Shift + 1…9,0` | Workspace / sposta al workspace |
-| `Super + S` / `Super + Shift + S` | Mostra / popola scratchpad |
-| `Super + trascina sinistro/destro` | Sposta / ridimensiona finestra |
-| Tasti multimediali | Volume, microfono, luminosità |
-| `Esc` / clic esterno | Chiudi pannello |
+| Tasti                                       | Azione                             |
+| ------------------------------------------- | ---------------------------------- |
+| `Super + B`                                 | Browser (`zen-browser`)            |
+| `Super + Invio`                             | Kitty                              |
+| `Super + Q`                                 | Chiudi finestra                    |
+| `Super + Spazio`                            | Applicazioni                       |
+| `Super + Shift + C`                         | Centro di controllo                |
+| `Super + Shift + E`                         | Rete e Wi-Fi                       |
+| `Super + Shift + V`                         | Volume e dispositivi audio         |
+| `Super + Shift + B`                         | Batteria ed energia                |
+| `Super + Shift + N`                         | Notifiche                          |
+| `Super + Shift + D`                         | Calendario                         |
+| `Super + Shift + H`                         | Hints / bind attivi                |
+| `Super + Shift + Q`                         | Menu sessione                      |
+| `Super + Shift + W`                         | Scegli sfondo                      |
+| `Super + L` / `XF86Sleep`                   | Blocca / sospendi con lock         |
+| `Super + Shift + R`                         | Riavvia Quickshell                 |
+| `Super + V` / `Super + F`                   | Floating / fullscreen              |
+| `Super + P` / `Super + J`                   | Pseudo tiling / orientamento split |
+| `Super + frecce` / `Super + Shift + frecce` | Focus / sposta finestra            |
+| `Super + 1…9,0` / `Super + Shift + 1…9,0`   | Workspace / sposta al workspace    |
+| `Super + S` / `Super + Shift + S`           | Mostra / popola scratchpad         |
+| `Super + trascina sinistro/destro`          | Sposta / ridimensiona finestra     |
+| Tasti multimediali                          | Volume, microfono, luminosità      |
+| `Esc` / clic esterno                        | Chiudi pannello                    |
 
 Nel menu sessione: **↑/↓ e Tab/Shift+Tab** spostano il focus; **Invio o Spazio** attivano il pulsante. Alla richiesta di conferma il focus passa ad **Annulla**: usare **←/→ o Tab** per scegliere Conferma. **Esc** annulla la conferma, poi chiude il pannello. All’apertura il primo pulsante riceve il focus.
 

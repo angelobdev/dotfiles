@@ -4,26 +4,52 @@ import QtQuick.Layouts
 import ".."
 import "../components"
 import "../services"
+
 Overlay {
     panelName: "notifications"
     SidePanelCard {
         height: Math.min(600, parent.height - 76)
         ColumnLayout {
-            anchors { fill: parent; margins: 16 }
+            anchors {
+                fill: parent
+                margins: 16
+            }
             spacing: 14
             PanelHeader {
-                Layout.fillWidth: true; title: "Notifiche"
-                PanelIconButton { iconName: Notices.quiet ? "bell-off" : "bell"; tooltip: "Non disturbare"; highlighted: Notices.quiet; onClicked: Notices.quiet = !Notices.quiet }
-                PanelIconButton { iconName: "trash"; tooltip: "Elimina tutte"; enabled: Notices.notifications.values.length > 0; onClicked: Notices.clear() }
+                Layout.fillWidth: true
+                title: "Notifiche"
+                PanelIconButton {
+                    iconName: Notices.quiet ? "bell-off" : "bell"
+                    tooltip: "Non disturbare"
+                    highlighted: Notices.quiet
+                    onClicked: Notices.quiet = !Notices.quiet
+                }
+                PanelIconButton {
+                    iconName: "trash"
+                    tooltip: "Elimina tutte"
+                    enabled: Notices.notifications.values.length > 0
+                    onClicked: Notices.clear()
+                }
             }
             ListView {
                 id: list
-                Layout.fillWidth: true; Layout.fillHeight: true
-                clip: true; spacing: 10
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                spacing: 10
                 model: Notices.notifications
-                delegate: Notice { required property var modelData; width: list.width; notification: modelData }
+                delegate: Notice {
+                    required property var modelData
+                    width: list.width
+                    notification: modelData
+                }
                 ScrollBar.vertical: ScrollBar {}
-                Text { anchors.centerIn: parent; text: "Nessuna notifica"; visible: list.count === 0; color: Theme.muted }
+                Text {
+                    anchors.centerIn: parent
+                    text: "Nessuna notifica"
+                    visible: list.count === 0
+                    color: Theme.muted
+                }
             }
         }
     }

@@ -9,7 +9,7 @@ hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 hl.env("GDK_BACKEND", "wayland,x11,*")
 hl.on("hyprland.start", function()
     hl.exec_cmd(
-    "dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE QT_QPA_PLATFORM GDK_BACKEND")
+        "dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE QT_QPA_PLATFORM GDK_BACKEND")
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-session" start')
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell" start')
 end)

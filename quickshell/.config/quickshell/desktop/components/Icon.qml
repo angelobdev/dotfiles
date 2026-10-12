@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Effects
 import ".."
+
 Item {
     id: root
     required property string name
@@ -15,5 +16,10 @@ Item {
         fillMode: Image.PreserveAspectFit
         visible: false
     }
-    MultiEffect { anchors.fill: glyph; source: glyph; colorization: 1; colorizationColor: root.color }
+    MultiEffect {
+        anchors.fill: glyph
+        source: glyph
+        colorization: 1
+        colorizationColor: root.color
+    }
 }

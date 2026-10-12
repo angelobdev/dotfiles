@@ -25,7 +25,7 @@ bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(shell .. " restart"), "Riavvia Quicksh
 
 
 -- Directional Binds
-for _, direction in ipairs({"left", "right", "up", "down"}) do
+for _, direction in ipairs({ "left", "right", "up", "down" }) do
     bind("SUPER + " .. direction, hl.dsp.focus({ direction = direction }), "Focus " .. direction)
     bind("SUPER + SHIFT + " .. direction, hl.dsp.window.move({ direction = direction }), "Sposta " .. direction)
 end
@@ -46,12 +46,16 @@ bind("SUPER + mouse:272", hl.dsp.window.drag(), "Trascina finestra", { mouse = t
 bind("SUPER + mouse:273", hl.dsp.window.resize(), "Ridimensiona finestra", { mouse = true })
 
 -- Keyboard Controls
-bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), "Volume +", { locked = true, repeating = true })
-bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), "Volume -", { locked = true, repeating = true })
+bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), "Volume +",
+    { locked = true, repeating = true })
+bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), "Volume -",
+    { locked = true, repeating = true })
 bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), "Muto", { locked = true })
 bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), "Microfono", { locked = true })
-bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), "Luminosità +", { locked = true, repeating = true })
-bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), "Luminosità -", { locked = true, repeating = true })
+bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), "Luminosità +",
+    { locked = true, repeating = true })
+bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), "Luminosità -",
+    { locked = true, repeating = true })
 
 -- Power Management
 local power = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-power"'

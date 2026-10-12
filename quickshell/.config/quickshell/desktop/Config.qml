@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+
 QtObject {
     // Order and presence of modules. Unknown names are ignored.
     readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "doNotDisturb", "idle"]

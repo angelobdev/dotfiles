@@ -6,11 +6,18 @@ import Quickshell.Services.Notifications
 import ".."
 import "../components"
 import "../services"
+
 PanelWindow {
     id: root
     screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) || Quickshell.screens[0]
-    anchors { top: true; right: true }
-    margins { top: 54; right: 12 }
+    anchors {
+        top: true
+        right: true
+    }
+    margins {
+        top: 54
+        right: 12
+    }
     implicitWidth: 380
     implicitHeight: Math.min(stack.implicitHeight, (screen?.height ?? 900) - 100)
     visible: Notices.popups.length > 0 && !Notices.quiet && ShellState.panel === ""
@@ -18,7 +25,9 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "desktop-notifications"
     contentItem.clip: true
-    mask: Region { item: stack }
+    mask: Region {
+        item: stack
+    }
     Column {
         id: stack
         width: parent.width

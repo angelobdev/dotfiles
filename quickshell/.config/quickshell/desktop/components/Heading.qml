@@ -1,5 +1,6 @@
 import QtQuick
 import ".."
+
 Text {
     color: Theme.text
     font.family: Theme.font
