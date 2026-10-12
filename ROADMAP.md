@@ -64,11 +64,9 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [ ] Configurazione e verifica delle applicazioni Electron con XWayland/Wayland; il supporto XWayland generale è già presente.
 - [ ] Integrazione e configurazione dei portali XDG per la sessione Hyprland.
 - [ ] Supporto screen sharing e registrazione dello schermo, con verifica delle applicazioni utilizzate.
-- [ ] Mostrare almeno due workspace nella top bar; attualmente vengono mostrati solo quelli occupati e quello attivo.
+- [ ] Mostrare almeno due workspace nella top bar (per monitor); attualmente vengono mostrati solo quelli occupati e quello attivo; Va aggiunto "scroll" via rotella del mouse all'hover sulle 'pill'
 - [ ] Clipboard manager con sincronizzazione X11/Wayland.
-- [ ] Hyprlock fingerprint support and modern theme/layout
-- [ ] Multi-distro installation support (add debian, arch)
-- [ ] Update and simplify README (divide into multple docs files)
+- [ ] Hyprlock fingerprint support and modern theme/layout aligned with system theme (maybe macOS-like layout)
 
 ## Estensioni già individuate
 
@@ -77,6 +75,8 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [ ] Eventi e calendari esterni nel calendario.
 - [ ] Persistenza delle impostazioni della shell: Non disturbare e “Resta attivo” attualmente si azzerano al riavvio.
 - [ ] Multilanguage support
+- [ ] Multi-distro installation support (add debian, arch)
+- [ ] Update and simplify README (divide into multple docs files)
 
 ## Verifiche manuali ancora aperte
 
