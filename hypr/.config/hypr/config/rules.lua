@@ -4,3 +4,11 @@ hl.window_rule({
     match = { class = "^$", title = "^$", xwayland = true, float = true, fullscreen = false, pin = false },
     no_focus = true,
 })
+
+-- Transparent margins/backdrops stay clear; the glass surfaces receive blur.
+hl.layer_rule({
+    name = "desktop-glass",
+    match = { namespace = "^desktop-(bar|overlay|notifications)$" },
+    blur = true,
+    ignore_alpha = 0.2,
+})

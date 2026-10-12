@@ -36,3 +36,7 @@ bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggl
 bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), "Microfono", { locked = true })
 bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), "Luminosità +", { locked = true, repeating = true })
 bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), "Luminosità -", { locked = true, repeating = true })
+
+local power = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-power"'
+bind("SUPER + L", hl.dsp.exec_cmd(power .. " lock"), "Blocca schermo")
+bind("XF86Sleep", hl.dsp.exec_cmd(power .. " suspend"), "Sospendi")

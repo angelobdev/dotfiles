@@ -2,12 +2,12 @@ hl.config({
     general = {
         gaps_in = 5, gaps_out = 12, border_size = 2, layout = "dwindle",
         resize_on_border = true,
-        col = { active_border = "rgba(89b4faff)", inactive_border = "rgba(313244ff)" },
+        col = { active_border = "rgba(89b4faff)", inactive_border = "rgba(35455eaa)" },
     },
     decoration = {
-        rounding = 12,
+        rounding = 16,
         shadow = { enabled = true, range = 12, render_power = 3, color = 0x6611111b },
-        blur = { enabled = true, size = 6, passes = 2 },
+        blur = { enabled = true, size = 8, passes = 3 },
     },
     dwindle = { preserve_split = true },
     animations = { enabled = true },

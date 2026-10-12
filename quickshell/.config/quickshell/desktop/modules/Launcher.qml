@@ -49,7 +49,10 @@ Overlay {
                     required property var modelData
                     required property int index
                     width: apps.width
-                    implicitHeight: 44
+                    implicitHeight: 52
+                    iconSource: Quickshell.iconPath(modelData.icon, "application-x-executable")
+                    iconSize: 30
+                    alignLeft: true
                     text: modelData.name + (modelData.runInTerminal ? "  [terminale]" : "")
                     highlighted: apps.currentIndex === index
                     onClicked: root.launch(modelData)

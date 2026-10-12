@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 repo=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-bash -n "$repo/shell/.local/bin/desktop-shell"
+for script in "$repo"/shell/.local/bin/*; do bash -n "$script"; done
 python3 - "$repo/scripts/stow.py" <<'PY'
 import ast, pathlib, sys
 ast.parse(pathlib.Path(sys.argv[1]).read_text())

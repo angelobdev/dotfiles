@@ -29,7 +29,6 @@ ShellRoot {
         model: Quickshell.screens
         delegate: Scope {
             required property var modelData
-            Wallpaper { screen: modelData }
             Bar { screen: modelData }
         }
     }

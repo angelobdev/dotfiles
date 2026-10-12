@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-start}" in
+    start)
+        : "${XDG_RUNTIME_DIR:?Sessione Wayland richiesta}"
+        exec 9>"$XDG_RUNTIME_DIR/desktop-session.lock"
+        flock 9
+        state="${XDG_STATE_HOME:-$HOME/.local/state}/desktop-session"
+        mkdir -p "$state"
+        "$HOME/.local/bin/desktop-theme"
+        for daemon in hyprpaper hypridle; do
+            command -v "$daemon" >/dev/null || { echo "Manca $daemon." >&2; exit 1; }
+            if ! pgrep -u "$(id -u)" -x "$daemon" >/dev/null; then
+                # Close our flock fd in children; it must only serialize startup.
+                nohup "$daemon" >"$state/$daemon.log" 2>&1 9>&- &
+            fi
+        done
+        ;;
+    status)
+        for daemon in hyprpaper hypridle hyprlock; do
+            if pgrep -u "$(id -u)" -x "$daemon" >/dev/null; then
+                printf '%s: attivo\n' "$daemon"
+            else printf '%s: non attivo\n' "$daemon"; fi
+        done
+        ;;
+    *) echo 'Uso: desktop-session {start|status}' >&2; exit 2 ;;
+esac

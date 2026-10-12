@@ -10,7 +10,7 @@ PanelWindow {
     visible: ShellState.panel === panelName
     anchors { top: true; bottom: true; left: true; right: true }
     exclusionMode: ExclusionMode.Ignore
-    color: "#80000000"
+    color: "#18060c16"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "desktop-overlay"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive

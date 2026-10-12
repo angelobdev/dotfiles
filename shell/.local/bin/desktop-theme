@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export QT_QPA_PLATFORMTHEME=qt5ct
+export QT_QUICK_CONTROLS_STYLE=Basic
+# Also informs portal-aware applications, including GTK4/libadwaita.
+if command -v gsettings >/dev/null; then
+    schema=org.gnome.desktop.interface
+    state="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+    mkdir -p "$state"
+    if [[ ! -e "$state/interface-before-theme.ini" ]]; then
+        gsettings list-recursively "$schema" >"$state/interface-before-theme.ini"
+    fi
+    set_key() {
+        if gsettings list-keys "$schema" | rg -qx "$1"; then
+            gsettings set "$schema" "$1" "$2"
+        fi
+    }
+    set_key color-scheme prefer-dark
+    set_key gtk-theme Adwaita-dark
+    set_key icon-theme Papirus-Dark
+    set_key font-name 'Adwaita Sans 10'
+    set_key monospace-font-name 'Adwaita Mono 10'
+    set_key cursor-theme Adwaita
+    set_key cursor-size 24
+    set_key accent-color blue
+fi
+if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
+    dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE
+fi
