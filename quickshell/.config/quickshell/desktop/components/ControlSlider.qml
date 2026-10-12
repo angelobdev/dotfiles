@@ -5,7 +5,7 @@ Slider {
     id: root
     from: 0; to: 1
     implicitHeight: 30
-    leftPadding: 9; rightPadding: 9
+    leftPadding: 8; rightPadding: 8
     opacity: enabled ? 1 : 0.4
     background: Rectangle {
         x: root.leftPadding; y: (root.height - height) / 2

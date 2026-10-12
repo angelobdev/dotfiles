@@ -17,7 +17,7 @@ Button {
     readonly property color foreground: destructive ? Theme.danger : highlighted ? Theme.background : Theme.text
     implicitHeight: 36
     implicitWidth: Math.max(36, label.implicitWidth + (hasIcon ? iconSize + (text ? 10 : 0) : 0) + 24)
-    leftPadding: 12; rightPadding: 12
+    leftPadding: 0; rightPadding: 0
     font.family: Theme.font
     font.pixelSize: 13
     opacity: enabled ? 1 : 0.45

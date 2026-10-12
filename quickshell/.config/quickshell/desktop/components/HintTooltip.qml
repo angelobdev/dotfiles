@@ -16,7 +16,7 @@ PopupWindow {
     // Slide horizontally at screen edges, preserving the position below the control.
     anchor.adjustment: PopupAdjustment.SlideX
     visible: delay.running === false && hovered && text !== "" && target.visible && !!target.QsWindow.window?.visible
-    implicitWidth: Math.min(360, label.implicitWidth + 24)
+    implicitWidth: Math.min(360, label.implicitWidth + 25)
     implicitHeight: label.implicitHeight + 16
     color: "transparent"
     Timer { id: delay; interval: 500; running: root.hovered && root.text !== "" }
