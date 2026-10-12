@@ -6,15 +6,15 @@ local function bind(keys, dispatcher, description, flags)
 end
 
 -- Applications
-bind("SUPER + B", hl.dsp.exec_cmd("zen-browser"), "Browser")
 bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminale")
 
 -- System (Hyprland)
 bind("SUPER + Q", hl.dsp.window.close(), "Chiudi finestra")
 bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Finestra flottante")
-bind("SUPER + F", hl.dsp.window.fullscreen(), "Schermo intero")
 bind("SUPER + P", hl.dsp.window.pseudo(), "Pseudo tiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Cambia orientamento split")
+bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Schermo intero")
+bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region"), "Screenshot")
 
 -- System (Quickshell)
 bind("SUPER + Space", hl.dsp.exec_cmd(shell .. " toggle launcher"), "Applicazioni")
