@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Networking
-import "../.."
-import "../../components"
+import ".."
+import "../components"
 
 ControlTile {
     id: root

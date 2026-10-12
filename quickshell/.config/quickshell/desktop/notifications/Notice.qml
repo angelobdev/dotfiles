@@ -1,4 +1,5 @@
 import QtQuick
+import "../components"
 import QtQuick.Layouts
 import Quickshell
 import ".."

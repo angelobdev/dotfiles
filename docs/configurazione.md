@@ -2,6 +2,23 @@
 
 [← README](../README.md)
 
+## Struttura Quickshell
+
+Dentro `quickshell/.config/quickshell/desktop/`, `shell.qml` resta il punto di ingresso del desktop e `share.qml` quello del selettore di condivisione. `Config.qml`, `Theme.qml` e `ShellState.qml` rimangono nella radice.
+
+| Cartella | Contenuto |
+| --- | --- |
+| `bar/` | Barra, workspace e pulsanti della barra; `tray/` contiene i menu della tray. |
+| `controlcenter/` | Pannello del Centro di controllo e moduli caricati dalla configurazione. |
+| `panels/` | Launcher, rete, Bluetooth, audio, batteria, calendario, Hints, clipboard, registrazione e sfondi. |
+| `notifications/` | Centro, popup e componenti specifici delle notifiche. |
+| `session/` | Menu power e richieste di autenticazione Polkit/Bluetooth. |
+| `osd/` | Indicatori temporanei di volume e luminosità. |
+| `components/` | Pulsanti, slider, card e altri elementi condivisi. |
+| `services/` | Stato e collegamenti ai backend; `assets/icons/` contiene le icone. |
+
+I componenti specifici stanno accanto alla funzione che li usa; quelli riutilizzati da più pannelli restano in `components/`. Non è più presente la cartella generica `modules/`.
+
 ## Configurazione del Control Center
 
 Modificare `quickshell/.config/quickshell/desktop/Config.qml`. La configurazione è dichiarativa, senza editor nell’interfaccia:
@@ -15,7 +32,7 @@ readonly property string primaryMonitor: "eDP-1"
 readonly property var brightnessDevices: ({})
 ```
 
-Rimuovere un nome disabilita il modulo; riordinare la lista cambia la disposizione. Nomi sconosciuti e duplicati vengono ignorati. Ogni modulo è un file distinto in `modules/controlcenter/`. Rete e Bluetooth occupano mezza riga, gli altri moduli una riga intera; il pannello scorre quando gli accordion superano lo spazio disponibile. Se il monitor primario è scollegato si usa il primo display connesso.
+Rimuovere un nome disabilita il modulo; riordinare la lista cambia la disposizione. Nomi sconosciuti e duplicati vengono ignorati. Ogni modulo è un file distinto in `controlcenter/`. Rete e Bluetooth occupano mezza riga, gli altri moduli una riga intera; il pannello scorre quando gli accordion superano lo spazio disponibile. Se il monitor primario è scollegato si usa il primo display connesso.
 
 La luminosità è hardware: il singolo backlight di un pannello eDP/LVDS/DSI viene rilevato automaticamente e controllato con `brightnessctl`. I tasti luminosità conservano il controllo del backlight integrato. Per più backlight o monitor esterni associare esplicitamente il nome restituito da `hyprctl monitors` al dispositivo:
 

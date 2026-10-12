@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import ".."
 import "../components"
-import "controlcenter"
 
 Overlay {
     id: root
@@ -60,13 +59,13 @@ Overlay {
                             Layout.fillWidth: true
                             Layout.columnSpan: ["network", "bluetooth"].includes(modelData) ? 1 : 2
                             source: ({
-                                    network: "controlcenter/NetworkTile.qml",
-                                    bluetooth: "controlcenter/BluetoothTile.qml",
-                                    brightness: "controlcenter/BrightnessControl.qml",
-                                    audio: "controlcenter/AudioControl.qml",
-                                    media: "controlcenter/MediaControl.qml",
-                                    doNotDisturb: "controlcenter/FocusControl.qml",
-                                    idle: "controlcenter/IdleControl.qml"
+                                    network: "NetworkTile.qml",
+                                    bluetooth: "BluetoothTile.qml",
+                                    brightness: "BrightnessControl.qml",
+                                    audio: "AudioControl.qml",
+                                    media: "MediaControl.qml",
+                                    doNotDisturb: "FocusControl.qml",
+                                    idle: "IdleControl.qml"
                                 })[modelData]
                         }
                     }

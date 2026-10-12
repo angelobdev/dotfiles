@@ -8,7 +8,10 @@ case "${1:-start}" in
         state="${XDG_STATE_HOME:-$HOME/.local/state}/desktop-session"
         mkdir -p "$state"
         export PATH="$HOME/.local/bin:$PATH"
-        dbus-update-activation-environment --systemd PATH WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE
+        # Refresh graphical backends too when session startup is invoked manually.
+        export GDK_BACKEND='wayland,x11,*'
+        export QT_QPA_PLATFORM='wayland;xcb'
+        dbus-update-activation-environment --systemd GDK_BACKEND QT_QPA_PLATFORM PATH WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE
         "$HOME/.local/bin/desktop-theme"
         systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service
         "$HOME/.local/bin/desktop-wallpaper" --ensure

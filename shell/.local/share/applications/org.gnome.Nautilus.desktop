@@ -1,0 +1,21 @@
+[Desktop Entry]
+Name=Files
+Name[it]=File
+Comment=Access and organize files
+Comment[it]=Accedi ai file e organizzali
+Exec=env GDK_BACKEND=wayland nautilus --new-window %U
+TryExec=nautilus
+Icon=org.gnome.Nautilus
+Terminal=false
+Type=Application
+DBusActivatable=false
+StartupNotify=true
+StartupWMClass=org.gnome.Nautilus
+Categories=GNOME;GTK;Utility;Core;FileManager;
+MimeType=inode/directory;
+Actions=new-window;
+
+[Desktop Action new-window]
+Name=New Window
+Name[it]=Nuova finestra
+Exec=env GDK_BACKEND=wayland nautilus --new-window

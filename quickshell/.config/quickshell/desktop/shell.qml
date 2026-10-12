@@ -6,7 +6,12 @@ import Quickshell.Hyprland
 import Quickshell.Services.UPower
 import Quickshell.Networking
 import Quickshell.Bluetooth
-import "modules"
+import "bar"
+import "panels"
+import "controlcenter"
+import "notifications"
+import "session"
+import "osd"
 import "services"
 
 ShellRoot {

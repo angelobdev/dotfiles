@@ -90,3 +90,5 @@ Il pacchetto Fedora `hyprshot` installa le dipendenze di cattura e selezione (`g
 ## Dati dei pannelli
 
 Audio usa i nodi PipeWire e cambia i dispositivi predefiniti tramite le API Quickshell; WirePlumber decide come instradare gli stream già aperti. UPower fornisce potenza della batteria in W, energia in Wh e tempi stimati: il valore non è il consumo totale alla presa e può variare nel tempo. Se una stima manca, il pannello lo indica senza inventare un’autonomia. Il calendario legge le sorgenti abilitate di Evolution Data Server, incluse quelle degli Account online; la sincronizzazione e le credenziali rimangono gestite da GNOME. Le letture possono richiedere rete. Gli eventi sono tenuti in memoria dalla shell; EDS conserva la propria cache. Non disturbare silenzia i popup e conserva le notifiche nel centro; lo stato si azzera al riavvio della shell.
+
+I menu della tray si aprono sotto l’icona sullo stesso monitor. Il posizionamento segue le dimensioni effettive della superficie Wayland; vicino al bordo viene limitato allo spazio disponibile e i sottomenu possono aprirsi a sinistra.

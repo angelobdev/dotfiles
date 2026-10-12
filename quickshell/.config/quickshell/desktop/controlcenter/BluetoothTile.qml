@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Bluetooth
-import "../.."
-import "../../components"
+import ".."
+import "../components"
 
 ControlTile {
     readonly property int connected: Bluetooth.devices.values.filter(d => d.connected).length

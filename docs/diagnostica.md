@@ -33,6 +33,10 @@ Verifiche della fase successiva: modello workspace su più monitor (minimo, ID u
 
 La prova finale di pairing con un dispositivo fisico resta manuale, tramite **Bluetooth → Cerca dispositivi**. La lettura/scrittura DDC reale resta da validare su un monitor compatibile.
 
+- Rendering applicazioni: ChatGPT e Nautilus segnalati erano X11 a scala 1,667; istanze con profilo/bus isolati verificate native Wayland. Launcher locali aggiornati, senza chiudere le app dell’utente.
+- Tray: regressione con icona a 600 px dal bordo, menu sotto l’icona dopo il dimensionamento Wayland, hover, azioni disabilitate, checkbox, sottomenu, Escape e clic esterno.
+- Riorganizzazione: caricamento completo QML e selettore di condivisione verificati dopo l’aggiornamento degli import e dei link Stow.
+
 ## Riferimenti
 
 [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [PopupAnchor](https://quickshell.org/docs/v0.3.0/types/Quickshell/PopupAnchor/), [IdleInhibitor](https://quickshell.org/docs/v0.3.0/types/Quickshell.Wayland/IdleInhibitor/), [Hyprshot](https://github.com/Gustash/Hyprshot), [DDC/CI luminosità](https://www.ddcutil.com/command_getvcp/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/), [portale Hyprland](https://wiki.hypr.land/Hypr-Ecosystem/xdg-desktop-portal-hyprland/), [Electron Wayland](https://www.electronjs.org/blog/tech-talk-wayland), [cliphist](https://github.com/sentriz/cliphist), [wf-recorder](https://github.com/ammen99/wf-recorder), [Kitty](https://sw.kovidgoyal.net/kitty/conf/).

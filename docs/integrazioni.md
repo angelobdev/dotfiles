@@ -24,6 +24,14 @@ Il config di hyprlock è stato provato in una sessione Hyprland annidata: inizia
 
 La macchina è stata verificata con XWayland attivo e `xprop -root`. Per cambiare la politica di scala delle app X11, usare `hypr/.config/hypr/config/local.lua`; forzare la scala a zero può rendere molto piccole le app che non gestiscono HiDPI da sole.
 
+### Testi sfocati su schermi con scala frazionaria
+
+Sulla macchina, le finestre ChatGPT e Nautilus segnalate risultavano entrambe XWayland sul monitor eDP con scala 1,667. Nautilus aveva `GDK_BACKEND=x11`; ChatGPT era partito senza le variabili del display Wayland. La scalatura delle superfici X11 può sfocare il testo ([documentazione Hyprland](https://wiki.hypr.land/0.54.0/Configuring/XWayland/)). Istanze isolate di entrambe le app sono state verificate come native Wayland, senza cambiare CSS, font o scala del monitor.
+
+Il pacchetto Stow `shell` include `~/.local/share/applications/chatgpt.desktop` con `--ozone-platform=wayland` e `org.gnome.Nautilus.desktop` con `GDK_BACKEND=wayland`. Per Nautilus l’attivazione D-Bus dal launcher è disabilitata per applicare l’ambiente del comando; l’app conserva comunque la propria istanza unica. `desktop-session start` aggiorna anche `GDK_BACKEND` e `QT_QPA_PLATFORM` nell’ambiente dei servizi. Gli override richiedono una sessione Wayland.
+
+**Chiudere completamente e riaprire le app** per applicare il backend: aprire una nuova finestra di un processo X11 già attivo non basta. Le istanze dell’utente non sono state terminate durante le verifiche. Controllare il campo `xwayland` in `hyprctl -j clients`: `false` indica una finestra nativa. `force_zero_scaling` resta disattivato per conservare le dimensioni delle altre app X11. L’opacità delle finestre inattive rimane 0,92 e può ridurre il contrasto, anche con rendering nativo.
+
 ## Electron, portali e condivisione schermo
 
 Le applicazioni moderne scelgono Wayland usando `XDG_SESSION_TYPE=wayland`. La sessione imposta anche `XDG_CURRENT_DESKTOP=Hyprland` e importa le variabili del display in D-Bus/systemd. Per app Electron che richiedono una scelta esplicita:
@@ -33,7 +41,7 @@ desktop-electron code                  # --ozone-platform=wayland
 desktop-electron --x11 code            # fallback XWayland
 ```
 
-Chiudere prima le istanze dell’app: un processo già aperto può ricevere la richiesta di nuova finestra conservando il suo backend. Il wrapper non modifica i launcher delle app e non inserisce variabili Electron obsolete. VS Code è stato provato con profili temporanei su entrambi i backend; VS Code e Zen già aperti risultavano nativi Wayland. Le app Electron con Chromium personalizzato o vecchio possono avere limiti propri.
+Chiudere prima le istanze dell’app: un processo già aperto può ricevere la richiesta di nuova finestra conservando il suo backend. Il wrapper non modifica i launcher delle app e non inserisce variabili Electron obsolete. La repo fornisce separatamente gli override desktop descritti sopra. VS Code è stato provato con profili temporanei su entrambi i backend; VS Code e Zen già aperti risultavano nativi Wayland. Le app Electron con Chromium personalizzato o vecchio possono avere limiti propri.
 
 `portals/.config/xdg-desktop-portal/hyprland-portals.conf` sceglie Hyprland per ScreenCast, Screenshot, GlobalShortcuts e InputCapture, con GTK per FileChooser e Settings e come fallback. PipeWire trasporta il video. `desktop-session start` importa anche `~/.local/bin` nel PATH dei servizi e avvia i portali **dopo** l’importazione dell’ambiente; non li riavvia automaticamente durante condivisioni attive.
 

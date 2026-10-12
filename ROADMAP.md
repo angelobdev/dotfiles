@@ -20,13 +20,16 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Integrazione di hypridle, hyprlock e hyprpaper; blocco, DPMS e sospensione automatica configurati.
 - [x] Hyprlock: layout moderno grafite, password PAM e autenticazione impronta nativa in parallelo; lettore Synaptics acquisito e verifica dell’indice destro avviata nel test headless.
 
+- [x] Quickshell riorganizzato per funzione (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), con componenti e servizi condivisi e import aggiornati.
+- [x] Verifica testi sfocati di ChatGPT e Nautilus: entrambe le istanze segnalate erano XWayland; avvio nativo Wayland verificato con istanze isolate, launcher locali corretti e ambiente di sessione aggiornato. Riavvio delle app dell’utente necessario per applicare il backend.
+
 ### Barra e navigazione
 
 - [x] Top bar da 38 px con sfondo trasparente/traslucido, logo Fedora e menu applicazioni.
 - [x] Workspace occupati e attivo rappresentati da pill, con evidenza dello stato attivo e urgente.
 - [x] Almeno due pill per monitor, segnaposto vuoti con ID globalmente unici e navigazione con rotella/touchpad sull’intera altezza dell’area workspace.
 - [x] Titolo della finestra, spacer, tray, batteria con percentuale e icona, Hints, notifiche, Control Center, giorno/ora e power.
-- [x] Menu tray QML con sfondo/bordo coordinati, angoli arrotondati, hover, sottomenu e navigazione da tastiera; Esc e clic esterno chiudono il menu.
+- [x] Menu tray QML con sfondo/bordo coordinati, angoli arrotondati, hover, sottomenu, ancoraggio sotto l’icona sul relativo monitor e navigazione da tastiera; Esc e clic esterno chiudono il menu.
 - [x] Icone di stato centrate e tooltip nativi posizionati sotto i pulsanti.
 - [x] Launcher con ricerca, icone applicazioni, titoli allineati a sinistra e navigazione da tastiera.
 - [x] Pannello Hints con ricerca, categorie e scorciatoie/descrizioni lette dai bind reali di Hyprland.
@@ -67,6 +70,7 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Screen sharing via ScreenCast/PipeWire e registrazione monitor/area via wf-recorder, pannello QML, scelta audio, indicatore nella barra e salvataggio video; test reale del portale e registrazione di una finestra dedicata, prova nella web app specifica elencata sotto.
 - [x] README sintetico e guide separate in `docs/` per installazione, interfaccia/scorciatoie, configurazione, integrazioni e diagnostica; aggiornate per pairing, MPRIS, calendari e risultati DDC/CI.
 - [x] Hotplug fisico HDMI verificato con Philips FTV: rimozione e ripristino del monitor, della barra e dell’elenco luminosità, senza riavvio della shell. Permessi I²C applicati tramite le regole udev del pacchetto ddcutil.
+
 
 ## Prossimi sviluppi
 

@@ -10,7 +10,8 @@ import Quickshell.Services.UPower
 import ".."
 import "../components"
 import "../services"
-import "../components/WorkspaceModel.js" as WorkspaceModel
+import "tray"
+import "WorkspaceModel.js" as WorkspaceModel
 
 PanelWindow {
     id: bar

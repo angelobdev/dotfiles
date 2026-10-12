@@ -2,9 +2,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import "../.."
-import "../../components"
-import "../../services"
+import ".."
+import "../components"
+import "../services"
 
 ControlTile {
     id: root

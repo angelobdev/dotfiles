@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
-import "../.."
-import "../../components"
-import "../../services"
+import ".."
+import "../components"
+import "../services"
 
 ControlTile {
     implicitHeight: 68
