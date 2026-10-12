@@ -1,0 +1,2 @@
+-- Overrides for this machine. Example:
+-- hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 2 })

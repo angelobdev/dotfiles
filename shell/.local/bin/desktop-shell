@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+config="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/desktop"
+case "${1:-start}" in
+    start) exec qs -p "$config" --no-duplicate --daemonize ;;
+    stop) exec qs kill -p "$config" ;;
+    restart)
+        qs kill -p "$config" 2>/dev/null || true
+        exec qs -p "$config" --no-duplicate --daemonize
+        ;;
+    toggle)
+        case "${2:-}" in launcher|controls|notifications|power) ;;
+            *) echo 'Uso: desktop-shell toggle {launcher|controls|notifications|power}' >&2; exit 2 ;;
+        esac
+        exec qs ipc -p "$config" call desktop toggle "$2"
+        ;;
+    status) exec qs ipc -p "$config" call desktop status ;;
+    *) echo 'Uso: desktop-shell {start|stop|restart|status|toggle PANEL}' >&2; exit 2 ;;
+esac
