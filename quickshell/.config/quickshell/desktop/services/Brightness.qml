@@ -6,6 +6,8 @@ import ".."
 
 Singleton {
     id: root
+    signal brightnessChanged(string monitorName, int percent)
+    property var backlightLevels: null
     property var monitors: []
     property var otherNames: []
     property string error: ""
@@ -20,6 +22,39 @@ Singleton {
     function displayPercent(monitor) {
         return monitor ? (requested[monitor.name] ?? monitor.percent ?? 1) : 1;
     }
+    function applyBacklights(levels) {
+        const previous = backlightLevels;
+        backlightLevels = levels;
+        if (previous === null)
+            return;
+        monitors = monitors.map(m => {
+            const device = m.backend?.type === "backlight" ? m.backend.device : "";
+            if (!m.available || !(device in levels) || requested[m.name] !== undefined)
+                return m;
+            if (previous[device] !== undefined && previous[device] !== levels[device] && m.percent !== levels[device])
+                brightnessChanged(m.name, levels[device]);
+            return Object.assign({}, m, {
+                percent: levels[device]
+            });
+        });
+    }
+    function applyReading(data) {
+        // A slow DDC read must not roll back newer sysfs samples on other monitors.
+        if (Config.osdEnabled && backlightLevels !== null) {
+            data = data.map(m => {
+                const device = m.backend?.type === "backlight" ? m.backend.device : "";
+                return m.available && requested[m.name] === undefined && device in backlightLevels ? Object.assign({}, m, {
+                    percent: backlightLevels[device]
+                }) : m;
+            });
+        }
+        for (const monitor of data) {
+            const old = monitors.find(m => m.name === monitor.name);
+            if (old?.available && monitor.available && old.percent !== monitor.percent && requested[monitor.name] === undefined)
+                brightnessChanged(monitor.name, monitor.percent);
+        }
+        monitors = data;
+    }
     function refresh() {
         if (!reader.running && !writer.running && Object.keys(pending).length === 0) {
             reader.command = ["python3", helper, "read", JSON.stringify(Quickshell.screens.map(s => s.name)), JSON.stringify(Config.brightnessDevices)];
@@ -30,6 +65,8 @@ Singleton {
         if (!monitor?.available)
             return;
         const percent = Math.max(1, Math.min(100, Math.round(value)));
+        if (percent !== displayPercent(monitor))
+            brightnessChanged(monitor.name, percent);
         requested = Object.assign({}, requested, {
             [monitor.name]: percent
         });
@@ -62,19 +99,19 @@ Singleton {
         writer.command = ["python3", helper, "set", JSON.stringify(inFlight.backend), String(inFlight.percent)];
         writer.running = true;
     }
+    Component.onCompleted: refresh()
     onActiveChanged: if (active)
         refresh()
     Connections {
         target: Quickshell
         function onScreensChanged() {
-            if (root.active)
-                root.refresh();
+            root.refresh();
         }
     }
     Timer {
         interval: 3000
         repeat: true
-        running: root.active
+        running: root.active || (Config.osdEnabled && root.monitors.some(m => m.available && m.backend?.type === "ddc"))
         onTriggered: root.refresh()
     }
     Timer {
@@ -88,13 +125,37 @@ Singleton {
         onTriggered: root.refresh()
     }
     Process {
+        id: watcher
+        command: ["python3", root.helper, "watch"]
+        running: Config.osdEnabled
+        stdout: SplitParser {
+            onRead: data => {
+                try {
+                    const levels = JSON.parse(data);
+                    if (levels && typeof levels === "object" && !Array.isArray(levels))
+                        root.applyBacklights(levels);
+                } catch (e) {
+                    console.warn("Lettura backlight OSD non valida.");
+                }
+            }
+        }
+    }
+    Timer {
+        id: watcherRetry
+        interval: 2000
+        repeat: true
+        running: Config.osdEnabled
+        onTriggered: if (!watcher.running)
+            watcher.running = true
+    }
+    Process {
         id: reader
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
                     const data = JSON.parse(text);
                     if (Array.isArray(data)) {
-                        root.monitors = data;
+                        root.applyReading(data);
                         const names = data.filter(m => m.name !== root.primary?.name).map(m => m.name);
                         if (JSON.stringify(names) !== JSON.stringify(root.otherNames))
                             root.otherNames = names;

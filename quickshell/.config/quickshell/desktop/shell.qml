@@ -40,6 +40,12 @@ ShellRoot {
                 keepAwake: Idle.keepAwake,
                 bluetoothAdapters: Bluetooth.adapters.values.length,
                 brightness: Brightness.monitors,
+                osd: {
+                    visible: Osd.visible,
+                    kind: Osd.kind,
+                    percent: Osd.percent,
+                    monitor: Osd.targetScreen?.name ?? ""
+                },
                 quiet: Notices.quiet,
                 networkDevices: Networking.devices.values.length,
                 notifications: Notices.notifications.values.length,
@@ -59,6 +65,7 @@ ShellRoot {
             }
         }
     }
+    OsdPopup {}
     Launcher {}
     Controls {}
     NetworkPanel {}

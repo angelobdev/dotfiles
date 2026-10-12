@@ -29,6 +29,7 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Pannello Hints con ricerca, categorie e scorciatoie/descrizioni lette dai bind reali di Hyprland.
 - [x] Menu sessione con navigazione da tastiera, lock, sospensione, logout, riavvio e spegnimento; conferma per le azioni previste.
 - [x] Calendario mensile con selezione del giorno e navigazione da tastiera.
+- [x] OSD per volume, mute speaker/microfono e luminosità, con livello/dispositivo, timeout configurabile e posizionamento sul monitor interessato; rilevamento dei cambiamenti anche a pannello chiuso.
 - [x] Selettore sfondi QML su `Super + Shift + W`, anteprima e persistenza della scelta tra sessioni.
 - [x] Bind Hyprshot per area (`Super + Shift + S` / `Shift + Stamp`), monitor (`Stamp`), finestra (`Super + Stamp`) e finestra attiva (`Alt + Stamp`); rimossi i bind scratchpad e il conflitto di scorciatoie.
 
@@ -58,7 +59,6 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 
 ## Prossimi sviluppi
 
-- [ ] OSD per volume e luminosità.
 - [ ] Tema pienamente coerente tra shell e applicazioni, senza perseguire il precedente obiettivo glassy/macOS.
 - [ ] Allineamento del tema di Kitty.
 - [ ] Configurazione e verifica delle applicazioni Electron con XWayland/Wayland; il supporto XWayland generale è già presente.

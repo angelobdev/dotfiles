@@ -9,6 +9,11 @@ QtObject {
     readonly property bool expandAudioDevices: false
     // If disconnected, use the first connected screen.
     readonly property string primaryMonitor: "eDP-1"
+    // OSD: logical pixels and timeout in milliseconds.
+    readonly property bool osdEnabled: true
+    readonly property int osdTimeout: 1700
+    readonly property int osdWidth: 320
+    readonly property int osdBottomMargin: 96
     // Internal panels are detected automatically when there is one backlight.
     // External example: ({ "DP-1": { "type": "ddc", "bus": 6 } })
     // Explicit backlight: { "type": "backlight", "device": "intel_backlight" }

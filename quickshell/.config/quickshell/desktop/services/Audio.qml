@@ -13,6 +13,7 @@ Singleton {
     readonly property int volume: sink?.audio ? Math.round(sink.audio.volume * 100) : 0
     readonly property int inputVolume: source?.audio ? Math.round(source.audio.volume * 100) : 0
     readonly property bool muted: sink?.audio?.muted ?? true
+    readonly property bool inputMuted: source?.audio?.muted ?? true
     PwObjectTracker {
         objects: root.devices
     }

@@ -52,6 +52,7 @@ I pacchetti usano i percorsi XDG standard sotto `$HOME`. I due `color_scheme_pat
 - Calendario mensile con settimana da lunedì, selezione giorno, oggi e navigazione fra mesi; non include ancora eventi/calendari esterni.
 - Hints con ricerca e categorie (Applicazioni, Shell e pannelli, Finestre, Workspace, Mouse, Audio e luminosità, Sessione, Altro): legge `hyprctl -j binds` a ogni apertura e mostra scorciatoia + descrizione reali, inclusi submap e bind aggiunti in `local.lua`.
 - Selettore sfondi QML con navigazione cartelle e anteprima; nessun dialog esterno.
+- OSD Quickshell per volume, mute dello speaker, microfono e luminosità: icona, livello e dispositivo, in basso al centro, senza intercettare mouse o tastiera.
 
 NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-daemon forniscono i servizi di sistema. I config avviano Quickshell, hypridle e hyprpaper. Nessun Waybar, nm-applet, Blueman, Sway o server notifiche separato.
 
@@ -68,6 +69,23 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-dae
 Personalizzare `hypridle/.config/hypr/hypridle.conf`. Il daemon rispetta gli inibitori delle applicazioni. Non servono pacchetti aggiuntivi per il toggle: `IdleInhibitor` è incluso in Quickshell e usa il protocollo supportato da Hyprland; hypridle rispetta gli inibitori Wayland per impostazione predefinita (`ignore_wayland_inhibit = false`). **Resta attivo** nel Control Center sospende blocco, DPMS e sospensione automatici tramite un inibitore Wayland sulle barre; continua a funzionare a pannello chiuso. Le azioni manuali restano disponibili. Il toggle parte disattivato e si azzera al riavvio della shell; il modulo configurabile si chiama `idle`. `inhibit_sleep = 3` fa attendere a logind il segnale Wayland di sessione bloccata prima del riposo, anche con il wrapper custom. `before_sleep_cmd` copre le richieste esterne e la chiusura del coperchio quando logind la associa alla sospensione. Al risveglio riaccende i display. `desktop-power suspend` rifiuta di procedere se hypridle non è attivo.
 
 Il config di hyprlock è stato provato in una sessione Hyprland annidata: inizializzazione PAM, rendering e conferma `onLockLocked` riusciti. Lo sblocco con la propria password, la chiusura del coperchio e il risveglio restano da verificare sulla macchina; il test annidato non prova questi percorsi hardware.
+
+## OSD volume e luminosità
+
+Gli OSD si aggiornano quando cambia il livello di sistema, anche usando i tasti multimediali o comandi esterni. Volume e mute seguono PipeWire; anche il microfono ha un indicatore dedicato. La luminosità del backlight viene letta da sysfs ogni 150 ms da un singolo helper persistente, senza avviare comandi a ogni lettura. Per monitor DDC/CI configurati e disponibili il controllo usa le letture periodiche esistenti (circa 3 secondi, con tempi dipendenti dal monitor).
+
+L’indicatore appare sul monitor della luminosità modificata oppure, per l’audio, sul monitor con il focus. Scompare dopo 1,7 secondi dall’ultimo aggiornamento. Non compare alla prima lettura dei dispositivi; nel Control Center è nascosto, e per l’audio anche nel pannello Audio, dove il livello è già visibile. Non disturbare silenzia le notifiche e lascia disponibili gli OSD. Non servono nuovi pacchetti.
+
+La configurazione è in `quickshell/.config/quickshell/desktop/Config.qml`:
+
+```qml
+readonly property bool osdEnabled: true
+readonly property int osdTimeout: 1700
+readonly property int osdWidth: 320
+readonly property int osdBottomMargin: 96
+```
+
+Dimensioni e margine sono in pixel logici; il timeout è in millisecondi. Disabilitare `osdEnabled` nasconde gli OSD e ferma il watcher del backlight, conservando i controlli dei pannelli. Sono mostrati i cambiamenti effettivi: premere ancora un tasto quando il valore è già al limite non genera un nuovo OSD.
 
 ## Tema delle applicazioni
 
@@ -189,7 +207,7 @@ cat ~/.local/state/desktop-session/hypridle.log
 ./scripts/check.sh
 ```
 
-Verifiche eseguite: parser Lua e script, caricamento/layout QML, Control Center e accordion, posizionamento tooltip, helper luminosità con backend fittizi (routing, limiti e scala DDC), aggiornamenti durante il trascinamento senza ritorno al vecchio valore e gestione di errori hardware, creazione/rilascio dell’inibitore Wayland anche a pannello chiuso, scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC. Per Hyprshot sono stati verificati l’assenza di bind duplicati e i flussi di salvataggio/copia nei quattro modi con backend simulati; la selezione interattiva e la cattura reale restano da provare manualmente.
+Verifiche eseguite: OSD con servizi simulati (volume, mute speaker/microfono, aggiornamenti rapidi, timeout, disabilitazione, riconnessione audio, soppressione nei pannelli e monitor multipli), watcher backlight su sysfs simulato (baseline, cambiamenti, hotplug e valori non validi) e regressione del trascinamento luminosità con coda di scrittura; parser Lua e script, caricamento/layout QML, Control Center e accordion, posizionamento tooltip, helper luminosità con backend fittizi (routing, limiti e scala DDC), aggiornamenti durante il trascinamento senza ritorno al vecchio valore e gestione di errori hardware, creazione/rilascio dell’inibitore Wayland anche a pannello chiuso, scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC. Per Hyprshot sono stati verificati l’assenza di bind duplicati e i flussi di salvataggio/copia nei quattro modi con backend simulati; la selezione interattiva e la cattura reale restano da provare manualmente.
 
 ## Rimozione
 
@@ -197,6 +215,6 @@ Prima fermare la shell (`desktop-shell stop`) e i daemon (`pkill -x hypridle; pk
 
 ## Prossimi moduli
 
-Pairing Bluetooth con PIN/conferma, OSD, MPRIS, eventi nel calendario, clipboard e impostazioni persistenti della shell. Per screen sharing manca ancora `xdg-desktop-portal-hyprland` (il portale GTK è presente); installarlo e integrarlo in una fase dedicata.
+Pairing Bluetooth con PIN/conferma, MPRIS, eventi nel calendario, clipboard e impostazioni persistenti della shell. Per screen sharing manca ancora `xdg-desktop-portal-hyprland` (il portale GTK è presente); installarlo e integrarlo in una fase dedicata.
 
 Riferimenti: [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [PopupAnchor](https://quickshell.org/docs/v0.3.0/types/Quickshell/PopupAnchor/), [IdleInhibitor](https://quickshell.org/docs/v0.3.0/types/Quickshell.Wayland/IdleInhibitor/), [Hyprshot](https://github.com/Gustash/Hyprshot), [DDC/CI luminosità](https://www.ddcutil.com/command_getvcp/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).

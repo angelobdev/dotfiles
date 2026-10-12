@@ -2,3 +2,4 @@ singleton Audio 1.0 Audio.qml
 singleton Notices 1.0 Notices.qml
 singleton Brightness 1.0 Brightness.qml
 singleton Idle 1.0 Idle.qml
+singleton Osd 1.0 Osd.qml

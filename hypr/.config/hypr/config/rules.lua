@@ -21,7 +21,7 @@ hl.window_rule({
 hl.layer_rule({
     name = "desktop-glass",
     match = {
-        namespace = "^desktop-(bar|overlay|notifications)$"
+        namespace = "^desktop-(bar|overlay|notifications|osd)$"
     },
     blur = true,
     ignore_alpha = 0.2,

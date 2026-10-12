@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 BACKLIGHT = Path('/sys/class/backlight')
 
@@ -97,18 +98,45 @@ def set_brightness(backend, percent):
         run(['ddcutil', '--bus', str(backend['bus']), 'setvcp', '10', str(value)])
 
 
+def backlight_snapshot():
+    levels = {}
+    for device in BACKLIGHT.glob('*'):
+        try:
+            maximum = int((device / 'max_brightness').read_text())
+            current = int((device / 'brightness').read_text())
+            if maximum > 0:
+                levels[device.name] = max(0, min(100, round(current * 100 / maximum)))
+        except (OSError, ValueError):
+            continue
+    return levels
+
+
+def watch_backlights():
+    # Sysfs reads only: no subprocesses or DDC requests in this fast path.
+    previous = None
+    while True:
+        levels = backlight_snapshot()
+        if levels != previous:
+            print(json.dumps(levels), flush=True)
+            previous = levels
+        time.sleep(0.15)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='action', required=True)
     read = sub.add_parser('read')
     read.add_argument('monitors')
     read.add_argument('mappings')
+    sub.add_parser('watch')
     write = sub.add_parser('set')
     write.add_argument('backend')
     write.add_argument('percent', type=float)
     args = parser.parse_args()
     try:
-        if args.action == 'read':
+        if args.action == 'watch':
+            watch_backlights()
+        elif args.action == 'read':
             print(json.dumps(discover(json.loads(args.monitors), json.loads(args.mappings)), ensure_ascii=False))
         else:
             set_brightness(json.loads(args.backend), args.percent)
