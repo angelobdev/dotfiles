@@ -64,21 +64,21 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Screen sharing via ScreenCast/PipeWire e registrazione monitor/area via wf-recorder, pannello QML, scelta audio, indicatore nella barra e salvataggio video; test reale del portale e registrazione di una finestra dedicata, prova nella web app specifica elencata sotto.
 - [x] README con installazione, pacchetti Stow, funzionalità, scorciatoie, configurazione e diagnostica; aggiornato anche per tema, Kitty, Electron, portali, screen sharing, registrazione, clipboard, impronte e limiti delle verifiche.
 
-## Estensioni già individuate
+## Prossimi sviluppi
 
+- [ ] Revisione overlay notifiche:
+  - Aggiungere icone descrittive
+  - Supporto testo complesso (`<i>Text</i>` ad esenpio)
+  - Rimuovere button "activate" ( usiamo click sinistro )
+  - Rimuovere button "elimina" ( si usa il pannello apposito)
+  - Rimuovere button "nascondi" ( usiamo click tasto destro )
 - [ ] Pairing Bluetooth con PIN/conferma tramite agente dedicato.
 - [ ] Controlli multimediali MPRIS.
 - [ ] Eventi e calendari esterni nel calendario.
-- [ ] Persistenza delle impostazioni della shell: Non disturbare e “Resta attivo” attualmente si azzerano al riavvio.
-- [ ] Multilanguage support
-- [ ] Multi-distro installation support (add debian, arch)
 - [ ] Update and simplify README (divide into multple docs files)
-
-## Verifiche manuali ancora aperte
-
-- [ ] Provare selezione interattiva e cattura reale con i nuovi bind Hyprshot; verificati parsing dei bind, assenza di conflitti e flussi di salvataggio/copia con backend simulati.
-
-- [ ] Verificare sblocco hyprlock con password e dito registrato, chiusura del coperchio e risveglio sulla macchina reale; il test annidato documentato non copre questi percorsi hardware.
 - [ ] Verificare luminosità su monitor esterni DDC/CI e hotplug con l’hardware disponibile; backend e configurazione sono presenti.
 
-- [ ] Provare la condivisione dalla specifica web app di chiamate in Zen: selezione monitor/finestra e chiusura della condivisione. Il portale, il picker Quickshell e la ricezione reale di frame PipeWire sono verificati.
+## Possibili estensioni individuate
+
+- [ ] Multilanguage support
+- [ ] Multi-distro installation support (add debian, arch)

@@ -34,7 +34,7 @@ bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/b
 bind("SUPER + SHIFT + Q", hl.dsp.exec_cmd(shell .. " toggle power"), "Menu sessione")
 
 -- System (Extensions)
-bind("SUPER + SHIFT + C", hl.dsp.exec_cmd(shell .. " toggle clipboard"), "Clipboard · Storico")
+bind("SUPER + CTRL + C", hl.dsp.exec_cmd(shell .. " toggle clipboard"), "Clipboard · Storico")
 bind("SUPER + CTRL + R", hl.dsp.exec_cmd(shell .. " toggle recording"), "Registrazione schermo")
 
 -- Directional Binds
