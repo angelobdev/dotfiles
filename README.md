@@ -23,7 +23,7 @@ I COPR della macchina sono `nett00n/hyprland` ed `errornointernet/quickshell`.
 sudo dnf install hyprland quickshell stow kitty brightnessctl wireplumber \
   NetworkManager bluez upower power-profiles-daemon \
   hypridle hyprlock hyprpaper qt5ct qt6ct papirus-icon-theme ripgrep \
-  f44-backgrounds-base xorg-x11-server-Xwayland ImageMagick python3
+  f44-backgrounds-base xorg-x11-server-Xwayland ImageMagick python3 hyprshot
 cd ~/.dotfiles
 ./scripts/stow.py dry-run
 ./scripts/stow.py apply
@@ -39,11 +39,11 @@ I pacchetti usano i percorsi XDG standard sotto `$HOME`. I due `color_scheme_pat
 
 ## Interfaccia
 
-- Barra alta 38 px logici: Fedora/app menu → workspace occupati e attivo → titolo → spazio → tray → batteria (percentuale + icona) → notifiche → Hints → Control Center → giorno/ora → sessione. Controlli da 30 px, icone di stato da 16 px centrate e logo da 18 px. Rete e volume vivono nel Control Center.
+- Barra alta 38 px logici: Fedora/app menu → workspace occupati e attivo → titolo → spazio → tray → batteria (percentuale + icona) → Hints → notifiche → Control Center → giorno/ora → sessione. Controlli da 30 px, icone di stato da 16 px centrate e logo da 18 px. Rete e volume vivono nel Control Center.
 - Icone vettoriali e tooltip nativi posizionati sotto i pulsanti, fuori dalla superficie della barra. Le icone app originali restano colorate.
 - Launcher con ricerca, titoli a sinistra, icone, frecce e Invio; le app da terminale si aprono in Kitty.
 - Superfici traslucide, bordi leggeri e blur Hyprland; sfondo fornito da hyprpaper.
-- Pannelli Rete, Bluetooth, Notifiche e Batteria allineati in alto a destra, con larghezza comune configurata in `Config.qml` e intestazioni con icone da 22 px. Le azioni Non disturbare/Elimina tutte sono a destra del titolo Notifiche; il blocco batteria in barra mostra una foglia in Risparmio e un fulmine in Prestazioni, nessun indicatore aggiuntivo in Bilanciato.
+- Pannelli Rete, Bluetooth, Notifiche e Batteria allineati in alto a destra, con larghezza comune configurata in `Config.qml` e intestazioni con icone da 22 px. Le azioni Non disturbare/Elimina tutte sono a destra del titolo Notifiche. I profili energetici si selezionano nel pannello batteria; il blocco batteria nella barra mostra una foglia in Risparmio energetico e un fulmine in Prestazioni, senza icona aggiuntiva in Bilanciato. L’indicatore segue il profilo di sistema anche quando viene cambiato esternamente; il tooltip riporta sempre il profilo corrente.
 - Pannelli separati: Rete e Wi-Fi con ricerca/selezione reti; Audio con volume, mute, ingresso/uscita predefiniti e livello microfono; Batteria con potenza in W, energia in Wh, autonomia/carica rimanente e profili energetici. Le reti Wi-Fi Personal hanno un prompt password; Enterprise richiede un profilo preconfigurato.
 - Control Center compatto, in alto a destra: schede Rete/Bluetooth, luminosità del monitor primario con accordion per gli altri display, volume dello speaker selezionato con accordion per ingressi/uscite e livello microfono, toggle Non disturbare e Resta attivo. Moduli e ordine si configurano in `Config.qml`. Bluetooth ha un sottopannello con adattatori, connessione/disconnessione dei dispositivi già associati e batteria quando esposta da BlueZ. I profili energetici dipendono dall’hardware.
 - Notifiche, popup, azioni, centro notifiche e non disturbare; storico in memoria, azzerato al riavvio della shell.
@@ -65,7 +65,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-dae
 | 10 minuti  | Spegnimento display (DPMS) |
 | 30 minuti  | Sospensione                |
 
-Personalizzare `hypridle/.config/hypr/hypridle.conf`. Il daemon rispetta gli inibitori delle applicazioni. **Resta attivo** nel Control Center sospende blocco, DPMS e sospensione automatici tramite un inibitore Wayland sulle barre; continua a funzionare a pannello chiuso. Le azioni manuali restano disponibili. Il toggle parte disattivato e si azzera al riavvio della shell; il modulo configurabile si chiama `idle`. `inhibit_sleep = 3` fa attendere a logind il segnale Wayland di sessione bloccata prima del riposo, anche con il wrapper custom. `before_sleep_cmd` copre le richieste esterne e la chiusura del coperchio quando logind la associa alla sospensione. Al risveglio riaccende i display. `desktop-power suspend` rifiuta di procedere se hypridle non è attivo.
+Personalizzare `hypridle/.config/hypr/hypridle.conf`. Il daemon rispetta gli inibitori delle applicazioni. Non servono pacchetti aggiuntivi per il toggle: `IdleInhibitor` è incluso in Quickshell e usa il protocollo supportato da Hyprland; hypridle rispetta gli inibitori Wayland per impostazione predefinita (`ignore_wayland_inhibit = false`). **Resta attivo** nel Control Center sospende blocco, DPMS e sospensione automatici tramite un inibitore Wayland sulle barre; continua a funzionare a pannello chiuso. Le azioni manuali restano disponibili. Il toggle parte disattivato e si azzera al riavvio della shell; il modulo configurabile si chiama `idle`. `inhibit_sleep = 3` fa attendere a logind il segnale Wayland di sessione bloccata prima del riposo, anche con il wrapper custom. `before_sleep_cmd` copre le richieste esterne e la chiusura del coperchio quando logind la associa alla sospensione. Al risveglio riaccende i display. `desktop-power suspend` rifiuta di procedere se hypridle non è attivo.
 
 Il config di hyprlock è stato provato in una sessione Hyprland annidata: inizializzazione PAM, rendering e conferma `onLockLocked` riusciti. Lo sblocco con la propria password, la chiusura del coperchio e il risveglio restano da verificare sulla macchina; il test annidato non prova questi percorsi hardware.
 
@@ -75,39 +75,51 @@ Palette grigio grafite, primary neutro `#d4d6dc`, testo chiaro, Adwaita Sans e i
 
 `desktop-theme` applica GSettings e importa le variabili Qt in D-Bus/systemd; alla prima esecuzione salva i valori precedenti in `~/.local/state/dotfiles/interface-before-theme.ini`. Riavviare le applicazioni già aperte per adottare il tema; il prossimo login applica anche l'ambiente completo. Le app Flatpak dipendono dai runtime/temi esposti alla sandbox e potrebbero non seguire tutti gli override CSS.
 
-La shell usa superfici glass scure con blur e bordi sottili neutri. Hyprland non disegna bordi delle finestre: opacità attiva/fullscreen 1, inattiva 0.92 e blur abilitato. Questi valori sono in `hypr/.config/hypr/config/appearance.lua`. Le finestre attive conservano piena leggibilità.
+La shell usa superfici traslucide scure con blur e bordi sottili neutri. Hyprland non disegna bordi delle finestre: opacità attiva/fullscreen 1, inattiva 0.92 e blur abilitato. Questi valori sono in `hypr/.config/hypr/config/appearance.lua`. Le finestre attive conservano piena leggibilità.
 
 ## Scorciatoie
 
-| Tasti                                       | Azione                             |
-| ------------------------------------------- | ---------------------------------- |
-| `Super + B`                                 | Browser (`zen-browser`)            |
-| `Super + Invio`                             | Kitty                              |
-| `Super + Q`                                 | Chiudi finestra                    |
-| `Super + Spazio`                            | Applicazioni                       |
-| `Super + Shift + C`                         | Centro di controllo                |
-| `Super + Shift + E`                         | Rete e Wi-Fi                       |
-| `Super + Shift + V`                         | Volume e dispositivi audio         |
-| `Super + Shift + B`                         | Batteria ed energia                |
-| `Super + Shift + N`                         | Notifiche                          |
-| `Super + Shift + D`                         | Calendario                         |
-| `Super + Shift + H`                         | Hints / bind attivi                |
-| `Super + Shift + Q`                         | Menu sessione                      |
-| `Super + Shift + W`                         | Scegli sfondo                      |
-| `Super + L` / `XF86Sleep`                   | Blocca / sospendi con lock         |
-| `Super + Shift + R`                         | Riavvia Quickshell                 |
-| `Super + V` / `Super + F`                   | Floating / fullscreen              |
-| `Super + P` / `Super + J`                   | Pseudo tiling / orientamento split |
-| `Super + frecce` / `Super + Shift + frecce` | Focus / sposta finestra            |
-| `Super + 1…9,0` / `Super + Shift + 1…9,0`   | Workspace / sposta al workspace    |
-| `Super + S` / `Super + Shift + S`           | Mostra / popola scratchpad         |
-| `Super + trascina sinistro/destro`          | Sposta / ridimensiona finestra     |
-| Tasti multimediali                          | Volume, microfono, luminosità      |
-| `Esc` / clic esterno                        | Chiudi pannello                    |
+| Tasti                                       | Azione                                     |
+| ------------------------------------------- | ------------------------------------------ |
+| `Super + B`                                 | Browser (`zen-browser`)                    |
+| `Super + Shift + Spazio`                    | Accesso rapido 1Password (override locale) |
+| `Super + Invio`                             | Kitty                                      |
+| `Super + Q`                                 | Chiudi finestra                            |
+| `Super + Spazio`                            | Applicazioni                               |
+| `Super + Shift + C`                         | Centro di controllo                        |
+| `Super + Shift + E`                         | Rete e Wi-Fi                               |
+| `Super + Shift + V`                         | Volume e dispositivi audio                 |
+| `Super + Shift + B`                         | Batteria ed energia                        |
+| `Super + Shift + N`                         | Notifiche                                  |
+| `Super + Shift + D`                         | Calendario                                 |
+| `Super + Shift + H`                         | Hints / bind attivi                        |
+| `Super + Shift + Q`                         | Menu sessione                              |
+| `Super + Shift + W`                         | Scegli sfondo                              |
+| `Super + L` / `XF86Sleep`                   | Blocca / sospendi con lock                 |
+| `Super + Shift + R`                         | Riavvia Quickshell                         |
+| `Super + V` / `Super + Shift + F`           | Floating / fullscreen                      |
+| `Super + P` / `Super + J`                   | Pseudo tiling / orientamento split         |
+| `Super + frecce` / `Super + Shift + frecce` | Focus / sposta finestra                    |
+| `Super + 1…9,0` / `Super + Shift + 1…9,0`   | Workspace / sposta al workspace            |
+| `Super + Shift + S` / `Shift + Stamp`       | Screenshot di un’area                      |
+| `Stamp`                                     | Screenshot di un monitor a scelta          |
+| `Super + Stamp`                             | Screenshot di una finestra a scelta        |
+| `Alt + Stamp`                               | Screenshot della finestra attiva           |
+| `Super + trascina sinistro/destro`          | Sposta / ridimensiona finestra             |
+| Tasti multimediali                          | Volume, microfono, luminosità              |
+| `Esc` / clic esterno                        | Chiudi pannello                            |
 
 Nel menu sessione: **↑/↓ e Tab/Shift+Tab** spostano il focus; **Invio o Spazio** attivano il pulsante. Alla richiesta di conferma il focus passa ad **Annulla**: usare **←/→ o Tab** per scegliere Conferma. **Esc** annulla la conferma, poi chiude il pannello. All’apertura il primo pulsante riceve il focus.
 
 Nel calendario: frecce per spostare il giorno, PgUp/PgDn per il mese e Home per oggi. Nel selettore sfondo: frecce per la lista, Invio per aprire cartella/selezionare immagine, Backspace per risalire; Tab raggiunge percorso, applicazione e ripristino.
+
+## Screenshot
+
+Hyprshot gestisce la cattura; `Stamp` corrisponde al keysym `Print`. Area, finestra e monitor vengono selezionati con il mouse; `Alt + Stamp` cattura direttamente la finestra attiva. `Esc` annulla la selezione. I bind dello scratchpad sono stati rimossi, liberando `Super + S` e risolvendo il conflitto su `Super + Shift + S`.
+
+Le immagini PNG vengono salvate e copiate negli appunti. Hyprshot usa `HYPRSHOT_DIR`, se impostata, altrimenti la cartella immagini XDG e infine la home. Per scegliere una directory, aggiungere per esempio `hl.env("HYPRSHOT_DIR", os.getenv("HOME") .. "/Pictures/Screenshots")` in `hypr/.config/hypr/config/local.lua` e ricaricare Hyprland; Hyprshot crea la cartella alla prima cattura. La notifica di salvataggio viene gestita da Quickshell e segue Non disturbare.
+
+Il pacchetto Fedora `hyprshot` installa le dipendenze di cattura e selezione (`grim`, `slurp`), copia (`wl-clipboard`), lettura dati (`jq`) e notifiche (`libnotify`). Il freeze opzionale non è abilitato da questi bind.
 
 ## XWayland
 
@@ -177,7 +189,7 @@ cat ~/.local/state/desktop-session/hypridle.log
 ./scripts/check.sh
 ```
 
-Verifiche eseguite: parser Lua e script, caricamento/layout QML, Control Center e accordion, posizionamento tooltip, helper luminosità con backend fittizi (routing, limiti e scala DDC), aggiornamenti durante il trascinamento senza ritorno al vecchio valore e gestione di errori hardware, creazione/rilascio dell’inibitore Wayland anche a pannello chiuso, scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC.
+Verifiche eseguite: parser Lua e script, caricamento/layout QML, Control Center e accordion, posizionamento tooltip, helper luminosità con backend fittizi (routing, limiti e scala DDC), aggiornamenti durante il trascinamento senza ritorno al vecchio valore e gestione di errori hardware, creazione/rilascio dell’inibitore Wayland anche a pannello chiuso, scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC. Per Hyprshot sono stati verificati l’assenza di bind duplicati e i flussi di salvataggio/copia nei quattro modi con backend simulati; la selezione interattiva e la cattura reale restano da provare manualmente.
 
 ## Rimozione
 
@@ -187,4 +199,4 @@ Prima fermare la shell (`desktop-shell stop`) e i daemon (`pkill -x hypridle; pk
 
 Pairing Bluetooth con PIN/conferma, OSD, MPRIS, eventi nel calendario, clipboard e impostazioni persistenti della shell. Per screen sharing manca ancora `xdg-desktop-portal-hyprland` (il portale GTK è presente); installarlo e integrarlo in una fase dedicata.
 
-Riferimenti: [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [PopupAnchor](https://quickshell.org/docs/v0.3.0/types/Quickshell/PopupAnchor/), [DDC/CI luminosità](https://www.ddcutil.com/command_getvcp/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).
+Riferimenti: [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [PopupAnchor](https://quickshell.org/docs/v0.3.0/types/Quickshell/PopupAnchor/), [IdleInhibitor](https://quickshell.org/docs/v0.3.0/types/Quickshell.Wayland/IdleInhibitor/), [Hyprshot](https://github.com/Gustash/Hyprshot), [DDC/CI luminosità](https://www.ddcutil.com/command_getvcp/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).

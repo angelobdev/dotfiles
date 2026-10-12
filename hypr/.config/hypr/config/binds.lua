@@ -14,7 +14,6 @@ bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Finestra flottant
 bind("SUPER + P", hl.dsp.window.pseudo(), "Pseudo tiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Cambia orientamento split")
 bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Schermo intero")
-bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region"), "Screenshot")
 
 -- System (Quickshell)
 bind("SUPER + Space", hl.dsp.exec_cmd(shell .. " toggle launcher"), "Applicazioni")
@@ -37,9 +36,12 @@ for i = 1, 10 do
     bind("SUPER + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }), "Sposta al workspace " .. i)
 end
 
--- Scratchpad
-bind("SUPER + S", hl.dsp.workspace.toggle_special("scratchpad"), "Scratchpad")
-bind("SUPER + SHIFT + S", hl.dsp.window.move({ workspace = "special:scratchpad" }), "Sposta nello scratchpad")
+-- Screenshots (save to Hyprshot's configured directory and copy to clipboard)
+bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region"), "Screenshot · Area")
+bind("SHIFT + Print", hl.dsp.exec_cmd("hyprshot -m region"), "Screenshot · Area")
+bind("Print", hl.dsp.exec_cmd("hyprshot -m output"), "Screenshot · Monitor")
+bind("SUPER + Print", hl.dsp.exec_cmd("hyprshot -m window"), "Screenshot · Finestra")
+bind("ALT + Print", hl.dsp.exec_cmd("hyprshot -m window -m active"), "Screenshot · Finestra attiva")
 
 -- Window Management (Cursor)
 bind("SUPER + mouse:272", hl.dsp.window.drag(), "Trascina finestra", { mouse = true })

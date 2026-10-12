@@ -29,6 +29,11 @@ PanelWindow {
     readonly property var monitor: Hyprland.monitorFor(screen)
     readonly property var workspaces: Hyprland.workspaces.values.filter(w => w.id > 0 && w.monitor?.name === bar.screen.name && (w.active || w.toplevels.values.length > 0)).sort((a, b) => a.id - b.id)
     readonly property int battery: Math.round((UPower.displayDevice?.percentage ?? 0) * 100)
+    // Keep the inhibitor on a mapped surface, independent of the control panel.
+    IdleInhibitor {
+        window: bar
+        enabled: Idle.keepAwake
+    }
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
@@ -148,11 +153,41 @@ PanelWindow {
             }
         }
         BarButton {
+            id: batteryButton
+            readonly property string profileIcon: PowerProfiles.profile === PowerProfile.PowerSaver ? "leaf" : PowerProfiles.profile === PowerProfile.Performance ? "performance" : ""
+            readonly property string profileLabel: PowerProfiles.profile === PowerProfile.PowerSaver ? "Risparmio energetico" : PowerProfiles.profile === PowerProfile.Performance ? "Prestazioni" : PowerProfiles.profile === PowerProfile.Balanced ? "Bilanciato" : "Profilo non disponibile"
             visible: UPower.displayDevice?.isLaptopBattery ?? false
             iconName: !UPower.onBattery ? "battery-charging" : bar.battery < 20 ? "battery-low" : "battery"
             text: bar.battery + "%"
-            iconAfterText: true
-            tooltip: UPower.onBattery ? "Alimentazione a batteria" : "Alimentazione collegata"
+            implicitWidth: batteryContent.implicitWidth + leftPadding + rightPadding
+            tooltip: (UPower.onBattery ? "Alimentazione a batteria" : "Alimentazione collegata") + " · " + profileLabel
+            Accessible.name: "Batteria " + text + " · " + profileLabel
+            contentItem: RowLayout {
+                id: batteryContent
+                spacing: 6
+                Icon {
+                    visible: batteryButton.profileIcon !== ""
+                    name: batteryButton.profileIcon
+                    color: batteryButton.foreground
+                    Layout.preferredWidth: batteryButton.iconSize
+                    Layout.preferredHeight: batteryButton.iconSize
+                    Layout.alignment: Qt.AlignVCenter
+                }
+                Text {
+                    text: batteryButton.text
+                    font: batteryButton.font
+                    color: batteryButton.foreground
+                    verticalAlignment: Text.AlignVCenter
+                    textFormat: Text.PlainText
+                }
+                Icon {
+                    name: batteryButton.iconName
+                    color: batteryButton.foreground
+                    Layout.preferredWidth: batteryButton.iconSize
+                    Layout.preferredHeight: batteryButton.iconSize
+                    Layout.alignment: Qt.AlignVCenter
+                }
+            }
             onClicked: ShellState.toggle("battery", bar.screen)
         }
         BarButton {
