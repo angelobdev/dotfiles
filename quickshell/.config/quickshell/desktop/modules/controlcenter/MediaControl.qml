@@ -47,7 +47,7 @@ ControlTile {
                     color: Theme.muted; font.pixelSize: 11; textFormat: Text.PlainText
                 }
             }
-            PanelIconButton {
+            CompactIconButton {
                 visible: Media.players.length > 1
                 iconName: root.expanded ? "chevron-up" : "chevron-down"
                 tooltip: "Scegli lettore"

@@ -7,6 +7,8 @@ import ".."
 Button {
     id: root
     property bool destructive: false
+    // Text buttons keep their inset; small icon controls can opt out.
+    property bool compact: false
     property string iconName: ""
     property url iconSource: ""
     property int iconSize: 20
@@ -17,9 +19,9 @@ Button {
     readonly property bool hasIcon: iconName !== "" || iconSource.toString() !== ""
     readonly property color foreground: destructive ? Theme.danger : highlighted ? Theme.accentText : Theme.text
     implicitHeight: 36
-    implicitWidth: Math.max(36, label.implicitWidth + (hasIcon ? iconSize + (text ? 10 : 0) : 0) + 24)
-    leftPadding: 0
-    rightPadding: 0
+    implicitWidth: Math.max(36, label.implicitWidth + (hasIcon ? iconSize + (text ? 10 : 0) : 0) + leftPadding + rightPadding)
+    leftPadding: compact ? 0 : 12
+    rightPadding: compact ? 0 : 12
     font.family: Theme.font
     font.pixelSize: 13
     opacity: enabled ? 1 : 0.45

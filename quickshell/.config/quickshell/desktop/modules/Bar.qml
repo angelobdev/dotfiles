@@ -41,6 +41,14 @@ PanelWindow {
         window: bar
         enabled: Idle.keepAwake
     }
+    TrayMenuWindow {
+        id: trayMenu
+        screen: bar.screen
+    }
+    Connections {
+        target: ShellState
+        function onPanelChanged() { if (ShellState.panel !== "") trayMenu.dismiss(); }
+    }
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
@@ -74,57 +82,12 @@ PanelWindow {
             tooltip: "Applicazioni"
             onClicked: ShellState.toggle("launcher", bar.screen)
         }
-        RowLayout {
-            id: workspaceRow
-            spacing: 0
-            WheelHandler {
-                target: null
-                property real accumulated: 0
-                onWheel: event => {
-                    if (!Config.workspaceScroll) { event.accepted = false; return; }
-                    accumulated += event.angleDelta.y;
-                    if (Math.abs(accumulated) < 120) return;
-                    const index = bar.workspaces.findIndex(w => w.id === bar.monitor?.activeWorkspace?.id);
-                    const target = Math.max(0, Math.min(bar.workspaces.length - 1, index + (accumulated < 0 ? 1 : -1)));
-                    accumulated = 0;
-                    if (bar.workspaces[target]) bar.focusWorkspace(bar.workspaces[target].id);
-                }
-            }
-            Repeater {
-                model: bar.workspaces
-                Button {
-                    id: workspace
-                    required property var modelData
-                    readonly property bool active: bar.monitor?.activeWorkspace?.id === modelData.id
-                    implicitWidth: active ? 46 : 28
-                    implicitHeight: 28
-                    Accessible.name: "Workspace " + modelData.id
-                    HintTooltip {
-                        target: workspace
-                        hovered: workspace.hovered
-                        text: "Workspace " + workspace.modelData.id + " · " + workspace.modelData.count + " finestre"
-                    }
-                    background: Rectangle {
-                        radius: 10
-                        color: workspace.hovered || workspace.activeFocus ? Theme.raised : "transparent"
-                    }
-                    contentItem: Item {
-                        Rectangle {
-                            anchors.centerIn: parent
-                            width: workspace.active ? 28 : 8
-                            height: 8
-                            radius: 4
-                            color: workspace.active ? Theme.accent : workspace.modelData.urgent ? Theme.danger : Theme.muted
-                            Behavior on width {
-                                NumberAnimation {
-                                    duration: 160
-                                }
-                            }
-                        }
-                    }
-                    onClicked: bar.focusWorkspace(modelData.id)
-                }
-            }
+        WorkspaceStrip {
+            Layout.fillHeight: true
+            workspaces: bar.workspaces
+            activeId: bar.monitor?.activeWorkspace?.id ?? -1
+            scrollEnabled: Config.workspaceScroll
+            onActivated: id => bar.focusWorkspace(id)
         }
         Text {
             Layout.fillWidth: true
@@ -163,8 +126,8 @@ PanelWindow {
                             trayItem.modelData.secondaryActivate();
                         else if (mouse.button === Qt.RightButton || trayItem.modelData.onlyMenu) {
                             if (trayItem.modelData.hasMenu) {
-                                const point = mapToItem(bar.contentItem, mouse.x, mouse.y);
-                                trayItem.modelData.display(bar, point.x, point.y);
+                                trayMenu.menuEntry = trayItem.modelData.menu;
+                                trayMenu.popup(trayItem, 0, trayItem.height + 8);
                             }
                         } else
                             trayItem.modelData.activate();

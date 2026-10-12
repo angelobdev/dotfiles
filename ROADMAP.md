@@ -24,8 +24,9 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 
 - [x] Top bar da 38 px con sfondo trasparente/traslucido, logo Fedora e menu applicazioni.
 - [x] Workspace occupati e attivo rappresentati da pill, con evidenza dello stato attivo e urgente.
-- [x] Almeno due pill per monitor, segnaposto vuoti con ID globalmente unici e navigazione con rotella.
+- [x] Almeno due pill per monitor, segnaposto vuoti con ID globalmente unici e navigazione con rotella/touchpad sull’intera altezza dell’area workspace.
 - [x] Titolo della finestra, spacer, tray, batteria con percentuale e icona, Hints, notifiche, Control Center, giorno/ora e power.
+- [x] Menu tray QML con sfondo/bordo coordinati, angoli arrotondati, hover, sottomenu e navigazione da tastiera; Esc e clic esterno chiudono il menu.
 - [x] Icone di stato centrate e tooltip nativi posizionati sotto i pulsanti.
 - [x] Launcher con ricerca, icone applicazioni, titoli allineati a sinistra e navigazione da tastiera.
 - [x] Pannello Hints con ricerca, categorie e scorciatoie/descrizioni lette dai bind reali di Hyprland.
@@ -50,6 +51,7 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Popup notifiche con icone, markup di testo limitato e sicuro, clic sinistro per l’azione predefinita e clic destro per nascondere conservando lo storico; pulsanti Activate/Elimina/Nascondi rimossi dai popup. Azioni secondarie e controlli del centro notifiche conservati. Non disturbare silenzia i popup.
 - [x] Pannello batteria in alto a destra: percentuale, potenza, energia, tempi stimati e selezione dei profili energetici con icone.
 - [x] Indicatore del profilo energetico nel blocco batteria della barra: foglia per Risparmio, fulmine per Prestazioni e nessuna icona aggiuntiva per Bilanciato; tooltip con profilo corrente e aggiornamento dal servizio di sistema.
+- [x] Pulsanti con testo e padding conservato; variante compatta senza padding per chevron e controlli audio stretti. Eliminazione singola delle notifiche rossa, in linea con il titolo e con la stessa dimensione del testo.
 - [x] Dimensioni comuni dei pannelli laterali e icone di ritorno/chiusura da 22 px.
 - [x] Toggle “Resta attivo” collegato a un `IdleInhibitor` Wayland sulle barre: indipendente dall’apertura del Control Center, senza pacchetti aggiuntivi.
 - [x] Clipboard manager Quickshell con ricerca, tastiera, testo/immagini, pausa ed eliminazione; storico cliphist e bridge XWayland verificati in entrambe le direzioni.

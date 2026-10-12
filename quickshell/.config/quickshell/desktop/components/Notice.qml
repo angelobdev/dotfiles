@@ -54,12 +54,29 @@ Rectangle {
                 Layout.fillWidth: true
             }
         }
-        Text {
-            text: root.notification.summary
-            color: Theme.text; font.bold: true
-            Layout.fillWidth: true; wrapMode: Text.Wrap
-            maximumLineCount: root.popup ? 3 : 2147483647
-            elide: Text.ElideRight; textFormat: Text.PlainText
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+            Text {
+                id: summary
+                text: root.notification.summary
+                color: Theme.text; font.bold: true; font.pixelSize: 13
+                Layout.fillWidth: true; wrapMode: Text.Wrap
+                maximumLineCount: root.popup ? 3 : 2147483647
+                elide: Text.ElideRight; textFormat: Text.PlainText
+            }
+            ActionButton {
+                visible: !root.popup
+                Layout.alignment: Qt.AlignTop
+                implicitHeight: Math.max(24, summary.font.pixelSize + 8)
+                topPadding: 0; bottomPadding: 0
+                compact: true
+                destructive: true
+                text: "Elimina"
+                font.pixelSize: summary.font.pixelSize
+                font.bold: summary.font.bold
+                onClicked: root.notification.dismiss()
+            }
         }
         Text {
             text: NotificationText.styled(root.notification.body)
@@ -70,7 +87,7 @@ Rectangle {
         }
         Flow {
             Layout.fillWidth: true
-            visible: root.buttons.length > 0 || !root.popup
+            visible: root.buttons.length > 0
             spacing: 4
             Repeater {
                 model: root.buttons
@@ -79,11 +96,6 @@ Rectangle {
                     text: modelData.text
                     onClicked: modelData.invoke()
                 }
-            }
-            ActionButton {
-                visible: !root.popup
-                iconName: "trash"; text: "Elimina"
-                onClicked: root.notification.dismiss()
             }
         }
     }

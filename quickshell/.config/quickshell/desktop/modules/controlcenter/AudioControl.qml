@@ -30,7 +30,7 @@ ControlTile {
                 color: Theme.muted
                 font.pixelSize: 12
             }
-            ActionButton {
+            CompactIconButton {
                 iconName: "chevron-down"
                 rotation: root.expanded ? 180 : 0
                 tooltip: "Ingressi e uscite"
@@ -48,7 +48,7 @@ ControlTile {
             textFormat: Text.PlainText
         }
         RowLayout {
-            ActionButton {
+            CompactIconButton {
                 implicitWidth: 30
                 iconSize: 18
                 iconName: Audio.muted ? "volume-muted" : "volume-high"
@@ -118,7 +118,7 @@ ControlTile {
                 }
             }
             RowLayout {
-                ActionButton {
+                CompactIconButton {
                     implicitWidth: 30
                     iconName: "microphone"
                     iconSize: 18

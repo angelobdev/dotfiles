@@ -30,7 +30,7 @@ ControlTile {
                 color: Theme.muted
                 font.pixelSize: 12
             }
-            ActionButton {
+            CompactIconButton {
                 visible: Brightness.others.length > 0
                 iconName: "chevron-down"
                 rotation: root.expanded ? 180 : 0

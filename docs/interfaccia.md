@@ -5,13 +5,14 @@
 ## Interfaccia
 
 - Barra alta 38 px logici: Fedora/app menu → workspace occupati/attivo e almeno due pill per monitor → titolo → spazio → tray → batteria (percentuale + icona) → Hints → notifiche → Control Center → giorno/ora → sessione. Controlli da 30 px, icone di stato da 16 px centrate e logo da 18 px. Rete e volume vivono nel Control Center.
+- Menu tray QML con angoli arrotondati, sfondo/bordo neutri, hover, sottomenu, checkbox e azioni disabilitate; Esc o clic esterno chiudono il menu.
 - Icone vettoriali e tooltip nativi posizionati sotto i pulsanti, fuori dalla superficie della barra. Le icone app originali restano colorate.
 - Launcher con ricerca, titoli a sinistra, icone, frecce e Invio; le app da terminale si aprono in Kitty.
 - Superfici traslucide, bordi leggeri e blur Hyprland; sfondo fornito da hyprpaper.
 - Pannelli Rete, Bluetooth, Notifiche e Batteria allineati in alto a destra, con larghezza comune configurata in `Config.qml` e intestazioni con icone da 22 px. Le azioni Non disturbare/Elimina tutte sono a destra del titolo Notifiche. I profili energetici si selezionano nel pannello batteria; il blocco batteria nella barra mostra una foglia in Risparmio energetico e un fulmine in Prestazioni, senza icona aggiuntiva in Bilanciato. L’indicatore segue il profilo di sistema anche quando viene cambiato esternamente; il tooltip riporta sempre il profilo corrente.
 - Pannelli separati: Rete e Wi-Fi con ricerca/selezione reti; Audio con volume, mute, ingresso/uscita predefiniti e livello microfono; Batteria con potenza in W, energia in Wh, autonomia/carica rimanente e profili energetici. Le reti Wi-Fi Personal hanno un prompt password; Enterprise richiede un profilo preconfigurato.
 - Control Center compatto, in alto a destra: schede Rete/Bluetooth, luminosità del monitor primario con accordion per gli altri display, volume dello speaker selezionato con accordion per ingressi/uscite e livello microfono, controlli multimediali MPRIS, toggle Non disturbare e Resta attivo. Moduli e ordine si configurano in `Config.qml`. Bluetooth ha un sottopannello con adattatori, ricerca, associazione con PIN/conferma tramite agente BlueZ dedicato, connessione/disconnessione e batteria quando esposta da BlueZ. I profili energetici dipendono dall’hardware.
-- Popup notifiche con icone e testo formattato (`b`, `i`, `u`, `s`, `strong`, `em`, `br`); clic sinistro invoca l’azione predefinita quando presente, clic destro nasconde il popup conservando la notifica. Le altre azioni restano pulsanti; eliminazione e azione predefinita come pulsante restano nel centro notifiche. Lo storico è in memoria e si azzera al riavvio della shell. Immagini e attributi HTML nel testo vengono rimossi.
+- Popup notifiche con icone e testo formattato (`b`, `i`, `u`, `s`, `strong`, `em`, `br`); clic sinistro invoca l’azione predefinita quando presente, clic destro nasconde il popup conservando la notifica. Le altre azioni restano pulsanti; nel centro notifiche **Elimina** è rosso e allineato al titolo, mentre l’azione predefinita resta disponibile come pulsante. Lo storico è in memoria e si azzera al riavvio della shell. Immagini e attributi HTML nel testo vengono rimossi.
 - Agente Polkit QML con l'identità predefinita proposta da Polkit.
 - Power navigabile da tastiera: blocco immediato; sospensione, logout, riavvio e spegnimento con conferma. Gli errori del comando vengono mostrati nel pannello.
 - Calendario mensile con selezione giorno, indicatori e agenda dei calendari abilitati in GNOME/Account online. Include ricorrenze, giornate intere, più giorni e fusi orari tramite Evolution Data Server. Il pannello legge i calendari esistenti e non crea/modifica eventi o account.
@@ -62,7 +63,7 @@ Nel calendario: frecce per spostare il giorno, PgUp/PgDn per il mese e Home per 
 
 ## Workspace per monitor
 
-La barra mostra workspace occupati/attivi e almeno due pill per ogni monitor. Gli slot vuoti sono segnaposto: il workspace viene creato solo al clic o alla navigazione con rotella. Gli ID sono assegnati globalmente senza riutilizzare workspace di altri monitor; i workspace speciali restano esclusi. Il clic porta prima il focus sul monitor della barra. La rotella sopra le pill passa al precedente/successivo, fermandosi agli estremi.
+La barra mostra workspace occupati/attivi e almeno due pill per ogni monitor. Gli slot vuoti sono segnaposto: il workspace viene creato solo al clic o alla navigazione con rotella. Gli ID sono assegnati globalmente senza riutilizzare workspace di altri monitor; i workspace speciali restano esclusi. Il clic porta prima il focus sul monitor della barra. La rotella o il gesto verticale del touchpad sopra l’area dei workspace passa al precedente/successivo, fermandosi agli estremi. I delta del touchpad vengono accumulati per evitare cambi involontari; l’area risponde per tutta l’altezza della barra.
 
 In `Config.qml`: `minimumWorkspaces: 2` (minimo 2, massimo 10) e `workspaceScroll: true`.
 
