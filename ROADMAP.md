@@ -59,13 +59,16 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 
 ## Prossimi sviluppi
 
-- [ ] Tema pienamente coerente tra shell e applicazioni, senza perseguire il precedente obiettivo glassy/macOS.
-- [ ] Allineamento del tema di Kitty.
+- [ ] Tema dark-glassy pienamente coerente tra shell e applicazioni (GTK/QT/Quickshell)
+- [ ] Allineamento del tema di Kitty al tema di sistema.
 - [ ] Configurazione e verifica delle applicazioni Electron con XWayland/Wayland; il supporto XWayland generale è già presente.
 - [ ] Integrazione e configurazione dei portali XDG per la sessione Hyprland.
 - [ ] Supporto screen sharing e registrazione dello schermo, con verifica delle applicazioni utilizzate.
 - [ ] Mostrare almeno due workspace nella top bar; attualmente vengono mostrati solo quelli occupati e quello attivo.
 - [ ] Clipboard manager con sincronizzazione X11/Wayland.
+- [ ] Hyprlock fingerprint support and modern theme/layout
+- [ ] Multi-distro installation support (add debian, arch)
+- [ ] Update and simplify README (divide into multple docs files)
 
 ## Estensioni già individuate
 
@@ -73,6 +76,7 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [ ] Controlli multimediali MPRIS.
 - [ ] Eventi e calendari esterni nel calendario.
 - [ ] Persistenza delle impostazioni della shell: Non disturbare e “Resta attivo” attualmente si azzerano al riavvio.
+- [ ] Multilanguage support
 
 ## Verifiche manuali ancora aperte
 
