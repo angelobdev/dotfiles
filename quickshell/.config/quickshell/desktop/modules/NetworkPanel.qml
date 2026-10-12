@@ -26,14 +26,11 @@ Overlay {
             property var scanBinding: Binding { target: modelData; property: "scannerEnabled"; value: root.visible && Networking.wifiEnabled }
         }
     }
-    Card {
-        anchors.centerIn: parent
-        width: Math.min(660, parent.width - 48)
-        height: Math.min(740, parent.height - 96)
+    SidePanelCard {
         ColumnLayout {
-            anchors { fill: parent; margins: 22 }
+            anchors { fill: parent; margins: 16 }
             spacing: 12
-            Heading { text: "Rete e Wi-Fi" }
+            PanelHeader { Layout.fillWidth: true; title: "Rete e Wi-Fi"; showBack: true }
             InputField {
                 id: search; Layout.fillWidth: true; placeholderText: "Cerca una rete Wi-Fi…"
             }
@@ -44,10 +41,9 @@ Overlay {
                 ColumnLayout {
                     width: parent.width
                     spacing: 14
-                    Heading { text: "Rete" }
                     RowLayout {
-                        ActionButton { text: Networking.wifiEnabled ? "Wi-Fi acceso" : "Wi-Fi spento"; enabled: Networking.wifiHardwareEnabled; highlighted: Networking.wifiEnabled; onClicked: Networking.wifiEnabled = !Networking.wifiEnabled }
-                        Text { text: NetworkConnectivity.toString(Networking.connectivity); color: Theme.muted }
+                        ActionButton { iconName: Networking.wifiEnabled ? "wifi" : "wifi-off"; text: Networking.wifiEnabled ? "Wi-Fi acceso" : "Wi-Fi spento"; enabled: Networking.wifiHardwareEnabled; highlighted: Networking.wifiEnabled; onClicked: Networking.wifiEnabled = !Networking.wifiEnabled }
+                        Text { text: NetworkConnectivity.toString(Networking.connectivity); color: Theme.muted; font.pixelSize: 11; Layout.fillWidth: true; elide: Text.ElideRight }
                     }
                     Repeater {
                         model: Networking.devices
@@ -55,7 +51,7 @@ Overlay {
                             id: deviceRow
                             required property var modelData
                             Layout.fillWidth: true
-                            Text { text: deviceRow.modelData.name + " · " + ConnectionState.toString(deviceRow.modelData.state); color: Theme.muted; textFormat: Text.PlainText }
+                            Text { text: deviceRow.modelData.name + " · " + ConnectionState.toString(deviceRow.modelData.state); color: Theme.muted; textFormat: Text.PlainText; font.pixelSize: 11; Layout.fillWidth: true; elide: Text.ElideRight }
                             Repeater {
                                 model: deviceRow.modelData.networks.values.filter(n => n.name.toLowerCase().includes(search.text.toLowerCase()))
                                     .sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
@@ -65,7 +61,7 @@ Overlay {
                                     Layout.fillWidth: true
                                     alignLeft: true
                                     iconName: deviceRow.modelData.type === DeviceType.Wifi ? "wifi" : "ethernet"
-                                    text: (modelData.connected ? "● " : "○ ") + modelData.name + (modelData.stateChanging ? " …" : "")
+                                    text: modelData.name + (modelData.stateChanging ? " …" : "")
                                     highlighted: modelData.connected
                                     enabled: !modelData.stateChanging
                                     onClicked: {
@@ -93,8 +89,8 @@ Overlay {
                         visible: root.passwordNetwork !== null
                         Layout.fillWidth: true
                         Text { text: "Password per " + (root.passwordNetwork?.name ?? ""); color: Theme.text; textFormat: Text.PlainText }
+                        InputField { id: password; Layout.fillWidth: true; echoMode: TextInput.Password; placeholderText: "Password Wi-Fi"; onAccepted: connectButton.clicked() }
                         RowLayout {
-                            InputField { id: password; Layout.fillWidth: true; echoMode: TextInput.Password; placeholderText: "Password Wi-Fi"; onAccepted: connectButton.clicked() }
                             ActionButton {
                                 id: connectButton
                                 text: "Connetti"
@@ -106,11 +102,6 @@ Overlay {
                     }
                     Text { visible: root.error !== ""; text: root.error; color: Theme.danger; Layout.fillWidth: true; wrapMode: Text.Wrap; textFormat: Text.PlainText }
                 }
-            }
-            RowLayout {
-                ActionButton { text: "‹ Centro di controllo"; onClicked: ShellState.toggle("controls", ShellState.activeScreen) }
-                Item { Layout.fillWidth: true }
-                ActionButton { text: "Chiudi"; onClicked: ShellState.close() }
             }
         }
     }

@@ -4,6 +4,7 @@ import ".."
 Slider {
     id: root
     from: 0; to: 1
+    live: true
     implicitHeight: 30
     leftPadding: 8; rightPadding: 8
     opacity: enabled ? 1 : 0.4

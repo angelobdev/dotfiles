@@ -25,7 +25,7 @@ ShellRoot {
                 batteryWatts: UPower.displayDevice?.changeRate ?? null,
                 batteryTimeToEmpty: UPower.displayDevice?.timeToEmpty ?? null,
                 hintsBindings: hints.bindings.length, powerSelection: powerMenu.selectedAction, powerPending: powerMenu.pending,
-                bluetoothAdapters: Bluetooth.adapters.values.length, brightness: Brightness.monitors, quiet: Notices.quiet,
+                keepAwake: Idle.keepAwake, bluetoothAdapters: Bluetooth.adapters.values.length, brightness: Brightness.monitors, quiet: Notices.quiet,
                 networkDevices: Networking.devices.values.length,
                 notifications: Notices.notifications.values.length,
                 polkitRegistered: authentication.registered, popups: Notices.popups.length,

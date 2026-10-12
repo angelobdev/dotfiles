@@ -59,7 +59,7 @@ Overlay {
                 }
             }
             RowLayout {
-                ActionButton { text: "‹ Centro di controllo"; onClicked: ShellState.toggle("controls", ShellState.activeScreen) }
+                ActionButton { iconName: "arrow-left"; text: "Centro di controllo"; onClicked: ShellState.toggle("controls", ShellState.activeScreen) }
                 Item { Layout.fillWidth: true }
                 ActionButton { text: "Chiudi"; onClicked: ShellState.close() }
             }

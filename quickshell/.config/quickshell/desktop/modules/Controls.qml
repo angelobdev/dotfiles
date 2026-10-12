@@ -18,7 +18,7 @@ Overlay {
             spacing: 12
             RowLayout {
                 Text { text: "Centro di controllo"; font.family: Theme.font; font.pixelSize: 15; font.weight: Font.DemiBold; color: Theme.text; Layout.fillWidth: true }
-                ActionButton { id: closeButton; text: "×"; tooltip: "Chiudi"; implicitWidth: 28; implicitHeight: 28; onClicked: ShellState.close() }
+                PanelIconButton { id: closeButton; iconName: "close"; tooltip: "Chiudi"; onClicked: ShellState.close() }
             }
             ScrollView {
                 Layout.fillWidth: true
@@ -32,12 +32,12 @@ Overlay {
                     columns: 2
                     rowSpacing: 10; columnSpacing: 10
                     Repeater {
-                        model: Config.controlCenterModules.filter((name, index, all) => ["network", "bluetooth", "brightness", "audio", "doNotDisturb"].includes(name) && all.indexOf(name) === index)
+                        model: Config.controlCenterModules.filter((name, index, all) => ["network", "bluetooth", "brightness", "audio", "doNotDisturb", "idle"].includes(name) && all.indexOf(name) === index)
                         Loader {
                             required property string modelData
                             Layout.fillWidth: true
                             Layout.columnSpan: ["network", "bluetooth"].includes(modelData) ? 1 : 2
-                            source: ({network: "controlcenter/NetworkTile.qml", bluetooth: "controlcenter/BluetoothTile.qml", brightness: "controlcenter/BrightnessControl.qml", audio: "controlcenter/AudioControl.qml", doNotDisturb: "controlcenter/FocusControl.qml"})[modelData]
+                            source: ({network: "controlcenter/NetworkTile.qml", bluetooth: "controlcenter/BluetoothTile.qml", brightness: "controlcenter/BrightnessControl.qml", audio: "controlcenter/AudioControl.qml", doNotDisturb: "controlcenter/FocusControl.qml", idle: "controlcenter/IdleControl.qml"})[modelData]
                         }
                     }
                 }

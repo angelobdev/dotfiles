@@ -23,8 +23,8 @@ Rectangle {
                 model: root.notification.actions
                 ActionButton { required property var modelData; text: modelData.text; onClicked: modelData.invoke() }
             }
-            ActionButton { text: "Elimina"; onClicked: root.notification.dismiss() }
-            ActionButton { visible: root.popup; text: "Nascondi"; onClicked: root.hidePopup() }
+            ActionButton { iconName: "trash"; text: "Elimina"; onClicked: root.notification.dismiss() }
+            ActionButton { visible: root.popup; iconName: "close"; text: "Nascondi"; onClicked: root.hidePopup() }
         }
     }
 }

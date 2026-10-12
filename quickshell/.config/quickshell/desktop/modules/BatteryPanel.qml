@@ -27,36 +27,39 @@ Overlay {
         const minutes = Math.max(1, Math.round(seconds / 60));
         return (minutes >= 60 ? Math.floor(minutes / 60) + " h " : "") + (minutes % 60) + " min";
     }
-    Card {
-        anchors.centerIn: parent
-        width: Math.min(540, parent.width - 48)
-        height: layout.implicitHeight + 44
+
+    SidePanelCard {
         ColumnLayout {
-            id: layout
-            anchors { left: parent.left; right: parent.right; top: parent.top; margins: 22 }
+            anchors { fill: parent; margins: 16 }
             spacing: 14
-            Heading { text: "Batteria ed energia" }
-            Text { text: root.available ? Math.round(root.battery.percentage * 100) + "%" : "Nessuna batteria"; font.pixelSize: 42; font.family: Theme.font; color: Theme.text }
-            Text { visible: root.available; text: root.stateLabel; color: Theme.muted }
-            ProgressBar { Layout.fillWidth: true; visible: root.available; from: 0; to: 1; value: root.battery?.percentage ?? 0 }
-            GridLayout {
-                visible: root.available
-                columns: 2; columnSpacing: 24; rowSpacing: 12
-                Text { text: root.charging ? "Potenza di ricarica" : root.discharging ? "Consumo dalla batteria" : "Flusso di energia"; color: Theme.muted }
-                Text { text: Math.abs(root.battery?.changeRate ?? 0).toFixed(1) + " W"; color: Theme.text }
-                Text { text: root.charging ? "Alla carica completa" : "Autonomia residua"; color: Theme.muted }
-                Text { text: root.charging ? root.duration(root.battery?.timeToFull) : root.discharging ? root.duration(root.battery?.timeToEmpty) : root.stateLabel; color: Theme.text }
-                Text { text: "Energia disponibile"; color: Theme.muted }
-                Text { text: (root.battery?.energy ?? 0).toFixed(1) + " / " + (root.battery?.energyCapacity ?? 0).toFixed(1) + " Wh"; color: Theme.text }
+            PanelHeader { Layout.fillWidth: true; title: "Batteria ed energia" }
+            ScrollView {
+                Layout.fillWidth: true; Layout.fillHeight: true; contentWidth: availableWidth; clip: true
+                ColumnLayout {
+                    width: parent.width; spacing: 12
+                    RowLayout {
+                        Icon { name: root.charging ? "battery-charging" : "battery"; Layout.preferredWidth: 30; Layout.preferredHeight: 30 }
+                        Text { text: root.available ? Math.round(root.battery.percentage * 100) + "%" : "Nessuna batteria"; font.pixelSize: 36; font.family: Theme.font; color: Theme.text }
+                    }
+                    Text { visible: root.available; text: root.stateLabel; color: Theme.muted }
+                    ProgressBar { Layout.fillWidth: true; visible: root.available; from: 0; to: 1; value: root.battery?.percentage ?? 0; palette.highlight: Theme.accent }
+                    GridLayout {
+                        visible: root.available; Layout.fillWidth: true
+                        columns: 2; columnSpacing: 12; rowSpacing: 12
+                        Text { text: root.charging ? "Potenza di ricarica" : root.discharging ? "Consumo" : "Flusso di energia"; color: Theme.muted; font.pixelSize: 12 }
+                        Text { text: Math.abs(root.battery?.changeRate ?? 0).toFixed(1) + " W"; color: Theme.text; font.pixelSize: 12; Layout.fillWidth: true; horizontalAlignment: Text.AlignRight }
+                        Text { text: root.charging ? "Alla carica completa" : "Autonomia residua"; color: Theme.muted; font.pixelSize: 12 }
+                        Text { text: root.charging ? root.duration(root.battery?.timeToFull) : root.discharging ? root.duration(root.battery?.timeToEmpty) : root.stateLabel; color: Theme.text; font.pixelSize: 12; Layout.fillWidth: true; wrapMode: Text.Wrap; horizontalAlignment: Text.AlignRight }
+                        Text { text: "Energia disponibile"; color: Theme.muted; font.pixelSize: 12 }
+                        Text { text: (root.battery?.energy ?? 0).toFixed(1) + " / " + (root.battery?.energyCapacity ?? 0).toFixed(1) + " Wh"; color: Theme.text; font.pixelSize: 12; Layout.fillWidth: true; horizontalAlignment: Text.AlignRight }
+                    }
+                    Heading { text: "Profilo energetico"; font.pixelSize: 14; Layout.topMargin: 6 }
+                    ActionButton { Layout.fillWidth: true; alignLeft: true; leftPadding: 12; iconName: "leaf"; text: "Risparmio energetico"; highlighted: PowerProfiles.profile === PowerProfile.PowerSaver; onClicked: PowerProfiles.profile = PowerProfile.PowerSaver }
+                    ActionButton { Layout.fillWidth: true; alignLeft: true; leftPadding: 12; iconName: "balanced"; text: "Bilanciato"; highlighted: PowerProfiles.profile === PowerProfile.Balanced; onClicked: PowerProfiles.profile = PowerProfile.Balanced }
+                    ActionButton { Layout.fillWidth: true; alignLeft: true; leftPadding: 12; iconName: "performance"; text: "Prestazioni"; enabled: PowerProfiles.hasPerformanceProfile; highlighted: PowerProfiles.profile === PowerProfile.Performance; onClicked: PowerProfiles.profile = PowerProfile.Performance }
+                    Text { Layout.fillWidth: true; wrapMode: Text.Wrap; font.pixelSize: 11; color: Theme.muted; text: "Potenza e tempi sono stime aggiornate dal sistema." }
+                }
             }
-            Heading { text: "Profilo energetico"; Layout.topMargin: 6 }
-            RowLayout {
-                ActionButton { text: "Risparmio"; highlighted: PowerProfiles.profile === PowerProfile.PowerSaver; onClicked: PowerProfiles.profile = PowerProfile.PowerSaver }
-                ActionButton { text: "Bilanciato"; highlighted: PowerProfiles.profile === PowerProfile.Balanced; onClicked: PowerProfiles.profile = PowerProfile.Balanced }
-                ActionButton { text: "Prestazioni"; enabled: PowerProfiles.hasPerformanceProfile; highlighted: PowerProfiles.profile === PowerProfile.Performance; onClicked: PowerProfiles.profile = PowerProfile.Performance }
-            }
-            Text { Layout.fillWidth: true; wrapMode: Text.Wrap; font.pixelSize: 12; color: Theme.muted; text: "Potenza e tempi sono stime UPower aggiornate dal sistema; possono richiedere alcuni istanti per stabilizzarsi." }
-            ActionButton { text: "Chiudi"; onClicked: ShellState.close() }
         }
     }
 }

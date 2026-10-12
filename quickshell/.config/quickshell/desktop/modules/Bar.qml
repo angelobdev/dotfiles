@@ -10,10 +10,11 @@ import Quickshell.Services.UPower
 import ".."
 import "../components"
 import "../services"
+
 PanelWindow {
     id: bar
     anchors { top: true; left: true; right: true }
-    margins { top: 8; left: 12; right: 12 }
+    margins { top: 0; left: 0; right: 0 }
     implicitHeight: 38
     color: "transparent"
     WlrLayershell.namespace: "desktop-bar"
@@ -21,20 +22,23 @@ PanelWindow {
     readonly property var workspaces: Hyprland.workspaces.values.filter(w =>
         w.id > 0 && w.monitor?.name === bar.screen.name && (w.active || w.toplevels.values.length > 0)).sort((a, b) => a.id - b.id)
     readonly property int battery: Math.round((UPower.displayDevice?.percentage ?? 0) * 100)
+    IdleInhibitor { window: bar; enabled: Idle.keepAwake }
     SystemClock { id: clock; precision: SystemClock.Minutes }
     Rectangle {
-        anchors.fill: parent; radius: 13; border.color: Theme.stroke
-        gradient: Gradient {
-            GradientStop { position: 0; color: "#d934363b" }
-            GradientStop { position: 1; color: "#c4232529" }
-        }
+        anchors.fill: parent; radius: 0;
+        // border.color: Theme.stroke
+        // gradient: Gradient {
+        //     GradientStop { position: 0; color: "#d934363b" }
+        //     GradientStop { position: 1; color: "#c4232529" }
+        // }
+        color: "transparent"
     }
     RowLayout {
         anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
         spacing: 5
         BarButton {
             iconSource: Quickshell.iconPath("fedora-logo-icon", "start-here")
-            iconSize: 23; implicitWidth: 36; tooltip: "Applicazioni"
+            iconSize: 18; implicitWidth: 32; tooltip: "Applicazioni"
             onClicked: ShellState.toggle("launcher", bar.screen)
         }
         RowLayout {
@@ -92,11 +96,21 @@ PanelWindow {
             }
         }
         BarButton {
+            id: batteryButton
+            readonly property string profileIcon: PowerProfiles.profile === PowerProfile.PowerSaver ? "leaf" : PowerProfiles.profile === PowerProfile.Performance ? "performance" : ""
+            implicitWidth: batteryContent.implicitWidth + leftPadding + rightPadding
+            contentItem: RowLayout {
+                id: batteryContent
+                spacing: 6
+                Icon { visible: batteryButton.profileIcon !== ""; name: batteryButton.profileIcon; Layout.preferredWidth: 16; Layout.preferredHeight: 16 }
+                Text { text: batteryButton.text; font: batteryButton.font; color: batteryButton.foreground }
+                Icon { name: batteryButton.iconName; Layout.preferredWidth: 16; Layout.preferredHeight: 16 }
+            }
             visible: UPower.displayDevice?.isLaptopBattery ?? false
             iconName: !UPower.onBattery ? "battery-charging" : bar.battery < 20 ? "battery-low" : "battery"
             text: bar.battery + "%"
             iconAfterText: true
-            tooltip: UPower.onBattery ? "Alimentazione a batteria" : "Alimentazione collegata"
+            tooltip: (UPower.onBattery ? "Alimentazione a batteria" : "Alimentazione collegata") + (profileIcon === "leaf" ? " · Risparmio energetico" : profileIcon === "performance" ? " · Prestazioni" : "")
             onClicked: ShellState.toggle("battery", bar.screen)
         }
         BarButton {

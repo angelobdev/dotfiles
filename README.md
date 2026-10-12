@@ -39,12 +39,13 @@ I pacchetti usano i percorsi XDG standard sotto `$HOME`. I due `color_scheme_pat
 
 ## Interfaccia
 
-- Barra flottante alta 38 px logici: Fedora/app menu → workspace occupati e attivo → titolo → spazio → tray → batteria (percentuale + icona) → notifiche → Hints → Control Center → giorno/ora → sessione. Controlli da 30 px, icone di stato da 16 px centrate e logo da 23 px. Rete e volume vivono nel Control Center.
+- Barra alta 38 px logici: Fedora/app menu → workspace occupati e attivo → titolo → spazio → tray → batteria (percentuale + icona) → notifiche → Hints → Control Center → giorno/ora → sessione. Controlli da 30 px, icone di stato da 16 px centrate e logo da 18 px. Rete e volume vivono nel Control Center.
 - Icone vettoriali e tooltip nativi posizionati sotto i pulsanti, fuori dalla superficie della barra. Le icone app originali restano colorate.
 - Launcher con ricerca, titoli a sinistra, icone, frecce e Invio; le app da terminale si aprono in Kitty.
 - Superfici traslucide, bordi leggeri e blur Hyprland; sfondo fornito da hyprpaper.
+- Pannelli Rete, Bluetooth, Notifiche e Batteria allineati in alto a destra, con larghezza comune configurata in `Config.qml` e intestazioni con icone da 22 px. Le azioni Non disturbare/Elimina tutte sono a destra del titolo Notifiche; il blocco batteria in barra mostra una foglia in Risparmio e un fulmine in Prestazioni, nessun indicatore aggiuntivo in Bilanciato.
 - Pannelli separati: Rete e Wi-Fi con ricerca/selezione reti; Audio con volume, mute, ingresso/uscita predefiniti e livello microfono; Batteria con potenza in W, energia in Wh, autonomia/carica rimanente e profili energetici. Le reti Wi-Fi Personal hanno un prompt password; Enterprise richiede un profilo preconfigurato.
-- Control Center compatto, in alto a destra: schede Rete/Bluetooth, luminosità del monitor primario con accordion per gli altri display, volume dello speaker selezionato con accordion per ingressi/uscite e livello microfono, toggle Non disturbare. Moduli e ordine si configurano in `Config.qml`. Bluetooth ha un sottopannello con adattatori, connessione/disconnessione dei dispositivi già associati e batteria quando esposta da BlueZ. I profili energetici dipendono dall’hardware.
+- Control Center compatto, in alto a destra: schede Rete/Bluetooth, luminosità del monitor primario con accordion per gli altri display, volume dello speaker selezionato con accordion per ingressi/uscite e livello microfono, toggle Non disturbare e Resta attivo. Moduli e ordine si configurano in `Config.qml`. Bluetooth ha un sottopannello con adattatori, connessione/disconnessione dei dispositivi già associati e batteria quando esposta da BlueZ. I profili energetici dipendono dall’hardware.
 - Notifiche, popup, azioni, centro notifiche e non disturbare; storico in memoria, azzerato al riavvio della shell.
 - Agente Polkit QML con l'identità predefinita proposta da Polkit.
 - Power navigabile da tastiera: blocco immediato; sospensione, logout, riavvio e spegnimento con conferma. Gli errori del comando vengono mostrati nel pannello.
@@ -64,7 +65,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-dae
 | 10 minuti | Spegnimento display (DPMS) |
 | 30 minuti | Sospensione |
 
-Personalizzare `hypridle/.config/hypr/hypridle.conf`. Il daemon rispetta gli inibitori delle applicazioni. `inhibit_sleep = 3` fa attendere a logind il segnale Wayland di sessione bloccata prima del riposo, anche con il wrapper custom. `before_sleep_cmd` copre le richieste esterne e la chiusura del coperchio quando logind la associa alla sospensione. Al risveglio riaccende i display. `desktop-power suspend` rifiuta di procedere se hypridle non è attivo.
+Personalizzare `hypridle/.config/hypr/hypridle.conf`. Il daemon rispetta gli inibitori delle applicazioni. **Resta attivo** nel Control Center sospende blocco, DPMS e sospensione automatici tramite un inibitore Wayland sulle barre; continua a funzionare a pannello chiuso. Le azioni manuali restano disponibili. Il toggle parte disattivato e si azzera al riavvio della shell; il modulo configurabile si chiama `idle`. `inhibit_sleep = 3` fa attendere a logind il segnale Wayland di sessione bloccata prima del riposo, anche con il wrapper custom. `before_sleep_cmd` copre le richieste esterne e la chiusura del coperchio quando logind la associa alla sospensione. Al risveglio riaccende i display. `desktop-power suspend` rifiuta di procedere se hypridle non è attivo.
 
 Il config di hyprlock è stato provato in una sessione Hyprland annidata: inizializzazione PAM, rendering e conferma `onLockLocked` riusciti. Lo sblocco con la propria password, la chiusura del coperchio e il risveglio restano da verificare sulla macchina; il test annidato non prova questi percorsi hardware.
 
@@ -137,7 +138,7 @@ Audio usa i nodi PipeWire e cambia i dispositivi predefiniti tramite le API Quic
 Modificare `quickshell/.config/quickshell/desktop/Config.qml`. La configurazione è dichiarativa, senza editor nell’interfaccia:
 
 ```qml
-readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "doNotDisturb"]
+readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "doNotDisturb", "idle"]
 readonly property int controlCenterWidth: 400
 readonly property bool expandMonitors: false
 readonly property bool expandAudioDevices: false
@@ -156,7 +157,7 @@ readonly property var brightnessDevices: ({
 })
 ```
 
-Il bus `6` è un esempio: usare quello effettivo mostrato da `ddcutil detect`. Per DDC/CI installare facoltativamente `sudo dnf install ddcutil`, abilitare DDC/CI nel monitor e verificare i permessi `/dev/i2c-*` previsti dal pacchetto. La shell non esegue sudo. Un monitor senza backend o senza accesso hardware mostra uno slider disabilitato con il motivo. L’accordion elenca solo gli altri monitor connessi; hotplug e valori vengono aggiornati mentre il Control Center è aperto. Le scritture sono accorpate e serializzate, con minimo 1% per evitare lo spegnimento accidentale del backlight. Non viene usata un’opacità software per simulare la luminosità.
+Il bus `6` è un esempio: usare quello effettivo mostrato da `ddcutil detect`. Per DDC/CI installare facoltativamente `sudo dnf install ddcutil`, abilitare DDC/CI nel monitor e verificare i permessi `/dev/i2c-*` previsti dal pacchetto. La shell non esegue sudo. Un monitor senza backend o senza accesso hardware mostra uno slider disabilitato con il motivo. L’accordion elenca solo gli altri monitor connessi; hotplug e valori vengono aggiornati mentre il Control Center è aperto. Lo slider e la percentuale seguono subito il valore scelto; durante il trascinamento le scritture vengono inviate con un intervallo di circa 70 ms, accorpate e serializzate. Il dato hardware viene riconciliato al termine senza ripristinare letture precedenti. Il valore minimo è 1% per evitare lo spegnimento accidentale del backlight. Non viene usata un’opacità software per simulare la luminosità.
 
 Audio e Bluetooth usano le API native Quickshell. Bluetooth gestisce i dispositivi già associati; il pairing con PIN/conferma richiede ancora un agente dedicato. Le sezioni Hints sono ricavate dai tasti/descrizioni dei bind reali: i bind personalizzati non riconosciuti restano in Altro e sono ricercabili.
 
@@ -176,7 +177,7 @@ cat ~/.local/state/desktop-session/hypridle.log
 ./scripts/check.sh
 ```
 
-Verifiche eseguite: parser Lua e script, caricamento/layout QML, Control Center e accordion, posizionamento tooltip, helper luminosità con backend fittizi (routing, limiti e scala DDC), scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC.
+Verifiche eseguite: parser Lua e script, caricamento/layout QML, Control Center e accordion, posizionamento tooltip, helper luminosità con backend fittizi (routing, limiti e scala DDC), aggiornamenti durante il trascinamento senza ritorno al vecchio valore e gestione di errori hardware, creazione/rilascio dell’inibitore Wayland anche a pannello chiuso, scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC.
 
 ## Rimozione
 

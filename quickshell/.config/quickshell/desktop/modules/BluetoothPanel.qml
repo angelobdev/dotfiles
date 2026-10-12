@@ -7,18 +7,11 @@ import "../components"
 Overlay {
     id: root
     panelName: "bluetooth"
-    Card {
-        anchors { top: parent.top; right: parent.right; topMargin: 58; rightMargin: 12 }
-        width: Math.min(460, parent.width - 24)
-        height: Math.min(500, parent.height - 76)
+    SidePanelCard {
         ColumnLayout {
-            anchors { fill: parent; margins: 20 }
+            anchors { fill: parent; margins: 16 }
             spacing: 12
-            RowLayout {
-                ActionButton { text: "‹"; tooltip: "Centro di controllo"; onClicked: ShellState.toggle("controls", ShellState.activeScreen) }
-                Heading { text: "Bluetooth"; Layout.fillWidth: true }
-                ActionButton { text: "×"; tooltip: "Chiudi"; onClicked: ShellState.close() }
-            }
+            PanelHeader { Layout.fillWidth: true; title: "Bluetooth"; showBack: true }
             ScrollView {
                 Layout.fillWidth: true; Layout.fillHeight: true; contentWidth: availableWidth; clip: true
                 ColumnLayout {

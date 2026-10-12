@@ -50,9 +50,9 @@ Overlay {
                 spacing: 14
                 Heading { text: "Calendario" }
                 RowLayout {
-                    ActionButton { text: "‹"; tooltip: "Mese precedente"; onClicked: root.shiftMonth(-1) }
+                    PanelIconButton { iconName: "chevron-left"; tooltip: "Mese precedente"; onClicked: root.shiftMonth(-1) }
                     Text { Layout.fillWidth: true; text: root.locale.toString(new Date(root.year, root.month, 1), "MMMM yyyy"); horizontalAlignment: Text.AlignHCenter; font.pixelSize: 18; font.family: Theme.font; color: Theme.text }
-                    ActionButton { text: "›"; tooltip: "Mese successivo"; onClicked: root.shiftMonth(1) }
+                    PanelIconButton { iconName: "chevron-right"; tooltip: "Mese successivo"; onClicked: root.shiftMonth(1) }
                 }
                 GridLayout {
                     Layout.fillWidth: true; columns: 7; columnSpacing: 3; rowSpacing: 3

@@ -1,12 +1,15 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import ".."
 Switch {
     id: root
-    implicitWidth: 44; implicitHeight: 30
-    leftPadding: 2; rightPadding: 2
+    implicitWidth: 40; implicitHeight: 30
+    Layout.minimumWidth: 40; Layout.maximumWidth: 40
+    Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+    leftPadding: 0; rightPadding: 0
     indicator: Rectangle {
-        x: root.leftPadding; y: (root.height - height) / 2
+        x: root.width - width; y: (root.height - height) / 2
         width: 40; height: 24; radius: 12
         color: root.checked ? Theme.accent : "#805c6068"
         border.width: root.activeFocus ? 1 : 0; border.color: Theme.text

@@ -6,17 +6,15 @@ import "../components"
 import "../services"
 Overlay {
     panelName: "notifications"
-    Card {
-        anchors.centerIn: parent
-        width: Math.min(540, parent.width - 48)
-        height: Math.min(640, parent.height - 96)
+    SidePanelCard {
+        height: Math.min(600, parent.height - 76)
         ColumnLayout {
-            anchors { fill: parent; margins: 22 }
+            anchors { fill: parent; margins: 16 }
             spacing: 14
-            Heading { text: "Notifiche" }
-            RowLayout {
-                ActionButton { text: Notices.quiet ? "Non disturbare: sì" : "Non disturbare: no"; highlighted: Notices.quiet; onClicked: Notices.quiet = !Notices.quiet }
-                ActionButton { text: "Elimina tutte"; onClicked: Notices.clear() }
+            PanelHeader {
+                Layout.fillWidth: true; title: "Notifiche"
+                PanelIconButton { iconName: Notices.quiet ? "bell-off" : "bell"; tooltip: "Non disturbare"; highlighted: Notices.quiet; onClicked: Notices.quiet = !Notices.quiet }
+                PanelIconButton { iconName: "trash"; tooltip: "Elimina tutte"; enabled: Notices.notifications.values.length > 0; onClicked: Notices.clear() }
             }
             ListView {
                 id: list
@@ -27,7 +25,6 @@ Overlay {
                 ScrollBar.vertical: ScrollBar {}
                 Text { anchors.centerIn: parent; text: "Nessuna notifica"; visible: list.count === 0; color: Theme.muted }
             }
-            ActionButton { text: "Chiudi"; onClicked: ShellState.close() }
         }
     }
 }
