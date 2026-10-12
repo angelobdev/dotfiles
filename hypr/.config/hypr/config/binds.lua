@@ -14,14 +14,28 @@ bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Finestra flottant
 bind("SUPER + P", hl.dsp.window.pseudo(), "Pseudo tiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Cambia orientamento split")
 bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Schermo intero")
+bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region"), "Screenshot · Area")
+bind("SHIFT + Print", hl.dsp.exec_cmd("hyprshot -m region"), "Screenshot · Area")
+bind("Print", hl.dsp.exec_cmd("hyprshot -m output"), "Screenshot · Monitor")
+bind("SUPER + Print", hl.dsp.exec_cmd("hyprshot -m window"), "Screenshot · Finestra")
+bind("ALT + Print", hl.dsp.exec_cmd("hyprshot -m window -m active"), "Screenshot · Finestra attiva")
 
 -- System (Quickshell)
+bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(shell .. " restart"), "Riavvia Quickshell")
 bind("SUPER + Space", hl.dsp.exec_cmd(shell .. " toggle launcher"), "Applicazioni")
 bind("SUPER + SHIFT + C", hl.dsp.exec_cmd(shell .. " toggle controls"), "Centro di controllo")
 bind("SUPER + SHIFT + N", hl.dsp.exec_cmd(shell .. " toggle notifications"), "Notifiche")
+bind("SUPER + SHIFT + E", hl.dsp.exec_cmd(shell .. " toggle network"), "Rete e Wi-Fi")
+bind("SUPER + SHIFT + V", hl.dsp.exec_cmd(shell .. " toggle audio"), "Volume e dispositivi audio")
+bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Batteria ed energia")
+bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendario")
+bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Scorciatoie tastiera")
+bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper"'), "Scegli sfondo")
 bind("SUPER + SHIFT + Q", hl.dsp.exec_cmd(shell .. " toggle power"), "Menu sessione")
-bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(shell .. " restart"), "Riavvia Quickshell")
 
+-- System (Extensions)
+bind("SUPER + SHIFT + C", hl.dsp.exec_cmd(shell .. " toggle clipboard"), "Clipboard · Storico")
+bind("SUPER + CTRL + R", hl.dsp.exec_cmd(shell .. " toggle recording"), "Registrazione schermo")
 
 -- Directional Binds
 for _, direction in ipairs({ "left", "right", "up", "down" }) do
@@ -35,13 +49,6 @@ for i = 1, 10 do
     bind("SUPER + " .. key, hl.dsp.focus({ workspace = i }), "Workspace " .. i)
     bind("SUPER + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }), "Sposta al workspace " .. i)
 end
-
--- Screenshots (save to Hyprshot's configured directory and copy to clipboard)
-bind("SUPER + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m region"), "Screenshot · Area")
-bind("SHIFT + Print", hl.dsp.exec_cmd("hyprshot -m region"), "Screenshot · Area")
-bind("Print", hl.dsp.exec_cmd("hyprshot -m output"), "Screenshot · Monitor")
-bind("SUPER + Print", hl.dsp.exec_cmd("hyprshot -m window"), "Screenshot · Finestra")
-bind("ALT + Print", hl.dsp.exec_cmd("hyprshot -m window -m active"), "Screenshot · Finestra attiva")
 
 -- Window Management (Cursor)
 bind("SUPER + mouse:272", hl.dsp.window.drag(), "Trascina finestra", { mouse = true })
@@ -63,11 +70,3 @@ bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), 
 local power = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-power"'
 bind("SUPER + L", hl.dsp.exec_cmd(power .. " lock"), "Blocca schermo")
 bind("XF86Sleep", hl.dsp.exec_cmd(power .. " suspend"), "Sospendi")
-
--- Dedicated shell panels
-bind("SUPER + SHIFT + E", hl.dsp.exec_cmd(shell .. " toggle network"), "Rete e Wi-Fi")
-bind("SUPER + SHIFT + V", hl.dsp.exec_cmd(shell .. " toggle audio"), "Volume e dispositivi audio")
-bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Batteria ed energia")
-bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendario")
-bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Scorciatoie tastiera")
-bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper"'), "Scegli sfondo")

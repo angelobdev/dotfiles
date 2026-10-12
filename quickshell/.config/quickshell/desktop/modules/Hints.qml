@@ -21,7 +21,7 @@ Overlay {
             return "Workspace";
         if (/blocca|sospendi|logout|riavvio|spegni|sessione/.test(name))
             return "Sessione";
-        if (/applicazioni|centro di controllo|notifiche|quickshell|rete|wi-fi|volume e|batteria|calendario|hints|sfondo/.test(name))
+        if (/applicazioni|centro di controllo|notifiche|quickshell|rete|wi-fi|volume e|batteria|calendario|hints|sfondo|clipboard|registrazione/.test(name))
             return "Shell e pannelli";
         if (/browser|terminale|kitty/.test(name))
             return "Applicazioni";

@@ -17,7 +17,7 @@ Slider {
         width: root.availableWidth
         height: 7
         radius: 4
-        color: "#805c6068"
+        color: Theme.track
         Rectangle {
             width: root.visualPosition * parent.width
             height: parent.height

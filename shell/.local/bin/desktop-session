@@ -7,7 +7,10 @@ case "${1:-start}" in
         flock 9
         state="${XDG_STATE_HOME:-$HOME/.local/state}/desktop-session"
         mkdir -p "$state"
+        export PATH="$HOME/.local/bin:$PATH"
+        dbus-update-activation-environment --systemd PATH WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE
         "$HOME/.local/bin/desktop-theme"
+        systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service
         "$HOME/.local/bin/desktop-wallpaper" --ensure
         for daemon in hyprpaper hypridle; do
             command -v "$daemon" >/dev/null || { echo "Manca $daemon." >&2; exit 1; }

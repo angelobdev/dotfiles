@@ -138,7 +138,7 @@ Overlay {
                                 width: 4
                                 height: 4
                                 radius: 2
-                                color: parent.highlighted ? Theme.background : Theme.accent
+                                color: parent.highlighted ? Theme.accentText : Theme.accent
                                 visible: root.sameDay(parent.modelData, clock.date)
                             }
                         }

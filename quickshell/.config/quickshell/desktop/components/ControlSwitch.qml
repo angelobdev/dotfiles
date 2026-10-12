@@ -18,7 +18,7 @@ Switch {
         width: 40
         height: 24
         radius: 12
-        color: root.checked ? Theme.accent : "#805c6068"
+        color: root.checked ? Theme.accent : Theme.track
         border.width: root.activeFocus ? 1 : 0
         border.color: Theme.text
         Rectangle {
@@ -27,7 +27,7 @@ Switch {
             width: 18
             height: 18
             radius: 9
-            color: root.checked ? Theme.background : Theme.text
+            color: root.checked ? Theme.accentText : Theme.text
             Behavior on x {
                 NumberAnimation {
                     duration: 120

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+backend=wayland
+case "${1:-}" in
+    --x11) backend=x11; shift ;;
+    --wayland) shift ;;
+esac
+if [[ $# -eq 0 ]]; then
+    echo 'Uso: desktop-electron [--wayland|--x11] PROGRAMMA [ARGOMENTI...]' >&2
+    exit 2
+fi
+program=$1; shift
+exec "$program" "--ozone-platform=$backend" "$@"

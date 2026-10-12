@@ -18,11 +18,13 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Avvio e gestione della sessione tramite gli script `desktop-shell` e `desktop-session`.
 - [x] Supporto XWayland di base e fallback dei backend GTK/Qt.
 - [x] Integrazione di hypridle, hyprlock e hyprpaper; blocco, DPMS e sospensione automatica configurati.
+- [x] Hyprlock: layout moderno grafite, password PAM e autenticazione impronta nativa in parallelo; lettore Synaptics acquisito e verifica dell’indice destro avviata nel test headless.
 
 ### Barra e navigazione
 
 - [x] Top bar da 38 px con sfondo trasparente/traslucido, logo Fedora e menu applicazioni.
 - [x] Workspace occupati e attivo rappresentati da pill, con evidenza dello stato attivo e urgente.
+- [x] Almeno due pill per monitor, segnaposto vuoti con ID globalmente unici e navigazione con rotella.
 - [x] Titolo della finestra, spacer, tray, batteria con percentuale e icona, Hints, notifiche, Control Center, giorno/ora e power.
 - [x] Icone di stato centrate e tooltip nativi posizionati sotto i pulsanti.
 - [x] Launcher con ricerca, icone applicazioni, titoli allineati a sinistra e navigazione da tastiera.
@@ -49,24 +51,18 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Indicatore del profilo energetico nel blocco batteria della barra: foglia per Risparmio, fulmine per Prestazioni e nessuna icona aggiuntiva per Bilanciato; tooltip con profilo corrente e aggiornamento dal servizio di sistema.
 - [x] Dimensioni comuni dei pannelli laterali e icone di ritorno/chiusura da 22 px.
 - [x] Toggle “Resta attivo” collegato a un `IdleInhibitor` Wayland sulle barre: indipendente dall’apertura del Control Center, senza pacchetti aggiuntivi.
+- [x] Clipboard manager Quickshell con ricerca, tastiera, testo/immagini, pausa ed eliminazione; storico cliphist e bridge XWayland verificati in entrambe le direzioni.
 
 ### Integrazioni e documentazione
 
 - [x] Agente di autenticazione Polkit in Quickshell.
-- [x] Prima integrazione del tema per GTK 3/4, Qt 5/6 e hyprlock, con font e icone condivisi; uniformità completa ancora da raggiungere.
+- [x] Tema dark-glassy coerente: palette grafite condivisa tra Quickshell, GTK 3/4 e Qt 5/6, superfici shell traslucide con testo opaco e accento neutro; le app conservano la geometria nativa e possono avere stili propri.
+- [x] Tema Kitty coordinato, font Adwaita Mono, sfondo traslucido e palette ANSI.
 - [x] Primary neutro e configurazione Hyprland senza bordi finestra, con opacità delle finestre inattive e blur.
-- [x] README con installazione, pacchetti, funzionalità, scorciatoie, configurazione e diagnostica; aggiornato per fullscreen, screenshot, “Resta attivo” e stato dell’indicatore energetico nella barra.
-
-## Prossimi sviluppi
-
-- [ ] Tema dark-glassy pienamente coerente tra shell e applicazioni (GTK/QT/Quickshell)
-- [ ] Allineamento del tema di Kitty al tema di sistema.
-- [ ] Configurazione e verifica delle applicazioni Electron con XWayland/Wayland; il supporto XWayland generale è già presente.
-- [ ] Integrazione e configurazione dei portali XDG per la sessione Hyprland.
-- [ ] Supporto screen sharing e registrazione dello schermo, con verifica delle applicazioni utilizzate.
-- [ ] Mostrare almeno due workspace nella top bar (per monitor); attualmente vengono mostrati solo quelli occupati e quello attivo; Va aggiunto "scroll" via rotella del mouse all'hover sulle 'pill'
-- [ ] Clipboard manager con sincronizzazione X11/Wayland.
-- [ ] Hyprlock fingerprint support and modern theme/layout aligned with system theme (maybe macOS-like layout)
+- [x] Ambiente Electron Wayland e wrapper per scelta esplicita Wayland/X11; VS Code verificato su entrambi i backend con profili temporanei, Zen aperto rilevato nativo Wayland.
+- [x] Portali XDG: routing Hyprland/GTK, importazione dell’ambiente prima dell’avvio e selettore di condivisione custom Quickshell.
+- [x] Screen sharing via ScreenCast/PipeWire e registrazione monitor/area via wf-recorder, pannello QML, scelta audio, indicatore nella barra e salvataggio video; test reale del portale e registrazione di una finestra dedicata, prova nella web app specifica elencata sotto.
+- [x] README con installazione, pacchetti Stow, funzionalità, scorciatoie, configurazione e diagnostica; aggiornato anche per tema, Kitty, Electron, portali, screen sharing, registrazione, clipboard, impronte e limiti delle verifiche.
 
 ## Estensioni già individuate
 
@@ -82,5 +78,7 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 
 - [ ] Provare selezione interattiva e cattura reale con i nuovi bind Hyprshot; verificati parsing dei bind, assenza di conflitti e flussi di salvataggio/copia con backend simulati.
 
-- [ ] Verificare sblocco hyprlock con password, chiusura del coperchio e risveglio sulla macchina reale; il test annidato documentato non copre questi percorsi hardware.
+- [ ] Verificare sblocco hyprlock con password e dito registrato, chiusura del coperchio e risveglio sulla macchina reale; il test annidato documentato non copre questi percorsi hardware.
 - [ ] Verificare luminosità su monitor esterni DDC/CI e hotplug con l’hardware disponibile; backend e configurazione sono presenti.
+
+- [ ] Provare la condivisione dalla specifica web app di chiamate in Zen: selezione monitor/finestra e chiusura della condivisione. Il portale, il picker Quickshell e la ricezione reale di frame PipeWire sono verificati.

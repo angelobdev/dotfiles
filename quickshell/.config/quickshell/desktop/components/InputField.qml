@@ -10,7 +10,7 @@ TextField {
     color: Theme.text
     placeholderTextColor: Theme.muted
     selectionColor: Theme.accent
-    selectedTextColor: Theme.background
+    selectedTextColor: Theme.accentText
     font.family: Theme.font
     font.pixelSize: 14
     background: Rectangle {

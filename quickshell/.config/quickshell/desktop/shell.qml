@@ -13,6 +13,7 @@ ShellRoot {
     // Eagerly load shared services, including the notification D-Bus owner.
     property var audio: Audio
     property var notices: Notices
+    property var clipboard: Clipboard
     IpcHandler {
         target: "desktop"
         function toggle(panel: string): void {
@@ -46,6 +47,9 @@ ShellRoot {
                     percent: Osd.percent,
                     monitor: Osd.targetScreen?.name ?? ""
                 },
+                clipboard: {collecting: Clipboard.collecting, count: Clipboard.entries.length},
+                recording: {running: Recording.running, stopping: Recording.stopping, seconds: Recording.seconds, error: Recording.error},
+                workspaces: Quickshell.screens.map(s => ({monitor: s.name, active: Hyprland.monitorFor(s)?.activeWorkspace?.id})),
                 quiet: Notices.quiet,
                 networkDevices: Networking.devices.values.length,
                 notifications: Notices.notifications.values.length,
@@ -76,6 +80,8 @@ ShellRoot {
     Hints {
         id: hints
     }
+    RecordingPanel {}
+    ClipboardPanel {}
     WallpaperPicker {}
     NotificationCenter {}
     NotificationPopups {

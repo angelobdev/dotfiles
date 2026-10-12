@@ -3,3 +3,5 @@ singleton Notices 1.0 Notices.qml
 singleton Brightness 1.0 Brightness.qml
 singleton Idle 1.0 Idle.qml
 singleton Osd 1.0 Osd.qml
+singleton Clipboard 1.0 Clipboard.qml
+singleton Recording 1.0 Recording.qml

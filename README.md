@@ -8,12 +8,14 @@ Desktop custom per Fedora 44: Hyprland Lua, interfaccia QML in Quickshell e pacc
 | ------------ | -------------------------------------------------------------------------------------------------- |
 | `hypr`       | `~/.config/hypr/hyprland.lua` e moduli Lua                                                         |
 | `quickshell` | Barra, launcher, controlli, notifiche, power e agente Polkit                                       |
-| `shell`      | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper}` e helper Python per sfondi/luminosità |
+| `shell`      | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper,electron,portal-picker}` e helper Python per sfondi, luminosità, clipboard e registrazione |
 | `hypridle`   | Timer e coordinamento lock/sospensione                                                             |
-| `hyprlock`   | Blocco Wayland con autenticazione PAM                                                              |
+| `hyprlock`   | Blocco Wayland con PAM e impronta fprintd                                                              |
 | `hyprpaper`  | Sfondo Fedora 44 notturno, su ogni monitor                                                         |
 | `gtk`        | Palette, font, icone e preferenza scura GTK 3/4                                                    |
 | `qt`         | Palette Fusion e icone per Qt 5/6 tramite qt5ct/qt6ct                                              |
+| `kitty`      | Terminale grafite con sfondo traslucido e palette ANSI condivisa                                  |
+| `portals`    | Preferenze XDG: Hyprland per cattura/condivisione, GTK per file e impostazioni                      |
 
 ## Installazione e aggiornamento
 
@@ -23,13 +25,17 @@ I COPR della macchina sono `nett00n/hyprland` ed `errornointernet/quickshell`.
 sudo dnf install hyprland quickshell stow kitty brightnessctl wireplumber \
   NetworkManager bluez upower power-profiles-daemon \
   hypridle hyprlock hyprpaper qt5ct qt6ct papirus-icon-theme ripgrep \
-  f44-backgrounds-base xorg-x11-server-Xwayland ImageMagick python3 hyprshot
+  f44-backgrounds-base xorg-x11-server-Xwayland ImageMagick python3 hyprshot \
+  xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
+  wl-clipboard cliphist wf-recorder pulseaudio-utils fprintd fprintd-pam
 cd ~/.dotfiles
 ./scripts/stow.py dry-run
 ./scripts/stow.py apply
 ./scripts/check.sh
 hyprctl reload
 ~/.local/bin/desktop-session start
+# Solo quando si installano/cambiano i portali, terminando prima le condivisioni:
+systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-desktop-portal
 ~/.local/bin/desktop-shell restart
 ```
 
@@ -39,7 +45,7 @@ I pacchetti usano i percorsi XDG standard sotto `$HOME`. I due `color_scheme_pat
 
 ## Interfaccia
 
-- Barra alta 38 px logici: Fedora/app menu → workspace occupati e attivo → titolo → spazio → tray → batteria (percentuale + icona) → Hints → notifiche → Control Center → giorno/ora → sessione. Controlli da 30 px, icone di stato da 16 px centrate e logo da 18 px. Rete e volume vivono nel Control Center.
+- Barra alta 38 px logici: Fedora/app menu → workspace occupati/attivo e almeno due pill per monitor → titolo → spazio → tray → batteria (percentuale + icona) → Hints → notifiche → Control Center → giorno/ora → sessione. Controlli da 30 px, icone di stato da 16 px centrate e logo da 18 px. Rete e volume vivono nel Control Center.
 - Icone vettoriali e tooltip nativi posizionati sotto i pulsanti, fuori dalla superficie della barra. Le icone app originali restano colorate.
 - Launcher con ricerca, titoli a sinistra, icone, frecce e Invio; le app da terminale si aprono in Kitty.
 - Superfici traslucide, bordi leggeri e blur Hyprland; sfondo fornito da hyprpaper.
@@ -52,6 +58,7 @@ I pacchetti usano i percorsi XDG standard sotto `$HOME`. I due `color_scheme_pat
 - Calendario mensile con settimana da lunedì, selezione giorno, oggi e navigazione fra mesi; non include ancora eventi/calendari esterni.
 - Hints con ricerca e categorie (Applicazioni, Shell e pannelli, Finestre, Workspace, Mouse, Audio e luminosità, Sessione, Altro): legge `hyprctl -j binds` a ogni apertura e mostra scorciatoia + descrizione reali, inclusi submap e bind aggiunti in `local.lua`.
 - Selettore sfondi QML con navigazione cartelle e anteprima; nessun dialog esterno.
+- Clipboard Quickshell con ricerca e pausa; selettore screen sharing custom e pannello registrazione con indicatore nella barra.
 - OSD Quickshell per volume, mute dello speaker, microfono e luminosità: icona, livello e dispositivo, in basso al centro, senza intercettare mouse o tastiera.
 
 NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-daemon forniscono i servizi di sistema. I config avviano Quickshell, hypridle e hyprpaper. Nessun Waybar, nm-applet, Blueman, Sway o server notifiche separato.
@@ -68,7 +75,9 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-dae
 
 Personalizzare `hypridle/.config/hypr/hypridle.conf`. Il daemon rispetta gli inibitori delle applicazioni. Non servono pacchetti aggiuntivi per il toggle: `IdleInhibitor` è incluso in Quickshell e usa il protocollo supportato da Hyprland; hypridle rispetta gli inibitori Wayland per impostazione predefinita (`ignore_wayland_inhibit = false`). **Resta attivo** nel Control Center sospende blocco, DPMS e sospensione automatici tramite un inibitore Wayland sulle barre; continua a funzionare a pannello chiuso. Le azioni manuali restano disponibili. Il toggle parte disattivato e si azzera al riavvio della shell; il modulo configurabile si chiama `idle`. `inhibit_sleep = 3` fa attendere a logind il segnale Wayland di sessione bloccata prima del riposo, anche con il wrapper custom. `before_sleep_cmd` copre le richieste esterne e la chiusura del coperchio quando logind la associa alla sospensione. Al risveglio riaccende i display. `desktop-power suspend` rifiuta di procedere se hypridle non è attivo.
 
-Il config di hyprlock è stato provato in una sessione Hyprland annidata: inizializzazione PAM, rendering e conferma `onLockLocked` riusciti. Lo sblocco con la propria password, la chiusura del coperchio e il risveglio restano da verificare sulla macchina; il test annidato non prova questi percorsi hardware.
+Hyprlock usa l’autenticazione impronta **nativa e parallela** tramite fprintd, conservando PAM/password. Non si modificano i file PAM di sistema. Il layout dispone orologio/data in alto e utente, password, stato impronta e tastiera in basso, con la palette grafite della shell. Sulla macchina il lettore Synaptics e l’indice destro risultano già registrati; per un altro utente usare `fprintd-list "$USER"` e, se necessario, `fprintd-enroll`. In assenza del lettore rimane la password.
+
+Il config di hyprlock è stato provato in una sessione Hyprland annidata: inizializzazione PAM, rendering e conferma `onLockLocked` riusciti; il nuovo test headless conferma anche acquisizione del lettore e avvio della verifica dell’indice destro. La riuscita dell’autenticazione biometrica richiede la prova fisica del dito. Lo sblocco con la propria password, la chiusura del coperchio e il risveglio restano da verificare sulla macchina; il test annidato non prova questi percorsi hardware.
 
 ## OSD volume e luminosità
 
@@ -88,6 +97,8 @@ readonly property int osdBottomMargin: 96
 Dimensioni e margine sono in pixel logici; il timeout è in millisecondi. Disabilitare `osdEnabled` nasconde gli OSD e ferma il watcher del backlight, conservando i controlli dei pannelli. Sono mostrati i cambiamenti effettivi: premere ancora un tasto quando il valore è già al limite non genera un nuovo OSD.
 
 ## Tema delle applicazioni
+
+Tema dark-glassy: superfici grafite traslucide in Quickshell, blur di Hyprland e testo sempre opaco. Le superfici shell usano gli stessi RGB della palette nativa (`#191a1d`, `#202226`, `#292b30`), con alpha separato. Gli elementi selezionati usano testo scuro opaco per conservare il contrasto. Kitty usa uno sfondo al 94%, font Adwaita Mono e colori ANSI coordinati; il testo rimane opaco. I bordi Hyprland restano disabilitati e le finestre inattive conservano l’opacità 0,92.
 
 Palette grigio grafite, primary neutro `#d4d6dc`, testo chiaro, Adwaita Sans e icone Papirus-Dark. GTK, Qt e hyprlock condividono la palette; GSettings usa l’accent slate. GTK 3 usa Adwaita-dark e colori CSS; GTK 4/libadwaita riceve la preferenza scura anche via GSettings/portale e i colori nominati. Qt Widgets usa Fusion e palette custom in entrambe le generazioni. Il plugin qt6ct installato accetta anche la chiave `qt5ct`, quindi `QT_QPA_PLATFORMTHEME=qt5ct` copre Qt 5/6. Qt Quick Controls usa Basic; applicazioni con stile proprio possono ignorare queste preferenze.
 
@@ -113,6 +124,8 @@ La shell usa superfici traslucide scure con blur e bordi sottili neutri. Hyprlan
 | `Super + Shift + H`                         | Hints / bind attivi                        |
 | `Super + Shift + Q`                         | Menu sessione                              |
 | `Super + Shift + W`                         | Scegli sfondo                              |
+| `Super + Ctrl + V`                          | Clipboard / storico                        |
+| `Super + Ctrl + R`                          | Registrazione schermo                      |
 | `Super + L` / `XF86Sleep`                   | Blocca / sospendi con lock                 |
 | `Super + Shift + R`                         | Riavvia Quickshell                         |
 | `Super + V` / `Super + Shift + F`           | Floating / fullscreen                      |
@@ -131,6 +144,24 @@ Nel menu sessione: **↑/↓ e Tab/Shift+Tab** spostano il focus; **Invio o Spaz
 
 Nel calendario: frecce per spostare il giorno, PgUp/PgDn per il mese e Home per oggi. Nel selettore sfondo: frecce per la lista, Invio per aprire cartella/selezionare immagine, Backspace per risalire; Tab raggiunge percorso, applicazione e ripristino.
 
+## Workspace per monitor
+
+La barra mostra workspace occupati/attivi e almeno due pill per ogni monitor. Gli slot vuoti sono segnaposto: il workspace viene creato solo al clic o alla navigazione con rotella. Gli ID sono assegnati globalmente senza riutilizzare workspace di altri monitor; i workspace speciali restano esclusi. Il clic porta prima il focus sul monitor della barra. La rotella sopra le pill passa al precedente/successivo, fermandosi agli estremi.
+
+In `Config.qml`: `minimumWorkspaces: 2` (minimo 2, massimo 10) e `workspaceScroll: true`.
+
+## Clipboard
+
+`Super + Ctrl + V` apre lo storico Quickshell: ricerca, frecce/Invio per copiare, eliminazione singola, svuotamento con conferma e pausa della raccolta. Dopo la copia il pannello si chiude; incollare nell’app con la sua normale scorciatoia. Testo e immagini vengono conservati da cliphist, con due watcher `wl-paste` gestiti dalla shell. Il bridge XWayland di Hyprland sincronizza la selezione X11/Wayland: non viene avviato un secondo sincronizzatore. Hyprland può limitare la lettura X11 quando nessuna finestra X11 ha il focus.
+
+`clipboardEnabled: true` e `clipboardMaxItems: 200` sono in `Config.qml`. La pausa si azzera al riavvio. Lo storico è persistente in `$XDG_CACHE_HOME/cliphist/db` (normalmente `~/.cache/cliphist/db`), con directory privata: **è salvato su disco, non cifrato**. Le selezioni marcate `sensitive` da un’app vengono ignorate da cliphist; questo richiede che l’app le contrassegni. Disabilitare la raccolta o usare la pausa per contenuti che non si desidera conservare. La primaria X11/selezione con il mouse non viene sincronizzata dallo storico.
+
+## Registrazione schermo
+
+`Super + Ctrl + R` apre il pannello Quickshell. Scegliere monitor oppure area, quindi audio Nessuno/Speaker/Microfono e Avvia. Per l’area, trascinare all’interno di un solo monitor; `Esc` annulla. Durante la registrazione la barra mostra icona e durata: un clic ferma e salva; anche il pannello offre **Ferma e salva**. La registrazione prosegue a pannello chiuso. Il wrapper inoltra SIGINT al registratore per finalizzare il file anche quando viene terminato dalla shell.
+
+I video vengono salvati nella directory Video XDG, sottocartella `Recordings`, con nomi unici e permessi privati. Il formato è Matroska (`.mkv`), video VP9 e audio Opus quando abilitato. In `Config.qml`: `recordingFramerate: 30` (1–60) e `recordingCodec: "libvpx-vp9"`. Audio Speaker cattura il monitor dell’uscita predefinita all’avvio; Microfono usa l’ingresso predefinito. Cambiare i dispositivi prima di avviare. Terminare la registrazione prima di uscire dalla sessione.
+
 ## Screenshot
 
 Hyprshot gestisce la cattura; `Stamp` corrisponde al keysym `Print`. Area, finestra e monitor vengono selezionati con il mouse; `Alt + Stamp` cattura direttamente la finestra attiva. `Esc` annulla la selezione. I bind dello scratchpad sono stati rimossi, liberando `Super + S` e risolvendo il conflitto su `Super + Shift + S`.
@@ -144,6 +175,30 @@ Il pacchetto Fedora `hyprshot` installa le dipendenze di cattura e selezione (`g
 `hypr/.config/hypr/config/xwayland.lua` abilita esplicitamente il server XWayland installato da Fedora. `force_zero_scaling = false` conserva la scala del compositor su schermi HiDPI. Qt usa `wayland;xcb` e GTK `wayland,x11,*`, con `DISPLAY` importato nell’ambiente D-Bus/systemd al login. Le app native usano Wayland; le app X11 possono usare il bridge senza un desktop X separato.
 
 La macchina è stata verificata con XWayland attivo e `xprop -root`. Per cambiare la politica di scala delle app X11, usare `hypr/.config/hypr/config/local.lua`; forzare la scala a zero può rendere molto piccole le app che non gestiscono HiDPI da sole.
+
+## Electron, portali e condivisione schermo
+
+Le applicazioni moderne scelgono Wayland usando `XDG_SESSION_TYPE=wayland`. La sessione imposta anche `XDG_CURRENT_DESKTOP=Hyprland` e importa le variabili del display in D-Bus/systemd. Per app Electron che richiedono una scelta esplicita:
+
+```sh
+desktop-electron code                  # --ozone-platform=wayland
+desktop-electron --x11 code            # fallback XWayland
+```
+
+Chiudere prima le istanze dell’app: un processo già aperto può ricevere la richiesta di nuova finestra conservando il suo backend. Il wrapper non modifica i launcher delle app e non inserisce variabili Electron obsolete. VS Code è stato provato con profili temporanei su entrambi i backend; VS Code e Zen già aperti risultavano nativi Wayland. Le app Electron con Chromium personalizzato o vecchio possono avere limiti propri.
+
+`portals/.config/xdg-desktop-portal/hyprland-portals.conf` sceglie Hyprland per ScreenCast, Screenshot, GlobalShortcuts e InputCapture, con GTK per FileChooser e Settings e come fallback. PipeWire trasporta il video. `desktop-session start` importa anche `~/.local/bin` nel PATH dei servizi e avvia i portali **dopo** l’importazione dell’ambiente; non li riavvia automaticamente durante condivisioni attive.
+
+Alla richiesta di condivisione appare il selettore **Quickshell** (`share.qml`), con monitor, finestre, ricerca e navigazione da tastiera. Selezionare una sorgente e Condividi; Esc/Annulla nega la richiesta. Gli ID finestra arrivano dal portale, non dagli indirizzi Hyprland. `hypr/.config/hypr/xdph.conf` imposta `desktop-portal-picker`, 60 fps massimi e consenso non memorizzabile per impostazione predefinita. Il fallback GTK è un backend di sistema, senza applet persistenti.
+
+Dopo l’installazione o modifiche al backend, chiudere le condivisioni, eseguire `desktop-session start` e poi `systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-desktop-portal`. Riavviare browser/app già aperti se necessario. Per diagnostica:
+
+```sh
+systemctl --user status xdg-desktop-portal-hyprland xdg-desktop-portal
+journalctl --user -b -u xdg-desktop-portal-hyprland -u xdg-desktop-portal
+```
+
+Il test isolato ha completato CreateSession/SelectSources/Start e ricevuto cinque frame PipeWire reali da una finestra di prova tramite il selettore QML. La prova end-to-end nella specifica web app di chiamate in Zen rimane manuale: avviare una condivisione, verificare monitor/finestra e interromperla dall’app.
 
 ## Sfondi persistenti
 
@@ -209,12 +264,14 @@ cat ~/.local/state/desktop-session/hypridle.log
 
 Verifiche eseguite: OSD con servizi simulati (volume, mute speaker/microfono, aggiornamenti rapidi, timeout, disabilitazione, riconnessione audio, soppressione nei pannelli e monitor multipli), watcher backlight su sysfs simulato (baseline, cambiamenti, hotplug e valori non validi) e regressione del trascinamento luminosità con coda di scrittura; parser Lua e script, caricamento/layout QML, Control Center e accordion, posizionamento tooltip, helper luminosità con backend fittizi (routing, limiti e scala DDC), aggiornamenti durante il trascinamento senza ritorno al vecchio valore e gestione di errori hardware, creazione/rilascio dell’inibitore Wayland anche a pannello chiuso, scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC. Per Hyprshot sono stati verificati l’assenza di bind duplicati e i flussi di salvataggio/copia nei quattro modi con backend simulati; la selezione interattiva e la cattura reale restano da provare manualmente.
 
+Verifiche della fase successiva: modello workspace su più monitor (minimo, ID unici, attivo/urgente ed esclusione speciali); storico isolato con copia byte-per-byte di testo Unicode e PNG, eliminazione e svuotamento; bridge X11/Wayland con ripristino della selezione originale; registrazioni reali di una finestra di prova con/senza audio speaker, Matroska finalizzato e lettura con ffprobe; VS Code/Electron X11 e Wayland con profili temporanei; portale ScreenCast e ricezione di frame PipeWire; nuovo layout Hyprlock con acquisizione del dispositivo fprintd in compositor headless. QML e pannelli verificati su dati fittizi. Restano le prove fisiche di sblocco e quelle nella web app di chiamate scelta dall’utente.
+
 ## Rimozione
 
 Prima fermare la shell (`desktop-shell stop`) e i daemon (`pkill -x hypridle; pkill -x hyprpaper`), poi `./scripts/stow.py remove`. La rimozione stacca i link, preserva la repo e non ripristina automaticamente i backup. Copiare dal backup i file desiderati e ricaricare Hyprland. Le preferenze GSettings restano: per ripristinarle usare i valori nel file `interface-before-theme.ini` con `gsettings set org.gnome.desktop.interface CHIAVE VALORE`. Effettuare un nuovo login per cambiare l'ambiente Qt.
 
 ## Prossimi moduli
 
-Pairing Bluetooth con PIN/conferma, MPRIS, eventi nel calendario, clipboard e impostazioni persistenti della shell. Per screen sharing manca ancora `xdg-desktop-portal-hyprland` (il portale GTK è presente); installarlo e integrarlo in una fase dedicata.
+Pairing Bluetooth con PIN/conferma, MPRIS, eventi nel calendario, impostazioni persistenti, traduzioni, altre distribuzioni e suddivisione del README. Lo stato completo è in `ROADMAP.md`.
 
-Riferimenti: [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [PopupAnchor](https://quickshell.org/docs/v0.3.0/types/Quickshell/PopupAnchor/), [IdleInhibitor](https://quickshell.org/docs/v0.3.0/types/Quickshell.Wayland/IdleInhibitor/), [Hyprshot](https://github.com/Gustash/Hyprshot), [DDC/CI luminosità](https://www.ddcutil.com/command_getvcp/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).
+Riferimenti: [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [PopupAnchor](https://quickshell.org/docs/v0.3.0/types/Quickshell/PopupAnchor/), [IdleInhibitor](https://quickshell.org/docs/v0.3.0/types/Quickshell.Wayland/IdleInhibitor/), [Hyprshot](https://github.com/Gustash/Hyprshot), [DDC/CI luminosità](https://www.ddcutil.com/command_getvcp/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/), [portale Hyprland](https://wiki.hypr.land/Hypr-Ecosystem/xdg-desktop-portal-hyprland/), [Electron Wayland](https://www.electronjs.org/blog/tech-talk-wayland), [cliphist](https://github.com/sentriz/cliphist), [wf-recorder](https://github.com/ammen99/wf-recorder), [Kitty](https://sw.kovidgoyal.net/kitty/conf/).

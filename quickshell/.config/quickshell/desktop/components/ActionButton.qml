@@ -15,7 +15,7 @@ Button {
     property int textElide: Text.ElideRight
     property string tooltip: ""
     readonly property bool hasIcon: iconName !== "" || iconSource.toString() !== ""
-    readonly property color foreground: destructive ? Theme.danger : highlighted ? Theme.background : Theme.text
+    readonly property color foreground: destructive ? Theme.danger : highlighted ? Theme.accentText : Theme.text
     implicitHeight: 36
     implicitWidth: Math.max(36, label.implicitWidth + (hasIcon ? iconSize + (text ? 10 : 0) : 0) + 24)
     leftPadding: 0

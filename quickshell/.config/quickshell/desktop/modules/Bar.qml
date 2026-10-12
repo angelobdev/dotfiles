@@ -10,6 +10,7 @@ import Quickshell.Services.UPower
 import ".."
 import "../components"
 import "../services"
+import "../components/WorkspaceModel.js" as WorkspaceModel
 
 PanelWindow {
     id: bar
@@ -27,7 +28,13 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.namespace: "desktop-bar"
     readonly property var monitor: Hyprland.monitorFor(screen)
-    readonly property var workspaces: Hyprland.workspaces.values.filter(w => w.id > 0 && w.monitor?.name === bar.screen.name && (w.active || w.toplevels.values.length > 0)).sort((a, b) => a.id - b.id)
+    readonly property var workspaces: WorkspaceModel.build(
+        Hyprland.workspaces.values.map(w => ({id: w.id, monitor: w.monitor?.name, count: w.toplevels.values.length, urgent: w.urgent})),
+        Hyprland.monitors.values.map(m => ({name: m.name, activeId: m.activeWorkspace?.id})), Config.minimumWorkspaces)[screen.name] || []
+    function focusWorkspace(id) {
+        Hyprland.dispatch("hl.dsp.focus({ monitor = " + JSON.stringify(screen.name) + " })");
+        Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })");
+    }
     readonly property int battery: Math.round((UPower.displayDevice?.percentage ?? 0) * 100)
     // Keep the inhibitor on a mapped surface, independent of the control panel.
     IdleInhibitor {
@@ -68,7 +75,21 @@ PanelWindow {
             onClicked: ShellState.toggle("launcher", bar.screen)
         }
         RowLayout {
+            id: workspaceRow
             spacing: 0
+            WheelHandler {
+                target: null
+                property real accumulated: 0
+                onWheel: event => {
+                    if (!Config.workspaceScroll) { event.accepted = false; return; }
+                    accumulated += event.angleDelta.y;
+                    if (Math.abs(accumulated) < 120) return;
+                    const index = bar.workspaces.findIndex(w => w.id === bar.monitor?.activeWorkspace?.id);
+                    const target = Math.max(0, Math.min(bar.workspaces.length - 1, index + (accumulated < 0 ? 1 : -1)));
+                    accumulated = 0;
+                    if (bar.workspaces[target]) bar.focusWorkspace(bar.workspaces[target].id);
+                }
+            }
             Repeater {
                 model: bar.workspaces
                 Button {
@@ -81,7 +102,7 @@ PanelWindow {
                     HintTooltip {
                         target: workspace
                         hovered: workspace.hovered
-                        text: "Workspace " + workspace.modelData.id + " · " + workspace.modelData.toplevels.values.length + " finestre"
+                        text: "Workspace " + workspace.modelData.id + " · " + workspace.modelData.count + " finestre"
                     }
                     background: Rectangle {
                         radius: 10
@@ -101,7 +122,7 @@ PanelWindow {
                             }
                         }
                     }
-                    onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + modelData.id + " })")
+                    onClicked: bar.focusWorkspace(modelData.id)
                 }
             }
         }
@@ -151,6 +172,14 @@ PanelWindow {
                     onWheel: event => trayItem.modelData.scroll(event.angleDelta.y, false)
                 }
             }
+        }
+        BarButton {
+            visible: Recording.running
+            iconName: "record"
+            destructive: true
+            text: Recording.elapsed
+            tooltip: "Registrazione in corso · Clic per fermare e salvare"
+            onClicked: Recording.stop()
         }
         BarButton {
             id: batteryButton
