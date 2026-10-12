@@ -14,7 +14,7 @@ PanelWindow {
     id: bar
     anchors { top: true; left: true; right: true }
     margins { top: 8; left: 12; right: 12 }
-    implicitHeight: 46
+    implicitHeight: 38
     color: "transparent"
     WlrLayershell.namespace: "desktop-bar"
     readonly property var monitor: Hyprland.monitorFor(screen)

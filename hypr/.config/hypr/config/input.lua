@@ -1,7 +1,20 @@
 hl.config({
     input = {
-        kb_layout = "it", follow_mouse = 1, sensitivity = 0,
-        touchpad = { natural_scroll = true, tap_to_click = true, disable_while_typing = true },
+        kb_layout = "it",
+        follow_mouse = 1,
+        sensitivity = 0,
+        touchpad = {
+            natural_scroll = true,
+            tap_to_click = false,
+            disable_while_typing = true,
+            clickfinger_behavior = true,
+            scroll_factor = 0.5
+        },
     },
 })
-hl.gesture({ fingers = 3, direction = "horizontal", action = "workspace" })
+
+hl.gesture({
+    fingers = 3,
+    direction = "horizontal",
+    action = "workspace"
+})

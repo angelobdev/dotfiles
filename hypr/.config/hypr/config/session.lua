@@ -1,10 +1,13 @@
+-- Cursor
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+
 -- qt6ct also registers the qt5ct key, so one value serves both Qt generations.
 hl.env("QT_QPA_PLATFORMTHEME", "qt5ct")
 hl.env("QT_QUICK_CONTROLS_STYLE", "Basic")
 hl.on("hyprland.start", function()
-    hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE")
+    hl.exec_cmd(
+    "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE")
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-session" start')
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell" start')
 end)

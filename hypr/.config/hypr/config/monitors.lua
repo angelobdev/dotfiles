@@ -1,1 +1,6 @@
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "1.667" })
+hl.monitor({
+    output = "",
+    mode = "preferred",
+    position = "auto",
+    scale = "1.667"
+})
