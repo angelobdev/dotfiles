@@ -14,6 +14,7 @@ ShellRoot {
     property var audio: Audio
     property var notices: Notices
     property var clipboard: Clipboard
+    property var bluetoothAgent: BluetoothAgent
     IpcHandler {
         target: "desktop"
         function toggle(panel: string): void {
@@ -40,6 +41,10 @@ ShellRoot {
                 powerPending: powerMenu.pending,
                 keepAwake: Idle.keepAwake,
                 bluetoothAdapters: Bluetooth.adapters.values.length,
+                bluetoothAgentRegistered: BluetoothAgent.registered,
+                mediaPlayers: Media.players.length,
+                calendarEvents: Calendar.events.length,
+                calendarSources: Calendar.sources.length,
                 brightness: Brightness.monitors,
                 osd: {
                     visible: Osd.visible,
@@ -75,6 +80,7 @@ ShellRoot {
     NetworkPanel {}
     AudioPanel {}
     BluetoothPanel {}
+    BluetoothAuthentication {}
     BatteryPanel {}
     CalendarPanel {}
     Hints {

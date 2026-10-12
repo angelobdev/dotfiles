@@ -12,7 +12,7 @@ Singleton {
     NotificationServer {
         id: server
         bodySupported: true
-        bodyMarkupSupported: false
+        bodyMarkupSupported: true
         actionsSupported: true
         persistenceSupported: true
         onNotification: n => {

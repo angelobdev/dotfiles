@@ -1,8 +1,10 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import ".."
 import "../components"
+import "../services"
 
 Overlay {
     id: root
@@ -18,9 +20,22 @@ Overlay {
             length: 42
         }, (_, i) => new Date(year, month, i - offset + 1, 12));
     }
+    function loadEvents() {
+        if (!visible) return;
+        const first = days[0];
+        const last = days[41];
+        Calendar.load(new Date(first.getFullYear(), first.getMonth(), first.getDate()), new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1));
+    }
+    onDaysChanged: loadEvents()
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
+    }
+    function eventTime(event) {
+        if (event.allDay) return "Tutto il giorno";
+        const start = new Date(event.start), end = new Date(event.end);
+        const format = sameDay(start, end) ? "HH:mm" : "d MMM HH:mm";
+        return locale.toString(start, format) + " – " + locale.toString(end, format);
     }
     function sameDay(a, b) {
         return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -42,12 +57,13 @@ Overlay {
     }
     onOpened: {
         today();
+        loadEvents();
         keyboard.forceActiveFocus();
     }
     Card {
         anchors.centerIn: parent
         width: Math.min(480, parent.width - 48)
-        height: layout.implicitHeight + 44
+        height: Math.min(layout.implicitHeight + 44, parent.height - 76)
         FocusScope {
             id: keyboard
             anchors.fill: parent
@@ -73,6 +89,7 @@ Overlay {
                     right: parent.right
                     top: parent.top
                     margins: 22
+                    bottom: parent.bottom
                 }
                 spacing: 14
                 Heading {
@@ -139,7 +156,7 @@ Overlay {
                                 height: 4
                                 radius: 2
                                 color: parent.highlighted ? Theme.accentText : Theme.accent
-                                visible: root.sameDay(parent.modelData, clock.date)
+                                visible: root.sameDay(parent.modelData, clock.date) || Calendar.forDay(parent.modelData).length > 0
                             }
                         }
                     }
@@ -150,6 +167,61 @@ Overlay {
                     color: Theme.text
                     horizontalAlignment: Text.AlignHCenter
                 }
+                ScrollView {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    Layout.preferredHeight: Math.min(210, agenda.implicitHeight)
+                    Layout.minimumHeight: 50
+                    contentWidth: availableWidth
+                    clip: true
+                    ColumnLayout {
+                        id: agenda
+                        width: parent.width
+                        spacing: 8
+                        Repeater {
+                            model: Calendar.forDay(root.selected)
+                            Rectangle {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                implicitHeight: eventText.implicitHeight + 20
+                                radius: 8; color: Theme.raised
+                                Rectangle {
+                                    anchors { left: parent.left; top: parent.top; bottom: parent.bottom; margins: 8 }
+                                    width: 3; radius: 1.5
+                                    color: Calendar.source(parent.modelData.source)?.color || Theme.accent
+                                }
+                                ColumnLayout {
+                                    id: eventText
+                                    anchors { left: parent.left; right: parent.right; top: parent.top; leftMargin: 18; rightMargin: 10; topMargin: 10 }
+                                    spacing: 3
+                                    Text {
+                                        Layout.fillWidth: true; wrapMode: Text.Wrap
+                                        text: modelData.title; color: Theme.text; font.bold: true; textFormat: Text.PlainText
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true; wrapMode: Text.Wrap
+                                        text: root.eventTime(modelData) + " · " + (Calendar.source(modelData.source)?.name || "")
+                                        color: Theme.muted; font.pixelSize: 11; textFormat: Text.PlainText
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true; wrapMode: Text.Wrap; visible: text !== ""
+                                        text: modelData.location; color: Theme.muted; font.pixelSize: 11; textFormat: Text.PlainText
+                                    }
+                                }
+                            }
+                        }
+                        Text {
+                            visible: Calendar.forDay(root.selected).length === 0
+                            text: Calendar.busy ? "Lettura calendari…" : Calendar.sources.length ? "Nessun evento per questo giorno" : "Nessun calendario disponibile negli Account online"
+                            Layout.fillWidth: true; wrapMode: Text.Wrap; color: Theme.muted
+                        }
+                        Text {
+                            visible: Calendar.error !== ""
+                            text: Calendar.error
+                            Layout.fillWidth: true; wrapMode: Text.Wrap; color: Theme.danger; font.pixelSize: 11; textFormat: Text.PlainText
+                        }
+                    }
+                }
                 RowLayout {
                     ActionButton {
                         text: "Oggi"
@@ -158,9 +230,8 @@ Overlay {
                             keyboard.forceActiveFocus();
                         }
                     }
-                    Item {
-                        Layout.fillWidth: true
-                    }
+                    ActionButton { text: "Aggiorna"; enabled: !Calendar.busy; onClicked: root.loadEvents() }
+                    Item { Layout.fillWidth: true }
                     ActionButton {
                         text: "Chiudi"
                         onClicked: ShellState.close()

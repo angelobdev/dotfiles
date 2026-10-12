@@ -1,13 +1,18 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Bluetooth
 import ".."
 import "../components"
+import "../services"
 
 Overlay {
     id: root
     panelName: "bluetooth"
+    onVisibleChanged: if (!visible) {
+        for (const adapter of Bluetooth.adapters.values) adapter.discovering = false;
+    }
     SidePanelCard {
         ColumnLayout {
             anchors {
@@ -33,6 +38,7 @@ Overlay {
                         ColumnLayout {
                             id: adapterGroup
                             required property var modelData
+                            readonly property var discovered: modelData.devices.values.filter(d => !d.paired).sort((a,b) => a.name.localeCompare(b.name))
                             readonly property var paired: modelData.devices.values.filter(d => d.paired).sort((a, b) => Number(b.connected) - Number(a.connected) || a.name.localeCompare(b.name))
                             Layout.fillWidth: true
                             spacing: 8
@@ -52,6 +58,14 @@ Overlay {
                                     palette.highlight: Theme.accent
                                 }
                             }
+                            ActionButton {
+                                Layout.fillWidth: true
+                                text: adapterGroup.modelData.discovering ? "Interrompi ricerca" : "Cerca dispositivi"
+                                iconName: adapterGroup.modelData.discovering ? "stop" : "bluetooth"
+                                enabled: adapterGroup.modelData.enabled && BluetoothAgent.registered
+                                highlighted: adapterGroup.modelData.discovering
+                                onClicked: adapterGroup.modelData.discovering = !adapterGroup.modelData.discovering
+                            }
                             Text {
                                 text: adapterGroup.modelData.state === BluetoothAdapterState.Blocked ? "Bloccato dall’hardware" : adapterGroup.modelData.enabled ? "Dispositivi associati" : "Bluetooth spento"
                                 color: Theme.muted
@@ -66,7 +80,7 @@ Overlay {
                                     ActionButton {
                                         Layout.fillWidth: true
                                         alignLeft: true
-                                        iconName: "bluetooth"
+                                        iconSource: Quickshell.iconPath(modelData.icon || "bluetooth", "bluetooth")
                                         text: modelData.name
                                         tooltip: modelData.address
                                         highlighted: modelData.connected
@@ -78,6 +92,30 @@ Overlay {
                                         color: Theme.muted
                                         font.pixelSize: 11
                                         Layout.leftMargin: 12
+                                    }
+                                }
+                            }
+                            Text {
+                                visible: adapterGroup.discovered.length > 0
+                                text: "Dispositivi disponibili"; color: Theme.muted; font.pixelSize: 12
+                            }
+                            Repeater {
+                                model: adapterGroup.discovered
+                                RowLayout {
+                                    required property var modelData
+                                    readonly property bool pairing: modelData.pairing || BluetoothAgent.pairing.includes(modelData.dbusPath)
+                                    Layout.fillWidth: true
+                                    ActionButton {
+                                        Layout.fillWidth: true; alignLeft: true
+                                        iconSource: Quickshell.iconPath(modelData.icon || "bluetooth", "bluetooth")
+                                        text: modelData.name + (parent.pairing ? " · Associazione…" : "")
+                                        tooltip: modelData.address
+                                        enabled: adapterGroup.modelData.enabled && BluetoothAgent.registered && !parent.pairing && !modelData.blocked
+                                        onClicked: BluetoothAgent.pair(modelData)
+                                    }
+                                    PanelIconButton {
+                                        visible: parent.pairing; iconName: "close"; tooltip: "Annulla associazione"
+                                        onClicked: BluetoothAgent.cancel(modelData.dbusPath)
                                     }
                                 }
                             }
@@ -99,8 +137,9 @@ Overlay {
                 }
             }
             Text {
-                text: "Il pannello connette i dispositivi già associati. L’associazione con PIN o conferma sarà aggiunta con un agente dedicato."
-                color: Theme.muted
+                text: BluetoothAgent.error || "Avvia la ricerca per associare un dispositivo. PIN e conferme vengono richiesti in un pannello dedicato."
+                color: BluetoothAgent.error ? Theme.danger : Theme.muted
+                textFormat: Text.PlainText
                 font.pixelSize: 11
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true

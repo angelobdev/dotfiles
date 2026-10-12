@@ -30,7 +30,7 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Launcher con ricerca, icone applicazioni, titoli allineati a sinistra e navigazione da tastiera.
 - [x] Pannello Hints con ricerca, categorie e scorciatoie/descrizioni lette dai bind reali di Hyprland.
 - [x] Menu sessione con navigazione da tastiera, lock, sospensione, logout, riavvio e spegnimento; conferma per le azioni previste.
-- [x] Calendario mensile con selezione del giorno e navigazione da tastiera.
+- [x] Calendario mensile con selezione del giorno, navigazione da tastiera, indicatori e agenda degli eventi dai calendari GNOME/Account online tramite Evolution Data Server; supporto ricorrenze, giornate intere, più giorni e fusi orari, lettura senza modifica degli account.
 - [x] OSD per volume, mute speaker/microfono e luminosità, con livello/dispositivo, timeout configurabile e posizionamento sul monitor interessato; rilevamento dei cambiamenti anche a pannello chiuso.
 - [x] Selettore sfondi QML su `Super + Shift + W`, anteprima e persistenza della scelta tra sessioni.
 - [x] Bind Hyprshot per area (`Super + Shift + S` / `Shift + Stamp`), monitor (`Stamp`), finestra (`Super + Stamp`) e finestra attiva (`Alt + Stamp`); rimossi i bind scratchpad e il conflitto di scorciatoie.
@@ -40,13 +40,14 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Control Center modulare, con ordine, visibilità e dimensioni configurabili in `Config.qml`.
 - [x] Sottopannelli Rete e Bluetooth in alto a destra, con ritorno al Control Center e intestazioni condivise.
 - [x] Wi-Fi: attivazione, scansione, ricerca/selezione reti, connessione e prompt password per reti Personal; Enterprise tramite profili preconfigurati.
-- [x] Bluetooth: adattatori, attivazione, connessione/disconnessione dei dispositivi già associati e batteria quando disponibile.
+- [x] Bluetooth: adattatori, attivazione, ricerca, associazione tramite agente BlueZ `KeyboardDisplay` con PIN/passkey, conferma e autorizzazione esplicita, annullamento/timeout, connessione/disconnessione e batteria. Protocollo verificato su bus isolato; associazione con un dispositivo fisico da provare dall’interfaccia.
 - [x] Luminosità: slider principale, accordion per altri monitor e associazione configurabile dei backend backlight/DDC.
 - [x] Aggiornamento immediato dello slider luminosità e invio delle modifiche durante il trascinamento, con gestione delle letture precedenti e degli errori.
+- [x] Controlli MPRIS nel Control Center: titolo/artista, precedente, riproduci/pausa, successivo, posizione e scelta del lettore; capacità e scomparsa dei lettori gestite con API native Quickshell.
 - [x] Audio: slider e percentuale del volume, mute, selezione ingressi/uscite e livello microfono; accordion nel Control Center e pannello dedicato.
 - [x] Non disturbare nel Control Center, con switch allineato a destra.
 - [x] Centro notifiche in alto a destra: storico in memoria, azioni e controlli Non disturbare/Elimina tutte con icone a destra del titolo.
-- [x] Popup notifiche e modalità Non disturbare che silenzia i popup conservando le notifiche nello storico.
+- [x] Popup notifiche con icone, markup di testo limitato e sicuro, clic sinistro per l’azione predefinita e clic destro per nascondere conservando lo storico; pulsanti Activate/Elimina/Nascondi rimossi dai popup. Azioni secondarie e controlli del centro notifiche conservati. Non disturbare silenzia i popup.
 - [x] Pannello batteria in alto a destra: percentuale, potenza, energia, tempi stimati e selezione dei profili energetici con icone.
 - [x] Indicatore del profilo energetico nel blocco batteria della barra: foglia per Risparmio, fulmine per Prestazioni e nessuna icona aggiuntiva per Bilanciato; tooltip con profilo corrente e aggiornamento dal servizio di sistema.
 - [x] Dimensioni comuni dei pannelli laterali e icone di ritorno/chiusura da 22 px.
@@ -62,21 +63,12 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Ambiente Electron Wayland e wrapper per scelta esplicita Wayland/X11; VS Code verificato su entrambi i backend con profili temporanei, Zen aperto rilevato nativo Wayland.
 - [x] Portali XDG: routing Hyprland/GTK, importazione dell’ambiente prima dell’avvio e selettore di condivisione custom Quickshell.
 - [x] Screen sharing via ScreenCast/PipeWire e registrazione monitor/area via wf-recorder, pannello QML, scelta audio, indicatore nella barra e salvataggio video; test reale del portale e registrazione di una finestra dedicata, prova nella web app specifica elencata sotto.
-- [x] README con installazione, pacchetti Stow, funzionalità, scorciatoie, configurazione e diagnostica; aggiornato anche per tema, Kitty, Electron, portali, screen sharing, registrazione, clipboard, impronte e limiti delle verifiche.
+- [x] README sintetico e guide separate in `docs/` per installazione, interfaccia/scorciatoie, configurazione, integrazioni e diagnostica; aggiornate per pairing, MPRIS, calendari e risultati DDC/CI.
+- [x] Hotplug fisico HDMI verificato con Philips FTV: rimozione e ripristino del monitor, della barra e dell’elenco luminosità, senza riavvio della shell. Permessi I²C applicati tramite le regole udev del pacchetto ddcutil.
 
 ## Prossimi sviluppi
 
-- [ ] Revisione overlay notifiche:
-  - Aggiungere icone descrittive
-  - Supporto testo complesso (`<i>Text</i>` ad esenpio)
-  - Rimuovere button "activate" ( usiamo click sinistro )
-  - Rimuovere button "elimina" ( si usa il pannello apposito)
-  - Rimuovere button "nascondi" ( usiamo click tasto destro )
-- [ ] Pairing Bluetooth con PIN/conferma tramite agente dedicato.
-- [ ] Controlli multimediali MPRIS.
-- [ ] Eventi e calendari esterni nel calendario.
-- [ ] Update and simplify README (divide into multple docs files)
-- [ ] Verificare luminosità su monitor esterni DDC/CI e hotplug con l’hardware disponibile; backend e configurazione sono presenti.
+- [ ] Completare la prova positiva DDC/CI (lettura, variazione minima e ripristino) con un display che risponda al protocollo. Il Philips FTV collegato viene identificato sul bus 14 ma non risponde a VCP 10 né alle capabilities, anche dopo l’applicazione dei permessi e con tempi maggiorati. Il controllo integrato GNOME può usare luminosità software: non è una conferma del supporto DDC/CI del display.
 
 ## Possibili estensioni individuate
 

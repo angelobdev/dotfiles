@@ -54,7 +54,7 @@ Overlay {
                     rowSpacing: 10
                     columnSpacing: 10
                     Repeater {
-                        model: Config.controlCenterModules.filter((name, index, all) => ["network", "bluetooth", "brightness", "audio", "doNotDisturb", "idle"].includes(name) && all.indexOf(name) === index)
+                        model: Config.controlCenterModules.filter((name, index, all) => ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle"].includes(name) && all.indexOf(name) === index)
                         Loader {
                             required property string modelData
                             Layout.fillWidth: true
@@ -64,6 +64,7 @@ Overlay {
                                     bluetooth: "controlcenter/BluetoothTile.qml",
                                     brightness: "controlcenter/BrightnessControl.qml",
                                     audio: "controlcenter/AudioControl.qml",
+                                    media: "controlcenter/MediaControl.qml",
                                     doNotDisturb: "controlcenter/FocusControl.qml",
                                     idle: "controlcenter/IdleControl.qml"
                                 })[modelData]
