@@ -6,11 +6,27 @@ case "${1:-start}" in
     stop) exec qs kill -p "$config" ;;
     restart)
         qs kill -p "$config" 2>/dev/null || true
-        exec qs -p "$config" --no-duplicate --daemonize
+        # kill requests shutdown; --no-duplicate can still see the exiting process.
+        # Wait for Quickshell's instance lock to disappear before starting again.
+        for attempt in {1..50}; do
+            if ! qs list --json -p "$config" 2>/dev/null | python3 -c '
+import json, sys
+try:
+    running = bool(json.load(sys.stdin))
+except ValueError:
+    running = False
+sys.exit(0 if running else 1)
+'; then
+                exec qs -p "$config" --no-duplicate --daemonize
+            fi
+            sleep 0.1
+        done
+        echo 'La vecchia istanza Quickshell non si è chiusa entro 5 secondi.' >&2
+        exit 1
         ;;
     toggle)
-        case "${2:-}" in launcher|controls|notifications|power) ;;
-            *) echo 'Uso: desktop-shell toggle {launcher|controls|notifications|power}' >&2; exit 2 ;;
+        case "${2:-}" in launcher|controls|network|audio|battery|notifications|calendar|hints|wallpaper|power) ;;
+            *) echo 'Uso: desktop-shell toggle {launcher|controls|network|audio|battery|notifications|calendar|hints|wallpaper|power}' >&2; exit 2 ;;
         esac
         exec qs ipc -p "$config" call desktop toggle "$2"
         ;;

@@ -8,6 +8,7 @@ case "${1:-start}" in
         state="${XDG_STATE_HOME:-$HOME/.local/state}/desktop-session"
         mkdir -p "$state"
         "$HOME/.local/bin/desktop-theme"
+        "$HOME/.local/bin/desktop-wallpaper" --ensure
         for daemon in hyprpaper hypridle; do
             command -v "$daemon" >/dev/null || { echo "Manca $daemon." >&2; exit 1; }
             if ! pgrep -u "$(id -u)" -x "$daemon" >/dev/null; then

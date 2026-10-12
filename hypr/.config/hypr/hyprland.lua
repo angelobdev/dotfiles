@@ -7,6 +7,7 @@ require("config.appearance")
 require("config.input")
 require("config.binds")
 require("config.rules")
+require("config.xwayland")
 require("config.session")
 -- Machine-specific overrides belong here and remain versioned.
 require("config.local")

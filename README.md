@@ -8,7 +8,7 @@ Desktop custom per Fedora 44: Hyprland Lua, interfaccia QML in Quickshell e pacc
 | --- | --- |
 | `hypr` | `~/.config/hypr/hyprland.lua` e moduli Lua |
 | `quickshell` | Barra, launcher, controlli, notifiche, power e agente Polkit |
-| `shell` | `~/.local/bin/desktop-{shell,session,power,theme}` |
+| `shell` | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper}` e helper wallpaper Python |
 | `hypridle` | Timer e coordinamento lock/sospensione |
 | `hyprlock` | Blocco Wayland con autenticazione PAM |
 | `hyprpaper` | Sfondo Fedora 44 notturno, su ogni monitor |
@@ -23,7 +23,7 @@ I COPR della macchina sono `nett00n/hyprland` ed `errornointernet/quickshell`.
 sudo dnf install hyprland quickshell stow kitty brightnessctl wireplumber \
   NetworkManager bluez upower power-profiles-daemon \
   hypridle hyprlock hyprpaper qt5ct qt6ct papirus-icon-theme ripgrep \
-  f44-backgrounds-base
+  f44-backgrounds-base xorg-x11-server-Xwayland ImageMagick python3
 cd ~/.dotfiles
 ./scripts/stow.py dry-run
 ./scripts/stow.py apply
@@ -39,15 +39,18 @@ I pacchetti usano i percorsi XDG standard sotto `$HOME`. I due `color_scheme_pat
 
 ## Interfaccia
 
-- Barra flottante con logo Fedora, workspace occupati (più quello attivo), pill attiva azzurra, titolo, tray e orologio.
+- Barra flottante alta 38 px logici, controlli alti 30 px e icone di stato da 16 px centrate; logo Fedora da 23 px, workspace occupati (più quello attivo), pill attiva azzurra, titolo, tray e orologio cliccabile. Volume e batteria mostrano la percentuale.
 - Icone vettoriali per rete, volume, batteria, notifiche e sessione; tooltip con stato. Le icone app originali restano colorate.
 - Launcher con ricerca, titoli a sinistra, icone, frecce e Invio; le app da terminale si aprono in Kitty.
 - Superfici traslucide, bordi leggeri e blur Hyprland; sfondo fornito da hyprpaper.
-- Controlli PipeWire di volume, mute e microfono. Rete tramite API Quickshell/NetworkManager, password Wi-Fi Personal e reti salvate; Enterprise richiede un profilo preconfigurato.
-- Bluetooth per dispositivi già associati; profili energetici se disponibili.
+- Pannelli separati: Rete e Wi-Fi con ricerca/selezione reti; Audio con volume, mute, ingresso/uscita predefiniti e livello microfono; Batteria con potenza in W, energia in Wh, autonomia/carica rimanente e profili energetici. Le reti Wi-Fi Personal hanno un prompt password; Enterprise richiede un profilo preconfigurato.
+- Centro di controllo come accesso rapido ai pannelli e gestione Bluetooth per dispositivi già associati. I profili energetici dipendono dall’hardware.
 - Notifiche, popup, azioni, centro notifiche e non disturbare; storico in memoria, azzerato al riavvio della shell.
 - Agente Polkit QML con l'identità predefinita proposta da Polkit.
-- Power: blocco immediato; sospensione, logout, riavvio e spegnimento con conferma. Gli errori del comando vengono mostrati nel pannello.
+- Power navigabile da tastiera: blocco immediato; sospensione, logout, riavvio e spegnimento con conferma. Gli errori del comando vengono mostrati nel pannello.
+- Calendario mensile con settimana da lunedì, selezione giorno, oggi e navigazione fra mesi; non include ancora eventi/calendari esterni.
+- Hints con ricerca: legge `hyprctl -j binds` a ogni apertura e mostra scorciatoia + descrizione reali, inclusi submap e bind aggiunti in `local.lua`.
+- Selettore sfondi QML con navigazione cartelle e anteprima; nessun dialog esterno.
 
 NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-daemon forniscono i servizi di sistema. I config avviano Quickshell, hypridle e hyprpaper. Nessun Waybar, nm-applet, Blueman, Sway o server notifiche separato.
 
@@ -77,14 +80,23 @@ Il vetro è applicato alla shell. Le finestre delle applicazioni mantengono supe
 
 | Tasti | Azione |
 | --- | --- |
-| `Super + Invio` / `Super + Q` | Kitty |
-| `Super + Spazio` / `Super + R` | Applicazioni |
-| `Super + A` / `Super + N` / `Super + M` | Controlli / notifiche / sessione |
-| `Super + L` | Blocca schermo |
-| `XF86Sleep` | Sospendi con lock |
+| `Super + B` | Browser (`zen-browser`) |
+| `Super + Invio` | Kitty |
+| `Super + Q` | Chiudi finestra |
+| `Super + Spazio` | Applicazioni |
+| `Super + Shift + C` | Centro di controllo / Bluetooth |
+| `Super + Shift + E` | Rete e Wi-Fi |
+| `Super + Shift + V` | Volume e dispositivi audio |
+| `Super + Shift + B` | Batteria ed energia |
+| `Super + Shift + N` | Notifiche |
+| `Super + Shift + D` | Calendario |
+| `Super + Shift + H` | Hints / bind attivi |
+| `Super + Shift + Q` | Menu sessione |
+| `Super + Shift + W` | Scegli sfondo |
+| `Super + L` / `XF86Sleep` | Blocca / sospendi con lock |
 | `Super + Shift + R` | Riavvia Quickshell |
-| `Super + C` | Chiudi finestra |
 | `Super + V` / `Super + F` | Floating / fullscreen |
+| `Super + P` / `Super + J` | Pseudo tiling / orientamento split |
 | `Super + frecce` / `Super + Shift + frecce` | Focus / sposta finestra |
 | `Super + 1…9,0` / `Super + Shift + 1…9,0` | Workspace / sposta al workspace |
 | `Super + S` / `Super + Shift + S` | Mostra / popola scratchpad |
@@ -92,19 +104,51 @@ Il vetro è applicato alla shell. Le finestre delle applicazioni mantengono supe
 | Tasti multimediali | Volume, microfono, luminosità |
 | `Esc` / clic esterno | Chiudi pannello |
 
+Nel menu sessione: **↑/↓ e Tab/Shift+Tab** spostano il focus; **Invio o Spazio** attivano il pulsante. Alla richiesta di conferma il focus passa ad **Annulla**: usare **←/→ o Tab** per scegliere Conferma. **Esc** annulla la conferma, poi chiude il pannello. All’apertura il primo pulsante riceve il focus.
+
+Nel calendario: frecce per spostare il giorno, PgUp/PgDn per il mese e Home per oggi. Nel selettore sfondo: frecce per la lista, Invio per aprire cartella/selezionare immagine, Backspace per risalire; Tab raggiunge percorso, applicazione e ripristino.
+
+## XWayland
+
+`hypr/.config/hypr/config/xwayland.lua` abilita esplicitamente il server XWayland installato da Fedora. `force_zero_scaling = false` conserva la scala del compositor su schermi HiDPI. Qt usa `wayland;xcb` e GTK `wayland,x11,*`, con `DISPLAY` importato nell’ambiente D-Bus/systemd al login. Le app native usano Wayland; le app X11 possono usare il bridge senza un desktop X separato.
+
+La macchina è stata verificata con XWayland attivo e `xprop -root`. Per cambiare la politica di scala delle app X11, usare `hypr/.config/hypr/config/local.lua`; forzare la scala a zero può rendere molto piccole le app che non gestiscono HiDPI da sole.
+
+## Sfondi persistenti
+
+```sh
+~/.local/bin/desktop-wallpaper                     # apre il selettore QML
+~/.local/bin/desktop-wallpaper /percorso/immagine.png
+~/.local/bin/desktop-wallpaper --reset             # ripristina Fedora
+```
+
+Il selettore parte dalla home e permette di risalire, digitare una cartella e aprire la raccolta degli sfondi. Supporta PNG, JPEG, WebP, JXL, AVIF, BMP e TIFF. ImageMagick converte il file selezionato in un JPEG gestito, applica l’orientamento EXIF e preserva l’originale. L’anteprima dipende dai decoder Qt; un JXL privo di anteprima può comunque essere convertito e applicato.
+
+La selezione vive in `~/.local/state/desktop-session/wallpaper/`: `selection.json` conserva il percorso originale e `current.jpg` punta alla copia convertita. Hyprpaper usa quel link nel config Stow e ritrova la scelta al login; la repo non viene riscritta a ogni cambio sfondo. `desktop-session start` inizializza il link allo sfondo Fedora soltanto quando manca. Una conversione o applicazione fallita conserva la selezione precedente. La copia locale resta utilizzabile anche se si sposta l’originale.
+
+I dati di stato non sono inclusi in Git e seguono il layout XDG standard di questa repo. Lo script serializza richieste concorrenti, passa i percorsi come argomenti e normalizza il nome inviato a IPC, gestendo anche spazi, virgole e caratteri speciali.
+
+## Dati dei pannelli
+
+Audio usa i nodi PipeWire e cambia i dispositivi predefiniti tramite le API Quickshell; WirePlumber decide come instradare gli stream già aperti. UPower fornisce potenza della batteria in W, energia in Wh e tempi stimati: il valore non è il consumo totale alla presa e può variare nel tempo. Se una stima manca, il pannello lo indica senza inventare un’autonomia. Il calendario è locale e non accede ad account esterni.
+
 ## Personalizzazione e diagnostica
 
-`hypr/.config/hypr/config/local.lua` contiene gli override della macchina. Palette QML in `Theme.qml`, icone in `assets/icons`, CSS GTK e colori Qt nei rispettivi pacchetti. Quickshell e Hyprland ricaricano i propri config; riavviare hypridle/hyprpaper dopo aver modificato i loro file. L'autostart avviene al login; `desktop-session start` e `desktop-shell start` evitano processi duplicati.
+`hypr/.config/hypr/config/local.lua` contiene gli override della macchina. Palette QML in `Theme.qml`, icone in `assets/icons`, CSS GTK e colori Qt nei rispettivi pacchetti. Quickshell e Hyprland ricaricano i propri config; riavviare hypridle/hyprpaper dopo aver modificato i loro file. L'autostart avviene al login; `desktop-session start` e `desktop-shell start` evitano processi duplicati. `desktop-shell restart` attende la chiusura dell’istanza precedente prima di avviare la nuova.
 
 ```sh
 ~/.local/bin/desktop-shell status
 ~/.local/bin/desktop-session status
 qs log -c desktop
 hyprctl configerrors
-hyprctl hyprpaper listactive
+hyprctl getoption xwayland:enabled
+xprop -root _NET_SUPPORTING_WM_CHECK
+readlink -f ~/.local/state/desktop-session/wallpaper/current.jpg
 cat ~/.local/state/desktop-session/hypridle.log
 ./scripts/check.sh
 ```
+
+Verifiche eseguite: parser Lua e script, caricamento/layout QML, scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC.
 
 ## Rimozione
 
@@ -112,6 +156,6 @@ Prima fermare la shell (`desktop-shell stop`) e i daemon (`pkill -x hypridle; pk
 
 ## Prossimi moduli
 
-Pairing Bluetooth con PIN/conferma, selezione dispositivi audio, OSD, MPRIS, calendario, clipboard e impostazioni persistenti. Per screen sharing manca ancora `xdg-desktop-portal-hyprland` (il portale GTK è presente); installarlo e integrarlo in una fase dedicata.
+Pairing Bluetooth con PIN/conferma, OSD, MPRIS, eventi nel calendario, clipboard e impostazioni persistenti della shell. Per screen sharing manca ancora `xdg-desktop-portal-hyprland` (il portale GTK è presente); installarlo e integrarlo in una fase dedicata.
 
 Riferimenti: [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).

@@ -19,6 +19,11 @@ ShellRoot {
             return JSON.stringify({ panel: ShellState.panel, screens: Quickshell.screens.length,
                 workspace: Hyprland.focusedWorkspace?.id ?? -1,
                 volume: Audio.volume, muted: Audio.muted,
+                audioOutputs: Audio.outputs.length, audioInputs: Audio.inputs.length,
+                audioOutput: Audio.sink?.description ?? "", audioInput: Audio.source?.description ?? "",
+                batteryWatts: UPower.displayDevice?.changeRate ?? null,
+                batteryTimeToEmpty: UPower.displayDevice?.timeToEmpty ?? null,
+                hintsBindings: hints.bindings.length, powerSelection: powerMenu.selectedAction, powerPending: powerMenu.pending,
                 networkDevices: Networking.devices.values.length,
                 notifications: Notices.notifications.values.length,
                 polkitRegistered: authentication.registered, popups: Notices.popups.length,
@@ -34,8 +39,14 @@ ShellRoot {
     }
     Launcher {}
     Controls {}
+    NetworkPanel {}
+    AudioPanel {}
+    BatteryPanel {}
+    CalendarPanel {}
+    Hints { id: hints }
+    WallpaperPicker {}
     NotificationCenter {}
     NotificationPopups { id: popupWindow }
-    PowerMenu {}
+    PowerMenu { id: powerMenu }
     Authentication { id: authentication }
 }

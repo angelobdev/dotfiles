@@ -28,7 +28,7 @@ PanelWindow {
     readonly property int battery: Math.round((UPower.displayDevice?.percentage ?? 0) * 100)
     SystemClock { id: clock; precision: SystemClock.Minutes }
     Rectangle {
-        anchors.fill: parent; radius: 16; border.color: Theme.stroke
+        anchors.fill: parent; radius: 13; border.color: Theme.stroke
         gradient: Gradient {
             GradientStop { position: 0; color: "#d925334b" }
             GradientStop { position: 1; color: "#bb142034" }
@@ -37,9 +37,9 @@ PanelWindow {
     RowLayout {
         anchors { fill: parent; leftMargin: 8; rightMargin: 8 }
         spacing: 5
-        ActionButton {
+        BarButton {
             iconSource: Quickshell.iconPath("fedora-logo-icon", "start-here")
-            iconSize: 27; implicitWidth: 42; tooltip: "Applicazioni"
+            iconSize: 23; implicitWidth: 36; tooltip: "Applicazioni"
             onClicked: ShellState.toggle("launcher", bar.screen)
         }
         RowLayout {
@@ -50,7 +50,7 @@ PanelWindow {
                     id: workspace
                     required property var modelData
                     readonly property bool active: bar.monitor?.activeWorkspace?.id === modelData.id
-                    implicitWidth: active ? 46 : 28; implicitHeight: 34
+                    implicitWidth: active ? 46 : 28; implicitHeight: 28
                     Accessible.name: "Workspace " + modelData.id
                     ToolTip.visible: hovered
                     ToolTip.text: "Workspace " + modelData.id + " · " + modelData.toplevels.values.length + " finestre"
@@ -80,8 +80,8 @@ PanelWindow {
             Item {
                 id: trayItem
                 required property var modelData
-                implicitWidth: 28; implicitHeight: 32
-                Image { anchors.centerIn: parent; width: 20; height: 20; source: trayItem.modelData.icon }
+                implicitWidth: 28; implicitHeight: 28
+                Image { anchors.centerIn: parent; width: 16; height: 16; source: trayItem.modelData.icon }
                 MouseArea {
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
@@ -98,34 +98,37 @@ PanelWindow {
                 }
             }
         }
-        ActionButton {
+        BarButton {
             iconName: bar.networkIcon
             tooltip: bar.connectedDevice ? (bar.wireless ? "Wi-Fi connesso" : "Rete cablata connessa") : "Rete disconnessa"
-            onClicked: ShellState.toggle("controls", bar.screen)
+            onClicked: ShellState.toggle("network", bar.screen)
         }
-        ActionButton {
+        BarButton {
             iconName: Audio.muted || Audio.volume === 0 ? "volume-muted" : Audio.volume < 45 ? "volume-low" : "volume-high"
+            text: Audio.volume + "%"
             tooltip: Audio.muted ? "Audio disattivato" : "Volume " + Audio.volume + "%"
-            onClicked: ShellState.toggle("controls", bar.screen)
+            onClicked: ShellState.toggle("audio", bar.screen)
         }
-        ActionButton {
+        BarButton {
             visible: UPower.displayDevice?.isLaptopBattery ?? false
             iconName: !UPower.onBattery ? "battery-charging" : bar.battery < 20 ? "battery-low" : "battery"
             text: bar.battery + "%"
             tooltip: UPower.onBattery ? "Alimentazione a batteria" : "Alimentazione collegata"
-            onClicked: ShellState.toggle("controls", bar.screen)
+            onClicked: ShellState.toggle("battery", bar.screen)
         }
-        ActionButton {
+        BarButton {
             iconName: Notices.quiet ? "bell-off" : "bell"
             text: Notices.notifications.values.length > 0 ? String(Notices.notifications.values.length) : ""
             tooltip: Notices.quiet ? "Notifiche · Non disturbare" : "Notifiche"
             onClicked: ShellState.toggle("notifications", bar.screen)
         }
-        Text {
+        BarButton { iconName: "keyboard"; tooltip: "Hints · Scorciatoie"; onClicked: ShellState.toggle("hints", bar.screen) }
+        BarButton {
             text: Qt.formatDateTime(clock.date, "ddd d MMM  HH:mm")
-            color: Theme.text; font.family: Theme.font; font.pixelSize: 13
-            Layout.leftMargin: 8; Layout.rightMargin: 8
+            tooltip: "Calendario"
+            onClicked: ShellState.toggle("calendar", bar.screen)
+            Layout.leftMargin: 3; Layout.rightMargin: 3
         }
-        ActionButton { iconName: "power"; tooltip: "Sessione"; onClicked: ShellState.toggle("power", bar.screen) }
+        BarButton { iconName: "power"; tooltip: "Sessione"; onClicked: ShellState.toggle("power", bar.screen) }
     }
 }

@@ -7,7 +7,7 @@ Singleton {
     property string panel: ""
     property var activeScreen: null
     function toggle(name, screen) {
-        if (!["launcher", "controls", "notifications", "power"].includes(name)) return;
+        if (!["launcher", "controls", "network", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "power"].includes(name)) return;
         activeScreen = screen || Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) || Quickshell.screens[0];
         panel = panel === name ? "" : name;
     }

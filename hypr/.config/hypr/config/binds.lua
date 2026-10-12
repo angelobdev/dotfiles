@@ -57,3 +57,11 @@ bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), 
 local power = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-power"'
 bind("SUPER + L", hl.dsp.exec_cmd(power .. " lock"), "Blocca schermo")
 bind("XF86Sleep", hl.dsp.exec_cmd(power .. " suspend"), "Sospendi")
+
+-- Dedicated shell panels
+bind("SUPER + SHIFT + E", hl.dsp.exec_cmd(shell .. " toggle network"), "Rete e Wi-Fi")
+bind("SUPER + SHIFT + V", hl.dsp.exec_cmd(shell .. " toggle audio"), "Volume e dispositivi audio")
+bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Batteria ed energia")
+bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendario")
+bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Scorciatoie tastiera")
+bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper"'), "Scegli sfondo")

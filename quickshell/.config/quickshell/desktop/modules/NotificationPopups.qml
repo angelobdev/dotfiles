@@ -10,7 +10,7 @@ PanelWindow {
     id: root
     screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) || Quickshell.screens[0]
     anchors { top: true; right: true }
-    margins { top: 60; right: 12 }
+    margins { top: 54; right: 12 }
     implicitWidth: 380
     implicitHeight: Math.min(stack.implicitHeight, (screen?.height ?? 900) - 100)
     visible: Notices.popups.length > 0 && !Notices.quiet && ShellState.panel === ""
