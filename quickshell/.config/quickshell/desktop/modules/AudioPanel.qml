@@ -30,7 +30,7 @@ Overlay {
                         ActionButton {
                             required property var modelData
                             Layout.fillWidth: true; alignLeft: true; implicitHeight: 42
-                            text: modelData.description || modelData.name; iconName: "volume-high"
+                            text: modelData.description || modelData.name; textElide: Text.ElideMiddle; iconName: "volume-high"
                             highlighted: Audio.sink?.id === modelData.id
                             tooltip: modelData.name
                             onClicked: Audio.selectOutput(modelData)
@@ -48,7 +48,7 @@ Overlay {
                         ActionButton {
                             required property var modelData
                             Layout.fillWidth: true; alignLeft: true; implicitHeight: 42
-                            text: modelData.description || modelData.name; iconName: "microphone"
+                            text: modelData.description || modelData.name; textElide: Text.ElideMiddle; iconName: "microphone"
                             highlighted: Audio.source?.id === modelData.id
                             tooltip: modelData.name
                             onClicked: Audio.selectInput(modelData)
@@ -58,7 +58,11 @@ Overlay {
                     Text { Layout.fillWidth: true; wrapMode: Text.Wrap; text: "Seleziona il dispositivo predefinito. Il routing degli stream è gestito da WirePlumber."; color: Theme.muted; font.pixelSize: 12 }
                 }
             }
-            ActionButton { text: "Chiudi"; onClicked: ShellState.close() }
+            RowLayout {
+                ActionButton { text: "‹ Centro di controllo"; onClicked: ShellState.toggle("controls", ShellState.activeScreen) }
+                Item { Layout.fillWidth: true }
+                ActionButton { text: "Chiudi"; onClicked: ShellState.close() }
+            }
         }
     }
 }

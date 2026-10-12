@@ -1,14 +1,15 @@
 pragma Singleton
 import QtQuick
 QtObject {
-    readonly property color background: "#101826"
-    readonly property color surface: "#c91a2537"
-    readonly property color raised: "#8035455e"
-    readonly property color stroke: "#405e769b"
-    readonly property color text: "#e1e9f5"
-    readonly property color muted: "#a5b4cc"
-    readonly property color accent: "#89b4fa"
-    readonly property color danger: "#f38ba8"
+    readonly property color background: "#191a1d"
+    readonly property color surface: "#de24262a"
+    readonly property color raised: "#70494c52"
+    readonly property color tile: "#603b3e43"
+    readonly property color stroke: "#28ffffff"
+    readonly property color text: "#f0f0f2"
+    readonly property color muted: "#b8bbc1"
+    readonly property color accent: "#d4d6dc"
+    readonly property color danger: "#e99595"
     readonly property string font: "Adwaita Sans"
     readonly property int radius: 18
 }

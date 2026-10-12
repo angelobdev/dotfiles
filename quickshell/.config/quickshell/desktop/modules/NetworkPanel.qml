@@ -107,7 +107,11 @@ Overlay {
                     Text { visible: root.error !== ""; text: root.error; color: Theme.danger; Layout.fillWidth: true; wrapMode: Text.Wrap; textFormat: Text.PlainText }
                 }
             }
-            ActionButton { text: "Chiudi"; onClicked: ShellState.close() }
+            RowLayout {
+                ActionButton { text: "‹ Centro di controllo"; onClicked: ShellState.toggle("controls", ShellState.activeScreen) }
+                Item { Layout.fillWidth: true }
+                ActionButton { text: "Chiudi"; onClicked: ShellState.close() }
+            }
         }
     }
 }

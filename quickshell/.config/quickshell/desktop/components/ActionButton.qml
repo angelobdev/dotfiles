@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 import ".."
 Button {
     id: root
@@ -9,6 +10,8 @@ Button {
     property url iconSource: ""
     property int iconSize: 20
     property bool alignLeft: false
+    property bool iconAfterText: false
+    property int textElide: Text.ElideRight
     property string tooltip: ""
     readonly property bool hasIcon: iconName !== "" || iconSource.toString() !== ""
     readonly property color foreground: destructive ? Theme.danger : highlighted ? Theme.background : Theme.text
@@ -19,10 +22,9 @@ Button {
     font.pixelSize: 13
     opacity: enabled ? 1 : 0.45
     Accessible.name: text || tooltip
-    ToolTip.visible: hovered && tooltip !== ""
-    ToolTip.text: tooltip
-    ToolTip.delay: 500
+    HintTooltip { target: root; text: root.tooltip; hovered: root.hovered && !root.down }
     contentItem: RowLayout {
+        layoutDirection: root.iconAfterText ? Qt.RightToLeft : Qt.LeftToRight
         spacing: root.text && root.hasIcon ? 10 : 0
         Item { Layout.fillWidth: true; visible: !root.alignLeft }
         Item {
@@ -40,7 +42,7 @@ Button {
             visible: root.text !== ""
             Layout.fillWidth: root.alignLeft
             text: root.text; font: root.font; color: root.foreground
-            verticalAlignment: Text.AlignVCenter; elide: Text.ElideRight
+            verticalAlignment: Text.AlignVCenter; elide: root.textElide
             textFormat: Text.PlainText
         }
         Item { Layout.fillWidth: true; visible: !root.alignLeft }

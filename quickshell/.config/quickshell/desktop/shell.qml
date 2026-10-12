@@ -5,6 +5,7 @@ import Quickshell.Io
 import Quickshell.Hyprland
 import Quickshell.Services.UPower
 import Quickshell.Networking
+import Quickshell.Bluetooth
 import "modules"
 import "services"
 ShellRoot {
@@ -24,6 +25,7 @@ ShellRoot {
                 batteryWatts: UPower.displayDevice?.changeRate ?? null,
                 batteryTimeToEmpty: UPower.displayDevice?.timeToEmpty ?? null,
                 hintsBindings: hints.bindings.length, powerSelection: powerMenu.selectedAction, powerPending: powerMenu.pending,
+                bluetoothAdapters: Bluetooth.adapters.values.length, brightness: Brightness.monitors, quiet: Notices.quiet,
                 networkDevices: Networking.devices.values.length,
                 notifications: Notices.notifications.values.length,
                 polkitRegistered: authentication.registered, popups: Notices.popups.length,
@@ -41,6 +43,7 @@ ShellRoot {
     Controls {}
     NetworkPanel {}
     AudioPanel {}
+    BluetoothPanel {}
     BatteryPanel {}
     CalendarPanel {}
     Hints { id: hints }

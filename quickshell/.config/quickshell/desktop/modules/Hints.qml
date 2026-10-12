@@ -9,6 +9,18 @@ Overlay {
     panelName: "hints"
     property var bindings: []
     property string error: ""
+    readonly property var categories: ["Applicazioni", "Shell e pannelli", "Finestre", "Workspace", "Mouse", "Audio e luminosità", "Sessione", "Altro"]
+    function category(bind) {
+        const name = (bind.description || "").toLowerCase();
+        if ((bind.key || "").startsWith("XF86Audio") || (bind.key || "").startsWith("XF86MonBrightness")) return "Audio e luminosità";
+        if ((bind.key || "").startsWith("mouse:")) return "Mouse";
+        if (/workspace|scratchpad/.test(name)) return "Workspace";
+        if (/blocca|sospendi|logout|riavvio|spegni|sessione/.test(name)) return "Sessione";
+        if (/applicazioni|centro di controllo|notifiche|quickshell|rete|wi-fi|volume e|batteria|calendario|hints|sfondo/.test(name)) return "Shell e pannelli";
+        if (/browser|terminale|kitty/.test(name)) return "Applicazioni";
+        if (/finestra|focus|floating|fullscreen|schermo intero|^sposta |tiling|split|pseudo/.test(name)) return "Finestre";
+        return "Altro";
+    }
     function shortcut(bind) {
         const parts = [];
         for (const [mask, label] of [[64, "Super"], [4, "Ctrl"], [8, "Alt"], [1, "Shift"], [128, "Mod5"]])
@@ -28,7 +40,8 @@ Overlay {
             onStreamFinished: {
                 try {
                     root.bindings = JSON.parse(text).map(b => ({keys: root.shortcut(b), name: b.description || b.dispatcher,
-                        submap: b.submap || "", release: b.release}));
+                        submap: b.submap || "", release: b.release, category: root.category(b)}))
+                        .sort((a,b) => root.categories.indexOf(a.category) - root.categories.indexOf(b.category));
                 } catch (e) { root.error = "Impossibile leggere i bind di Hyprland."; }
             }
         }
@@ -50,7 +63,14 @@ Overlay {
             ListView {
                 id: list
                 Layout.fillWidth: true; Layout.fillHeight: true; clip: true; spacing: 3
-                model: root.bindings.filter(b => (b.keys + " " + b.name + " " + b.submap).toLowerCase().includes(search.text.toLowerCase()))
+                model: root.bindings.filter(b => (b.keys + " " + b.name + " " + b.submap + " " + b.category).toLowerCase().includes(search.text.toLowerCase()))
+                section.property: "category"
+                section.criteria: ViewSection.FullString
+                section.delegate: Item {
+                    required property string section
+                    width: list.width; height: 38
+                    Text { anchors { left: parent.left; bottom: parent.bottom; bottomMargin: 8 } text: section; color: Theme.muted; font.pixelSize: 11; font.weight: Font.DemiBold; font.letterSpacing: 0.6 }
+                }
                 delegate: Rectangle {
                     required property var modelData
                     required property int index

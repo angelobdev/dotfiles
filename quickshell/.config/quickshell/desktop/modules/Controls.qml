@@ -1,51 +1,47 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Quickshell
-import Quickshell.Bluetooth
 import ".."
 import "../components"
+import "controlcenter"
 Overlay {
+    id: root
     panelName: "controls"
+    onOpened: closeButton.forceActiveFocus()
     Card {
-        anchors.centerIn: parent
-        width: Math.min(580, parent.width - 48)
-        height: Math.min(500, parent.height - 96)
+        anchors { top: parent.top; right: parent.right; topMargin: 58; rightMargin: 12 }
+        width: Math.min(Config.controlCenterWidth, parent.width - 24)
+        height: Math.min(layout.implicitHeight + 32, parent.height - 76)
         ColumnLayout {
             id: layout
-            anchors { fill: parent; margins: 22 }
+            anchors { fill: parent; margins: 16 }
             spacing: 12
-            Heading { text: "Centro di controllo" }
             RowLayout {
-                ActionButton { text: "Rete"; iconName: "wifi"; onClicked: ShellState.toggle("network") }
-                ActionButton { text: "Audio"; iconName: "volume-high"; onClicked: ShellState.toggle("audio") }
-                ActionButton { text: "Batteria"; iconName: "battery"; onClicked: ShellState.toggle("battery") }
+                Text { text: "Centro di controllo"; font.family: Theme.font; font.pixelSize: 15; font.weight: Font.DemiBold; color: Theme.text; Layout.fillWidth: true }
+                ActionButton { id: closeButton; text: "×"; tooltip: "Chiudi"; implicitWidth: 28; implicitHeight: 28; onClicked: ShellState.close() }
             }
             ScrollView {
-                Layout.fillWidth: true; Layout.fillHeight: true; clip: true
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                implicitHeight: grid.implicitHeight
                 contentWidth: availableWidth
-                ColumnLayout {
-                    width: parent.width; spacing: 12
-                    Heading { text: "Bluetooth" }
-                    RowLayout {
-                        ActionButton { text: Bluetooth.defaultAdapter?.enabled ? "Bluetooth acceso" : "Bluetooth spento"; enabled: !!Bluetooth.defaultAdapter; highlighted: Bluetooth.defaultAdapter?.enabled ?? false; onClicked: Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter.enabled }
-                        Text { text: "Dispositivi già associati"; color: Theme.muted }
-                    }
+                clip: true
+                GridLayout {
+                    id: grid
+                    width: parent.width
+                    columns: 2
+                    rowSpacing: 10; columnSpacing: 10
                     Repeater {
-                        model: Bluetooth.devices.values.filter(d => d.paired)
-                        ActionButton {
-                            required property var modelData
+                        model: Config.controlCenterModules.filter((name, index, all) => ["network", "bluetooth", "brightness", "audio", "doNotDisturb"].includes(name) && all.indexOf(name) === index)
+                        Loader {
+                            required property string modelData
                             Layout.fillWidth: true
-                            enabled: Bluetooth.defaultAdapter?.enabled ?? false
-                            text: (modelData.connected ? "● " : "○ ") + modelData.name + " · " + BluetoothDeviceState.toString(modelData.state)
-                            highlighted: modelData.connected
-                            onClicked: modelData.connected = !modelData.connected
+                            Layout.columnSpan: ["network", "bluetooth"].includes(modelData) ? 1 : 2
+                            source: ({network: "controlcenter/NetworkTile.qml", bluetooth: "controlcenter/BluetoothTile.qml", brightness: "controlcenter/BrightnessControl.qml", audio: "controlcenter/AudioControl.qml", doNotDisturb: "controlcenter/FocusControl.qml"})[modelData]
                         }
                     }
-                    Text { visible: !Bluetooth.defaultAdapter; text: "Nessun adattatore Bluetooth"; color: Theme.muted }
                 }
             }
-            ActionButton { text: "Chiudi"; onClicked: ShellState.close() }
         }
     }
 }

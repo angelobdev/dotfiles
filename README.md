@@ -8,7 +8,7 @@ Desktop custom per Fedora 44: Hyprland Lua, interfaccia QML in Quickshell e pacc
 | --- | --- |
 | `hypr` | `~/.config/hypr/hyprland.lua` e moduli Lua |
 | `quickshell` | Barra, launcher, controlli, notifiche, power e agente Polkit |
-| `shell` | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper}` e helper wallpaper Python |
+| `shell` | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper}` e helper Python per sfondi/luminosità |
 | `hypridle` | Timer e coordinamento lock/sospensione |
 | `hyprlock` | Blocco Wayland con autenticazione PAM |
 | `hyprpaper` | Sfondo Fedora 44 notturno, su ogni monitor |
@@ -39,17 +39,17 @@ I pacchetti usano i percorsi XDG standard sotto `$HOME`. I due `color_scheme_pat
 
 ## Interfaccia
 
-- Barra flottante alta 38 px logici, controlli alti 30 px e icone di stato da 16 px centrate; logo Fedora da 23 px, workspace occupati (più quello attivo), pill attiva azzurra, titolo, tray e orologio cliccabile. Volume e batteria mostrano la percentuale.
-- Icone vettoriali per rete, volume, batteria, notifiche e sessione; tooltip con stato. Le icone app originali restano colorate.
+- Barra flottante alta 38 px logici: Fedora/app menu → workspace occupati e attivo → titolo → spazio → tray → batteria (percentuale + icona) → notifiche → Hints → Control Center → giorno/ora → sessione. Controlli da 30 px, icone di stato da 16 px centrate e logo da 23 px. Rete e volume vivono nel Control Center.
+- Icone vettoriali e tooltip nativi posizionati sotto i pulsanti, fuori dalla superficie della barra. Le icone app originali restano colorate.
 - Launcher con ricerca, titoli a sinistra, icone, frecce e Invio; le app da terminale si aprono in Kitty.
 - Superfici traslucide, bordi leggeri e blur Hyprland; sfondo fornito da hyprpaper.
 - Pannelli separati: Rete e Wi-Fi con ricerca/selezione reti; Audio con volume, mute, ingresso/uscita predefiniti e livello microfono; Batteria con potenza in W, energia in Wh, autonomia/carica rimanente e profili energetici. Le reti Wi-Fi Personal hanno un prompt password; Enterprise richiede un profilo preconfigurato.
-- Centro di controllo come accesso rapido ai pannelli e gestione Bluetooth per dispositivi già associati. I profili energetici dipendono dall’hardware.
+- Control Center compatto, in alto a destra: schede Rete/Bluetooth, luminosità del monitor primario con accordion per gli altri display, volume dello speaker selezionato con accordion per ingressi/uscite e livello microfono, toggle Non disturbare. Moduli e ordine si configurano in `Config.qml`. Bluetooth ha un sottopannello con adattatori, connessione/disconnessione dei dispositivi già associati e batteria quando esposta da BlueZ. I profili energetici dipendono dall’hardware.
 - Notifiche, popup, azioni, centro notifiche e non disturbare; storico in memoria, azzerato al riavvio della shell.
 - Agente Polkit QML con l'identità predefinita proposta da Polkit.
 - Power navigabile da tastiera: blocco immediato; sospensione, logout, riavvio e spegnimento con conferma. Gli errori del comando vengono mostrati nel pannello.
 - Calendario mensile con settimana da lunedì, selezione giorno, oggi e navigazione fra mesi; non include ancora eventi/calendari esterni.
-- Hints con ricerca: legge `hyprctl -j binds` a ogni apertura e mostra scorciatoia + descrizione reali, inclusi submap e bind aggiunti in `local.lua`.
+- Hints con ricerca e categorie (Applicazioni, Shell e pannelli, Finestre, Workspace, Mouse, Audio e luminosità, Sessione, Altro): legge `hyprctl -j binds` a ogni apertura e mostra scorciatoia + descrizione reali, inclusi submap e bind aggiunti in `local.lua`.
 - Selettore sfondi QML con navigazione cartelle e anteprima; nessun dialog esterno.
 
 NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-daemon forniscono i servizi di sistema. I config avviano Quickshell, hypridle e hyprpaper. Nessun Waybar, nm-applet, Blueman, Sway o server notifiche separato.
@@ -70,11 +70,11 @@ Il config di hyprlock è stato provato in una sessione Hyprland annidata: inizia
 
 ## Tema delle applicazioni
 
-Palette blu notte, accent `#89b4fa`, Adwaita Sans e icone Papirus-Dark. GTK 3 usa Adwaita-dark e colori CSS; GTK 4/libadwaita riceve la preferenza scura anche via GSettings/portale e i colori nominati. Qt Widgets usa Fusion e palette custom in entrambe le generazioni. Il plugin qt6ct installato accetta anche la chiave `qt5ct`, quindi `QT_QPA_PLATFORMTHEME=qt5ct` copre Qt 5/6. Qt Quick Controls usa Basic; applicazioni con stile proprio possono ignorare queste preferenze.
+Palette grigio grafite, primary neutro `#d4d6dc`, testo chiaro, Adwaita Sans e icone Papirus-Dark. GTK, Qt e hyprlock condividono la palette; GSettings usa l’accent slate. GTK 3 usa Adwaita-dark e colori CSS; GTK 4/libadwaita riceve la preferenza scura anche via GSettings/portale e i colori nominati. Qt Widgets usa Fusion e palette custom in entrambe le generazioni. Il plugin qt6ct installato accetta anche la chiave `qt5ct`, quindi `QT_QPA_PLATFORMTHEME=qt5ct` copre Qt 5/6. Qt Quick Controls usa Basic; applicazioni con stile proprio possono ignorare queste preferenze.
 
 `desktop-theme` applica GSettings e importa le variabili Qt in D-Bus/systemd; alla prima esecuzione salva i valori precedenti in `~/.local/state/dotfiles/interface-before-theme.ini`. Riavviare le applicazioni già aperte per adottare il tema; il prossimo login applica anche l'ambiente completo. Le app Flatpak dipendono dai runtime/temi esposti alla sandbox e potrebbero non seguire tutti gli override CSS.
 
-Il vetro è applicato alla shell. Le finestre delle applicazioni mantengono superfici scure leggibili.
+La shell usa superfici glass scure con blur e bordi sottili neutri. Hyprland non disegna bordi delle finestre: opacità attiva/fullscreen 1, inattiva 0.92 e blur abilitato. Questi valori sono in `hypr/.config/hypr/config/appearance.lua`. Le finestre attive conservano piena leggibilità.
 
 ## Scorciatoie
 
@@ -84,7 +84,7 @@ Il vetro è applicato alla shell. Le finestre delle applicazioni mantengono supe
 | `Super + Invio` | Kitty |
 | `Super + Q` | Chiudi finestra |
 | `Super + Spazio` | Applicazioni |
-| `Super + Shift + C` | Centro di controllo / Bluetooth |
+| `Super + Shift + C` | Centro di controllo |
 | `Super + Shift + E` | Rete e Wi-Fi |
 | `Super + Shift + V` | Volume e dispositivi audio |
 | `Super + Shift + B` | Batteria ed energia |
@@ -130,7 +130,35 @@ I dati di stato non sono inclusi in Git e seguono il layout XDG standard di ques
 
 ## Dati dei pannelli
 
-Audio usa i nodi PipeWire e cambia i dispositivi predefiniti tramite le API Quickshell; WirePlumber decide come instradare gli stream già aperti. UPower fornisce potenza della batteria in W, energia in Wh e tempi stimati: il valore non è il consumo totale alla presa e può variare nel tempo. Se una stima manca, il pannello lo indica senza inventare un’autonomia. Il calendario è locale e non accede ad account esterni.
+Audio usa i nodi PipeWire e cambia i dispositivi predefiniti tramite le API Quickshell; WirePlumber decide come instradare gli stream già aperti. UPower fornisce potenza della batteria in W, energia in Wh e tempi stimati: il valore non è il consumo totale alla presa e può variare nel tempo. Se una stima manca, il pannello lo indica senza inventare un’autonomia. Il calendario è locale e non accede ad account esterni. Non disturbare silenzia i popup e conserva le notifiche nel centro; lo stato si azzera al riavvio della shell.
+
+## Configurazione del Control Center
+
+Modificare `quickshell/.config/quickshell/desktop/Config.qml`. La configurazione è dichiarativa, senza editor nell’interfaccia:
+
+```qml
+readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "doNotDisturb"]
+readonly property int controlCenterWidth: 400
+readonly property bool expandMonitors: false
+readonly property bool expandAudioDevices: false
+readonly property string primaryMonitor: "eDP-1"
+readonly property var brightnessDevices: ({})
+```
+
+Rimuovere un nome disabilita il modulo; riordinare la lista cambia la disposizione. Nomi sconosciuti e duplicati vengono ignorati. Ogni modulo è un file distinto in `modules/controlcenter/`. Rete e Bluetooth occupano mezza riga, gli altri moduli una riga intera; il pannello scorre quando gli accordion superano lo spazio disponibile. Se il monitor primario è scollegato si usa il primo display connesso.
+
+La luminosità è hardware: il singolo backlight di un pannello eDP/LVDS/DSI viene rilevato automaticamente e controllato con `brightnessctl`. I tasti luminosità conservano il controllo del backlight integrato. Per più backlight o monitor esterni associare esplicitamente il nome restituito da `hyprctl monitors` al dispositivo:
+
+```qml
+readonly property var brightnessDevices: ({
+    "eDP-1": { "type": "backlight", "device": "intel_backlight" },
+    "DP-1": { "type": "ddc", "bus": 6 }
+})
+```
+
+Il bus `6` è un esempio: usare quello effettivo mostrato da `ddcutil detect`. Per DDC/CI installare facoltativamente `sudo dnf install ddcutil`, abilitare DDC/CI nel monitor e verificare i permessi `/dev/i2c-*` previsti dal pacchetto. La shell non esegue sudo. Un monitor senza backend o senza accesso hardware mostra uno slider disabilitato con il motivo. L’accordion elenca solo gli altri monitor connessi; hotplug e valori vengono aggiornati mentre il Control Center è aperto. Le scritture sono accorpate e serializzate, con minimo 1% per evitare lo spegnimento accidentale del backlight. Non viene usata un’opacità software per simulare la luminosità.
+
+Audio e Bluetooth usano le API native Quickshell. Bluetooth gestisce i dispositivi già associati; il pairing con PIN/conferma richiede ancora un agente dedicato. Le sezioni Hints sono ricavate dai tasti/descrizioni dei bind reali: i bind personalizzati non riconosciuti restano in Altro e sono ricercabili.
 
 ## Personalizzazione e diagnostica
 
@@ -148,7 +176,7 @@ cat ~/.local/state/desktop-session/hypridle.log
 ./scripts/check.sh
 ```
 
-Verifiche eseguite: parser Lua e script, caricamento/layout QML, scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC.
+Verifiche eseguite: parser Lua e script, caricamento/layout QML, Control Center e accordion, posizionamento tooltip, helper luminosità con backend fittizi (routing, limiti e scala DDC), scansione Wi-Fi nativa, lettura dispositivi audio e dati UPower, calendario bisestile/cambio anno, navigazione completa del power menu con comando fittizio e selezione sfondo persistente. Le prove sullo sfondo coprono nomi con spazi/virgole e conservazione della scelta precedente in caso di file non valido o errore IPC.
 
 ## Rimozione
 
@@ -158,4 +186,4 @@ Prima fermare la shell (`desktop-shell stop`) e i daemon (`pkill -x hypridle; pk
 
 Pairing Bluetooth con PIN/conferma, OSD, MPRIS, eventi nel calendario, clipboard e impostazioni persistenti della shell. Per screen sharing manca ancora `xdg-desktop-portal-hyprland` (il portale GTK è presente); installarlo e integrarlo in una fase dedicata.
 
-Riferimenti: [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).
+Riferimenti: [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [PopupAnchor](https://quickshell.org/docs/v0.3.0/types/Quickshell/PopupAnchor/), [DDC/CI luminosità](https://www.ddcutil.com/command_getvcp/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/).

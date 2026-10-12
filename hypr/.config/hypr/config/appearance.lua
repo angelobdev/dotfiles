@@ -2,21 +2,20 @@ hl.config({
     general = {
         gaps_in = 5,
         gaps_out = 12,
-        border_size = 2,
+        border_size = 0,
         layout = "dwindle",
         resize_on_border = true,
-        col = {
-            active_border = "rgba(89b4faff)",
-            inactive_border = "rgba(35455eaa)",
-        },
     },
     decoration = {
         rounding = 16,
+        active_opacity = 1.0,
+        inactive_opacity = 0.92,
+        fullscreen_opacity = 1.0,
         shadow = {
             enabled = true,
             range = 12,
             render_power = 3,
-            color = 0x6611111b
+            color = 0x660d0e10
         },
         blur = {
             enabled = true,

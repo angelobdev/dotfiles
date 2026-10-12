@@ -20,18 +20,13 @@ PanelWindow {
     readonly property var monitor: Hyprland.monitorFor(screen)
     readonly property var workspaces: Hyprland.workspaces.values.filter(w =>
         w.id > 0 && w.monitor?.name === bar.screen.name && (w.active || w.toplevels.values.length > 0)).sort((a, b) => a.id - b.id)
-    readonly property var connectedDevice: Networking.devices.values.find(d => d.connected)
-    readonly property var connectedNetwork: connectedDevice?.networks.values.find(n => n.connected)
-    readonly property bool wireless: connectedDevice?.type === DeviceType.Wifi
-    readonly property string networkIcon: !connectedDevice ? "wifi-off" : !wireless ? "ethernet" :
-        (connectedNetwork?.signalStrength ?? 1) < 0.4 ? "wifi-weak" : "wifi"
     readonly property int battery: Math.round((UPower.displayDevice?.percentage ?? 0) * 100)
     SystemClock { id: clock; precision: SystemClock.Minutes }
     Rectangle {
         anchors.fill: parent; radius: 13; border.color: Theme.stroke
         gradient: Gradient {
-            GradientStop { position: 0; color: "#d925334b" }
-            GradientStop { position: 1; color: "#bb142034" }
+            GradientStop { position: 0; color: "#d934363b" }
+            GradientStop { position: 1; color: "#c4232529" }
         }
     }
     RowLayout {
@@ -52,9 +47,7 @@ PanelWindow {
                     readonly property bool active: bar.monitor?.activeWorkspace?.id === modelData.id
                     implicitWidth: active ? 46 : 28; implicitHeight: 28
                     Accessible.name: "Workspace " + modelData.id
-                    ToolTip.visible: hovered
-                    ToolTip.text: "Workspace " + modelData.id + " · " + modelData.toplevels.values.length + " finestre"
-                    ToolTip.delay: 500
+                    HintTooltip { target: workspace; hovered: workspace.hovered; text: "Workspace " + workspace.modelData.id + " · " + workspace.modelData.toplevels.values.length + " finestre" }
                     background: Rectangle { radius: 10; color: workspace.hovered || workspace.activeFocus ? Theme.raised : "transparent" }
                     contentItem: Item {
                         Rectangle {
@@ -99,30 +92,20 @@ PanelWindow {
             }
         }
         BarButton {
-            iconName: bar.networkIcon
-            tooltip: bar.connectedDevice ? (bar.wireless ? "Wi-Fi connesso" : "Rete cablata connessa") : "Rete disconnessa"
-            onClicked: ShellState.toggle("network", bar.screen)
-        }
-        BarButton {
-            iconName: Audio.muted || Audio.volume === 0 ? "volume-muted" : Audio.volume < 45 ? "volume-low" : "volume-high"
-            text: Audio.volume + "%"
-            tooltip: Audio.muted ? "Audio disattivato" : "Volume " + Audio.volume + "%"
-            onClicked: ShellState.toggle("audio", bar.screen)
-        }
-        BarButton {
             visible: UPower.displayDevice?.isLaptopBattery ?? false
             iconName: !UPower.onBattery ? "battery-charging" : bar.battery < 20 ? "battery-low" : "battery"
             text: bar.battery + "%"
+            iconAfterText: true
             tooltip: UPower.onBattery ? "Alimentazione a batteria" : "Alimentazione collegata"
             onClicked: ShellState.toggle("battery", bar.screen)
         }
         BarButton {
             iconName: Notices.quiet ? "bell-off" : "bell"
-            text: Notices.notifications.values.length > 0 ? String(Notices.notifications.values.length) : ""
             tooltip: Notices.quiet ? "Notifiche · Non disturbare" : "Notifiche"
             onClicked: ShellState.toggle("notifications", bar.screen)
         }
         BarButton { iconName: "keyboard"; tooltip: "Hints · Scorciatoie"; onClicked: ShellState.toggle("hints", bar.screen) }
+        BarButton { iconName: "controls"; tooltip: "Centro di controllo"; highlighted: ShellState.panel === "controls"; onClicked: ShellState.toggle("controls", bar.screen) }
         BarButton {
             text: Qt.formatDateTime(clock.date, "ddd d MMM  HH:mm")
             tooltip: "Calendario"
