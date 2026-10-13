@@ -32,7 +32,7 @@ Non usare sudo con Stow. `apply` salva eventuali file in conflitto prima di coll
 
 L’angolo top-left alterna Hyprspace e desktop; la barra rilascia spazio e input durante l’overview. HyprCapture segue il puntatore tra monitor: `Super + Shift + S` o `Stamp` aprono la cattura area con editor; `Super + Shift + Alt + S` o `Alt + Stamp` quella del monitor con editor. Hints mostra i bind della sessione attiva, raggruppando screenshot e registrazione in “Cattura schermo”.
 
-La shell supporta italiano e inglese americano, selezionati da `/etc/locale.conf`; testi, calendario e orologio seguono la lingua di sistema. I cataloghi JSON sono in [`desktop/i18n/`](quickshell/.config/quickshell/desktop/i18n); vedere [Lingua dell’interfaccia](docs/configurazione.md#lingua-dellinterfaccia).
+La shell supporta italiano e inglese americano, selezionati da `/etc/locale.conf`; testi, calendario e orologio seguono la lingua di sistema. I cataloghi JSON annidati, con chiavi semantiche come `clipboard.deleteItem`, sono in [`desktop/i18n/`](quickshell/.config/quickshell/desktop/i18n); vedere [Lingua dell’interfaccia](docs/configurazione.md#lingua-dellinterfaccia).
 
 Kitty include il riferimento completo dei default commentati; Fastfetch ha un layout Fedora con palette neutra.
 

@@ -55,13 +55,13 @@ Overlay {
             spacing: 12
             PanelHeader {
                 Layout.fillWidth: true
-                title: I18n.tr("Rete e Wi-Fi")
+                title: I18n.tr("network.title")
                 showBack: true
             }
             InputField {
                 id: search
                 Layout.fillWidth: true
-                placeholderText: I18n.tr("Cerca una rete Wi-Fi…")
+                placeholderText: I18n.tr("network.searchPlaceholder")
             }
             ScrollView {
                 Layout.fillWidth: true
@@ -74,13 +74,13 @@ Overlay {
                     RowLayout {
                         ActionButton {
                             iconName: Networking.wifiEnabled ? "wifi" : "wifi-off"
-                            text: Networking.wifiEnabled ? I18n.tr("Wi-Fi acceso") : I18n.tr("Wi-Fi spento")
+                            text: Networking.wifiEnabled ? I18n.tr("network.wifiOn") : I18n.tr("network.wifiOff")
                             enabled: Networking.wifiHardwareEnabled
                             highlighted: Networking.wifiEnabled
                             onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
                         }
                         Text {
-                            text: I18n.tr(NetworkConnectivity.toString(Networking.connectivity))
+                            text: I18n.networkDescription(NetworkConnectivity.toString(Networking.connectivity))
                             color: Theme.muted
                             font.pixelSize: 11
                             Layout.fillWidth: true
@@ -94,7 +94,7 @@ Overlay {
                             required property var modelData
                             Layout.fillWidth: true
                             Text {
-                                text: deviceRow.modelData.name + " · " + I18n.tr(ConnectionState.toString(deviceRow.modelData.state))
+                                text: deviceRow.modelData.name + " · " + I18n.networkDescription(ConnectionState.toString(deviceRow.modelData.state))
                                 color: Theme.muted
                                 textFormat: Text.PlainText
                                 font.pixelSize: 11
@@ -125,12 +125,12 @@ Overlay {
                                             password.clear();
                                             password.forceActiveFocus();
                                         } else
-                                            root.error = I18n.tr("Per questa rete serve un profilo Enterprise già configurato.");
+                                            root.error = I18n.tr("network.errors.enterpriseProfileRequired");
                                     }
                                     Connections {
                                         target: networkRow.modelData
                                         function onConnectionFailed(reason) {
-                                            root.error = I18n.tr("Connessione fallita: ") + I18n.tr(ConnectionFailReason.toString(reason));
+                                            root.error = I18n.tr("network.connectionFailedPrefix") + I18n.networkDescription(ConnectionFailReason.toString(reason));
                                             if (root.personal(networkRow.modelData) && reason === ConnectionFailReason.NoSecrets) {
                                                 root.passwordNetwork = networkRow.modelData;
                                                 password.clear();
@@ -144,14 +144,14 @@ Overlay {
                     }
                     Text {
                         visible: Networking.devices.values.length === 0
-                        text: I18n.tr("Nessuna interfaccia gestita da NetworkManager")
+                        text: I18n.tr("network.noDevices")
                         color: Theme.muted
                     }
                     ColumnLayout {
                         visible: root.passwordNetwork !== null
                         Layout.fillWidth: true
                         Text {
-                            text: I18n.tr("Password per ") + (root.passwordNetwork?.name ?? "")
+                            text: I18n.tr("network.passwordPrefix") + (root.passwordNetwork?.name ?? "")
                             color: Theme.text
                             textFormat: Text.PlainText
                         }
@@ -159,13 +159,13 @@ Overlay {
                             id: password
                             Layout.fillWidth: true
                             echoMode: TextInput.Password
-                            placeholderText: I18n.tr("Password Wi-Fi")
+                            placeholderText: I18n.tr("network.passwordPlaceholder")
                             onAccepted: connectButton.clicked()
                         }
                         RowLayout {
                             ActionButton {
                                 id: connectButton
-                                text: I18n.tr("Connetti")
+                                text: I18n.tr("network.connect")
                                 enabled: !!root.passwordNetwork && password.text.length > 0
                                 onClicked: if (enabled) {
                                     root.error = "";
@@ -174,7 +174,7 @@ Overlay {
                                 }
                             }
                             ActionButton {
-                                text: I18n.tr("Annulla")
+                                text: I18n.tr("common.cancel")
                                 onClicked: {
                                     root.passwordNetwork = null;
                                     password.clear();

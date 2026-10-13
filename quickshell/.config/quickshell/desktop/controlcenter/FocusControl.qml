@@ -21,12 +21,12 @@ ControlTile {
             Layout.fillWidth: true
             spacing: 3
             Text {
-                text: I18n.tr("Non disturbare")
+                text: I18n.tr("notifications.doNotDisturb")
                 font.pixelSize: 13
                 color: Theme.text
             }
             Text {
-                text: Notices.quiet ? I18n.tr("Popup silenziati") : I18n.tr("Notifiche attive")
+                text: Notices.quiet ? I18n.tr("notifications.silenced") : I18n.tr("notifications.enabled")
                 font.pixelSize: 11
                 color: Theme.muted
             }
@@ -34,7 +34,7 @@ ControlTile {
         ControlSwitch {
             checked: Notices.quiet
             onToggled: Notices.quiet = checked
-            Accessible.name: I18n.tr("Non disturbare")
+            Accessible.name: I18n.tr("notifications.doNotDisturb")
             palette.highlight: Theme.accent
         }
     }

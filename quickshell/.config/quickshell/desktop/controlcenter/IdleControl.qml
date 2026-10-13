@@ -20,12 +20,12 @@ ControlTile {
             Layout.fillWidth: true
             spacing: 3
             Text {
-                text: I18n.tr("Resta attivo")
+                text: I18n.tr("idle.keepAwake")
                 font.pixelSize: 13
                 color: Theme.text
             }
             Text {
-                text: Idle.keepAwake ? I18n.tr("Inattività sospesa") : I18n.tr("Inattività automatica")
+                text: Idle.keepAwake ? I18n.tr("idle.inhibited") : I18n.tr("idle.automatic")
                 font.pixelSize: 11
                 color: Theme.muted
             }
@@ -33,7 +33,7 @@ ControlTile {
         ControlSwitch {
             checked: Idle.keepAwake
             onToggled: Idle.keepAwake = checked
-            Accessible.name: I18n.tr("Resta attivo")
+            Accessible.name: I18n.tr("idle.keepAwake")
         }
     }
 }

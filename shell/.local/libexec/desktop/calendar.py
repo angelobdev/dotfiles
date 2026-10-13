@@ -32,7 +32,7 @@ def occurrence(component, start, end, zone, source_uid):
         return value.as_timet_with_zone(value.get_timezone() or zone) * 1000
     begin, finish = timestamp(start), timestamp(end)
     return dict(id=f'{source_uid}:{component.get_uid()}:{begin}', source=source_uid,
-                title=component.get_summary() or tr('Senza titolo'),
+                title=component.get_summary() or tr('calendar.untitledEvent'),
                 location=component.get_location() or '', start=begin, end=finish,
                 allDay=all_day)
 
@@ -76,7 +76,7 @@ def main():
         start, end = int(sys.argv[1]), int(sys.argv[2])
         wanted = json.loads(sys.argv[3])
         if not 0 <= start < end or end - start > 63 * 86400 or not isinstance(wanted, list) or not all(isinstance(s, str) for s in wanted):
-            raise ValueError(tr('Intervallo o calendari non validi.'))
+            raise ValueError(tr('calendar.errors.invalidRequest'))
         print(json.dumps(read(start, end, wanted), ensure_ascii=False))
         return 0
     except Exception as error:

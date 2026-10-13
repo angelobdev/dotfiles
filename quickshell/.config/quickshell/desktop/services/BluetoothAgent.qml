@@ -64,7 +64,7 @@ Singleton {
                         root.error = data.ok ? "" : data.error;
                     }
                 } catch (e) {
-                    root.error = I18n.tr("Risposta agente Bluetooth non valida.");
+                    root.error = I18n.tr("bluetooth.errors.invalidAgentResponse");
                 }
             }
         }
@@ -72,7 +72,7 @@ Singleton {
             root.registered = false;
             root.prompt = null;
             root.pairing = [];
-            root.error = I18n.tr("Agente Bluetooth non disponibile.");
+            root.error = I18n.tr("bluetooth.errors.agentUnavailable");
         }
     }
     Timer {

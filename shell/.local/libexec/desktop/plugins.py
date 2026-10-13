@@ -25,8 +25,8 @@ def main():
     matches = (rpm == devel == stamp['rpm'] and all(running.get(k) == stamp.get(k) for k in ('version', 'abiHash'))
                and os.path.samefile('/proc/' + str(instance['pid']) + '/exe', '/usr/bin/Hyprland'))
     if not matches:
-        subprocess.run(['notify-send', tr('Plugin Hyprland non caricati'), tr('Hyprland è cambiato. Verificare i pin e ricompilare: docs/plugins.md.')], check=False)
-        sys.exit(tr('Build diversa da quella verificata: autoload sospeso.'))
+        subprocess.run(['notify-send', tr('plugins.notificationTitle'), tr('plugins.errors.rebuildRequired')], check=False)
+        sys.exit(tr('plugins.errors.unverifiedBuild'))
     subprocess.run(['hyprpm', 'reload'], check=True)
 
 

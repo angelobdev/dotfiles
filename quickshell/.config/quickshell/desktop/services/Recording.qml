@@ -62,7 +62,7 @@ Singleton {
                 return;
             const parts = geometry.text.trim().split("|");
             if (parts.length !== 2 || !Quickshell.screens.some(s => s.name === parts[0])) {
-                root.error = I18n.tr("Seleziona un’area contenuta in un solo monitor.");
+                root.error = I18n.tr("recording.areaHint");
                 ShellState.toggle("recording");
                 return;
             }
@@ -81,14 +81,14 @@ Singleton {
                     if (state.error)
                         root.error = state.error;
                 } catch (e) {
-                    root.error = I18n.tr("Risposta del registratore non valida.");
+                    root.error = I18n.tr("recording.errors.invalidResponse");
                 }
             }
         }
         onExited: (code, status) => {
             root.stopping = false;
             if (code !== 0 && !root.error)
-                root.error = I18n.tr("Registrazione interrotta.");
+                root.error = I18n.tr("recording.errors.interrupted");
             if (root.error && ShellState.panel !== "recording")
                 ShellState.toggle("recording");
         }

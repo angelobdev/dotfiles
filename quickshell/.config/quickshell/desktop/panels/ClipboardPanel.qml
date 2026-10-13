@@ -24,17 +24,17 @@ Overlay {
             anchors.margins: 20
             spacing: 12
             PanelHeader {
-                title: I18n.tr("Clipboard")
+                title: I18n.tr("clipboard.title")
                 Layout.fillWidth: true
                 PanelIconButton {
                     iconName: Clipboard.paused ? "play" : "pause"
-                    tooltip: Clipboard.paused ? I18n.tr("Riprendi storico") : I18n.tr("Sospendi storico")
+                    tooltip: Clipboard.paused ? I18n.tr("clipboard.resume") : I18n.tr("clipboard.pause")
                     enabled: Config.clipboardEnabled
                     onClicked: Clipboard.paused = !Clipboard.paused
                 }
                 PanelIconButton {
                     iconName: "trash"
-                    tooltip: I18n.tr("Svuota storico")
+                    tooltip: I18n.tr("clipboard.clearHistory")
                     enabled: !Clipboard.busy && Clipboard.entries.length > 0
                     onClicked: root.confirmClear = !root.confirmClear
                 }
@@ -43,12 +43,12 @@ Overlay {
                 visible: root.confirmClear
                 Layout.fillWidth: true
                 Text {
-                    text: I18n.tr("Eliminare tutto lo storico?")
+                    text: I18n.tr("clipboard.confirmClear")
                     color: Theme.text
                     Layout.fillWidth: true
                 }
                 ActionButton {
-                    text: I18n.tr("Elimina")
+                    text: I18n.tr("common.delete")
                     destructive: true
                     onClicked: {
                         Clipboard.act("clear");
@@ -56,14 +56,14 @@ Overlay {
                     }
                 }
                 ActionButton {
-                    text: I18n.tr("Annulla")
+                    text: I18n.tr("common.cancel")
                     onClicked: root.confirmClear = false
                 }
             }
             InputField {
                 id: search
                 Layout.fillWidth: true
-                placeholderText: I18n.tr("Cerca nello storico…")
+                placeholderText: I18n.tr("clipboard.searchPlaceholder")
                 onTextChanged: clips.currentIndex = 0
                 Keys.onDownPressed: clips.currentIndex = Math.min(clips.count - 1, clips.currentIndex + 1)
                 Keys.onUpPressed: clips.currentIndex = Math.max(0, clips.currentIndex - 1)
@@ -94,7 +94,7 @@ Overlay {
                     }
                     PanelIconButton {
                         iconName: "trash"
-                        tooltip: I18n.tr("Elimina elemento")
+                        tooltip: I18n.tr("clipboard.deleteItem")
                         enabled: !Clipboard.busy
                         onClicked: Clipboard.act("delete", modelData.id)
                     }
@@ -103,14 +103,14 @@ Overlay {
                 Text {
                     anchors.centerIn: parent
                     visible: clips.count === 0
-                    text: I18n.tr("Nessun elemento nello storico")
+                    text: I18n.tr("clipboard.empty")
                     color: Theme.muted
                 }
             }
             Text {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
-                text: Clipboard.error || (!Config.clipboardEnabled ? I18n.tr("Raccolta disabilitata nella configurazione.") : Clipboard.paused ? I18n.tr("Raccolta sospesa. Lo storico rimane disponibile.") : I18n.tr("↑ ↓ seleziona · Invio copia · Esc chiudi Lo storico è salvato sul disco."))
+                text: Clipboard.error || (!Config.clipboardEnabled ? I18n.tr("clipboard.disabled") : Clipboard.paused ? I18n.tr("clipboard.paused") : I18n.tr("clipboard.navigationHint"))
                 color: Clipboard.error ? Theme.danger : Theme.muted
                 font.pixelSize: 12
                 textFormat: Text.PlainText

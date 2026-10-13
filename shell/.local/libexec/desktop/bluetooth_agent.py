@@ -67,7 +67,7 @@ class Agent:
         self.registered = False
         self.finish(False)
         self.pairing.clear()
-        emit(type='status', registered=False, error=tr('Servizio Bluetooth non disponibile.'))
+        emit(type='status', registered=False, error=tr('bluetooth.errors.serviceUnavailable'))
 
     def finish(self, accepted, value='', request_id=None):
         if request_id is not None and (not self.pending or self.pending[0] != request_id):
@@ -79,15 +79,15 @@ class Agent:
         if pending:
             _, method, invocation = pending
             if not accepted:
-                invocation.return_dbus_error('org.bluez.Error.Rejected', tr('Richiesta rifiutata'))
+                invocation.return_dbus_error('org.bluez.Error.Rejected', tr('bluetooth.errors.rejected'))
             elif method == 'RequestPinCode':
                 if not isinstance(value, str) or not 1 <= len(value) <= 16 or '\x00' in value:
-                    invocation.return_dbus_error('org.bluez.Error.Rejected', tr('PIN non valido'))
+                    invocation.return_dbus_error('org.bluez.Error.Rejected', tr('bluetooth.errors.invalidPin'))
                 else:
                     invocation.return_value(GLib.Variant('(s)', (value,)))
             elif method == 'RequestPasskey':
                 if not isinstance(value, str) or not re.fullmatch(r'[0-9]{1,6}', value):
-                    invocation.return_dbus_error('org.bluez.Error.Rejected', tr('Codice non valido'))
+                    invocation.return_dbus_error('org.bluez.Error.Rejected', tr('bluetooth.errors.invalidPasskey'))
                 else:
                     invocation.return_value(GLib.Variant('(u)', (int(value),)))
             else:
@@ -105,21 +105,21 @@ class Agent:
         try:
             owner = self.bus.call_sync('org.freedesktop.DBus', '/org/freedesktop/DBus', 'org.freedesktop.DBus', 'GetNameOwner', GLib.Variant('(s)', ('org.bluez',)), GLib.VariantType.new('(s)'), Gio.DBusCallFlags.NONE, 2000, None).unpack()[0]
             if sender != owner:
-                invocation.return_dbus_error('org.bluez.Error.Rejected', tr('Mittente non autorizzato'))
+                invocation.return_dbus_error('org.bluez.Error.Rejected', tr('bluetooth.errors.unauthorizedSender'))
                 return
         except GLib.Error:
-            invocation.return_dbus_error('org.bluez.Error.Rejected', tr('BlueZ non disponibile'))
+            invocation.return_dbus_error('org.bluez.Error.Rejected', tr('bluetooth.errors.bluezUnavailable'))
             return
         args = parameters.unpack()
         if method in ('Cancel', 'Release'):
             self.finish(False)
             if method == 'Release':
                 self.registered = False
-                emit(type='status', registered=False, error=tr('Agente Bluetooth rilasciato.'))
+                emit(type='status', registered=False, error=tr('bluetooth.errors.agentReleased'))
             invocation.return_value(None)
             return
         if self.pending:
-            invocation.return_dbus_error('org.bluez.Error.Rejected', tr('Un’altra richiesta è già in corso'))
+            invocation.return_dbus_error('org.bluez.Error.Rejected', tr('bluetooth.errors.requestPending'))
             return
         self.sequence += 1
         prompt = dict(id=self.sequence, kind=method, device=args[0], value=args[1] if len(args) > 1 else '', entered=args[2] if len(args) > 2 else 0)
@@ -145,10 +145,10 @@ class Agent:
         elif action in ('pair', 'cancel'):
             path = data.get('device', '')
             if not re.fullmatch(r'/org/bluez/hci[0-9]+/dev_(?:[0-9A-Fa-f]{2}_){5}[0-9A-Fa-f]{2}', path):
-                raise ValueError(tr('Dispositivo Bluetooth non valido'))
+                raise ValueError(tr('bluetooth.errors.invalidDevice'))
             if action == 'pair':
                 if not self.registered:
-                    raise ValueError(tr('Agente Bluetooth non pronto'))
+                    raise ValueError(tr('bluetooth.errors.agentNotReady'))
                 if path in self.pairing:
                     return
                 self.pairing.add(path)

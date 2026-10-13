@@ -58,10 +58,10 @@ Singleton {
                         root.error = data.sources.filter(s => s.error).map(s => s.name + ": " + s.error).join("\n");
                     }
                 } catch (e) {
-                    root.error = I18n.tr("Dati calendario non disponibili.");
+                    root.error = I18n.tr("calendar.errors.unavailable");
                 }
             } else if (!root.error)
-                root.error = I18n.tr("Impossibile leggere i calendari degli Account online.");
+                root.error = I18n.tr("calendar.errors.readFailed");
             if (root.again) {
                 root.again = false;
                 Qt.callLater(root.refresh);
@@ -72,7 +72,7 @@ Singleton {
         id: deadline
         interval: 45000
         onTriggered: {
-            root.error = I18n.tr("Il servizio calendari non risponde. Riprova tra poco.");
+            root.error = I18n.tr("calendar.errors.timeout");
             process.running = false;
         }
     }

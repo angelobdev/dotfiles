@@ -11,26 +11,26 @@ Overlay {
     panelName: "hints"
     property var bindings: []
     property string error: ""
-    readonly property var categories: [I18n.tr("Applicazioni"), I18n.tr("Shell e pannelli"), I18n.tr("Cattura schermo"), I18n.tr("Finestre"), I18n.tr("Workspace"), I18n.tr("Mouse"), I18n.tr("Audio e luminosità"), I18n.tr("Sessione"), I18n.tr("Altro")]
+    readonly property var categories: [I18n.tr("launcher.title"), I18n.tr("hints.categories.shell"), I18n.tr("hints.categories.screenCapture"), I18n.tr("hints.categories.windows"), I18n.tr("hints.categories.workspaces"), I18n.tr("hints.categories.mouse"), I18n.tr("hints.categories.audioBrightness"), I18n.tr("session.title"), I18n.tr("hints.categories.other")]
     function category(bind) {
         const name = (bind.description || "").toLowerCase();
         if ((bind.key || "").startsWith("XF86Audio") || (bind.key || "").startsWith("XF86MonBrightness"))
-            return I18n.tr("Audio e luminosità");
+            return I18n.tr("hints.categories.audioBrightness");
         if ((bind.key || "").startsWith("mouse:"))
-            return I18n.tr("Mouse");
+            return I18n.tr("hints.categories.mouse");
         if (/screenshot|registrazione/.test(name))
-            return I18n.tr("Cattura schermo");
+            return I18n.tr("hints.categories.screenCapture");
         if (/workspace|scratchpad/.test(name))
-            return I18n.tr("Workspace");
+            return I18n.tr("hints.categories.workspaces");
         if (/blocca|sospendi|logout|riavvio|spegni|sessione/.test(name))
-            return I18n.tr("Sessione");
+            return I18n.tr("session.title");
         if (/applicazioni|centro di controllo|notifiche|quickshell|rete|wi-fi|volume e|batteria|calendario|hints|sfondo|clipboard/.test(name))
-            return I18n.tr("Shell e pannelli");
+            return I18n.tr("hints.categories.shell");
         if (/browser|terminale|kitty|1password/.test(name))
-            return I18n.tr("Applicazioni");
+            return I18n.tr("launcher.title");
         if (/finestra|focus|floating|fullscreen|schermo intero|^sposta |tiling|split|pseudo/.test(name))
-            return I18n.tr("Finestre");
-        return I18n.tr("Altro");
+            return I18n.tr("hints.categories.windows");
+        return I18n.tr("hints.categories.other");
     }
     function shortcut(bind) {
         const parts = [];
@@ -38,16 +38,16 @@ Overlay {
             if ((bind.modmask & mask) !== 0)
                 parts.push(label);
         const names = {
-            Return: I18n.tr("Invio"),
-            Print: I18n.tr("Stamp"),
-            Space: I18n.tr("Spazio"),
-            space: I18n.tr("Spazio"),
+            Return: I18n.tr("keys.enter"),
+            Print: I18n.tr("keys.print"),
+            Space: I18n.tr("keys.space"),
+            space: I18n.tr("keys.space"),
             left: "←",
             right: "→",
             up: "↑",
             down: "↓",
-            "mouse:272": I18n.tr("Mouse sinistro"),
-            "mouse:273": I18n.tr("Mouse destro")
+            "mouse:272": I18n.tr("keys.leftMouse"),
+            "mouse:273": I18n.tr("keys.rightMouse")
         };
         parts.push(names[bind.key] || bind.key || ("code:" + bind.keycode));
         return parts.join(" + ");
@@ -89,13 +89,13 @@ Overlay {
                                 category: root.category(b)
                             })).sort((a, b) => root.categories.indexOf(a.category) - root.categories.indexOf(b.category));
                 } catch (e) {
-                    root.error = I18n.tr("Impossibile leggere i bind di Hyprland.");
+                    root.error = I18n.tr("hints.errors.readFailed");
                 }
             }
         }
         onExited: (code, status) => {
             if (code !== 0)
-                root.error = I18n.tr("Hyprland non ha restituito i bind attivi.");
+                root.error = I18n.tr("hints.errors.noBindings");
         }
     }
     Card {
@@ -109,22 +109,22 @@ Overlay {
             }
             spacing: 14
             Heading {
-                text: I18n.tr("Hints · Scorciatoie tastiera")
+                text: I18n.tr("hints.title")
             }
             InputField {
                 id: search
                 Layout.fillWidth: true
-                placeholderText: I18n.tr("Cerca una scorciatoia o un’azione…")
+                placeholderText: I18n.tr("hints.searchPlaceholder")
             }
             RowLayout {
                 Text {
-                    text: I18n.tr("Scorciatoia")
+                    text: I18n.tr("hints.shortcutColumn")
                     Layout.preferredWidth: 280
                     color: Theme.muted
                     font.pixelSize: 12
                 }
                 Text {
-                    text: I18n.tr("Azione")
+                    text: I18n.tr("hints.actionColumn")
                     color: Theme.muted
                     font.pixelSize: 12
                 }
@@ -179,7 +179,7 @@ Overlay {
                         }
                         Text {
                             id: description
-                            text: modelData.name + (modelData.submap ? " [" + modelData.submap + "]" : "") + (modelData.release ? I18n.tr(" · al rilascio") : "")
+                            text: modelData.name + (modelData.submap ? " [" + modelData.submap + "]" : "") + (modelData.release ? I18n.tr("hints.releaseSuffix") : "")
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             color: Theme.text
@@ -197,12 +197,12 @@ Overlay {
             }
             Text {
                 visible: !reader.running && list.count === 0 && !root.error
-                text: I18n.tr("Nessuna scorciatoia trovata")
+                text: I18n.tr("hints.empty")
                 color: Theme.muted
             }
             RowLayout {
                 Text {
-                    text: I18n.plural("%1 scorciatoia dalla sessione attiva", "%1 scorciatoie dalla sessione attiva", root.bindings.length)
+                    text: I18n.plural("hints.shortcutCount.one", "hints.shortcutCount.other", root.bindings.length)
                     color: Theme.muted
                     font.pixelSize: 12
                 }
@@ -210,7 +210,7 @@ Overlay {
                     Layout.fillWidth: true
                 }
                 ActionButton {
-                    text: I18n.tr("Chiudi")
+                    text: I18n.tr("common.close")
                     onClicked: ShellState.close()
                 }
             }

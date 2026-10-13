@@ -59,7 +59,7 @@ PanelWindow {
                         Layout.fillWidth: true
                     }
                     Text {
-                        text: Osd.muted ? I18n.tr("Disattivato") : Osd.percent + "%"
+                        text: Osd.muted ? I18n.tr("audio.muted") : Osd.percent + "%"
                         color: Theme.text
                         font.family: Theme.font
                         font.pixelSize: 12

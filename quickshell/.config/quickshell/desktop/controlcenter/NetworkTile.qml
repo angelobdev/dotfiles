@@ -18,14 +18,14 @@ ControlTile {
             Layout.fillWidth: true
             alignLeft: true
             iconName: root.device?.type === DeviceType.Ethernet ? "ethernet" : "wifi"
-            text: I18n.tr("Rete")
-            tooltip: I18n.tr("Reti e Wi-Fi")
+            text: I18n.tr("network.label")
+            tooltip: I18n.tr("network.tooltip")
             onClicked: ShellState.toggle("network", ShellState.activeScreen)
         }
         Text {
             Layout.fillWidth: true
             Layout.leftMargin: 12
-            text: network?.name || (Networking.wifiEnabled ? I18n.tr("Non connesso") : I18n.tr("Wi-Fi spento"))
+            text: network?.name || (Networking.wifiEnabled ? I18n.tr("network.notConnected") : I18n.tr("network.wifiOff"))
             elide: Text.ElideRight
             color: Theme.muted
             font.pixelSize: 11

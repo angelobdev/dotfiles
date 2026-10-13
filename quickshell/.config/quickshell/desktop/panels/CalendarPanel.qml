@@ -34,9 +34,9 @@ Overlay {
     }
     function eventTime(event) {
         if (event.allDay)
-            return I18n.tr("Tutto il giorno");
+            return I18n.tr("calendar.allDay");
         const start = new Date(event.start), end = new Date(event.end);
-        const format = I18n.tr(sameDay(start, end) ? "time.format" : "datetime.format");
+        const format = I18n.tr(sameDay(start, end) ? "calendar.timeFormat" : "calendar.dateTimeFormat");
         return locale.toString(start, format) + " – " + locale.toString(end, format);
     }
     function sameDay(a, b) {
@@ -95,12 +95,12 @@ Overlay {
                 }
                 spacing: 14
                 Heading {
-                    text: I18n.tr("Calendario")
+                    text: I18n.tr("calendar.title")
                 }
                 RowLayout {
                     PanelIconButton {
                         iconName: "chevron-left"
-                        tooltip: I18n.tr("Mese precedente")
+                        tooltip: I18n.tr("calendar.previousMonth")
                         onClicked: root.shiftMonth(-1)
                     }
                     Text {
@@ -113,7 +113,7 @@ Overlay {
                     }
                     PanelIconButton {
                         iconName: "chevron-right"
-                        tooltip: I18n.tr("Mese successivo")
+                        tooltip: I18n.tr("calendar.nextMonth")
                         onClicked: root.shiftMonth(1)
                     }
                 }
@@ -145,7 +145,7 @@ Overlay {
                             text: modelData.getDate()
                             highlighted: root.sameDay(modelData, root.selected)
                             opacity: modelData.getMonth() === root.month ? 1 : 0.4
-                            tooltip: root.locale.toString(modelData, I18n.tr("date.longFormat")) + (root.sameDay(modelData, clock.date) ? I18n.tr(" · Oggi") : "")
+                            tooltip: root.locale.toString(modelData, I18n.tr("calendar.longDateFormat")) + (root.sameDay(modelData, clock.date) ? I18n.tr("calendar.todaySuffix") : "")
                             onClicked: {
                                 root.selected = modelData;
                                 keyboard.forceActiveFocus();
@@ -165,7 +165,7 @@ Overlay {
                 }
                 Text {
                     Layout.fillWidth: true
-                    text: root.locale.toString(root.selected, I18n.tr("date.longFormat"))
+                    text: root.locale.toString(root.selected, I18n.tr("calendar.longDateFormat"))
                     color: Theme.text
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -240,7 +240,7 @@ Overlay {
                         }
                         Text {
                             visible: Calendar.forDay(root.selected).length === 0
-                            text: Calendar.busy ? I18n.tr("Lettura calendari…") : Calendar.sources.length ? I18n.tr("Nessun evento per questo giorno") : I18n.tr("Nessun calendario disponibile negli Account online")
+                            text: Calendar.busy ? I18n.tr("calendar.loading") : Calendar.sources.length ? I18n.tr("calendar.noEvents") : I18n.tr("calendar.noCalendars")
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             color: Theme.muted
@@ -258,14 +258,14 @@ Overlay {
                 }
                 RowLayout {
                     ActionButton {
-                        text: I18n.tr("Oggi")
+                        text: I18n.tr("calendar.today")
                         onClicked: {
                             root.today();
                             keyboard.forceActiveFocus();
                         }
                     }
                     ActionButton {
-                        text: I18n.tr("Aggiorna")
+                        text: I18n.tr("common.refresh")
                         enabled: !Calendar.busy
                         onClicked: root.loadEvents()
                     }
@@ -273,12 +273,12 @@ Overlay {
                         Layout.fillWidth: true
                     }
                     ActionButton {
-                        text: I18n.tr("Chiudi")
+                        text: I18n.tr("common.close")
                         onClicked: ShellState.close()
                     }
                 }
                 Text {
-                    text: I18n.tr("Frecce: giorno · PgUp/PgDn: mese · Home: oggi")
+                    text: I18n.tr("calendar.navigationHint")
                     color: Theme.muted
                     font.pixelSize: 11
                 }

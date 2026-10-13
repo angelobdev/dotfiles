@@ -61,18 +61,18 @@ ShellRoot {
                 anchors.margins: 22
                 spacing: 14
                 Heading {
-                    text: I18n.tr("Condividi lo schermo")
+                    text: I18n.tr("sharing.title")
                 }
                 Text {
                     Layout.fillWidth: true
                     wrapMode: Text.Wrap
-                    text: I18n.tr("Scegli il monitor o la finestra da rendere visibile all’applicazione.")
+                    text: I18n.tr("sharing.chooseSourceHint")
                     color: Theme.muted
                     font.pixelSize: 13
                 }
                 RowLayout {
                     ActionButton {
-                        text: I18n.tr("Monitor")
+                        text: I18n.tr("recording.display")
                         highlighted: !root.windowTab
                         onClicked: {
                             root.windowTab = false;
@@ -80,7 +80,7 @@ ShellRoot {
                         }
                     }
                     ActionButton {
-                        text: I18n.tr("Finestre")
+                        text: I18n.tr("hints.categories.windows")
                         highlighted: root.windowTab
                         onClicked: {
                             root.windowTab = true;
@@ -91,7 +91,7 @@ ShellRoot {
                 InputField {
                     id: search
                     Layout.fillWidth: true
-                    placeholderText: I18n.tr("Cerca…")
+                    placeholderText: I18n.tr("common.searchPlaceholder")
                     Keys.onDownPressed: choices.currentIndex = Math.min(choices.count - 1, choices.currentIndex + 1)
                     Keys.onUpPressed: choices.currentIndex = Math.max(0, choices.currentIndex - 1)
                     onTextChanged: choices.currentIndex = 0
@@ -140,14 +140,14 @@ ShellRoot {
                     Text {
                         anchors.centerIn: parent
                         visible: choices.count === 0
-                        text: I18n.tr("Nessuna sorgente disponibile")
+                        text: I18n.tr("sharing.noSources")
                         color: Theme.muted
                     }
                 }
                 RowLayout {
                     visible: Quickshell.env("DESKTOP_SHARE_ALLOW_TOKEN") === "1"
                     Text {
-                        text: I18n.tr("Ricorda la scelta per questa applicazione")
+                        text: I18n.tr("sharing.rememberChoice")
                         color: Theme.muted
                         Layout.fillWidth: true
                         font.pixelSize: 12
@@ -161,11 +161,11 @@ ShellRoot {
                         Layout.fillWidth: true
                     }
                     ActionButton {
-                        text: I18n.tr("Annulla")
+                        text: I18n.tr("common.cancel")
                         onClicked: Qt.quit()
                     }
                     ActionButton {
-                        text: I18n.tr("Condividi")
+                        text: I18n.tr("sharing.share")
                         highlighted: true
                         enabled: !!root.chosenId
                         onClicked: root.accept()

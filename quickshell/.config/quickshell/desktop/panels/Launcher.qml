@@ -37,12 +37,12 @@ Overlay {
             }
             spacing: 14
             Heading {
-                text: I18n.tr("Applicazioni")
+                text: I18n.tr("launcher.title")
             }
             InputField {
                 id: search
                 Layout.fillWidth: true
-                placeholderText: I18n.tr("Cerca un’applicazione…")
+                placeholderText: I18n.tr("launcher.searchPlaceholder")
                 color: Theme.text
                 font.family: Theme.font
                 onTextChanged: apps.currentIndex = 0
@@ -65,7 +65,7 @@ Overlay {
                     iconSource: Quickshell.iconPath(modelData.icon, "application-x-executable")
                     iconSize: 30
                     alignLeft: true
-                    text: modelData.name + (modelData.runInTerminal ? I18n.tr("  [terminale]") : "")
+                    text: modelData.name + (modelData.runInTerminal ? I18n.tr("launcher.terminalSuffix") : "")
                     highlighted: apps.currentIndex === index
                     onClicked: root.launch(modelData)
                 }
@@ -73,12 +73,12 @@ Overlay {
                 Text {
                     anchors.centerIn: parent
                     visible: apps.count === 0
-                    text: I18n.tr("Nessuna applicazione")
+                    text: I18n.tr("launcher.empty")
                     color: Theme.muted
                 }
             }
             Text {
-                text: I18n.tr("↑ ↓ seleziona    Invio apri    Esc chiudi")
+                text: I18n.tr("launcher.navigationHint")
                 color: Theme.muted
                 font.pixelSize: 12
             }

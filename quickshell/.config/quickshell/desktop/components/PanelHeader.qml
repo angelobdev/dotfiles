@@ -11,7 +11,7 @@ RowLayout {
     PanelIconButton {
         visible: root.showBack
         iconName: "arrow-left"
-        tooltip: I18n.tr("Centro di controllo")
+        tooltip: I18n.tr("controlCenter.title")
         onClicked: ShellState.toggle("controls", ShellState.activeScreen)
     }
     Heading {
@@ -27,7 +27,7 @@ RowLayout {
     }
     PanelIconButton {
         iconName: "close"
-        tooltip: I18n.tr("Chiudi")
+        tooltip: I18n.tr("common.close")
         onClicked: ShellState.close()
     }
 }

@@ -17,16 +17,16 @@ Overlay {
             spacing: 14
             PanelHeader {
                 Layout.fillWidth: true
-                title: I18n.tr("Notifiche")
+                title: I18n.tr("notifications.title")
                 PanelIconButton {
                     iconName: Notices.quiet ? "bell-off" : "bell"
-                    tooltip: I18n.tr("Non disturbare")
+                    tooltip: I18n.tr("notifications.doNotDisturb")
                     highlighted: Notices.quiet
                     onClicked: Notices.quiet = !Notices.quiet
                 }
                 PanelIconButton {
                     iconName: "trash"
-                    tooltip: I18n.tr("Elimina tutte")
+                    tooltip: I18n.tr("notifications.clearAll")
                     enabled: Notices.notifications.values.length > 0
                     onClicked: Notices.clear()
                 }
@@ -46,7 +46,7 @@ Overlay {
                 ScrollBar.vertical: ScrollBar {}
                 Text {
                     anchors.centerIn: parent
-                    text: I18n.tr("Nessuna notifica")
+                    text: I18n.tr("notifications.empty")
                     visible: list.count === 0
                     color: Theme.muted
                 }

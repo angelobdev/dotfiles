@@ -38,7 +38,7 @@ def main():
         subprocess.run(['cliphist', 'wipe'], check=True, stdout=subprocess.DEVNULL)
     else:
         if not args.value or not re.fullmatch(r'[0-9]+', args.value):
-            parser.error(tr('Identificatore clipboard non valido'))
+            parser.error(tr('clipboard.errors.invalidId'))
         if args.action == 'copy':
             decoded = subprocess.run(['cliphist', 'decode', args.value], capture_output=True, check=True)
             subprocess.run(['wl-copy'], input=decoded.stdout, check=True)
@@ -50,5 +50,5 @@ if __name__ == '__main__':
     try:
         main()
     except (OSError, ValueError, subprocess.CalledProcessError):
-        print(tr('Operazione clipboard non riuscita. Verifica cliphist e wl-clipboard.'), file=sys.stderr)
+        print(tr('clipboard.errors.operationFailed'), file=sys.stderr)
         sys.exit(1)

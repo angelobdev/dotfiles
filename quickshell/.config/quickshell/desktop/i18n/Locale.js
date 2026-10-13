@@ -23,3 +23,13 @@ function format(message, args) {
         return value === undefined ? token : String(value);
     });
 }
+
+// Resolve a dotted semantic key through a nested JSON catalog.
+function lookup(catalog, key) {
+    let value = catalog;
+    for (const segment of String(key).split(".")) {
+        if (!value || typeof value !== "object" || !Object.prototype.hasOwnProperty.call(value, segment)) return undefined;
+        value = value[segment];
+    }
+    return typeof value === "string" ? value : undefined;
+}

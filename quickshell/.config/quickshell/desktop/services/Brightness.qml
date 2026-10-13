@@ -135,7 +135,7 @@ Singleton {
                     if (levels && typeof levels === "object" && !Array.isArray(levels))
                         root.applyBacklights(levels);
                 } catch (e) {
-                    console.warn(I18n.tr("Lettura backlight OSD non valida."));
+                    console.warn(I18n.tr("brightness.errors.invalidOsdReading"));
                 }
             }
         }
@@ -163,15 +163,15 @@ Singleton {
                         if (!writer.running && Object.keys(root.pending).length === 0)
                             root.requested = ({});
                     } else
-                        root.error = data.error || I18n.tr("Lettura luminosità fallita.");
+                        root.error = data.error || I18n.tr("brightness.errors.readingFailed");
                 } catch (e) {
-                    root.error = I18n.tr("Impossibile leggere la luminosità.");
+                    root.error = I18n.tr("brightness.errors.readFailed");
                 }
             }
         }
         onExited: (code, status) => {
             if (code !== 0 && root.error === "")
-                root.error = I18n.tr("Lettura luminosità fallita.");
+                root.error = I18n.tr("brightness.errors.readingFailed");
             if (Object.keys(root.pending).length > 0 && !throttle.running)
                 Qt.callLater(root.flush);
         }
@@ -186,13 +186,13 @@ Singleton {
                     if (data.error)
                         writer.failure = data.error;
                 } catch (e) {
-                    writer.failure = I18n.tr("Impossibile impostare la luminosità.");
+                    writer.failure = I18n.tr("brightness.errors.setFailed");
                 }
             }
         }
         onExited: (code, status) => {
             if (code !== 0 || failure !== "") {
-                root.error = failure || I18n.tr("Modifica luminosità fallita.");
+                root.error = failure || I18n.tr("brightness.errors.changeFailed");
                 if (root.inFlight && !root.pending[root.inFlight.name]) {
                     const next = Object.assign({}, root.requested);
                     delete next[root.inFlight.name];

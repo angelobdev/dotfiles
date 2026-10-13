@@ -52,7 +52,7 @@ ControlTile {
                 Text {
                     Layout.fillWidth: true
                     elide: Text.ElideRight
-                    text: root.player?.trackTitle || root.player?.identity || I18n.tr("Multimedia")
+                    text: root.player?.trackTitle || root.player?.identity || I18n.tr("media.title")
                     color: Theme.text
                     font.weight: Font.DemiBold
                     textFormat: Text.PlainText
@@ -60,7 +60,7 @@ ControlTile {
                 Text {
                     Layout.fillWidth: true
                     elide: Text.ElideRight
-                    text: root.player ? [root.player.trackArtist, root.player.identity].filter(Boolean).join(" · ") : I18n.tr("Nessuna riproduzione disponibile")
+                    text: root.player ? [root.player.trackArtist, root.player.identity].filter(Boolean).join(" · ") : I18n.tr("media.unavailable")
                     color: Theme.muted
                     font.pixelSize: 11
                     textFormat: Text.PlainText
@@ -69,7 +69,7 @@ ControlTile {
             CompactIconButton {
                 visible: Media.players.length > 1
                 iconName: root.expanded ? "chevron-up" : "chevron-down"
-                tooltip: I18n.tr("Scegli lettore")
+                tooltip: I18n.tr("media.choosePlayer")
                 onClicked: root.expanded = !root.expanded
             }
         }
@@ -77,19 +77,19 @@ ControlTile {
             Layout.alignment: Qt.AlignHCenter
             PanelIconButton {
                 iconName: "previous"
-                tooltip: I18n.tr("Precedente")
+                tooltip: I18n.tr("media.previous")
                 enabled: root.player?.canGoPrevious ?? false
                 onClicked: root.player.previous()
             }
             ActionButton {
                 iconName: root.player?.isPlaying ? "pause" : "play"
-                tooltip: root.player?.isPlaying ? I18n.tr("Pausa") : I18n.tr("Riproduci")
+                tooltip: root.player?.isPlaying ? I18n.tr("media.pause") : I18n.tr("media.play")
                 enabled: root.player?.canTogglePlaying ?? false
                 onClicked: root.player.togglePlaying()
             }
             PanelIconButton {
                 iconName: "next"
-                tooltip: I18n.tr("Successivo")
+                tooltip: I18n.tr("media.next")
                 enabled: root.player?.canGoNext ?? false
                 onClicked: root.player.next()
             }
@@ -101,7 +101,7 @@ ControlTile {
             enabled: !!root.player?.canSeek && !!root.player?.positionSupported
             to: Math.max(1, root.player?.length ?? 1)
             value: root.position
-            Accessible.name: I18n.tr("Posizione riproduzione")
+            Accessible.name: I18n.tr("media.position")
             onMoved: root.position = value
             onPressedChanged: if (!pressed && enabled && root.player)
                 root.player.position = value

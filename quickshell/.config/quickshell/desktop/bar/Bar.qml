@@ -99,7 +99,7 @@ PanelWindow {
             iconSource: Quickshell.iconPath("fedora-logo-icon", "start-here")
             iconSize: 18
             implicitWidth: 32
-            tooltip: I18n.tr("Applicazioni")
+            tooltip: I18n.tr("launcher.title")
             onClicked: ShellState.toggle("launcher", bar.screen)
         }
         WorkspaceStrip {
@@ -113,7 +113,7 @@ PanelWindow {
             Layout.fillWidth: true
             Layout.minimumWidth: 0
             Layout.leftMargin: 12
-            text: Hyprland.activeToplevel?.title ?? I18n.tr("Desktop")
+            text: Hyprland.activeToplevel?.title ?? I18n.tr("bar.desktop")
             elide: Text.ElideRight
             textFormat: Text.PlainText
             color: Theme.muted
@@ -161,19 +161,19 @@ PanelWindow {
             iconName: "record"
             destructive: true
             text: Recording.elapsed
-            tooltip: I18n.tr("Registrazione in corso · Clic per fermare e salvare")
+            tooltip: I18n.tr("recording.barTooltip")
             onClicked: Recording.stop()
         }
         BarButton {
             id: batteryButton
             readonly property string profileIcon: PowerProfiles.profile === PowerProfile.PowerSaver ? "leaf" : PowerProfiles.profile === PowerProfile.Performance ? "performance" : ""
-            readonly property string profileLabel: PowerProfiles.profile === PowerProfile.PowerSaver ? I18n.tr("Risparmio energetico") : PowerProfiles.profile === PowerProfile.Performance ? I18n.tr("Prestazioni") : PowerProfiles.profile === PowerProfile.Balanced ? I18n.tr("Bilanciato") : I18n.tr("Profilo non disponibile")
+            readonly property string profileLabel: PowerProfiles.profile === PowerProfile.PowerSaver ? I18n.tr("battery.profiles.powerSaver") : PowerProfiles.profile === PowerProfile.Performance ? I18n.tr("battery.profiles.performance") : PowerProfiles.profile === PowerProfile.Balanced ? I18n.tr("battery.profiles.balanced") : I18n.tr("battery.profileUnavailable")
             visible: UPower.displayDevice?.isLaptopBattery ?? false
             iconName: !UPower.onBattery ? "battery-charging" : bar.battery < 20 ? "battery-low" : "battery"
             text: bar.battery + "%"
             implicitWidth: batteryContent.implicitWidth + leftPadding + rightPadding
-            tooltip: (UPower.onBattery ? I18n.tr("Alimentazione a batteria") : I18n.tr("Alimentazione collegata")) + " · " + profileLabel
-            Accessible.name: I18n.tr("Batteria ") + text + " · " + profileLabel
+            tooltip: (UPower.onBattery ? I18n.tr("battery.onBattery") : I18n.tr("battery.pluggedIn")) + " · " + profileLabel
+            Accessible.name: I18n.tr("battery.accessiblePrefix") + text + " · " + profileLabel
             contentItem: RowLayout {
                 id: batteryContent
                 spacing: 6
@@ -204,30 +204,30 @@ PanelWindow {
         }
         BarButton {
             iconName: "keyboard"
-            tooltip: I18n.tr("Hints · Scorciatoie")
+            tooltip: I18n.tr("hints.tooltip")
             onClicked: ShellState.toggle("hints", bar.screen)
         }
         BarButton {
             iconName: Notices.quiet ? "bell-off" : "bell"
-            tooltip: Notices.quiet ? I18n.tr("Notifiche · Non disturbare") : I18n.tr("Notifiche")
+            tooltip: Notices.quiet ? I18n.tr("notifications.quietTooltip") : I18n.tr("notifications.title")
             onClicked: ShellState.toggle("notifications", bar.screen)
         }
         BarButton {
             iconName: "controls"
-            tooltip: I18n.tr("Centro di controllo")
+            tooltip: I18n.tr("controlCenter.title")
             highlighted: ShellState.panel === "controls"
             onClicked: ShellState.toggle("controls", bar.screen)
         }
         BarButton {
             text: I18n.locale.toString(clock.date, I18n.tr("bar.clockFormat"))
-            tooltip: I18n.tr("Calendario")
+            tooltip: I18n.tr("calendar.title")
             onClicked: ShellState.toggle("calendar", bar.screen)
             Layout.leftMargin: 3
             Layout.rightMargin: 3
         }
         BarButton {
             iconName: "power"
-            tooltip: I18n.tr("Sessione")
+            tooltip: I18n.tr("session.title")
             onClicked: ShellState.toggle("power", bar.screen)
         }
     }

@@ -63,7 +63,7 @@ RowLayout {
             HintTooltip {
                 target: workspace
                 hovered: workspace.hovered
-                text: I18n.tr(workspace.modelData.count === 1 ? "Workspace %1 · %2 finestra" : "Workspace %1 · %2 finestre", [workspace.modelData.id, workspace.modelData.count])
+                text: I18n.tr(workspace.modelData.count === 1 ? "workspaces.windowCount.one" : "workspaces.windowCount.other", [workspace.modelData.id, workspace.modelData.count])
             }
             background: Rectangle {
                 radius: 10

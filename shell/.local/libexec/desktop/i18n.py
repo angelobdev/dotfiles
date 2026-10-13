@@ -52,16 +52,30 @@ def catalog(lang):
         return {}
 
 
-def tr(message, args=()):
-    translated = catalog(language()).get(message, catalog('en_US').get(message, message))
+def lookup(data, key):
+    """Resolve a dotted semantic key; branches and missing keys are not messages."""
+    value = data
+    for segment in key.split('.'):
+        if not isinstance(value, dict) or segment not in value:
+            return None
+        value = value[segment]
+    return value if isinstance(value, str) else None
+
+
+def tr(key, args=()):
+    translated = lookup(catalog(language()), key)
+    if translated is None:
+        translated = lookup(catalog('en_US'), key)
+    if translated is None:
+        translated = key
     return re.sub(r'%([1-9][0-9]*)', lambda m: str(args[int(m[1]) - 1]) if int(m[1]) <= len(args) else m[0], translated)
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        sys.exit('Usage: i18n.py MESSAGE [ARGUMENTS...]')
+        sys.exit('Usage: i18n.py KEY [ARGUMENTS...]')
     if sys.argv[1] == '--notify':
         if len(sys.argv) != 4:
-            sys.exit('Usage: i18n.py --notify TITLE MESSAGE')
+            sys.exit('Usage: i18n.py --notify TITLE_KEY MESSAGE_KEY')
         sys.exit(subprocess.run(['notify-send', tr(sys.argv[2]), tr(sys.argv[3])]).returncode)
     print(tr(sys.argv[1], sys.argv[2:]))

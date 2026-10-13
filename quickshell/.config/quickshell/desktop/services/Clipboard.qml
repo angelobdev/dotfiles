@@ -65,7 +65,7 @@ Singleton {
                     root.entries = JSON.parse(data.text);
                     root.error = "";
                 } catch (e) {
-                    root.error = I18n.tr("Storico clipboard non disponibile.");
+                    root.error = I18n.tr("clipboard.errors.historyUnavailable");
                 }
             } else
                 root.error = listingErrors.text.trim();

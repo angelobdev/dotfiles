@@ -41,9 +41,22 @@ I due cataloghi condividono le stesse chiavi:
 - [`it_IT.json`](../quickshell/.config/quickshell/desktop/i18n/it_IT.json)
 - [`en_US.json`](../quickshell/.config/quickshell/desktop/i18n/en_US.json)
 
-Per aggiungere un testo, inserire la stessa chiave in entrambi i file e usare `I18n.tr("Chiave")` in QML oppure `tr('Chiave')` negli helper Python. I parametri usano `%1`, `%2`, ecc., ad esempio `I18n.tr("Sposta al workspace %1", [4])`. Per singolare/plurale usare `I18n.plural(chiaveSingolare, chiavePlurale, numero)`: `%1` riceve il numero. Una chiave mancante ricade sul catalogo inglese e poi sulla chiave stessa. Non tradurre identificatori interni, comandi o nomi dei protocolli.
+I cataloghi sono oggetti JSON annidati, organizzati per funzione, con chiavi inglesi in camelCase indipendenti dal testo tradotto:
 
-`python3 scripts/check-i18n.py`, incluso in `./scripts/check.sh`, verifica selezione della lingua, parità delle chiavi, parametri e riferimenti letterali QML. Dopo aver aggiunto file ripetere Stow; dopo modifiche al codice del singleton riavviare la shell.
+```json
+{
+  "clipboard": {
+    "title": "Clipboard",
+    "deleteItem": "Delete item"
+  }
+}
+```
+
+Per aggiungere un testo, inserire lo stesso percorso in entrambi i file e usare `I18n.tr("clipboard.deleteItem")` in QML oppure `tr('clipboard.deleteItem')` negli helper Python. I parametri usano `%1`, `%2`, ecc., ad esempio `I18n.tr("bindings.moveToWorkspace", [4])`. Per singolare/plurale usare `I18n.plural("bluetooth.connectedCount.one", "bluetooth.connectedCount.other", numero)`: `%1` riceve il numero. Una chiave mancante ricade sul catalogo inglese e poi sul percorso stesso, utile per individuare omissioni. Non usare frasi originali come chiavi e non tradurre identificatori interni, comandi o nomi dei protocolli.
+
+`i18n/Sources.js` associa le descrizioni esterne dei bind Hyprland e degli stati di rete ai percorsi semantici. Queste stringhe sono dati in ingresso dalle API; i cataloghi e le chiamate `tr()` usano esclusivamente chiavi semantiche. Le descrizioni personalizzate sconosciute vengono conservate.
+
+`python3 scripts/check-i18n.py`, incluso in `./scripts/check.sh`, verifica selezione della lingua, struttura e parità delle chiavi annidate, parametri, fallback e riferimenti QML/Python/comandi/adattatori. Dopo aver aggiunto file ripetere Stow; dopo modifiche al codice del singleton riavviare la shell.
 
 ## Configurazione del Control Center
 

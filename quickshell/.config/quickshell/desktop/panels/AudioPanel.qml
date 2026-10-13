@@ -18,7 +18,7 @@ Overlay {
             }
             spacing: 14
             Heading {
-                text: I18n.tr("Volume e dispositivi")
+                text: I18n.tr("audio.panelTitle")
             }
             ScrollView {
                 Layout.fillWidth: true
@@ -29,12 +29,12 @@ Overlay {
                     width: parent.width
                     spacing: 12
                     Heading {
-                        text: I18n.tr("Uscita")
+                        text: I18n.tr("audio.output")
                     }
                     RowLayout {
                         ActionButton {
                             iconName: Audio.muted ? "volume-muted" : "volume-high"
-                            tooltip: I18n.tr("Attiva/disattiva audio")
+                            tooltip: I18n.tr("audio.toggleMute")
                             enabled: !!Audio.sink
                             highlighted: Audio.muted
                             onClicked: Audio.toggleMute()
@@ -70,17 +70,17 @@ Overlay {
                     }
                     Text {
                         visible: Audio.outputs.length === 0
-                        text: I18n.tr("Nessuna uscita audio disponibile")
+                        text: I18n.tr("audio.noOutputs")
                         color: Theme.muted
                     }
                     Heading {
-                        text: I18n.tr("Ingresso")
+                        text: I18n.tr("audio.input")
                         Layout.topMargin: 12
                     }
                     RowLayout {
                         ActionButton {
                             iconName: "microphone"
-                            tooltip: I18n.tr("Attiva/disattiva microfono")
+                            tooltip: I18n.tr("audio.toggleMicrophone")
                             enabled: !!Audio.source
                             highlighted: Audio.source?.audio?.muted ?? false
                             onClicked: Audio.toggleMic()
@@ -116,13 +116,13 @@ Overlay {
                     }
                     Text {
                         visible: Audio.inputs.length === 0
-                        text: I18n.tr("Nessun ingresso audio disponibile")
+                        text: I18n.tr("audio.noInputs")
                         color: Theme.muted
                     }
                     Text {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
-                        text: I18n.tr("Seleziona il dispositivo predefinito. Il routing degli stream è gestito da WirePlumber.")
+                        text: I18n.tr("audio.routingHint")
                         color: Theme.muted
                         font.pixelSize: 12
                     }
@@ -131,14 +131,14 @@ Overlay {
             RowLayout {
                 ActionButton {
                     iconName: "arrow-left"
-                    text: I18n.tr("Centro di controllo")
+                    text: I18n.tr("controlCenter.title")
                     onClicked: ShellState.toggle("controls", ShellState.activeScreen)
                 }
                 Item {
                     Layout.fillWidth: true
                 }
                 ActionButton {
-                    text: I18n.tr("Chiudi")
+                    text: I18n.tr("common.close")
                     onClicked: ShellState.close()
                 }
             }

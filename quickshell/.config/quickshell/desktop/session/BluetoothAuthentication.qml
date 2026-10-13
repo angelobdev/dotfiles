@@ -47,7 +47,7 @@ PanelWindow {
             }
             spacing: 12
             Heading {
-                text: I18n.tr("Associazione Bluetooth")
+                text: I18n.tr("bluetooth.pairingTitle")
             }
             Text {
                 Layout.fillWidth: true
@@ -62,13 +62,13 @@ PanelWindow {
                 wrapMode: Text.Wrap
                 textFormat: Text.PlainText
                 text: ({
-                        RequestPinCode: I18n.tr("Inserisci il PIN del dispositivo."),
-                        RequestPasskey: I18n.tr("Inserisci il codice numerico del dispositivo."),
-                        RequestConfirmation: I18n.tr("Il codice coincide con quello mostrato sul dispositivo?"),
-                        DisplayPinCode: I18n.tr("Digita questo PIN sull’altro dispositivo."),
-                        DisplayPasskey: I18n.tr("Digita questo codice sull’altro dispositivo e premi Invio."),
-                        RequestAuthorization: I18n.tr("Consentire l’associazione con questo dispositivo?"),
-                        AuthorizeService: I18n.tr("Consentire al dispositivo di utilizzare il servizio richiesto?")
+                        RequestPinCode: I18n.tr("bluetooth.enterPin"),
+                        RequestPasskey: I18n.tr("bluetooth.enterPasskey"),
+                        RequestConfirmation: I18n.tr("bluetooth.confirmPasskey"),
+                        DisplayPinCode: I18n.tr("bluetooth.enterPinOnDevice"),
+                        DisplayPasskey: I18n.tr("bluetooth.enterPasskeyOnDevice"),
+                        RequestAuthorization: I18n.tr("bluetooth.confirmPairing"),
+                        AuthorizeService: I18n.tr("bluetooth.authorizeService")
                     })[root.prompt?.kind] || ""
                 color: Theme.text
             }
@@ -83,12 +83,12 @@ PanelWindow {
             }
             Text {
                 visible: root.prompt?.kind === "DisplayPasskey"
-                text: I18n.tr("Cifre inserite: ") + (root.prompt?.entered ?? 0)
+                text: I18n.tr("bluetooth.enteredDigitsPrefix") + (root.prompt?.entered ?? 0)
                 color: Theme.muted
             }
             Text {
                 visible: root.prompt?.kind === "AuthorizeService"
-                text: I18n.tr("Servizio: ") + (root.prompt?.value ?? "")
+                text: I18n.tr("bluetooth.servicePrefix") + (root.prompt?.value ?? "")
                 Layout.fillWidth: true
                 wrapMode: Text.WrapAnywhere
                 textFormat: Text.PlainText
@@ -108,12 +108,12 @@ PanelWindow {
                 }
                 ActionButton {
                     id: reject
-                    text: I18n.tr("Annulla")
+                    text: I18n.tr("common.cancel")
                     onClicked: BluetoothAgent.reply(false)
                 }
                 ActionButton {
                     visible: !root.displayOnly
-                    text: root.inputRequired ? I18n.tr("Invia") : I18n.tr("Conferma")
+                    text: root.inputRequired ? I18n.tr("bluetooth.submit") : I18n.tr("common.confirm")
                     enabled: !root.inputRequired || root.valid
                     onClicked: BluetoothAgent.reply(true, response.text)
                 }

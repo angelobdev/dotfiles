@@ -16,14 +16,14 @@ ControlTile {
             Layout.fillWidth: true
             alignLeft: true
             iconName: "bluetooth"
-            text: I18n.tr("Bluetooth")
-            tooltip: I18n.tr("Dispositivi Bluetooth")
+            text: I18n.tr("bluetooth.title")
+            tooltip: I18n.tr("bluetooth.devicesTitle")
             onClicked: ShellState.toggle("bluetooth", ShellState.activeScreen)
         }
         Text {
             Layout.fillWidth: true
             Layout.leftMargin: 12
-            text: !Bluetooth.defaultAdapter ? I18n.tr("Non disponibile") : !Bluetooth.defaultAdapter.enabled ? I18n.tr("Spento") : connected > 0 ? I18n.plural("%1 connesso", "%1 connessi", connected) : I18n.tr("Acceso")
+            text: !Bluetooth.defaultAdapter ? I18n.tr("common.unavailable") : !Bluetooth.defaultAdapter.enabled ? I18n.tr("common.off") : connected > 0 ? I18n.plural("bluetooth.connectedCount.one", "bluetooth.connectedCount.other", connected) : I18n.tr("common.on")
             elide: Text.ElideRight
             color: Theme.muted
             font.pixelSize: 11

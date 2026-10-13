@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import "i18n/Locale.js" as LocaleData
+import "i18n/Sources.js" as Sources
 
 Singleton {
     id: root
@@ -23,19 +24,24 @@ Singleton {
         } catch (error) { console.warn("Invalid translation catalog:", error); }
         return {};
     }
-    function tr(message, args) {
+    function tr(key, args) {
         const selected = language === "it_IT" ? italian : english;
-        return LocaleData.format(selected[message] ?? english[message] ?? message, args);
+        return LocaleData.format(LocaleData.lookup(selected, key) ?? LocaleData.lookup(english, key) ?? key, args);
     }
     function plural(singular, plural, count, args) {
         return tr(count === 1 ? singular : plural, [count].concat(args || []));
     }
     function bindDescription(description) {
         let match = description.match(/^(Focus|Sposta) (left|right|up|down)$/);
-        if (match) return tr(match[1] === "Focus" ? "Focus %1" : "Sposta %1", [tr("direction." + match[2])]);
+        if (match) return tr(match[1] === "Focus" ? "bindings.focusDirection" : "bindings.moveDirection", [tr("directions." + match[2])]);
         match = description.match(/^Sposta al workspace (\d+)$/);
-        if (match) return tr("Sposta al workspace %1", [match[1]]);
-        return tr(description);
+        if (match) return tr("bindings.moveToWorkspace", [match[1]]);
+        const key = Sources.bindKeys[description];
+        return typeof key === "string" ? tr(key) : description;
+    }
+    function networkDescription(description) {
+        const key = Sources.networkKeys[description];
+        return typeof key === "string" ? tr(key) : description;
     }
     FileView {
         id: systemLocale

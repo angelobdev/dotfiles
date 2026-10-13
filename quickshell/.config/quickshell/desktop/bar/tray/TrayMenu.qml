@@ -32,7 +32,7 @@ Menu {
         menu: root.visible ? root.menuEntry : null
     }
     MenuItem {
-        text: I18n.tr("Nessuna azione disponibile")
+        text: I18n.tr("session.noActions")
         visible: opener.children.values.length === 0
         height: visible ? 32 : 0
         enabled: false

@@ -44,16 +44,32 @@ class TranslationTests(unittest.TestCase):
             with self.subTest(text=text, env=env):
                 self.assertEqual(i18n.language_from_config(text, env), expected)
 
+    def flattened_catalog(self, language):
+        data = json.loads((CATALOGS / (language + '.json')).read_text())
+        result = {}
+
+        def visit(branch, prefix=''):
+            self.assertIsInstance(branch, dict)
+            self.assertTrue(branch)
+            for name, value in branch.items():
+                self.assertRegex(name, r'^[a-z][a-zA-Z0-9]*$')
+                key = prefix + name
+                if isinstance(value, dict):
+                    visit(value, key + '.')
+                else:
+                    self.assertIsInstance(value, str)
+                    self.assertTrue(value)
+                    self.assertIn('.', key, 'Messages must belong to a namespace')
+                    result[key] = value
+        visit(data)
+        return result
+
     def test_catalog_parity_and_placeholders(self):
-        italian = json.loads((CATALOGS / 'it_IT.json').read_text())
-        english = json.loads((CATALOGS / 'en_US.json').read_text())
+        italian = self.flattened_catalog('it_IT')
+        english = self.flattened_catalog('en_US')
         self.assertEqual(italian.keys(), english.keys())
         for key in italian:
-            with self.subTest(message=key):
-                self.assertIsInstance(italian[key], str)
-                self.assertIsInstance(english[key], str)
-                self.assertTrue(italian[key])
-                self.assertTrue(english[key])
+            with self.subTest(key=key):
                 placeholders = lambda text: sorted(re.findall(r'%[1-9][0-9]*', text))
                 self.assertEqual(placeholders(italian[key]), placeholders(english[key]))
 
@@ -61,20 +77,61 @@ class TranslationTests(unittest.TestCase):
         config = ROOT / 'quickshell/.config'
         for lang, expected in [('it_IT', 'Applicazioni'), ('en_US', 'Applications')]:
             with patch.dict(os.environ, {'XDG_CONFIG_HOME': str(config)}), patch.object(i18n, 'language', return_value=lang):
-                self.assertEqual(i18n.tr('Applicazioni'), expected)
-                self.assertEqual(i18n.tr('Password per ') + 'a$&b', ('Password per ' if lang == 'it_IT' else 'Password for ') + 'a$&b')
-                self.assertEqual(i18n.tr('Sposta al workspace %1', [4]), 'Sposta al workspace 4' if lang == 'it_IT' else 'Move to workspace 4')
-                self.assertEqual(i18n.tr('Unknown %1', ['$&']), 'Unknown $&')
-                self.assertEqual(i18n.tr('Unknown %1'), 'Unknown %1')
+                self.assertEqual(i18n.tr('launcher.title'), expected)
+                self.assertEqual(i18n.tr('network.passwordPrefix') + 'a$&b', ('Password per ' if lang == 'it_IT' else 'Password for ') + 'a$&b')
+                self.assertEqual(i18n.tr('bindings.moveToWorkspace', [4]), 'Sposta al workspace 4' if lang == 'it_IT' else 'Move to workspace 4')
+                self.assertEqual(i18n.tr('missing.key'), 'missing.key')
+                self.assertEqual(i18n.tr('bindings.moveToWorkspace'), 'Sposta al workspace %1' if lang == 'it_IT' else 'Move to workspace %1')
+                self.assertEqual(i18n.tr('bindings.moveDirection', ['$&']), 'Sposta $&' if lang == 'it_IT' else 'Move $&')
 
-    def test_static_qml_messages_exist(self):
-        catalog = json.loads((CATALOGS / 'en_US.json').read_text())
+    def test_nested_lookup_and_english_fallback(self):
+        self.assertEqual(i18n.lookup({'clipboard': {'title': 'Clipboard'}}, 'clipboard.title'), 'Clipboard')
+        for key in ('clipboard', 'clipboard.missing', 'clipboard.title.child', 'missing.key'):
+            self.assertIsNone(i18n.lookup({'clipboard': {'title': 'Clipboard'}}, key))
+        catalogs = {'it_IT': {'clipboard': {}}, 'en_US': {'clipboard': {'title': 'Clipboard'}}}
+        with patch.object(i18n, 'language', return_value='it_IT'), patch.object(i18n, 'catalog', side_effect=catalogs.get):
+            self.assertEqual(i18n.tr('clipboard.title'), 'Clipboard')
+            self.assertEqual(i18n.tr('clipboard.missing'), 'clipboard.missing')
+
+    def assert_translation_key(self, key, catalog):
+        self.assertRegex(key, r'^[a-z][a-zA-Z0-9]*(?:\.[a-z][a-zA-Z0-9]*)+$')
+        self.assertIn(key, catalog, 'Missing translation: ' + key)
+
+    def test_qml_and_adapter_references(self):
+        catalog = self.flattened_catalog('en_US')
+        literal = r"\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*'"
         for path in DESKTOP.rglob('*.qml'):
             if path.name.startswith('test-'):
                 continue
-            for match in re.finditer(r'''I18n\.tr\(\s*("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')''', path.read_text()):
-                with self.subTest(file=str(path), message=match[1]):
-                    self.assertTrue(ast.literal_eval(match[1]) in catalog, "Missing translation: " + match[1])
+            text = path.read_text()
+            # Exact first arguments catch accidental source strings. Semantic literals
+            # also cover ternary keys and both singular/plural variants.
+            for match in re.finditer(r'I18n\.(?:tr|plural)\(\s*(' + literal + ')', text):
+                with self.subTest(file=str(path), key=match[1]):
+                    self.assert_translation_key(ast.literal_eval(match[1]), catalog)
+            for match in re.finditer(literal, text):
+                value = ast.literal_eval(match[0])
+                if re.fullmatch(r'[a-z][a-zA-Z0-9]*(?:\.[a-z][a-zA-Z0-9]*)+', value) and value.split('.')[0] in {key.split('.')[0] for key in catalog}:
+                    with self.subTest(file=str(path), key=value):
+                        self.assert_translation_key(value, catalog)
+        adapters = (DESKTOP / 'i18n/Sources.js').read_text()
+        for match in re.finditer(r':\s*("[^"\n]+")', adapters):
+            self.assert_translation_key(json.loads(match[1]), catalog)
+
+    def test_python_and_command_references(self):
+        catalog = self.flattened_catalog('en_US')
+        for path in HELPER.parent.glob('*.py'):
+            for node in ast.walk(ast.parse(path.read_text())):
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'tr' and node.args and isinstance(node.args[0], ast.Constant):
+                    with self.subTest(file=str(path), key=node.args[0].value):
+                        self.assert_translation_key(node.args[0].value, catalog)
+        power = (ROOT / 'shell/.local/bin/desktop-power').read_text()
+        for key in re.findall(r"message '([^']+)'", power):
+            self.assert_translation_key(key, catalog)
+        binds = (ROOT / 'hypr/.config/hypr/config/binds.lua').read_text()
+        for match in re.finditer(r'--notify "([^"]+)" "([^"]+)"', binds):
+            for key in match.groups():
+                self.assert_translation_key(key, catalog)
 
 
 if __name__ == '__main__':
