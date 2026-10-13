@@ -1,19 +1,13 @@
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
+
+-- *** Utilities *** --
+
 local function bind(keys, dispatcher, description, flags)
     flags = flags or {}
     flags.description = description
     hl.bind(keys, dispatcher, flags)
 end
 
--- Applications
-bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminale")
-
--- System (Hyprland)
-bind("SUPER + Q", hl.dsp.window.close(), "Chiudi finestra")
-bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Finestra flottante")
-bind("SUPER + P", hl.dsp.window.pseudo(), "Pseudo tiling")
-bind("SUPER + J", hl.dsp.layout("togglesplit"), "Cambia orientamento split")
-bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Schermo intero")
 local function screenshot(mode, quick, editor)
     return function()
         local capture = (hl.plugin or {}).hyprcapture
@@ -30,6 +24,19 @@ local function screenshot(mode, quick, editor)
         end
     end
 end
+
+-- *** BINDS *** --
+
+-- Applications
+bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminale")
+
+-- System (Hyprland)
+bind("SUPER + Q", hl.dsp.window.close(), "Chiudi finestra")
+bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Finestra flottante")
+bind("SUPER + P", hl.dsp.window.pseudo(), "Pseudo tiling")
+bind("SUPER + J", hl.dsp.layout("togglesplit"), "Cambia orientamento split")
+bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Schermo intero")
+
 bind("SUPER + SHIFT + S", screenshot("region", false, true), "Screenshot · Area con editor")
 bind("SUPER + SHIFT + ALT + S", screenshot("fullscreen", false, true), "Screenshot · Monitor con editor")
 
