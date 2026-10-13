@@ -32,6 +32,8 @@ Non usare sudo con Stow. `apply` salva eventuali file in conflitto prima di coll
 
 L’angolo top-left alterna Hyprspace e desktop; la barra rilascia spazio e input durante l’overview. HyprCapture segue il puntatore tra monitor: `Super + Shift + S` o `Stamp` aprono la cattura area con editor; `Super + Shift + Alt + S` o `Alt + Stamp` quella del monitor con editor. Hints mostra i bind della sessione attiva, raggruppando screenshot e registrazione in “Cattura schermo”.
 
+Kitty include il riferimento completo dei default commentati; Fastfetch ha un layout Fedora con palette neutra.
+
 Le impostazioni principali sono in [`Config.qml`](quickshell/.config/quickshell/desktop/Config.qml), la palette in [`Theme.qml`](quickshell/.config/quickshell/desktop/Theme.qml) e gli override della macchina in [`local.lua`](hypr/.config/hypr/config/local.lua).
 
 Quickshell è organizzato per funzione (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), con componenti e servizi condivisi. Il [layout delle cartelle](docs/configurazione.md#struttura-quickshell) descrive dove intervenire. I launcher locali di ChatGPT e File/Nautilus preferiscono Wayland; vedere [XWayland e nitidezza](docs/integrazioni.md#xwayland).

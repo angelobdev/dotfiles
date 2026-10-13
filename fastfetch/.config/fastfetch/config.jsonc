@@ -1,0 +1,101 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/2.68.1/doc/json_schema.json",
+  "logo": {
+    "type": "builtin",
+    "source": "Fedora_small",
+    "color": {
+      "1": "white",
+      "2": "bright_black"
+    },
+    "padding": {
+      "top": 1,
+      "right": 3
+    }
+  },
+  "display": {
+    "separator": "  ",
+    "key": {
+      "width": 12
+    },
+    "color": {
+      "keys": "white",
+      "title": "white",
+      "separator": "bright_black"
+    }
+  },
+  "modules": [
+    {
+      "type": "title",
+      "format": "{user-name}@{host-name}"
+    },
+    "separator",
+    {
+      "type": "os",
+      "key": "Sistema"
+    },
+    {
+      "type": "kernel",
+      "key": "Kernel"
+    },
+    {
+      "type": "uptime",
+      "key": "Uptime"
+    },
+    {
+      "type": "packages",
+      "key": "Pacchetti"
+    },
+    "break",
+    {
+      "type": "wm",
+      "key": "Compositor"
+    },
+    {
+      "type": "custom",
+      "key": "Desktop",
+      "format": "Quickshell"
+    },
+    {
+      "type": "shell",
+      "key": "Shell"
+    },
+    {
+      "type": "terminal",
+      "key": "Terminale"
+    },
+    {
+      "type": "cursor",
+      "key": "Cursore"
+    },
+    "break",
+    {
+      "type": "cpu",
+      "key": "CPU",
+      "format": "{name} · {cores-logical} thread"
+    },
+    {
+      "type": "gpu",
+      "key": "GPU",
+      "format": "{name}"
+    },
+    {
+      "type": "memory",
+      "key": "RAM"
+    },
+    {
+      "type": "disk",
+      "key": "Disco",
+      "folders": "/"
+    },
+    {
+      "type": "display",
+      "key": "Display"
+    },
+    {
+      "type": "battery",
+      "key": "Batteria"
+    },
+    "break",
+    "colors"
+  ]
+}

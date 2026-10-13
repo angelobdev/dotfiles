@@ -23,6 +23,11 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Quickshell riorganizzato per funzione (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), con componenti e servizi condivisi e import aggiornati.
 - [x] Verifica testi sfocati di ChatGPT e Nautilus: entrambe le istanze segnalate erano XWayland; avvio nativo Wayland verificato con istanze isolate, launcher locali corretti e ambiente di sessione aggiornato. Riavvio delle app dell’utente necessario per applicare il backend.
 
+### Cursore e terminale
+
+- [x] Configurazione Kitty 0.47.1 completa: 470 opzioni, default e mapping commentati, 33 valori personalizzati conservati; parser nativo senza errori.
+- [x] Config Fastfetch 2.68.1 in pacchetto Stow dedicato: logo Fedora, palette neutra, sezioni sistema/sessione/hardware e moduli per display, batteria e cursore; esecuzione verificata.
+
 ### Barra e navigazione
 
 - [x] Top bar da 38 px con sfondo trasparente/traslucido, logo Fedora e menu applicazioni.
