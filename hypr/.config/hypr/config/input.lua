@@ -1,3 +1,5 @@
+local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
+
 hl.config({
     input = {
         kb_layout = "it",
@@ -17,4 +19,20 @@ hl.gesture({
     fingers = 3,
     direction = "horizontal",
     action = "workspace",
+})
+
+hl.gesture({
+    fingers = 3,
+    direction = "up",
+    action = function()
+        hl.exec_cmd(shell .. " toggle launcher")
+    end
+})
+
+hl.gesture({
+    fingers = 3,
+    direction = "down",
+    action = function()
+        hl.exec_cmd(shell .. " toggle controls")
+    end
 })

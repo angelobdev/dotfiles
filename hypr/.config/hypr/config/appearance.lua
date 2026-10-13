@@ -5,6 +5,7 @@ hl.config({
         border_size = 0,
         layout = "dwindle",
         resize_on_border = true,
+        allow_tearing = true,
     },
     decoration = {
         rounding = 16,
