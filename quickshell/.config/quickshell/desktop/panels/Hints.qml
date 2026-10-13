@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell.Io
+import Quickshell.Hyprland
 import ".."
 import "../components"
 
@@ -10,20 +11,22 @@ Overlay {
     panelName: "hints"
     property var bindings: []
     property string error: ""
-    readonly property var categories: ["Applicazioni", "Shell e pannelli", "Finestre", "Workspace", "Mouse", "Audio e luminosità", "Sessione", "Altro"]
+    readonly property var categories: ["Applicazioni", "Shell e pannelli", "Cattura schermo", "Finestre", "Workspace", "Mouse", "Audio e luminosità", "Sessione", "Altro"]
     function category(bind) {
         const name = (bind.description || "").toLowerCase();
         if ((bind.key || "").startsWith("XF86Audio") || (bind.key || "").startsWith("XF86MonBrightness"))
             return "Audio e luminosità";
         if ((bind.key || "").startsWith("mouse:"))
             return "Mouse";
+        if (/screenshot|registrazione/.test(name))
+            return "Cattura schermo";
         if (/workspace|scratchpad/.test(name))
             return "Workspace";
         if (/blocca|sospendi|logout|riavvio|spegni|sessione/.test(name))
             return "Sessione";
-        if (/applicazioni|centro di controllo|notifiche|quickshell|rete|wi-fi|volume e|batteria|calendario|hints|sfondo|clipboard|registrazione/.test(name))
+        if (/applicazioni|centro di controllo|notifiche|quickshell|rete|wi-fi|volume e|batteria|calendario|hints|sfondo|clipboard/.test(name))
             return "Shell e pannelli";
-        if (/browser|terminale|kitty/.test(name))
+        if (/browser|terminale|kitty|1password/.test(name))
             return "Applicazioni";
         if (/finestra|focus|floating|fullscreen|schermo intero|^sposta |tiling|split|pseudo/.test(name))
             return "Finestre";
@@ -31,11 +34,12 @@ Overlay {
     }
     function shortcut(bind) {
         const parts = [];
-        for (const [mask, label] of [[64, "Super"], [4, "Ctrl"], [8, "Alt"], [1, "Shift"], [128, "Mod5"]])
+        for (const [mask, label] of [[64, "Super"], [4, "Ctrl"], [1, "Shift"], [8, "Alt"], [128, "Mod5"]])
             if ((bind.modmask & mask) !== 0)
                 parts.push(label);
         const names = {
             Return: "Invio",
+            Print: "Stamp",
             Space: "Spazio",
             space: "Spazio",
             left: "←",
@@ -48,12 +52,22 @@ Overlay {
         parts.push(names[bind.key] || bind.key || ("code:" + bind.keycode));
         return parts.join(" + ");
     }
+    function refreshBindings() {
+        if (!reader.running)
+            reader.running = true;
+    }
+    Connections {
+        target: Hyprland
+        function onRawEvent(event) {
+            if (event.name === "configreloaded" && root.visible)
+                root.refreshBindings();
+        }
+    }
     onOpened: {
         search.clear();
         error = "";
         search.forceActiveFocus();
-        if (!reader.running)
-            reader.running = true;
+        refreshBindings();
     }
     Process {
         id: reader

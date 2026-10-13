@@ -16,7 +16,7 @@
 - Agente Polkit QML con l'identità predefinita proposta da Polkit.
 - Power navigabile da tastiera: blocco immediato; sospensione, logout, riavvio e spegnimento con conferma. Gli errori del comando vengono mostrati nel pannello.
 - Calendario mensile con selezione giorno, indicatori e agenda dei calendari abilitati in GNOME/Account online. Include ricorrenze, giornate intere, più giorni e fusi orari tramite Evolution Data Server. Il pannello legge i calendari esistenti e non crea/modifica eventi o account.
-- Hints con ricerca e categorie (Applicazioni, Shell e pannelli, Finestre, Workspace, Mouse, Audio e luminosità, Sessione, Altro): legge `hyprctl -j binds` a ogni apertura e mostra scorciatoia + descrizione reali, inclusi submap e bind aggiunti in `local.lua`.
+- Hints con ricerca e categorie (Applicazioni, Shell e pannelli, Cattura schermo, Finestre, Workspace, Mouse, Audio e luminosità, Sessione, Altro): legge `hyprctl -j binds` a ogni apertura e quando Hyprland ricarica la configurazione mentre il pannello è visibile e mostra scorciatoia + descrizione reali, inclusi submap e bind aggiunti in `local.lua`. `Print` è mostrato come “Stamp”; screenshot e registrazione hanno una categoria dedicata.
 - Selettore sfondi QML con navigazione cartelle e anteprima; nessun dialog esterno.
 - Clipboard Quickshell con ricerca e pausa; selettore screen sharing custom e pannello registrazione con indicatore nella barra.
 - OSD Quickshell per volume, mute dello speaker, microfono e luminosità: icona, livello e dispositivo, in basso al centro, senza intercettare mouse o tastiera.
@@ -41,7 +41,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-dae
 | `Super + Shift + H`                         | Hints / bind attivi                        |
 | `Super + Shift + Q`                         | Menu sessione                              |
 | `Super + Shift + W`                         | Scegli sfondo                              |
-| `Super + Ctrl + V`                          | Clipboard / storico                        |
+| `Super + Ctrl + C`                          | Clipboard / storico                        |
 | `Super + Ctrl + R`                          | Registrazione schermo                      |
 | `Super + L` / `XF86Sleep`                   | Blocca / sospendi con lock                 |
 | `Super + Shift + R`                         | Riavvia Quickshell                         |
@@ -49,10 +49,8 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit e power-profiles-dae
 | `Super + P` / `Super + J`                   | Pseudo tiling / orientamento split         |
 | `Super + frecce` / `Super + Shift + frecce` | Focus / sposta finestra                    |
 | `Super + 1…9,0` / `Super + Shift + 1…9,0`   | Workspace / sposta al workspace            |
-| `Super + Shift + S` / `Shift + Stamp`       | Screenshot di un’area                      |
-| `Stamp`                                     | Screenshot di un monitor a scelta          |
-| `Super + Stamp`                             | Screenshot di una finestra a scelta        |
-| `Alt + Stamp`                               | Screenshot della finestra attiva           |
+| `Super + Shift + S` / `Stamp`               | Screenshot area con editor                 |
+| `Super + Shift + Alt + S` / `Alt + Stamp`   | Screenshot monitor con editor              |
 | `Super + trascina sinistro/destro`          | Sposta / ridimensiona finestra             |
 | Tasti multimediali                          | Volume, microfono, luminosità              |
 | `Esc` / clic esterno                        | Chiudi pannello                            |
@@ -69,7 +67,7 @@ In `Config.qml`: `minimumWorkspaces: 2` (minimo 2, massimo 10) e `workspaceScrol
 
 ## Clipboard
 
-`Super + Ctrl + V` apre lo storico Quickshell: ricerca, frecce/Invio per copiare, eliminazione singola, svuotamento con conferma e pausa della raccolta. Dopo la copia il pannello si chiude; incollare nell’app con la sua normale scorciatoia. Testo e immagini vengono conservati da cliphist, con due watcher `wl-paste` gestiti dalla shell. Il bridge XWayland di Hyprland sincronizza la selezione X11/Wayland: non viene avviato un secondo sincronizzatore. Hyprland può limitare la lettura X11 quando nessuna finestra X11 ha il focus.
+`Super + Ctrl + C` apre lo storico Quickshell: ricerca, frecce/Invio per copiare, eliminazione singola, svuotamento con conferma e pausa della raccolta. Dopo la copia il pannello si chiude; incollare nell’app con la sua normale scorciatoia. Testo e immagini vengono conservati da cliphist, con due watcher `wl-paste` gestiti dalla shell. Il bridge XWayland di Hyprland sincronizza la selezione X11/Wayland: non viene avviato un secondo sincronizzatore. Hyprland può limitare la lettura X11 quando nessuna finestra X11 ha il focus.
 
 `clipboardEnabled: true` e `clipboardMaxItems: 200` sono in `Config.qml`. La pausa si azzera al riavvio. Lo storico è persistente in `$XDG_CACHE_HOME/cliphist/db` (normalmente `~/.cache/cliphist/db`), con directory privata: **è salvato su disco, non cifrato**. Le selezioni marcate `sensitive` da un’app vengono ignorate da cliphist; questo richiede che l’app le contrassegni. Disabilitare la raccolta o usare la pausa per contenuti che non si desidera conservare. La primaria X11/selezione con il mouse non viene sincronizzata dallo storico.
 
@@ -83,16 +81,12 @@ I video vengono salvati nella directory Video XDG, sottocartella `Recordings`, c
 
 HyprCapture gestisce la cattura; `Stamp` corrisponde al keysym `Print`.
 
-| Scorciatoia                           | Cattura                      |
-| ------------------------------------- | ---------------------------- |
-| `Super + Shift + S` / `Shift + Stamp` | Selezione area               |
-| `Stamp`                               | Monitor corrente             |
-| `Super + Stamp`                       | Selezione finestra           |
-| `Alt + Stamp`                         | Finestra attiva, immediata   |
-| `Super + Ctrl + S`                    | Selezione area, poi editor   |
-| `Ctrl + Stamp`                        | Monitor corrente, poi editor |
+| Scorciatoia                               | Cattura                      |
+| ----------------------------------------- | ---------------------------- |
+| `Super + Shift + S` / `Stamp`             | Selezione area, poi editor   |
+| `Super + Shift + Alt + S` / `Alt + Stamp` | Monitor corrente, poi editor |
 
-`Esc` annulla la selezione. I PNG vengono salvati in `Immagini/Screenshots` (directory XDG), copiati negli appunti e notificati tramite Quickshell. Directory e comportamento si configurano in `hypr/config/plugins.lua`, sezione `hyprcapture`. I bind dello scratchpad restano rimossi. L’editor nativo di HyprCapture si apre dopo la selezione con i due bind dedicati: rettangoli, ellissi, frecce, disegno, testo, pixelatura e numerazione. `Invio` o la spunta esportano; `Esc` annulla. I bind ordinari usano la cattura diretta. Non servono altri programmi di editing.
+`Esc` annulla la selezione. I PNG vengono salvati in `Immagini/Screenshots` (directory XDG), copiati negli appunti e notificati tramite Quickshell. Directory e comportamento si configurano in `hypr/config/plugins.lua`, sezione `hyprcapture`. I bind dello scratchpad restano rimossi. Tutte le scorciatoie screenshot aprono l’editor nativo di HyprCapture dopo la selezione: rettangoli, ellissi, frecce, disegno, testo, pixelatura e numerazione. `Invio` o la spunta esportano; `Esc` annulla. Non servono altri programmi di editing.
 
 L’overlay segue il puntatore tra i monitor (`overlay_scope = "focus"`), anche con scale diverse. Per catturare sul display integrato si può iniziare lì oppure spostare il puntatore dal monitor esterno prima della selezione. Una selezione area rimane entro un singolo monitor; `fullscreen_scope = "current"` cattura il monitor scelto, non l’intero desktop.
 

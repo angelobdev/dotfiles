@@ -37,7 +37,7 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Calendario mensile con selezione del giorno, navigazione da tastiera, indicatori e agenda degli eventi dai calendari GNOME/Account online tramite Evolution Data Server; supporto ricorrenze, giornate intere, più giorni e fusi orari, lettura senza modifica degli account.
 - [x] OSD per volume, mute speaker/microfono e luminosità, con livello/dispositivo, timeout configurabile e posizionamento sul monitor interessato; rilevamento dei cambiamenti anche a pannello chiuso.
 - [x] Selettore sfondi QML su `Super + Shift + W`, anteprima e persistenza della scelta tra sessioni.
-- [x] Bind HyprCapture per area (`Super + Shift + S` / `Shift + Stamp`), monitor (`Stamp`), finestra (`Super + Stamp`) e finestra attiva (`Alt + Stamp`); rimossi i bind scratchpad e il conflitto di scorciatoie.
+- [x] Bind HyprCapture con editor per area (`Super + Shift + S` / `Stamp`) e monitor (`Super + Shift + Alt + S` / `Alt + Stamp`); rimossi i bind scratchpad e il conflitto di scorciatoie.
 
 ### Plugin del compositor
 
@@ -50,7 +50,7 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Bind screenshot migrati a HyprCapture; cattura PNG del monitor di prova verificata. Autoload con controllo versione RPM/ABI per evitare build obsolete dopo aggiornamenti COPR.
 - [x] Hyprspace: eliminata la riserva aggiuntiva da 200 px, barre/overlay esclusi dalle miniature; la barra invisibile rilascia spazio e input senza perdere la superficie da ripristinare. Verifica 38 → 0 → 38 sul monitor interessato in sessione isolata.
 - [x] Hot corner top-left con toggle apertura/chiusura dopo il riarmo all’uscita dall’angolo.
-- [x] Editor nativo HyprCapture sui bind `Super + Ctrl + S` (area) e `Ctrl + Stamp` (monitor); catture dirette conservate.
+- [x] Editor nativo HyprCapture su tutte e quattro le scorciatoie screenshot; Hints usa la categoria “Cattura schermo”, mostra “Stamp” e aggiorna i bind anche al reload di Hyprland con pannello aperto.
 - [x] Overlay HyprCapture mobile tra monitor; verificati output virtuali a scala 1,667 e 1 con PNG nativi 2880×1800/1920×1080 e toolbar editor sul display frazionario.
 - [x] Installazione nella cache protetta di hyprpm e caricamento nella sessione principale: tutti e cinque abilitati e caricati; autoload verificato con `desktop-plugins reload`, configurazione senza errori.
 - [ ] Prova fisica delle gesture touchscreen, dell’hot corner su entrambi i monitor e dell’aspetto glass durante l’uso quotidiano.
