@@ -7,6 +7,7 @@ I servizi NetworkManager, BlueZ, PipeWire/WirePlumber, UPower e Polkit forniscon
 ## Da dove partire
 
 - [Installazione, pacchetti e aggiornamenti](docs/installazione.md)
+- [Plugin Hyprland: overview, gesture touch, glass e screenshot](docs/plugins.md)
 - [Interfaccia e scorciatoie](docs/interfaccia.md)
 - [Configurazione, tema, luminosità e sfondi](docs/configurazione.md)
 - [Blocco, impronte, XWayland e condivisione schermo](docs/integrazioni.md)

@@ -1,0 +1,29 @@
+[repository]
+name = "dotfiles-desktop"
+authors = ["dotfiles"]
+
+[Hyprspace]
+description = "Workspace overview (KZDKM/Hyprspace)"
+output = "out/Hyprspace.so"
+build = ["python3 build.py Hyprspace"]
+
+[hyprgrass]
+description = "Touchscreen gestures (horriblename/hyprgrass)"
+output = "out/hyprgrass.so"
+build = ["python3 build.py hyprgrass"]
+
+[hyprglass]
+description = "Glass blur (hyprnux/hyprglass)"
+output = "out/hyprglass.so"
+build = ["python3 build.py hyprglass"]
+
+[hypr-hot-edge]
+description = "Hot corners (claychinasky/hypr-hot-edge), Lua 5.4 build compatibility"
+output = "out/hypr-hot-edge.so"
+build = ["python3 build.py hypr-hot-edge"]
+
+# Match PLUGIN_INIT's name exactly; the upstream manifest uses lowercase.
+[HyprCapture]
+description = "Screenshots (gfhdhytghd/HyprCapture), without optional AEC runtime"
+output = "out/HyprCapture.so"
+build = ["python3 build.py HyprCapture"]

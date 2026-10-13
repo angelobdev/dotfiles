@@ -5,6 +5,7 @@ package.path = base .. "/?.lua;" .. base .. "/?/init.lua;" .. package.path
 require("config.monitors")
 require("config.appearance")
 require("config.input")
+require("config.plugins")
 require("config.binds")
 require("config.rules")
 require("config.xwayland")

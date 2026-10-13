@@ -81,11 +81,32 @@ I video vengono salvati nella directory Video XDG, sottocartella `Recordings`, c
 
 ## Screenshot
 
-Hyprshot gestisce la cattura; `Stamp` corrisponde al keysym `Print`. Area, finestra e monitor vengono selezionati con il mouse; `Alt + Stamp` cattura direttamente la finestra attiva. `Esc` annulla la selezione. I bind dello scratchpad sono stati rimossi, liberando `Super + S` e risolvendo il conflitto su `Super + Shift + S`.
+HyprCapture gestisce la cattura; `Stamp` corrisponde al keysym `Print`.
 
-Le immagini PNG vengono salvate e copiate negli appunti. Hyprshot usa `HYPRSHOT_DIR`, se impostata, altrimenti la cartella immagini XDG e infine la home. Per scegliere una directory, aggiungere per esempio `hl.env("HYPRSHOT_DIR", os.getenv("HOME") .. "/Pictures/Screenshots")` in `hypr/.config/hypr/config/local.lua` e ricaricare Hyprland; Hyprshot crea la cartella alla prima cattura. La notifica di salvataggio viene gestita da Quickshell e segue Non disturbare.
+| Scorciatoia | Cattura |
+| --- | --- |
+| `Super + Shift + S` / `Shift + Stamp` | Selezione area |
+| `Stamp` | Monitor corrente |
+| `Super + Stamp` | Selezione finestra |
+| `Alt + Stamp` | Finestra attiva, immediata |
 
-Il pacchetto Fedora `hyprshot` installa le dipendenze di cattura e selezione (`grim`, `slurp`), copia (`wl-clipboard`), lettura dati (`jq`) e notifiche (`libnotify`). Il freeze opzionale non è abilitato da questi bind.
+`Esc` annulla la selezione. I PNG vengono salvati in `Immagini/Screenshots` (directory XDG), copiati negli appunti e notificati tramite Quickshell. Directory e comportamento si configurano in `hypr/config/plugins.lua`, sezione `hyprcapture`. I bind dello scratchpad restano rimossi. L’editor di HyprCapture è disponibile tramite `hl.plugin.hyprcapture.open_editor("region")`; i bind ordinari usano la cattura diretta.
+
+Per attivare il backend seguire [Plugin Hyprland](plugins.md). Se il plugin non è caricato, il bind mostra una notifica. La registrazione del pannello Quickshell continua a usare wf-recorder.
+
+## Hot corner e touchscreen
+
+L’angolo superiore sinistro di ogni monitor apre Hyprspace tramite hypr-hot-edge. La zona è di 8 px, con attesa di 220 ms; il pixel esatto dell’angolo attiva immediatamente, come previsto dal plugin. Dopo l’apertura occorre uscire dalla zona prima di riattivarla. `Esc` chiude l’overview. Non sono aggiunti bind da tastiera per aprirla.
+
+| Gesture touchscreen (Hyprgrass) | Azione |
+| --- | --- |
+| Tre dita, scorrimento orizzontale | Workspace |
+| Tre dita, verso l’alto | Hyprspace |
+| Dal bordo inferiore verso l’alto | Applicazioni |
+| Dal bordo superiore verso il basso | Centro di controllo |
+| Pressione prolungata su bordo finestra | Ridimensionamento |
+
+Sensibilità, margine dei bordi e azioni sono in `hypr/config/plugins.lua`. Le gesture del touchpad rimangono in `input.lua`: tre dita orizzontali per i workspace, verso l’alto per le applicazioni, verso il basso per i controlli.
 
 ## Dati dei pannelli
 

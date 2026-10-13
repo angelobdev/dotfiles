@@ -27,7 +27,7 @@ I COPR della macchina sono `nett00n/hyprland` ed `errornointernet/quickshell`.
 sudo dnf install hyprland quickshell stow kitty brightnessctl ddcutil wireplumber \
   NetworkManager bluez upower power-profiles-daemon \
   hypridle hyprlock hyprpaper qt5ct qt6ct papirus-icon-theme ripgrep \
-  f44-backgrounds-base xorg-x11-server-Xwayland ImageMagick python3 hyprshot \
+  f44-backgrounds-base xorg-x11-server-Xwayland ImageMagick python3 libnotify jq grim slurp \
   xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
   wl-clipboard cliphist wf-recorder pulseaudio-utils fprintd fprintd-pam \
   python3-gobject evolution-data-server
@@ -45,6 +45,10 @@ systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-
 La repo è la fonte dei file; Stow crea symlink senza folding. `dry-run` non scrive e restituisce errore in presenza di conflitti. `apply` salva i file in conflitto in `~/.local/state/dotfiles/backups/<data>/`, simula l'operazione e applica i link. Rifiuta directory genitrici che siano symlink. Ripetere `apply` dopo aver aggiunto file. Non usare sudo con Stow.
 
 I pacchetti usano i percorsi XDG standard sotto `$HOME`. I due `color_scheme_path` Qt contengono `/home/angelo`: aggiornarli quando si installa su un altro utente. Lo sfondo Fedora 44 è incluso in JPEG in `hyprpaper/.local/share/wallpapers`, convertito dal JPEG XL installato (questa build hyprpaper non lo decodifica). Proviene da `f44-backgrounds-base`; licenza originale CC BY-SA 4.0 e attribuzione nei file del pacchetto Fedora.
+
+## Plugin del compositor
+
+Hyprspace, Hyprgrass, Hyprglass, hypr-hot-edge e HyprCapture sono gestiti tramite hyprpm. Dipendenze di compilazione, installazione e aggiornamenti sono descritti in [Plugin Hyprland](plugins.md). Ripetere Stow dopo aver aggiunto i file, quindi eseguire `./scripts/install-hypr-plugins.py` dal terminale della sessione Hyprland.
 
 ## Rimozione
 

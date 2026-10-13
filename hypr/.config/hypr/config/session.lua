@@ -21,6 +21,7 @@ hl.env("CLUTTER_BACKEND", "wayland")
 
 -- Hyprland Start callback
 hl.on("hyprland.start", function()
+    hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-plugins" reload')
     hl.exec_cmd(
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE QT_QPA_PLATFORM GDK_BACKEND")
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-session" start')

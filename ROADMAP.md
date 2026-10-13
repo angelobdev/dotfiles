@@ -1,12 +1,12 @@
 # ROADMAP
 
-Stato aggiornato al 12 ottobre 2026, verificato sui file della repository.
+Stato aggiornato al 13 ottobre 2026, verificato sui file della repository.
 Le voci completate indicano funzionalità presenti nel codice; le verifiche hardware ancora necessarie sono elencate separatamente.
 
 ## Direzione attuale
 
 - Seguire questa roadmap per i prossimi sviluppi.
-- La precedente richiesta di schiarire il tema e imitare il look glassy di macOS è superata e non costituisce più un obiettivo.
+- Conservare la palette grafite; la nuova richiesta del 13 ottobre introduce il blur glass tramite Hyprglass, senza richiedere il precedente restyling chiaro di macOS.
 - Mantenere l’interfaccia desktop custom in Quickshell, con Hyprland Lua e pacchetti GNU Stow.
 
 ## Completato
@@ -37,7 +37,19 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Calendario mensile con selezione del giorno, navigazione da tastiera, indicatori e agenda degli eventi dai calendari GNOME/Account online tramite Evolution Data Server; supporto ricorrenze, giornate intere, più giorni e fusi orari, lettura senza modifica degli account.
 - [x] OSD per volume, mute speaker/microfono e luminosità, con livello/dispositivo, timeout configurabile e posizionamento sul monitor interessato; rilevamento dei cambiamenti anche a pannello chiuso.
 - [x] Selettore sfondi QML su `Super + Shift + W`, anteprima e persistenza della scelta tra sessioni.
-- [x] Bind Hyprshot per area (`Super + Shift + S` / `Shift + Stamp`), monitor (`Stamp`), finestra (`Super + Stamp`) e finestra attiva (`Alt + Stamp`); rimossi i bind scratchpad e il conflitto di scorciatoie.
+- [x] Bind HyprCapture per area (`Super + Shift + S` / `Shift + Stamp`), monitor (`Stamp`), finestra (`Super + Stamp`) e finestra attiva (`Alt + Stamp`); rimossi i bind scratchpad e il conflitto di scorciatoie.
+
+### Plugin del compositor
+
+- [x] Configurazione Lua dedicata con controlli sulla disponibilità delle API, compatibile anche con avvio senza plugin.
+- [x] Cinque plugin compilati e caricati nella sessione isolata: Hyprspace, Hyprgrass, Hyprglass, hypr-hot-edge e HyprCapture.
+- [x] Packaging locale hyprpm con revisioni upstream fissate, header RPM COPR corrispondenti e patch di compilazione Lua 5.4 per hypr-hot-edge; nomi manifest allineati a quelli runtime.
+- [x] Hot corner top-left collegato a Hyprspace, con riarmo all’uscita e nessun bind keyboard per l’apertura; apertura e chiusura del workspace interno verificate in sessione isolata.
+- [x] Gesture touchscreen Hyprgrass per workspace, overview, launcher e controlli; gesture touchpad conservate.
+- [x] Preset Hyprglass neutro con rifrazione leggera, senza aberrazione cromatica né distorsione centrale, applicato alle superfici traslucide e ai pannelli Quickshell.
+- [x] Bind screenshot migrati a HyprCapture; cattura PNG del monitor di prova verificata. Autoload con controllo versione RPM/ABI per evitare build obsolete dopo aggiornamenti COPR.
+- [x] Installazione nella cache protetta di hyprpm e caricamento nella sessione principale: tutti e cinque abilitati e caricati; autoload verificato con `desktop-plugins reload`, configurazione senza errori.
+- [ ] Prova fisica delle gesture touchscreen, dell’hot corner su entrambi i monitor e dell’aspetto glass durante l’uso quotidiano.
 
 ### Pannelli e Control Center
 

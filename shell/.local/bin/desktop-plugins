@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ ${1:-reload} == reload ]] || { echo 'Usage: desktop-plugins [reload]' >&2; exit 2; }
+exec python3 "$(dirname -- "$(readlink -f -- "$0")")/../libexec/desktop/plugins.py"
