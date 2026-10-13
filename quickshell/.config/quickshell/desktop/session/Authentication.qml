@@ -56,7 +56,7 @@ Scope {
                 }
                 spacing: 12
                 Heading {
-                    text: "Autenticazione richiesta"
+                    text: I18n.tr("Autenticazione richiesta")
                 }
                 Text {
                     text: agent.flow?.message ?? ""
@@ -96,7 +96,7 @@ Scope {
                 }
                 RowLayout {
                     ActionButton {
-                        text: "Autentica"
+                        text: I18n.tr("Autentica")
                         enabled: response.enabled
                         onClicked: {
                             agent.flow.submit(response.text);
@@ -104,7 +104,7 @@ Scope {
                         }
                     }
                     ActionButton {
-                        text: "Annulla"
+                        text: I18n.tr("Annulla")
                         onClicked: agent.flow?.cancelAuthenticationRequest()
                     }
                 }

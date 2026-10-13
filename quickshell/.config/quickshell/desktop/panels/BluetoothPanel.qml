@@ -23,7 +23,7 @@ Overlay {
             spacing: 12
             PanelHeader {
                 Layout.fillWidth: true
-                title: "Bluetooth"
+                title: I18n.tr("Bluetooth")
                 showBack: true
             }
             ScrollView {
@@ -55,20 +55,20 @@ Overlay {
                                     checked: adapterGroup.modelData.enabled
                                     enabled: ![BluetoothAdapterState.Blocked, BluetoothAdapterState.Enabling, BluetoothAdapterState.Disabling].includes(adapterGroup.modelData.state)
                                     onToggled: adapterGroup.modelData.enabled = checked
-                                    Accessible.name: "Bluetooth " + adapterGroup.modelData.name
+                                    Accessible.name: I18n.tr("Bluetooth ") + adapterGroup.modelData.name
                                     palette.highlight: Theme.accent
                                 }
                             }
                             ActionButton {
                                 Layout.fillWidth: true
-                                text: adapterGroup.modelData.discovering ? "Interrompi ricerca" : "Cerca dispositivi"
+                                text: adapterGroup.modelData.discovering ? I18n.tr("Interrompi ricerca") : I18n.tr("Cerca dispositivi")
                                 iconName: adapterGroup.modelData.discovering ? "stop" : "bluetooth"
                                 enabled: adapterGroup.modelData.enabled && BluetoothAgent.registered
                                 highlighted: adapterGroup.modelData.discovering
                                 onClicked: adapterGroup.modelData.discovering = !adapterGroup.modelData.discovering
                             }
                             Text {
-                                text: adapterGroup.modelData.state === BluetoothAdapterState.Blocked ? "Bloccato dall’hardware" : adapterGroup.modelData.enabled ? "Dispositivi associati" : "Bluetooth spento"
+                                text: adapterGroup.modelData.state === BluetoothAdapterState.Blocked ? I18n.tr("Bloccato dall’hardware") : adapterGroup.modelData.enabled ? I18n.tr("Dispositivi associati") : I18n.tr("Bluetooth spento")
                                 color: Theme.muted
                                 font.pixelSize: 12
                             }
@@ -89,7 +89,7 @@ Overlay {
                                         onClicked: modelData.connected = !modelData.connected
                                     }
                                     Text {
-                                        text: (modelData.state === BluetoothDeviceState.Connected ? "Connesso" : modelData.state === BluetoothDeviceState.Connecting ? "Connessione…" : modelData.state === BluetoothDeviceState.Disconnecting ? "Disconnessione…" : "Disconnesso") + (modelData.batteryAvailable ? " · " + Math.round(modelData.battery * 100) + "%" : "")
+                                        text: (modelData.state === BluetoothDeviceState.Connected ? I18n.tr("Connesso") : modelData.state === BluetoothDeviceState.Connecting ? I18n.tr("Connessione…") : modelData.state === BluetoothDeviceState.Disconnecting ? I18n.tr("Disconnessione…") : I18n.tr("Disconnesso")) + (modelData.batteryAvailable ? " · " + Math.round(modelData.battery * 100) + "%" : "")
                                         color: Theme.muted
                                         font.pixelSize: 11
                                         Layout.leftMargin: 12
@@ -98,7 +98,7 @@ Overlay {
                             }
                             Text {
                                 visible: adapterGroup.discovered.length > 0
-                                text: "Dispositivi disponibili"
+                                text: I18n.tr("Dispositivi disponibili")
                                 color: Theme.muted
                                 font.pixelSize: 12
                             }
@@ -112,7 +112,7 @@ Overlay {
                                         Layout.fillWidth: true
                                         alignLeft: true
                                         iconSource: Quickshell.iconPath(modelData.icon || "bluetooth", "bluetooth")
-                                        text: modelData.name + (parent.pairing ? " · Associazione…" : "")
+                                        text: modelData.name + (parent.pairing ? I18n.tr(" · Associazione…") : "")
                                         tooltip: modelData.address
                                         enabled: adapterGroup.modelData.enabled && BluetoothAgent.registered && !parent.pairing && !modelData.blocked
                                         onClicked: BluetoothAgent.pair(modelData)
@@ -120,14 +120,14 @@ Overlay {
                                     PanelIconButton {
                                         visible: parent.pairing
                                         iconName: "close"
-                                        tooltip: "Annulla associazione"
+                                        tooltip: I18n.tr("Annulla associazione")
                                         onClicked: BluetoothAgent.cancel(modelData.dbusPath)
                                     }
                                 }
                             }
                             Text {
                                 visible: adapterGroup.paired.length === 0
-                                text: "Nessun dispositivo già associato"
+                                text: I18n.tr("Nessun dispositivo già associato")
                                 color: Theme.muted
                                 font.pixelSize: 12
                             }
@@ -135,7 +135,7 @@ Overlay {
                     }
                     Text {
                         visible: Bluetooth.adapters.values.length === 0
-                        text: "Nessun adattatore Bluetooth disponibile"
+                        text: I18n.tr("Nessun adattatore Bluetooth disponibile")
                         color: Theme.muted
                         wrapMode: Text.Wrap
                         Layout.fillWidth: true
@@ -143,7 +143,7 @@ Overlay {
                 }
             }
             Text {
-                text: BluetoothAgent.error || "Avvia la ricerca per associare un dispositivo. PIN e conferme vengono richiesti in un pannello dedicato."
+                text: BluetoothAgent.error || I18n.tr("Avvia la ricerca per associare un dispositivo. PIN e conferme vengono richiesti in un pannello dedicato.")
                 color: BluetoothAgent.error ? Theme.danger : Theme.muted
                 textFormat: Text.PlainText
                 font.pixelSize: 11

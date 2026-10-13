@@ -7,5 +7,6 @@ import ast, pathlib, sys
 for path in sys.argv[1:]:
     ast.parse(pathlib.Path(path).read_text())
 PY
+python3 "$repo/scripts/check-i18n.py"
 XDG_CONFIG_HOME="$repo/hypr/.config" Hyprland --verify-config -c "$repo/hypr/.config/hypr/hyprland.lua"
 printf '\nPer verificare QML nella sessione: qs -p "%s/quickshell/.config/quickshell/desktop"\n' "$repo"

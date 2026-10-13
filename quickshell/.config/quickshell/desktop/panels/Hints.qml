@@ -11,26 +11,26 @@ Overlay {
     panelName: "hints"
     property var bindings: []
     property string error: ""
-    readonly property var categories: ["Applicazioni", "Shell e pannelli", "Cattura schermo", "Finestre", "Workspace", "Mouse", "Audio e luminosità", "Sessione", "Altro"]
+    readonly property var categories: [I18n.tr("Applicazioni"), I18n.tr("Shell e pannelli"), I18n.tr("Cattura schermo"), I18n.tr("Finestre"), I18n.tr("Workspace"), I18n.tr("Mouse"), I18n.tr("Audio e luminosità"), I18n.tr("Sessione"), I18n.tr("Altro")]
     function category(bind) {
         const name = (bind.description || "").toLowerCase();
         if ((bind.key || "").startsWith("XF86Audio") || (bind.key || "").startsWith("XF86MonBrightness"))
-            return "Audio e luminosità";
+            return I18n.tr("Audio e luminosità");
         if ((bind.key || "").startsWith("mouse:"))
-            return "Mouse";
+            return I18n.tr("Mouse");
         if (/screenshot|registrazione/.test(name))
-            return "Cattura schermo";
+            return I18n.tr("Cattura schermo");
         if (/workspace|scratchpad/.test(name))
-            return "Workspace";
+            return I18n.tr("Workspace");
         if (/blocca|sospendi|logout|riavvio|spegni|sessione/.test(name))
-            return "Sessione";
+            return I18n.tr("Sessione");
         if (/applicazioni|centro di controllo|notifiche|quickshell|rete|wi-fi|volume e|batteria|calendario|hints|sfondo|clipboard/.test(name))
-            return "Shell e pannelli";
+            return I18n.tr("Shell e pannelli");
         if (/browser|terminale|kitty|1password/.test(name))
-            return "Applicazioni";
+            return I18n.tr("Applicazioni");
         if (/finestra|focus|floating|fullscreen|schermo intero|^sposta |tiling|split|pseudo/.test(name))
-            return "Finestre";
-        return "Altro";
+            return I18n.tr("Finestre");
+        return I18n.tr("Altro");
     }
     function shortcut(bind) {
         const parts = [];
@@ -38,16 +38,16 @@ Overlay {
             if ((bind.modmask & mask) !== 0)
                 parts.push(label);
         const names = {
-            Return: "Invio",
-            Print: "Stamp",
-            Space: "Spazio",
-            space: "Spazio",
+            Return: I18n.tr("Invio"),
+            Print: I18n.tr("Stamp"),
+            Space: I18n.tr("Spazio"),
+            space: I18n.tr("Spazio"),
             left: "←",
             right: "→",
             up: "↑",
             down: "↓",
-            "mouse:272": "Mouse sinistro",
-            "mouse:273": "Mouse destro"
+            "mouse:272": I18n.tr("Mouse sinistro"),
+            "mouse:273": I18n.tr("Mouse destro")
         };
         parts.push(names[bind.key] || bind.key || ("code:" + bind.keycode));
         return parts.join(" + ");
@@ -63,6 +63,12 @@ Overlay {
                 root.refreshBindings();
         }
     }
+    Connections {
+        target: I18n
+        function onLanguageChanged() { if (root.visible) root.refreshBindings(); }
+        function onItalianChanged() { if (root.visible) root.refreshBindings(); }
+        function onEnglishChanged() { if (root.visible) root.refreshBindings(); }
+    }
     onOpened: {
         search.clear();
         error = "";
@@ -77,19 +83,19 @@ Overlay {
                 try {
                     root.bindings = JSON.parse(text).map(b => ({
                                 keys: root.shortcut(b),
-                                name: b.description || b.dispatcher,
+                                name: I18n.bindDescription(b.description || b.dispatcher),
                                 submap: b.submap || "",
                                 release: b.release,
                                 category: root.category(b)
                             })).sort((a, b) => root.categories.indexOf(a.category) - root.categories.indexOf(b.category));
                 } catch (e) {
-                    root.error = "Impossibile leggere i bind di Hyprland.";
+                    root.error = I18n.tr("Impossibile leggere i bind di Hyprland.");
                 }
             }
         }
         onExited: (code, status) => {
             if (code !== 0)
-                root.error = "Hyprland non ha restituito i bind attivi.";
+                root.error = I18n.tr("Hyprland non ha restituito i bind attivi.");
         }
     }
     Card {
@@ -103,22 +109,22 @@ Overlay {
             }
             spacing: 14
             Heading {
-                text: "Hints · Scorciatoie tastiera"
+                text: I18n.tr("Hints · Scorciatoie tastiera")
             }
             InputField {
                 id: search
                 Layout.fillWidth: true
-                placeholderText: "Cerca una scorciatoia o un’azione…"
+                placeholderText: I18n.tr("Cerca una scorciatoia o un’azione…")
             }
             RowLayout {
                 Text {
-                    text: "Scorciatoia"
+                    text: I18n.tr("Scorciatoia")
                     Layout.preferredWidth: 280
                     color: Theme.muted
                     font.pixelSize: 12
                 }
                 Text {
-                    text: "Azione"
+                    text: I18n.tr("Azione")
                     color: Theme.muted
                     font.pixelSize: 12
                 }
@@ -173,7 +179,7 @@ Overlay {
                         }
                         Text {
                             id: description
-                            text: modelData.name + (modelData.submap ? " [" + modelData.submap + "]" : "") + (modelData.release ? " · al rilascio" : "")
+                            text: modelData.name + (modelData.submap ? " [" + modelData.submap + "]" : "") + (modelData.release ? I18n.tr(" · al rilascio") : "")
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             color: Theme.text
@@ -191,12 +197,12 @@ Overlay {
             }
             Text {
                 visible: !reader.running && list.count === 0 && !root.error
-                text: "Nessuna scorciatoia trovata"
+                text: I18n.tr("Nessuna scorciatoia trovata")
                 color: Theme.muted
             }
             RowLayout {
                 Text {
-                    text: root.bindings.length + " bind dalla sessione attiva"
+                    text: I18n.plural("%1 scorciatoia dalla sessione attiva", "%1 scorciatoie dalla sessione attiva", root.bindings.length)
                     color: Theme.muted
                     font.pixelSize: 12
                 }
@@ -204,7 +210,7 @@ Overlay {
                     Layout.fillWidth: true
                 }
                 ActionButton {
-                    text: "Chiudi"
+                    text: I18n.tr("Chiudi")
                     onClicked: ShellState.close()
                 }
             }

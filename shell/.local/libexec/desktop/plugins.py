@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Autoload only plugins built for this running and installed Fedora compositor."""
+from i18n import tr
 import json
 import os
 from pathlib import Path
@@ -24,8 +25,8 @@ def main():
     matches = (rpm == devel == stamp['rpm'] and all(running.get(k) == stamp.get(k) for k in ('version', 'abiHash'))
                and os.path.samefile('/proc/' + str(instance['pid']) + '/exe', '/usr/bin/Hyprland'))
     if not matches:
-        subprocess.run(['notify-send', 'Plugin Hyprland non caricati', 'Hyprland è cambiato. Verificare i pin e ricompilare: docs/plugins.md.'], check=False)
-        sys.exit('Build diversa da quella verificata: autoload sospeso.')
+        subprocess.run(['notify-send', tr('Plugin Hyprland non caricati'), tr('Hyprland è cambiato. Verificare i pin e ricompilare: docs/plugins.md.')], check=False)
+        sys.exit(tr('Build diversa da quella verificata: autoload sospeso.'))
     subprocess.run(['hyprpm', 'reload'], check=True)
 
 

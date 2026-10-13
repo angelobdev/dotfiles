@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Read and set hardware brightness without invoking a shell or requiring sudo."""
+from i18n import tr
 import argparse
 import json
 import math
@@ -17,33 +18,33 @@ def run(args):
     try:
         result = subprocess.run(args, capture_output=True, text=True, timeout=8, check=False)
     except subprocess.TimeoutExpired as exc:
-        raise ValueError('Il monitor non ha risposto entro 8 secondi.') from exc
+        raise ValueError(tr('Il monitor non ha risposto entro 8 secondi.')) from exc
     except OSError as exc:
-        raise ValueError('Comando luminosità non disponibile.') from exc
+        raise ValueError(tr('Comando luminosità non disponibile.')) from exc
     if result.returncode:
-        raise ValueError('Accesso alla luminosità fallito: verificare dispositivo e permessi.')
+        raise ValueError(tr('Accesso alla luminosità fallito: verificare dispositivo e permessi.'))
     return result.stdout.strip()
 
 
 def validate_backend(backend):
     if not isinstance(backend, dict):
-        raise ValueError('Configurazione luminosità non valida.')
+        raise ValueError(tr('Configurazione luminosità non valida.'))
     kind = backend.get('type')
     if kind == 'backlight':
         device = backend.get('device', '')
         if not isinstance(device, str) or not re.fullmatch(r'[A-Za-z0-9_.:-]+', device) or device in ('.', '..'):
-            raise ValueError('Nome backlight non valido.')
+            raise ValueError(tr('Nome backlight non valido.'))
         if not (BACKLIGHT / device).is_dir():
-            raise ValueError('Backlight configurato non disponibile.')
+            raise ValueError(tr('Backlight configurato non disponibile.'))
         return {'type': kind, 'device': device}
     if kind == 'ddc':
         bus = backend.get('bus')
         if not isinstance(bus, int) or isinstance(bus, bool) or not 0 <= bus <= 65535:
-            raise ValueError('Bus DDC non valido.')
+            raise ValueError(tr('Bus DDC non valido.'))
         if not shutil.which('ddcutil'):
-            raise ValueError('DDC richiede il pacchetto opzionale ddcutil.')
+            raise ValueError(tr('DDC richiede il pacchetto opzionale ddcutil.'))
         return {'type': kind, 'bus': bus}
-    raise ValueError('Configurare il controllo hardware in Config.qml.')
+    raise ValueError(tr('Configurare il controllo hardware in Config.qml.'))
 
 
 def read_backend(backend):
@@ -56,16 +57,16 @@ def read_backend(backend):
         output = run(['ddcutil', '--bus', str(backend['bus']), 'getvcp', '10', '--terse'])
         match = re.search(r'^VCP 10 C (\d+) (\d+)\s*$', output, re.M)
         if not match:
-            raise ValueError('Il monitor non espone la luminosità DDC/CI (VCP 10).')
+            raise ValueError(tr('Il monitor non espone la luminosità DDC/CI (VCP 10).'))
         current, maximum = map(int, match.groups())
     if maximum <= 0:
-        raise ValueError('Luminosità massima non valida.')
+        raise ValueError(tr('Luminosità massima non valida.'))
     return max(0, min(100, round(current * 100 / maximum))), maximum
 
 
 def discover(names, mappings):
     if not isinstance(names, list) or not all(isinstance(n, str) for n in names) or not isinstance(mappings, dict):
-        raise ValueError('Elenco monitor non valido.')
+        raise ValueError(tr('Elenco monitor non valido.'))
     backlights = sorted(p.name for p in BACKLIGHT.glob('*') if p.is_dir())
     internal = next((n for n in names if re.match(r'^(eDP|LVDS|DSI)-', n)), None)
     result = []
@@ -76,7 +77,7 @@ def discover(names, mappings):
         row = {'name': name, 'available': False, 'percent': None, 'backend': backend, 'error': ''}
         try:
             if backend is None:
-                raise ValueError('Configurare il backlight o il bus DDC in Config.qml.')
+                raise ValueError(tr('Configurare il backlight o il bus DDC in Config.qml.'))
             row['percent'], _ = read_backend(backend)
             row['available'] = True
         except (ValueError, OSError) as exc:
@@ -87,7 +88,7 @@ def discover(names, mappings):
 
 def set_brightness(backend, percent):
     if not math.isfinite(percent):
-        raise ValueError('Percentuale non valida.')
+        raise ValueError(tr('Percentuale non valida.'))
     percent = max(1, min(100, round(percent)))
     backend = validate_backend(backend)
     if backend['type'] == 'backlight':

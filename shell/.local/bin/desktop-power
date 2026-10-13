@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
+message() { python3 "$HOME/.local/libexec/desktop/i18n.py" "$@"; }
 case "${1:-}" in
     lock)
-        command -v hyprlock >/dev/null || { echo 'hyprlock non installato.' >&2; exit 1; }
-        : "${XDG_RUNTIME_DIR:?Sessione Wayland richiesta}"
+        command -v hyprlock >/dev/null || { message 'hyprlock non installato.' >&2; exit 1; }
+        [[ -n "${XDG_RUNTIME_DIR:-}" ]] || { message 'Sessione Wayland richiesta' >&2; exit 1; }
         # Serialize all lock requests; a second request is already satisfied.
         exec 9>"$XDG_RUNTIME_DIR/desktop-lock.lock"
         flock -n 9 || exit 0
@@ -11,9 +12,9 @@ case "${1:-}" in
         exec hyprlock --grace 0
         ;;
     suspend)
-        command -v hyprlock >/dev/null || { echo 'hyprlock non installato: sospensione annullata.' >&2; exit 1; }
+        command -v hyprlock >/dev/null || { message 'hyprlock non installato: sospensione annullata.' >&2; exit 1; }
         pgrep -u "$(id -u)" -x hypridle >/dev/null || {
-            echo 'hypridle non attivo: avvia desktop-session start prima di sospendere.' >&2
+            message 'hypridle non attivo: avvia desktop-session start prima di sospendere.' >&2
             exit 1
         }
         # hypridle holds a logind delay inhibitor until ext-session-lock is locked.
@@ -22,5 +23,5 @@ case "${1:-}" in
         ;;
     logout) exec hyprctl dispatch 'hl.dsp.exit()' ;;
     reboot|poweroff) exec systemctl "$1" ;;
-    *) echo 'Uso: desktop-power {lock|suspend|logout|reboot|poweroff}' >&2; exit 2 ;;
+    *) message 'Uso: desktop-power {lock|suspend|logout|reboot|poweroff}' >&2; exit 2 ;;
 esac

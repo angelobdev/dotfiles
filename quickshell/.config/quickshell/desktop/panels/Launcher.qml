@@ -37,12 +37,12 @@ Overlay {
             }
             spacing: 14
             Heading {
-                text: "Applicazioni"
+                text: I18n.tr("Applicazioni")
             }
             InputField {
                 id: search
                 Layout.fillWidth: true
-                placeholderText: "Cerca un’applicazione…"
+                placeholderText: I18n.tr("Cerca un’applicazione…")
                 color: Theme.text
                 font.family: Theme.font
                 onTextChanged: apps.currentIndex = 0
@@ -65,7 +65,7 @@ Overlay {
                     iconSource: Quickshell.iconPath(modelData.icon, "application-x-executable")
                     iconSize: 30
                     alignLeft: true
-                    text: modelData.name + (modelData.runInTerminal ? "  [terminale]" : "")
+                    text: modelData.name + (modelData.runInTerminal ? I18n.tr("  [terminale]") : "")
                     highlighted: apps.currentIndex === index
                     onClicked: root.launch(modelData)
                 }
@@ -73,12 +73,12 @@ Overlay {
                 Text {
                     anchors.centerIn: parent
                     visible: apps.count === 0
-                    text: "Nessuna applicazione"
+                    text: I18n.tr("Nessuna applicazione")
                     color: Theme.muted
                 }
             }
             Text {
-                text: "↑ ↓ seleziona    Invio apri    Esc chiudi"
+                text: I18n.tr("↑ ↓ seleziona    Invio apri    Esc chiudi")
                 color: Theme.muted
                 font.pixelSize: 12
             }

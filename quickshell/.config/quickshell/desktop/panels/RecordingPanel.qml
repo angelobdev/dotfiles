@@ -20,23 +20,23 @@ Overlay {
             anchors.margins: 20
             spacing: 14
             PanelHeader {
-                title: "Registrazione schermo"
+                title: I18n.tr("Registrazione schermo")
                 Layout.fillWidth: true
             }
             Text {
-                text: Recording.running ? (Recording.stopping ? "Salvataggio…" : "Registrazione · " + Recording.elapsed) : "Scegli cosa registrare"
+                text: Recording.running ? (Recording.stopping ? I18n.tr("Salvataggio…") : I18n.tr("Registrazione · ") + Recording.elapsed) : I18n.tr("Scegli cosa registrare")
                 color: Theme.text
                 font.pixelSize: 15
             }
             RowLayout {
                 visible: !Recording.running
                 ActionButton {
-                    text: "Monitor"
+                    text: I18n.tr("Monitor")
                     highlighted: !root.area
                     onClicked: root.area = false
                 }
                 ActionButton {
-                    text: "Area"
+                    text: I18n.tr("Area")
                     highlighted: root.area
                     onClicked: root.area = true
                 }
@@ -57,24 +57,24 @@ Overlay {
             }
             Text {
                 visible: !Recording.running
-                text: "Audio"
+                text: I18n.tr("Audio")
                 color: Theme.muted
                 font.pixelSize: 12
             }
             RowLayout {
                 visible: !Recording.running
                 ActionButton {
-                    text: "Nessuno"
+                    text: I18n.tr("Nessuno")
                     highlighted: root.audioMode === "none"
                     onClicked: root.audioMode = "none"
                 }
                 ActionButton {
-                    text: "Speaker"
+                    text: I18n.tr("Speaker")
                     highlighted: root.audioMode === "output"
                     onClicked: root.audioMode = "output"
                 }
                 ActionButton {
-                    text: "Microfono"
+                    text: I18n.tr("Microfono")
                     highlighted: root.audioMode === "input"
                     onClicked: root.audioMode = "input"
                 }
@@ -82,7 +82,7 @@ Overlay {
             Text {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
-                text: Recording.error || Recording.path || "I video vengono salvati in Video/Recordings (Matroska)."
+                text: Recording.error || Recording.path || I18n.tr("I video vengono salvati in Video/Recordings (Matroska).")
                 color: Recording.error ? Theme.danger : Theme.muted
                 font.pixelSize: 12
                 textFormat: Text.PlainText
@@ -92,7 +92,7 @@ Overlay {
             }
             ActionButton {
                 Layout.fillWidth: true
-                text: Recording.running ? "Ferma e salva" : "Avvia registrazione"
+                text: Recording.running ? I18n.tr("Ferma e salva") : I18n.tr("Avvia registrazione")
                 iconName: Recording.running ? "stop" : "record"
                 destructive: Recording.running
                 highlighted: !Recording.running

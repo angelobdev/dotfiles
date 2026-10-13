@@ -15,24 +15,24 @@ Overlay {
     readonly property string stateLabel: {
         switch (battery?.state) {
         case UPowerDeviceState.Charging:
-            return "In carica";
+            return I18n.tr("In carica");
         case UPowerDeviceState.Discharging:
-            return "Alimentazione a batteria";
+            return I18n.tr("Alimentazione a batteria");
         case UPowerDeviceState.FullyCharged:
-            return "Carica completa";
+            return I18n.tr("Carica completa");
         case UPowerDeviceState.Empty:
-            return "Batteria scarica";
+            return I18n.tr("Batteria scarica");
         case UPowerDeviceState.PendingCharge:
-            return "Ricarica in attesa";
+            return I18n.tr("Ricarica in attesa");
         case UPowerDeviceState.PendingDischarge:
-            return "Scarica in attesa";
+            return I18n.tr("Scarica in attesa");
         default:
-            return "Stato non disponibile";
+            return I18n.tr("Stato non disponibile");
         }
     }
     function duration(seconds) {
         if (!Number.isFinite(seconds) || seconds <= 0)
-            return "Stima non disponibile";
+            return I18n.tr("Stima non disponibile");
         const minutes = Math.max(1, Math.round(seconds / 60));
         return (minutes >= 60 ? Math.floor(minutes / 60) + " h " : "") + (minutes % 60) + " min";
     }
@@ -46,7 +46,7 @@ Overlay {
             spacing: 14
             PanelHeader {
                 Layout.fillWidth: true
-                title: "Batteria ed energia"
+                title: I18n.tr("Batteria ed energia")
             }
             ScrollView {
                 Layout.fillWidth: true
@@ -63,7 +63,7 @@ Overlay {
                             Layout.preferredHeight: 30
                         }
                         Text {
-                            text: root.available ? Math.round(root.battery.percentage * 100) + "%" : "Nessuna batteria"
+                            text: root.available ? Math.round(root.battery.percentage * 100) + "%" : I18n.tr("Nessuna batteria")
                             font.pixelSize: 36
                             font.family: Theme.font
                             color: Theme.text
@@ -89,19 +89,19 @@ Overlay {
                         columnSpacing: 12
                         rowSpacing: 12
                         Text {
-                            text: root.charging ? "Potenza di ricarica" : root.discharging ? "Consumo" : "Flusso di energia"
+                            text: root.charging ? I18n.tr("Potenza di ricarica") : root.discharging ? I18n.tr("Consumo") : I18n.tr("Flusso di energia")
                             color: Theme.muted
                             font.pixelSize: 12
                         }
                         Text {
-                            text: Math.abs(root.battery?.changeRate ?? 0).toFixed(1) + " W"
+                            text: Math.abs(root.battery?.changeRate ?? 0).toLocaleString(I18n.locale, "f", 1) + " W"
                             color: Theme.text
                             font.pixelSize: 12
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignRight
                         }
                         Text {
-                            text: root.charging ? "Alla carica completa" : "Autonomia residua"
+                            text: root.charging ? I18n.tr("Alla carica completa") : I18n.tr("Autonomia residua")
                             color: Theme.muted
                             font.pixelSize: 12
                         }
@@ -114,12 +114,12 @@ Overlay {
                             horizontalAlignment: Text.AlignRight
                         }
                         Text {
-                            text: "Energia disponibile"
+                            text: I18n.tr("Energia disponibile")
                             color: Theme.muted
                             font.pixelSize: 12
                         }
                         Text {
-                            text: (root.battery?.energy ?? 0).toFixed(1) + " / " + (root.battery?.energyCapacity ?? 0).toFixed(1) + " Wh"
+                            text: (root.battery?.energy ?? 0).toLocaleString(I18n.locale, "f", 1) + " / " + (root.battery?.energyCapacity ?? 0).toLocaleString(I18n.locale, "f", 1) + " Wh"
                             color: Theme.text
                             font.pixelSize: 12
                             Layout.fillWidth: true
@@ -127,7 +127,7 @@ Overlay {
                         }
                     }
                     Heading {
-                        text: "Profilo energetico"
+                        text: I18n.tr("Profilo energetico")
                         font.pixelSize: 14
                         Layout.topMargin: 6
                     }
@@ -136,7 +136,7 @@ Overlay {
                         alignLeft: true
                         leftPadding: 12
                         iconName: "leaf"
-                        text: "Risparmio energetico"
+                        text: I18n.tr("Risparmio energetico")
                         highlighted: PowerProfiles.profile === PowerProfile.PowerSaver
                         onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
                     }
@@ -145,7 +145,7 @@ Overlay {
                         alignLeft: true
                         leftPadding: 12
                         iconName: "balanced"
-                        text: "Bilanciato"
+                        text: I18n.tr("Bilanciato")
                         highlighted: PowerProfiles.profile === PowerProfile.Balanced
                         onClicked: PowerProfiles.profile = PowerProfile.Balanced
                     }
@@ -154,7 +154,7 @@ Overlay {
                         alignLeft: true
                         leftPadding: 12
                         iconName: "performance"
-                        text: "Prestazioni"
+                        text: I18n.tr("Prestazioni")
                         enabled: PowerProfiles.hasPerformanceProfile
                         highlighted: PowerProfiles.profile === PowerProfile.Performance
                         onClicked: PowerProfiles.profile = PowerProfile.Performance
@@ -164,7 +164,7 @@ Overlay {
                         wrapMode: Text.Wrap
                         font.pixelSize: 11
                         color: Theme.muted
-                        text: "Potenza e tempi sono stime aggiornate dal sistema."
+                        text: I18n.tr("Potenza e tempi sono stime aggiornate dal sistema.")
                     }
                 }
             }

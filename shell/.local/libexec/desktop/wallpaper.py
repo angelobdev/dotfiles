@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Apply a wallpaper through hyprpaper, persisting a managed local JPEG copy."""
+from i18n import tr
 from pathlib import Path
 import fcntl
 import hashlib
@@ -23,14 +24,14 @@ def main():
         if sys.argv[1:] == ['--ensure']:
             if not current.is_file():
                 if not default.is_file():
-                    raise ValueError('Sfondo predefinito mancante: esegui scripts/stow.py apply.')
+                    raise ValueError(tr('Sfondo predefinito mancante: esegui scripts/stow.py apply.'))
                 replace_link(current, default)
             return
         if len(sys.argv) != 2:
-            raise ValueError('Uso: desktop-wallpaper [IMMAGINE | --reset | --ensure]')
+            raise ValueError(tr('Uso: desktop-wallpaper [IMMAGINE | --reset | --ensure]'))
         original = default if sys.argv[1] == '--reset' else Path(sys.argv[1]).expanduser().resolve()
         if not original.is_file() or original.suffix.lower() not in EXTENSIONS:
-            raise ValueError('Seleziona un’immagine PNG, JPEG, WebP, JXL, AVIF, BMP o TIFF leggibile.')
+            raise ValueError(tr('Seleziona un’immagine PNG, JPEG, WebP, JXL, AVIF, BMP o TIFF leggibile.'))
         digest = hashlib.sha256()
         with original.open('rb') as data:
             for block in iter(lambda: data.read(1024 * 1024), b''):
@@ -44,7 +45,7 @@ def main():
                     str(original) + '[0]', '-auto-orient', '-quality', '92', temporary],
                     capture_output=True, text=True, timeout=45)
                 if result.returncode != 0 or Path(temporary).stat().st_size == 0:
-                    raise ValueError('Impossibile decodificare l’immagine: ' + result.stderr.strip()[:400])
+                    raise ValueError(tr('Impossibile decodificare l’immagine: ') + result.stderr.strip()[:400])
                 os.replace(temporary, rendered)
             finally:
                 Path(temporary).unlink(missing_ok=True)
@@ -52,7 +53,7 @@ def main():
         applied = subprocess.run(['hyprctl', 'hyprpaper', 'wallpaper', ',' + str(rendered) + ',cover'],
             capture_output=True, text=True, timeout=10)
         if applied.returncode != 0 or 'error' in (applied.stdout + applied.stderr).lower():
-            raise ValueError('hyprpaper non ha applicato lo sfondo. Controlla desktop-session status. ' +
+            raise ValueError(tr('hyprpaper non ha applicato lo sfondo. Controlla desktop-session status. ') +
                 (applied.stderr or applied.stdout).strip()[:300])
         replace_link(current, rendered)
         fd, temporary = tempfile.mkstemp(prefix='.selection-', dir=state)
@@ -64,7 +65,7 @@ def main():
         for cached in state.glob('*.jpg'):
             if cached != current and cached != rendered and not cached.is_symlink():
                 cached.unlink()
-        print('Sfondo applicato: ' + original.name)
+        print(tr('Sfondo applicato: ') + original.name)
 
 def replace_link(destination, target):
     # Unique name plus atomic rename: a failed conversion never replaces the prior selection.

@@ -62,7 +62,7 @@ Rectangle {
                 }
             }
             Text {
-                text: root.notification.appName || "Notifica"
+                text: root.notification.appName || I18n.tr("Notifica")
                 color: Theme.muted
                 font.pixelSize: 11
                 textFormat: Text.PlainText
@@ -93,7 +93,7 @@ Rectangle {
                 bottomPadding: 0
                 compact: true
                 destructive: true
-                text: "Elimina"
+                text: I18n.tr("Elimina")
                 font.pixelSize: summary.font.pixelSize
                 font.bold: summary.font.bold
                 onClicked: root.notification.dismiss()

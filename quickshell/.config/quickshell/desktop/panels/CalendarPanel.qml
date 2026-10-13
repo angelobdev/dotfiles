@@ -12,10 +12,10 @@ Overlay {
     property date selected: new Date()
     property int month: selected.getMonth()
     property int year: selected.getFullYear()
-    readonly property var locale: Qt.locale("it_IT")
+    readonly property var locale: I18n.locale
     readonly property var days: {
         const first = new Date(year, month, 1, 12);
-        const offset = (first.getDay() + 6) % 7;
+        const offset = (first.getDay() - (locale.firstDayOfWeek % 7) + 7) % 7;
         return Array.from({
             length: 42
         }, (_, i) => new Date(year, month, i - offset + 1, 12));
@@ -34,9 +34,9 @@ Overlay {
     }
     function eventTime(event) {
         if (event.allDay)
-            return "Tutto il giorno";
+            return I18n.tr("Tutto il giorno");
         const start = new Date(event.start), end = new Date(event.end);
-        const format = sameDay(start, end) ? "HH:mm" : "d MMM HH:mm";
+        const format = I18n.tr(sameDay(start, end) ? "time.format" : "datetime.format");
         return locale.toString(start, format) + " – " + locale.toString(end, format);
     }
     function sameDay(a, b) {
@@ -95,12 +95,12 @@ Overlay {
                 }
                 spacing: 14
                 Heading {
-                    text: "Calendario"
+                    text: I18n.tr("Calendario")
                 }
                 RowLayout {
                     PanelIconButton {
                         iconName: "chevron-left"
-                        tooltip: "Mese precedente"
+                        tooltip: I18n.tr("Mese precedente")
                         onClicked: root.shiftMonth(-1)
                     }
                     Text {
@@ -113,7 +113,7 @@ Overlay {
                     }
                     PanelIconButton {
                         iconName: "chevron-right"
-                        tooltip: "Mese successivo"
+                        tooltip: I18n.tr("Mese successivo")
                         onClicked: root.shiftMonth(1)
                     }
                 }
@@ -123,7 +123,7 @@ Overlay {
                     columnSpacing: 3
                     rowSpacing: 3
                     Repeater {
-                        model: ["L", "M", "M", "G", "V", "S", "D"]
+                        model: Array.from({length: 7}, (_, i) => root.locale.dayName((root.locale.firstDayOfWeek + i) % 7, Locale.NarrowFormat))
                         Text {
                             required property string modelData
                             Layout.fillWidth: true
@@ -145,7 +145,7 @@ Overlay {
                             text: modelData.getDate()
                             highlighted: root.sameDay(modelData, root.selected)
                             opacity: modelData.getMonth() === root.month ? 1 : 0.4
-                            tooltip: root.locale.toString(modelData, "dddd d MMMM yyyy") + (root.sameDay(modelData, clock.date) ? " · Oggi" : "")
+                            tooltip: root.locale.toString(modelData, I18n.tr("date.longFormat")) + (root.sameDay(modelData, clock.date) ? I18n.tr(" · Oggi") : "")
                             onClicked: {
                                 root.selected = modelData;
                                 keyboard.forceActiveFocus();
@@ -165,7 +165,7 @@ Overlay {
                 }
                 Text {
                     Layout.fillWidth: true
-                    text: root.locale.toString(root.selected, "dddd d MMMM yyyy")
+                    text: root.locale.toString(root.selected, I18n.tr("date.longFormat"))
                     color: Theme.text
                     horizontalAlignment: Text.AlignHCenter
                 }
@@ -240,7 +240,7 @@ Overlay {
                         }
                         Text {
                             visible: Calendar.forDay(root.selected).length === 0
-                            text: Calendar.busy ? "Lettura calendari…" : Calendar.sources.length ? "Nessun evento per questo giorno" : "Nessun calendario disponibile negli Account online"
+                            text: Calendar.busy ? I18n.tr("Lettura calendari…") : Calendar.sources.length ? I18n.tr("Nessun evento per questo giorno") : I18n.tr("Nessun calendario disponibile negli Account online")
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             color: Theme.muted
@@ -258,14 +258,14 @@ Overlay {
                 }
                 RowLayout {
                     ActionButton {
-                        text: "Oggi"
+                        text: I18n.tr("Oggi")
                         onClicked: {
                             root.today();
                             keyboard.forceActiveFocus();
                         }
                     }
                     ActionButton {
-                        text: "Aggiorna"
+                        text: I18n.tr("Aggiorna")
                         enabled: !Calendar.busy
                         onClicked: root.loadEvents()
                     }
@@ -273,12 +273,12 @@ Overlay {
                         Layout.fillWidth: true
                     }
                     ActionButton {
-                        text: "Chiudi"
+                        text: I18n.tr("Chiudi")
                         onClicked: ShellState.close()
                     }
                 }
                 Text {
-                    text: "Frecce: giorno · PgUp/PgDn: mese · Home: oggi"
+                    text: I18n.tr("Frecce: giorno · PgUp/PgDn: mese · Home: oggi")
                     color: Theme.muted
                     font.pixelSize: 11
                 }

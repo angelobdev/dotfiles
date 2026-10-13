@@ -31,6 +31,7 @@ ShellRoot {
         function status(): string {
             return JSON.stringify({
                 panel: ShellState.panel,
+                language: I18n.language,
                 screens: Quickshell.screens.length,
                 workspace: Hyprland.focusedWorkspace?.id ?? -1,
                 volume: Audio.volume,

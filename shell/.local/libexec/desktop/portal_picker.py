@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Translate an explicit Quickshell selection into XDPH 1.4's picker protocol."""
+from i18n import tr
 import json
 import os
 from pathlib import Path
@@ -22,7 +23,7 @@ def selection(value, outputs, entries, allow_token=False):
     kind, ident = value.get('kind'), str(value.get('id', ''))
     valid = (kind == 'screen' and ident in outputs) or (kind == 'window' and ident in {w['id'] for w in entries})
     if not valid or any(c in ident for c in '\n\r'):
-        raise ValueError('Selezione non valida')
+        raise ValueError(tr('Selezione non valida'))
     return '[SELECTION]'+('r' if allow_token and value.get('remember') else '')+'/'+kind+':'+ident
 
 
@@ -32,7 +33,7 @@ def main():
     outputs = [m['name'] for m in monitors]
     runtime = os.environ.get('XDG_RUNTIME_DIR')
     if not runtime:
-        raise ValueError('Sessione Wayland richiesta')
+        raise ValueError(tr('Sessione Wayland richiesta'))
     with tempfile.TemporaryDirectory(prefix='desktop-share-', dir=runtime) as directory:
         result = Path(directory)/'selection.json'
         result.write_text('')
@@ -52,5 +53,5 @@ if __name__ == '__main__':
     try:
         sys.exit(main())
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
-        print('Selezione condivisione non riuscita: '+str(error), file=sys.stderr)
+        print(tr('Selezione condivisione non riuscita: ')+str(error), file=sys.stderr)
         sys.exit(1)

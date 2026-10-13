@@ -4,7 +4,7 @@
 
 ## Struttura Quickshell
 
-Dentro `quickshell/.config/quickshell/desktop/`, `shell.qml` resta il punto di ingresso del desktop e `share.qml` quello del selettore di condivisione. `Config.qml`, `Theme.qml` e `ShellState.qml` rimangono nella radice.
+Dentro `quickshell/.config/quickshell/desktop/`, `shell.qml` resta il punto di ingresso del desktop e `share.qml` quello del selettore di condivisione. `Config.qml`, `Theme.qml`, `ShellState.qml` e il singleton `I18n.qml` rimangono nella radice.
 
 | Cartella         | Contenuto                                                                                         |
 | ---------------- | ------------------------------------------------------------------------------------------------- |
@@ -14,10 +14,36 @@ Dentro `quickshell/.config/quickshell/desktop/`, `shell.qml` resta il punto di i
 | `notifications/` | Centro, popup e componenti specifici delle notifiche.                                             |
 | `session/`       | Menu power e richieste di autenticazione Polkit/Bluetooth.                                        |
 | `osd/`           | Indicatori temporanei di volume e luminosità.                                                     |
+| `i18n/`         | Cataloghi JSON italiano/inglese americano e selezione della lingua (`Locale.js`).                  |
 | `components/`    | Pulsanti, slider, card e altri elementi condivisi.                                                |
 | `services/`      | Stato e collegamenti ai backend; `assets/icons/` contiene le icone.                               |
 
 I componenti specifici stanno accanto alla funzione che li usa; quelli riutilizzati da più pannelli restano in `components/`. Non è più presente la cartella generica `modules/`.
+
+## Lingua dell’interfaccia
+
+La lingua viene letta da `/etc/locale.conf`, senza eseguire il file come script. `LC_MESSAGES`, se presente, ha precedenza su `LANG`:
+
+```ini
+LANG="en_US.UTF-8"
+# Per mantenere gli altri formati di sistema e usare la shell in italiano:
+# LC_MESSAGES="it_IT.UTF-8"
+```
+
+Le varianti italiane usano `it_IT.json`; quelle inglesi usano `en_US.json`. Lingue non ancora supportate, `C` e `POSIX` ricadono sull’inglese americano. Se il file manca o non contiene impostazioni utilizzabili, si consultano `LC_ALL`, `LC_MESSAGES` e `LANG` dell’ambiente, in quest’ordine. Le impostazioni del file hanno precedenza sull’ambiente ereditato dalla sessione.
+
+`I18n.qml` osserva il file di sistema e i cataloghi: testi dichiarativi e formati si aggiornano al cambiamento. Gli helper Python leggono la stessa impostazione quando producono un messaggio; gli errori già mostrati e i contenuti dello storico conservano il testo ricevuto. `desktop-shell status` espone la lingua selezionata nel campo `language`. Non servono nuovi pacchetti.
+
+Sono tradotti pannelli, controlli, tooltip, Hints, selettore di condivisione e messaggi propri degli helper. Il calendario usa nomi e primo giorno della settimana della lingua selezionata (lunedì in italiano, domenica in inglese americano), con orari a 24/12 ore; i numeri decimali seguono la stessa lingua. Nomi e contenuti forniti dalle applicazioni, notifiche ricevute, eventi, voci della tray e prompt di autenticazione dei servizi restano quelli della sorgente. Le descrizioni dei bind riconosciute sono tradotte in Hints; le descrizioni personalizzate sconosciute rimangono come scritte nel config Lua.
+
+I due cataloghi condividono le stesse chiavi:
+
+- [`it_IT.json`](../quickshell/.config/quickshell/desktop/i18n/it_IT.json)
+- [`en_US.json`](../quickshell/.config/quickshell/desktop/i18n/en_US.json)
+
+Per aggiungere un testo, inserire la stessa chiave in entrambi i file e usare `I18n.tr("Chiave")` in QML oppure `tr('Chiave')` negli helper Python. I parametri usano `%1`, `%2`, ecc., ad esempio `I18n.tr("Sposta al workspace %1", [4])`. Per singolare/plurale usare `I18n.plural(chiaveSingolare, chiavePlurale, numero)`: `%1` riceve il numero. Una chiave mancante ricade sul catalogo inglese e poi sulla chiave stessa. Non tradurre identificatori interni, comandi o nomi dei protocolli.
+
+`python3 scripts/check-i18n.py`, incluso in `./scripts/check.sh`, verifica selezione della lingua, parità delle chiavi, parametri e riferimenti letterali QML. Dopo aver aggiunto file ripetere Stow; dopo modifiche al codice del singleton riavviare la shell.
 
 ## Configurazione del Control Center
 

@@ -19,7 +19,7 @@ ControlTile {
         spacing: 4
         RowLayout {
             Text {
-                text: "Suono"
+                text: I18n.tr("Suono")
                 color: Theme.text
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
@@ -33,14 +33,14 @@ ControlTile {
             CompactIconButton {
                 iconName: "chevron-down"
                 rotation: root.expanded ? 180 : 0
-                tooltip: "Ingressi e uscite"
+                tooltip: I18n.tr("Ingressi e uscite")
                 implicitHeight: 26
                 implicitWidth: 28
                 onClicked: root.expanded = !root.expanded
             }
         }
         Text {
-            text: Audio.sink?.description || "Nessuna uscita"
+            text: Audio.sink?.description || I18n.tr("Nessuna uscita")
             Layout.fillWidth: true
             elide: Text.ElideRight
             color: Theme.muted
@@ -52,7 +52,7 @@ ControlTile {
                 implicitWidth: 30
                 iconSize: 18
                 iconName: Audio.muted ? "volume-muted" : "volume-high"
-                tooltip: Audio.muted ? "Riattiva audio" : "Disattiva audio"
+                tooltip: Audio.muted ? I18n.tr("Riattiva audio") : I18n.tr("Disattiva audio")
                 enabled: !!Audio.sink
                 highlighted: Audio.muted
                 onClicked: Audio.toggleMute()
@@ -62,7 +62,7 @@ ControlTile {
                 value: Audio.volume / 100
                 enabled: !!Audio.sink
                 onMoved: Audio.setVolume(value)
-                Accessible.name: "Volume uscita"
+                Accessible.name: I18n.tr("Volume uscita")
             }
         }
         ColumnLayout {
@@ -70,7 +70,7 @@ ControlTile {
             Layout.fillWidth: true
             spacing: 4
             Text {
-                text: "USCITE"
+                text: I18n.tr("USCITE")
                 color: Theme.muted
                 font.pixelSize: 10
                 font.letterSpacing: 1
@@ -94,7 +94,7 @@ ControlTile {
                 }
             }
             Text {
-                text: "INGRESSI"
+                text: I18n.tr("INGRESSI")
                 color: Theme.muted
                 font.pixelSize: 10
                 font.letterSpacing: 1
@@ -122,7 +122,7 @@ ControlTile {
                     implicitWidth: 30
                     iconName: "microphone"
                     iconSize: 18
-                    tooltip: "Attiva/disattiva microfono"
+                    tooltip: I18n.tr("Attiva/disattiva microfono")
                     enabled: !!Audio.source
                     highlighted: Audio.source?.audio?.muted ?? false
                     onClicked: Audio.toggleMic()
@@ -132,7 +132,7 @@ ControlTile {
                     enabled: !!Audio.source
                     value: Audio.inputVolume / 100
                     onMoved: Audio.setInputVolume(value)
-                    Accessible.name: "Volume ingresso"
+                    Accessible.name: I18n.tr("Volume ingresso")
                 }
                 Text {
                     text: Audio.inputVolume + "%"
@@ -141,7 +141,7 @@ ControlTile {
                 }
             }
             ActionButton {
-                text: "Pannello audio ›"
+                text: I18n.tr("Pannello audio ›")
                 font.pixelSize: 12
                 onClicked: ShellState.toggle("audio", ShellState.activeScreen)
             }

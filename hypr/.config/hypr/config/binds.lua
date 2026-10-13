@@ -12,7 +12,7 @@ local function screenshot(mode, quick, editor)
     return function()
         local capture = (hl.plugin or {}).hyprcapture
         if not capture then
-            hl.exec_cmd('notify-send "Screenshot" "HyprCapture non caricato: vedere docs/plugins.md"')
+            hl.exec_cmd('python3 "' .. os.getenv("HOME") .. '/.local/libexec/desktop/i18n.py" --notify "Screenshot" "HyprCapture non caricato: vedere docs/plugins.md"')
             return
         end
         if editor then

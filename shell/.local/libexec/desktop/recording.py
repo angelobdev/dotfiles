@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Own a recorder child and finalize its file on shell exit or a stop request."""
+from i18n import tr
 import argparse
 from collections import deque
 from datetime import datetime
@@ -23,11 +24,11 @@ def main():
     a = p.parse_args()
     os.umask(0o077)
     if a.geometry and not re.fullmatch(r'-?\d+,-?\d+ [1-9]\d*x[1-9]\d*', a.geometry):
-        p.error('Area non valida')
+        p.error(tr('Area non valida'))
     monitors = json.loads(subprocess.run(['hyprctl', '-j', 'monitors'], capture_output=True, text=True, check=True).stdout)
     output = next((m for m in monitors if m['name'] == a.output), None)
     if output is None:
-        p.error('Monitor non disponibile')
+        p.error(tr('Monitor non disponibile'))
     if a.geometry:
         x, y, w, h = map(int, re.findall(r'-?\d+', a.geometry))
         width, height = output['width'], output['height']
@@ -35,7 +36,7 @@ def main():
             width, height = height, width
         width, height = round(width/output['scale']), round(height/output['scale'])
         if x < output['x'] or y < output['y'] or x+w > output['x']+width or y+h > output['y']+height:
-            p.error('L’area deve essere contenuta in un solo monitor')
+            p.error(tr('L’area deve essere contenuta in un solo monitor'))
     folder = subprocess.run(['xdg-user-dir', 'VIDEOS'], capture_output=True, text=True, check=True).stdout.strip()
     directory = Path(folder or Path.home()/'Videos')/'Recordings'
     directory.mkdir(parents=True, exist_ok=True)
@@ -70,9 +71,9 @@ def main():
         code = child.wait()
         if destination.stat().st_size == 0:
             destination.unlink()
-            print(json.dumps({'recording': False, 'error': 'Registrazione non avviata: '+''.join(tail)[-1200:]}), flush=True)
+            print(json.dumps({'recording': False, 'error': tr('Registrazione non avviata: ')+''.join(tail)[-1200:]}), flush=True)
             return 1
-        print(json.dumps({'recording': False, 'path': str(destination), 'error': '' if stopped or code == 0 else 'Registrazione interrotta: '+''.join(tail)[-1200:]}), flush=True)
+        print(json.dumps({'recording': False, 'path': str(destination), 'error': '' if stopped or code == 0 else tr('Registrazione interrotta: ')+''.join(tail)[-1200:]}), flush=True)
         return 0 if stopped or code == 0 else 1
     finally:
         if child and child.poll() is None:
@@ -88,5 +89,5 @@ if __name__ == '__main__':
     try:
         sys.exit(main())
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
-        print(json.dumps({'recording': False, 'error': 'Registrazione non riuscita: '+str(error)}), flush=True)
+        print(json.dumps({'recording': False, 'error': tr('Registrazione non riuscita: ')+str(error)}), flush=True)
         sys.exit(1)

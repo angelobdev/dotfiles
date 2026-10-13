@@ -44,7 +44,7 @@ Singleton {
         percent = Math.max(0, Math.round(level));
         muted = isMuted;
         detail = description;
-        title = type === "brightness" ? "Luminosità" : type === "microphone" ? "Microfono" : "Volume";
+        title = type === "brightness" ? I18n.tr("Luminosità") : type === "microphone" ? I18n.tr("Microfono") : I18n.tr("Volume");
         iconName = type === "brightness" ? "sun" : type === "microphone" ? (isMuted ? "microphone-muted" : "microphone") : (isMuted || percent === 0) ? "volume-muted" : percent < 35 ? "volume-low" : "volume-high";
         visible = true;
         expiry.restart();

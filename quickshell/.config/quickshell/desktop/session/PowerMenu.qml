@@ -13,31 +13,31 @@ Overlay {
     property int selectedAction: 0
     readonly property var actions: [
         {
-            label: "Blocca schermo",
+            label: I18n.tr("Blocca schermo"),
             action: "lock",
             icon: "lock",
             confirm: false
         },
         {
-            label: "Sospendi",
+            label: I18n.tr("Sospendi"),
             action: "suspend",
             icon: "suspend",
             confirm: true
         },
         {
-            label: "Esci da Hyprland",
+            label: I18n.tr("Esci da Hyprland"),
             action: "logout",
             icon: "logout",
             confirm: true
         },
         {
-            label: "Riavvia il computer",
+            label: I18n.tr("Riavvia il computer"),
             action: "reboot",
             icon: "reboot",
             confirm: true
         },
         {
-            label: "Spegni il computer",
+            label: I18n.tr("Spegni il computer"),
             action: "poweroff",
             icon: "power",
             confirm: true
@@ -96,7 +96,7 @@ Overlay {
                 if (ShellState.panel === root.panelName)
                     ShellState.close();
             } else {
-                root.failure = errors.text.trim() || "Operazione non riuscita (" + code + ").";
+                root.failure = errors.text.trim() || I18n.tr("Operazione non riuscita (") + code + ").";
                 root.cancelAction();
             }
         }
@@ -115,7 +115,7 @@ Overlay {
             }
             spacing: 10
             Heading {
-                text: "Sessione"
+                text: I18n.tr("Sessione")
             }
             Repeater {
                 id: buttons
@@ -141,14 +141,14 @@ Overlay {
             }
             Text {
                 visible: root.pending !== ""
-                text: "Confermi l’operazione?"
+                text: I18n.tr("Confermi l’operazione?")
                 color: Theme.text
             }
             RowLayout {
                 visible: root.pending !== ""
                 ActionButton {
                     id: confirm
-                    text: "Conferma"
+                    text: I18n.tr("Conferma")
                     enabled: !operation.running
                     highlighted: true
                     Keys.onReturnPressed: clicked()
@@ -161,7 +161,7 @@ Overlay {
                 }
                 ActionButton {
                     id: cancel
-                    text: "Annulla"
+                    text: I18n.tr("Annulla")
                     enabled: !operation.running
                     Keys.onReturnPressed: clicked()
                     Keys.onEnterPressed: clicked()
@@ -182,7 +182,7 @@ Overlay {
             }
             ActionButton {
                 id: closeButton
-                text: "Chiudi"
+                text: I18n.tr("Chiudi")
                 Layout.fillWidth: true
                 Keys.onReturnPressed: clicked()
                 Keys.onEnterPressed: clicked()
@@ -195,7 +195,7 @@ Overlay {
             Text {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
-                text: "↑ ↓ / Tab: seleziona · Invio / Spazio: attiva · Esc: annulla o chiudi"
+                text: I18n.tr("↑ ↓ / Tab: seleziona · Invio / Spazio: attiva · Esc: annulla o chiudi")
                 font.pixelSize: 11
                 color: Theme.muted
             }

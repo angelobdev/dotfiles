@@ -64,7 +64,7 @@ Overlay {
                 if (ShellState.panel === root.panelName)
                     ShellState.close();
             } else
-                root.failure = errors.text.trim() || "Impossibile impostare lo sfondo.";
+                root.failure = errors.text.trim() || I18n.tr("Impossibile impostare lo sfondo.");
         }
     }
     Card {
@@ -78,22 +78,22 @@ Overlay {
             }
             spacing: 12
             Heading {
-                text: "Scegli sfondo"
+                text: I18n.tr("Scegli sfondo")
             }
             RowLayout {
                 ActionButton {
                     text: "↑"
-                    tooltip: "Cartella superiore"
+                    tooltip: I18n.tr("Cartella superiore")
                     enabled: !operation.running
                     onClicked: root.navigate(folder.parentFolder)
                 }
                 ActionButton {
-                    text: "Home"
+                    text: I18n.tr("Home")
                     enabled: !operation.running
                     onClicked: root.navigate(root.fileUrl(Quickshell.env("HOME")))
                 }
                 ActionButton {
-                    text: "Sfondi"
+                    text: I18n.tr("Sfondi")
                     enabled: !operation.running
                     onClicked: root.navigate(root.fileUrl(Quickshell.env("HOME") + "/.local/share/wallpapers"))
                 }
@@ -101,7 +101,7 @@ Overlay {
                     id: path
                     Layout.fillWidth: true
                     text: decodeURIComponent(folder.folder.toString().replace(/^file:\/\//, ""))
-                    placeholderText: "Percorso di una cartella"
+                    placeholderText: I18n.tr("Percorso di una cartella")
                     enabled: !operation.running
                     onAccepted: root.navigate(root.fileUrl(text.startsWith("~/") ? Quickshell.env("HOME") + text.slice(1) : text.startsWith("/") ? text : Quickshell.env("HOME") + "/" + text))
                 }
@@ -148,7 +148,7 @@ Overlay {
                     Text {
                         anchors.centerIn: parent
                         visible: folder.count === 0
-                        text: "Nessuna immagine in questa cartella"
+                        text: I18n.tr("Nessuna immagine in questa cartella")
                         color: Theme.muted
                         font.pixelSize: 12
                     }
@@ -175,7 +175,7 @@ Overlay {
                         width: parent.width - 32
                         horizontalAlignment: Text.AlignHCenter
                         wrapMode: Text.Wrap
-                        text: root.selectedPath ? (preview.status === Image.Error ? "Anteprima non disponibile. Il file verrà convertito all’applicazione." : "") : "Seleziona un’immagine per l’anteprima"
+                        text: root.selectedPath ? (preview.status === Image.Error ? I18n.tr("Anteprima non disponibile. Il file verrà convertito all’applicazione.") : "") : I18n.tr("Seleziona un’immagine per l’anteprima")
                         color: Theme.muted
                     }
                 }
@@ -198,7 +198,7 @@ Overlay {
             }
             RowLayout {
                 ActionButton {
-                    text: "Ripristina Fedora"
+                    text: I18n.tr("Ripristina Fedora")
                     enabled: !operation.running
                     onClicked: root.apply(true)
                 }
@@ -206,13 +206,13 @@ Overlay {
                     Layout.fillWidth: true
                 }
                 ActionButton {
-                    text: operation.running ? "Applicazione…" : "Imposta sfondo"
+                    text: operation.running ? I18n.tr("Applicazione…") : I18n.tr("Imposta sfondo")
                     highlighted: true
                     enabled: !!root.selectedPath && !operation.running
                     onClicked: root.apply(false)
                 }
                 ActionButton {
-                    text: "Chiudi"
+                    text: I18n.tr("Chiudi")
                     onClicked: ShellState.close()
                 }
             }

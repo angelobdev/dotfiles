@@ -9,7 +9,7 @@ I servizi NetworkManager, BlueZ, PipeWire/WirePlumber, UPower e Polkit forniscon
 - [Installazione, pacchetti e aggiornamenti](docs/installazione.md)
 - [Plugin Hyprland: overview, gesture touch, glass e screenshot](docs/plugins.md)
 - [Interfaccia e scorciatoie](docs/interfaccia.md)
-- [Configurazione, tema, luminosità e sfondi](docs/configurazione.md)
+- [Configurazione, lingua, tema, luminosità e sfondi](docs/configurazione.md)
 - [Blocco, impronte, XWayland e condivisione schermo](docs/integrazioni.md)
 - [Diagnostica e stato delle verifiche](docs/diagnostica.md)
 - [Roadmap](ROADMAP.md)
@@ -31,6 +31,8 @@ desktop-shell restart
 Non usare sudo con Stow. `apply` salva eventuali file in conflitto prima di collegarli alla repo. Dopo l’aggiunta di nuovi file ripetere `apply`.
 
 L’angolo top-left alterna Hyprspace e desktop; la barra rilascia spazio e input durante l’overview. HyprCapture segue il puntatore tra monitor: `Super + Shift + S` o `Stamp` aprono la cattura area con editor; `Super + Shift + Alt + S` o `Alt + Stamp` quella del monitor con editor. Hints mostra i bind della sessione attiva, raggruppando screenshot e registrazione in “Cattura schermo”.
+
+La shell supporta italiano e inglese americano, selezionati da `/etc/locale.conf`; testi, calendario e orologio seguono la lingua di sistema. I cataloghi JSON sono in [`desktop/i18n/`](quickshell/.config/quickshell/desktop/i18n); vedere [Lingua dell’interfaccia](docs/configurazione.md#lingua-dellinterfaccia).
 
 Kitty include il riferimento completo dei default commentati; Fastfetch ha un layout Fedora con palette neutra.
 

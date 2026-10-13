@@ -82,6 +82,8 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 
 ### Integrazioni e documentazione
 
+- [x] Supporto multilingua Quickshell e helper: cataloghi JSON italiano/inglese americano, selezione da `/etc/locale.conf` (`LC_MESSAGES`/`LANG`), fallback inglese, aggiornamento dei testi e formati locali per calendario/orologio/numeri. Hints traduce categorie e descrizioni note; controlli automatici per cataloghi e parametri. Shell attiva verificata in `en_US`, entrambe le lingue provate in istanze QML isolate.
+
 - [x] Agente di autenticazione Polkit in Quickshell.
 - [x] Tema dark-glassy coerente: palette grafite condivisa tra Quickshell, GTK 3/4 e Qt 5/6, superfici shell traslucide con testo opaco e accento neutro; le app conservano la geometria nativa e possono avere stili propri.
 - [x] Tema Kitty coordinato, font Adwaita Mono, sfondo traslucido e palette ANSI.
@@ -98,5 +100,4 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 
 ## Possibili estensioni individuate
 
-- [ ] Multilanguage support
 - [ ] Multi-distro installation support (add debian, arch)

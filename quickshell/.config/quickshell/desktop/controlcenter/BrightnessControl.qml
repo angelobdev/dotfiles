@@ -19,7 +19,7 @@ ControlTile {
         spacing: 4
         RowLayout {
             Text {
-                text: "Luminosità"
+                text: I18n.tr("Luminosità")
                 color: Theme.text
                 font.pixelSize: 13
                 font.weight: Font.DemiBold
@@ -34,14 +34,14 @@ ControlTile {
                 visible: Brightness.others.length > 0
                 iconName: "chevron-down"
                 rotation: root.expanded ? 180 : 0
-                tooltip: "Altri monitor"
+                tooltip: I18n.tr("Altri monitor")
                 implicitHeight: 26
                 implicitWidth: 28
                 onClicked: root.expanded = !root.expanded
             }
         }
         Text {
-            text: Brightness.primary?.name || "Nessun monitor"
+            text: Brightness.primary?.name || I18n.tr("Nessun monitor")
             color: Theme.muted
             font.pixelSize: 11
         }
@@ -59,7 +59,7 @@ ControlTile {
                 stepSize: 1
                 enabled: Brightness.primary?.available ?? false
                 onMoved: Brightness.setBrightness(Brightness.primary, value)
-                Accessible.name: "Luminosità monitor principale"
+                Accessible.name: I18n.tr("Luminosità monitor principale")
                 Binding on value {
                     when: !primarySlider.pressed
                     value: Brightness.displayPercent(Brightness.primary)
@@ -68,7 +68,7 @@ ControlTile {
         }
         Text {
             visible: !!Brightness.primary && !Brightness.primary.available
-            text: Brightness.primary?.error || "Lettura in corso…"
+            text: Brightness.primary?.error || I18n.tr("Lettura in corso…")
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             color: Theme.muted
@@ -98,7 +98,7 @@ ControlTile {
                         stepSize: 1
                         enabled: monitorRow.monitor?.available ?? false
                         onMoved: Brightness.setBrightness(monitorRow.monitor, value)
-                        Accessible.name: "Luminosità " + monitorRow.modelData
+                        Accessible.name: I18n.tr("Luminosità ") + monitorRow.modelData
                         Binding on value {
                             when: !otherSlider.pressed
                             value: Brightness.displayPercent(monitorRow.monitor)
@@ -106,7 +106,7 @@ ControlTile {
                     }
                     Text {
                         visible: !(monitorRow.monitor?.available ?? false)
-                        text: monitorRow.monitor?.error || "Lettura in corso…"
+                        text: monitorRow.monitor?.error || I18n.tr("Lettura in corso…")
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         color: Theme.muted

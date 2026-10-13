@@ -20,7 +20,7 @@ if not target.is_dir():
 if not shutil.which('stow'):
     parser.error('Install GNU Stow first: sudo dnf install stow')
 
-command = ['stow', '--dir', str(ROOT), '--target', str(target), '--no-folding', '--verbose']
+command = ['stow', '--dir', str(ROOT), '--target', str(target), '--no-folding', '--verbose', r'--ignore=__pycache__|\.py[co]$']
 if args.action == 'remove':
     sys.exit(subprocess.call(command + ['--delete', *PACKAGES]))
 
@@ -28,7 +28,7 @@ conflicts = []
 for package in PACKAGES:
     package_root = ROOT / package
     for source in sorted(package_root.rglob('*')):
-        if source.is_dir():
+        if source.is_dir() or '__pycache__' in source.parts or source.suffix in ('.pyc', '.pyo'):
             continue
         destination = target / source.relative_to(package_root)
         # Refuse redirects/collisions in parent directories before changing anything.

@@ -26,7 +26,7 @@ Overlay {
             spacing: 12
             RowLayout {
                 Text {
-                    text: "Centro di controllo"
+                    text: I18n.tr("Centro di controllo")
                     font.family: Theme.font
                     font.pixelSize: 15
                     font.weight: Font.DemiBold
@@ -36,7 +36,7 @@ Overlay {
                 PanelIconButton {
                     id: closeButton
                     iconName: "close"
-                    tooltip: "Chiudi"
+                    tooltip: I18n.tr("Chiudi")
                     onClicked: ShellState.close()
                 }
             }
