@@ -1,22 +1,22 @@
 # Hyprland + Quickshell
 
-Desktop custom per Fedora 44, con Hyprland Lua, interfaccia Quickshell e pacchetti GNU Stow. La repo gestisce barra, launcher, Control Center, notifiche, calendario, clipboard, cattura e registrazione, blocco e sfondi.
+Custom desktop for Fedora 44, with Hyprland Lua, a Quickshell interface, and GNU Stow packages. The repository manages the bar, launcher, Control Center, notifications, calendar, clipboard, screenshots, recording, lock screen, and wallpapers.
 
-I servizi NetworkManager, BlueZ, PipeWire/WirePlumber, UPower e Polkit forniscono i backend. Tutti i pannelli sono Quickshell, senza applet esterne.
+NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, and Polkit provide the backends. All panels use Quickshell, without external applets.
 
-## Da dove partire
+## Getting started
 
-- [Installazione, pacchetti e aggiornamenti](docs/installazione.md)
-- [Plugin Hyprland: overview, gesture touch, glass e screenshot](docs/plugins.md)
-- [Interfaccia e scorciatoie](docs/interfaccia.md)
-- [Configurazione, lingua, tema, luminosità e sfondi](docs/configurazione.md)
-- [Blocco, impronte, XWayland e condivisione schermo](docs/integrazioni.md)
-- [Diagnostica e stato delle verifiche](docs/diagnostica.md)
+- [Installation, packages, and updates](docs/installation.md)
+- [Hyprland plugins: overview, touch gestures, glass, and screenshots](docs/plugins.md)
+- [Interface and shortcuts](docs/interface.md)
+- [Configuration, language, theme, brightness, and wallpapers](docs/configuration.md)
+- [Lock screen, fingerprints, XWayland, and screen sharing](docs/integrations.md)
+- [Troubleshooting and verification status](docs/troubleshooting.md)
 - [Roadmap](ROADMAP.md)
 
-## Aggiornare la configurazione
+## Updating the configuration
 
-Dopo aver installato le dipendenze indicate nella guida:
+After installing the dependencies listed in the guide:
 
 ```sh
 cd ~/.dotfiles
@@ -28,14 +28,14 @@ desktop-session start
 desktop-shell restart
 ```
 
-Non usare sudo con Stow. `apply` salva eventuali file in conflitto prima di collegarli alla repo. Dopo l’aggiunta di nuovi file ripetere `apply`.
+Do not run Stow with sudo. `apply` backs up conflicting files before linking them to the repository. Run `apply` again after adding files.
 
-L’angolo top-left alterna Hyprspace e desktop; la barra rilascia spazio e input durante l’overview. HyprCapture segue il puntatore tra monitor: `Super + Shift + S` o `Stamp` aprono la cattura area con editor; `Super + Shift + Alt + S` o `Alt + Stamp` quella del monitor con editor. Hints mostra i bind della sessione attiva, raggruppando screenshot e registrazione in “Cattura schermo”.
+The top-left corner toggles Hyprspace; the bar releases its reserved space and input during the overview. HyprCapture follows the pointer across monitors: `Super + Shift + S` or `Print` opens area capture with the editor; `Super + Shift + Alt + S` or `Alt + Print` captures the monitor with the editor. Hints shows the active session's bindings, grouping screenshots and recordings under “Screen capture”.
 
-La shell supporta italiano e inglese americano, selezionati da `/etc/locale.conf`; testi, calendario e orologio seguono la lingua di sistema. I cataloghi JSON annidati, con chiavi semantiche come `clipboard.deleteItem`, sono in [`desktop/i18n/`](quickshell/.config/quickshell/desktop/i18n); vedere [Lingua dell’interfaccia](docs/configurazione.md#lingua-dellinterfaccia).
+The shell supports Italian and US English, selected from `/etc/locale.conf`; text, calendar, and clock follow the system language. Nested JSON catalogs with semantic keys such as `clipboard.deleteItem` live in [`desktop/i18n/`](quickshell/.config/quickshell/desktop/i18n); see [Interface language](docs/configuration.md#interface-language). Documentation, code, comments, and default labels are in English; Italian text belongs only in `i18n/it_IT.json`.
 
-Kitty include il riferimento completo dei default commentati; Fastfetch ha un layout Fedora con palette neutra.
+Kitty includes a complete reference with commented defaults; Fastfetch uses a Fedora layout with a neutral palette.
 
-Le impostazioni principali sono in [`Config.qml`](quickshell/.config/quickshell/desktop/Config.qml), la palette in [`Theme.qml`](quickshell/.config/quickshell/desktop/Theme.qml) e gli override della macchina in [`local.lua`](hypr/.config/hypr/config/local.lua).
+Main settings are in [`Config.qml`](quickshell/.config/quickshell/desktop/Config.qml), the palette in [`Theme.qml`](quickshell/.config/quickshell/desktop/Theme.qml), and machine overrides in [`local.lua`](hypr/.config/hypr/config/local.lua).
 
-Quickshell è organizzato per funzione (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), con componenti e servizi condivisi. Il [layout delle cartelle](docs/configurazione.md#struttura-quickshell) descrive dove intervenire. I launcher locali di ChatGPT e File/Nautilus preferiscono Wayland; vedere [XWayland e nitidezza](docs/integrazioni.md#xwayland).
+Quickshell is organized by function (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), with shared components and services. The [directory layout](docs/configuration.md#quickshell-layout) explains where to make changes. Local ChatGPT and Files/Nautilus launchers prefer Wayland; see [XWayland and text clarity](docs/integrations.md#xwayland).

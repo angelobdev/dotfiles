@@ -6,7 +6,7 @@ case "${1:-}" in
     --wayland) shift ;;
 esac
 if [[ $# -eq 0 ]]; then
-    echo 'Uso: desktop-electron [--wayland|--x11] PROGRAMMA [ARGOMENTI...]' >&2
+    echo 'Usage: desktop-electron [--wayland|--x11] PROGRAM [ARGUMENTS...]' >&2
     exit 2
 fi
 program=$1; shift

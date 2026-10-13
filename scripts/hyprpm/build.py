@@ -26,9 +26,9 @@ def rpm_version(package):
 def fingerprint():
     version = rpm_version('hyprland')
     if version != rpm_version('hyprland-devel'):
-        raise RuntimeError('hyprland e hyprland-devel devono avere la stessa versione RPM')
+        raise RuntimeError('hyprland and hyprland-devel must have the same RPM version')
     if version != '0.56.2-17.fc44.x86_64':
-        raise RuntimeError('Build Hyprland diversa da quella verificata: aggiornare e verificare i pin prima di compilare')
+        raise RuntimeError('Hyprland build differs from the verified version: update and verify pins before building')
     return hashlib.sha256((version + Path(__file__).read_text()).encode()).hexdigest()[:20]
 
 
@@ -52,7 +52,7 @@ def build(name):
             old = 'pkg_search_module(LUA REQUIRED lua5.5 lua-5.5 lua55 lua>=5.5)'
             new = 'pkg_check_modules(LUA REQUIRED lua>=5.4 lua<5.5)'
             if old not in text and new not in text:
-                raise RuntimeError('Contesto patch Lua cambiato')
+                raise RuntimeError('Lua patch context has changed')
             cmake.write_text(text.replace(old, new))
         jobs = '2'  # Keep desktop responsiveness and memory use predictable.
         if name in ('Hyprspace', 'hyprglass'):
@@ -64,7 +64,7 @@ def build(name):
             run('cmake', '-S', '.', '-B', 'build', '-DCMAKE_BUILD_TYPE=Release', '-DBUILD_TESTING=OFF', cwd=cache)
             run('cmake', '--build', 'build', '--parallel', jobs, cwd=cache)
         if not (cache / artifact).is_file():
-            raise RuntimeError('Build senza artefatto: ' + name)
+            raise RuntimeError('Build produced no artifact: ' + name)
         stamp.write_text(revision + '\n')
     Path('out').mkdir(exist_ok=True)
     shutil.copy2(cache / artifact, Path('out') / (name + '.so'))

@@ -18,17 +18,17 @@ Overlay {
             return I18n.tr("hints.categories.audioBrightness");
         if ((bind.key || "").startsWith("mouse:"))
             return I18n.tr("hints.categories.mouse");
-        if (/screenshot|registrazione/.test(name))
+        if (/screenshot|recording/.test(name))
             return I18n.tr("hints.categories.screenCapture");
         if (/workspace|scratchpad/.test(name))
             return I18n.tr("hints.categories.workspaces");
-        if (/blocca|sospendi|logout|riavvio|spegni|sessione/.test(name))
+        if (/lock|suspend|logout|reboot|shut down|session/.test(name))
             return I18n.tr("session.title");
-        if (/applicazioni|centro di controllo|notifiche|quickshell|rete|wi-fi|volume e|batteria|calendario|hints|sfondo|clipboard/.test(name))
+        if (/applications|control center|notifications|quickshell|network|wi-fi|sound.*devices|battery|calendar|hints|wallpaper|clipboard/.test(name))
             return I18n.tr("hints.categories.shell");
-        if (/browser|terminale|kitty|1password/.test(name))
+        if (/browser|terminal|kitty|1password/.test(name))
             return I18n.tr("launcher.title");
-        if (/finestra|focus|floating|fullscreen|schermo intero|^sposta |tiling|split|pseudo/.test(name))
+        if (/window|focus|floating|fullscreen|^move |tiling|split|pseudo/.test(name))
             return I18n.tr("hints.categories.windows");
         return I18n.tr("hints.categories.other");
     }

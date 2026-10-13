@@ -28,68 +28,68 @@ end
 -- *** BINDS *** --
 
 -- Applications
-bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminale")
+bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminal")
 
 -- System (Hyprland)
-bind("SUPER + Q", hl.dsp.window.close(), "Chiudi finestra")
-bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Finestra flottante")
-bind("SUPER + P", hl.dsp.window.pseudo(), "Pseudo tiling")
-bind("SUPER + J", hl.dsp.layout("togglesplit"), "Cambia orientamento split")
-bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Schermo intero")
+bind("SUPER + Q", hl.dsp.window.close(), "Close window")
+bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Toggle floating window")
+bind("SUPER + P", hl.dsp.window.pseudo(), "Toggle pseudotiling")
+bind("SUPER + J", hl.dsp.layout("togglesplit"), "Toggle split orientation")
+bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Fullscreen")
 
-bind("SUPER + SHIFT + S", screenshot("region", false, true), "Screenshot · Area con editor")
-bind("SUPER + SHIFT + ALT + S", screenshot("fullscreen", false, true), "Screenshot · Monitor con editor")
+bind("SUPER + SHIFT + S", screenshot("region", false, true), "Screenshot · Area with editor")
+bind("SUPER + SHIFT + ALT + S", screenshot("fullscreen", false, true), "Screenshot · Display with editor")
 
-bind("Print", screenshot("region", false, true), "Screenshot · Area con editor")
-bind("ALT + Print", screenshot("fullscreen", false, true), "Screenshot · Monitor con editor")
+bind("Print", screenshot("region", false, true), "Screenshot · Area with editor")
+bind("ALT + Print", screenshot("fullscreen", false, true), "Screenshot · Display with editor")
 
 -- System (Quickshell)
-bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(shell .. " restart"), "Riavvia Quickshell")
-bind("SUPER + Space", hl.dsp.exec_cmd(shell .. " toggle launcher"), "Applicazioni")
-bind("SUPER + SHIFT + C", hl.dsp.exec_cmd(shell .. " toggle controls"), "Centro di controllo")
-bind("SUPER + SHIFT + N", hl.dsp.exec_cmd(shell .. " toggle notifications"), "Notifiche")
-bind("SUPER + SHIFT + E", hl.dsp.exec_cmd(shell .. " toggle network"), "Rete e Wi-Fi")
-bind("SUPER + SHIFT + V", hl.dsp.exec_cmd(shell .. " toggle audio"), "Volume e dispositivi audio")
-bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Batteria ed energia")
-bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendario")
-bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Scorciatoie tastiera")
-bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper"'), "Scegli sfondo")
-bind("SUPER + SHIFT + Q", hl.dsp.exec_cmd(shell .. " toggle power"), "Menu sessione")
+bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(shell .. " restart"), "Restart Quickshell")
+bind("SUPER + Space", hl.dsp.exec_cmd(shell .. " toggle launcher"), "Applications")
+bind("SUPER + SHIFT + C", hl.dsp.exec_cmd(shell .. " toggle controls"), "Control Center")
+bind("SUPER + SHIFT + N", hl.dsp.exec_cmd(shell .. " toggle notifications"), "Notifications")
+bind("SUPER + SHIFT + E", hl.dsp.exec_cmd(shell .. " toggle network"), "Network & Wi-Fi")
+bind("SUPER + SHIFT + V", hl.dsp.exec_cmd(shell .. " toggle audio"), "Sound & audio devices")
+bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Battery & power")
+bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendar")
+bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Keyboard shortcuts")
+bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper"'), "Choose wallpaper")
+bind("SUPER + SHIFT + Q", hl.dsp.exec_cmd(shell .. " toggle power"), "Session menu")
 
 -- System (Extensions)
-bind("SUPER + CTRL + C", hl.dsp.exec_cmd(shell .. " toggle clipboard"), "Clipboard · Storico")
-bind("SUPER + CTRL + R", hl.dsp.exec_cmd(shell .. " toggle recording"), "Registrazione schermo")
+bind("SUPER + CTRL + C", hl.dsp.exec_cmd(shell .. " toggle clipboard"), "Clipboard · History")
+bind("SUPER + CTRL + R", hl.dsp.exec_cmd(shell .. " toggle recording"), "Screen recording")
 
 -- Directional Binds
 for _, direction in ipairs({ "left", "right", "up", "down" }) do
     bind("SUPER + " .. direction, hl.dsp.focus({ direction = direction }), "Focus " .. direction)
-    bind("SUPER + SHIFT + " .. direction, hl.dsp.window.move({ direction = direction }), "Sposta " .. direction)
+    bind("SUPER + SHIFT + " .. direction, hl.dsp.window.move({ direction = direction }), "Move " .. direction)
 end
 
 -- Workspaces
 for i = 1, 10 do
     local key = i % 10
     bind("SUPER + " .. key, hl.dsp.focus({ workspace = i }), "Workspace " .. i)
-    bind("SUPER + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }), "Sposta al workspace " .. i)
+    bind("SUPER + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }), "Move to workspace " .. i)
 end
 
 -- Window Management (Cursor)
-bind("SUPER + mouse:272", hl.dsp.window.drag(), "Trascina finestra", { mouse = true })
-bind("SUPER + mouse:273", hl.dsp.window.resize(), "Ridimensiona finestra", { mouse = true })
+bind("SUPER + mouse:272", hl.dsp.window.drag(), "Drag window", { mouse = true })
+bind("SUPER + mouse:273", hl.dsp.window.resize(), "Resize window", { mouse = true })
 
 -- Keyboard Controls
-bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), "Volume +",
+bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), "Volume up",
     { locked = true, repeating = true })
-bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), "Volume -",
+bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), "Volume down",
     { locked = true, repeating = true })
-bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), "Muto", { locked = true })
-bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), "Microfono", { locked = true })
-bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), "Luminosità +",
+bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), "Mute", { locked = true })
+bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), "Microphone", { locked = true })
+bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), "Brightness up",
     { locked = true, repeating = true })
-bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), "Luminosità -",
+bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), "Brightness down",
     { locked = true, repeating = true })
 
 -- Power Management
 local power = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-power"'
-bind("SUPER + L", hl.dsp.exec_cmd(power .. " lock"), "Blocca schermo")
-bind("XF86Sleep", hl.dsp.exec_cmd(power .. " suspend"), "Sospendi")
+bind("SUPER + L", hl.dsp.exec_cmd(power .. " lock"), "Lock screen")
+bind("XF86Sleep", hl.dsp.exec_cmd(power .. " suspend"), "Suspend")

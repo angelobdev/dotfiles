@@ -9,4 +9,4 @@ for path in sys.argv[1:]:
 PY
 python3 "$repo/scripts/check-i18n.py"
 XDG_CONFIG_HOME="$repo/hypr/.config" Hyprland --verify-config -c "$repo/hypr/.config/hypr/hyprland.lua"
-printf '\nPer verificare QML nella sessione: qs -p "%s/quickshell/.config/quickshell/desktop"\n' "$repo"
+printf '\nTo check QML in the session: qs -p "%s/quickshell/.config/quickshell/desktop"\n' "$repo"

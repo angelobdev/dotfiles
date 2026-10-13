@@ -1,8 +1,6 @@
 [Desktop Entry]
 Name=Files
-Name[it]=File
 Comment=Access and organize files
-Comment[it]=Accedi ai file e organizzali
 Exec=env GDK_BACKEND=wayland nautilus --new-window %U
 TryExec=nautilus
 Icon=org.gnome.Nautilus
@@ -17,5 +15,4 @@ Actions=new-window;
 
 [Desktop Action new-window]
 Name=New Window
-Name[it]=Nuova finestra
 Exec=env GDK_BACKEND=wayland nautilus --new-window

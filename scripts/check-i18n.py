@@ -75,14 +75,15 @@ class TranslationTests(unittest.TestCase):
 
     def test_helper_uses_shared_catalogs(self):
         config = ROOT / 'quickshell/.config'
-        for lang, expected in [('it_IT', 'Applicazioni'), ('en_US', 'Applications')]:
+        for lang in ('it_IT', 'en_US'):
+            expected = self.flattened_catalog(lang)
             with patch.dict(os.environ, {'XDG_CONFIG_HOME': str(config)}), patch.object(i18n, 'language', return_value=lang):
-                self.assertEqual(i18n.tr('launcher.title'), expected)
-                self.assertEqual(i18n.tr('network.passwordPrefix') + 'a$&b', ('Password per ' if lang == 'it_IT' else 'Password for ') + 'a$&b')
-                self.assertEqual(i18n.tr('bindings.moveToWorkspace', [4]), 'Sposta al workspace 4' if lang == 'it_IT' else 'Move to workspace 4')
+                self.assertEqual(i18n.tr('launcher.title'), expected['launcher.title'])
+                self.assertEqual(i18n.tr('network.passwordPrefix') + 'a$&b', expected['network.passwordPrefix'] + 'a$&b')
+                self.assertEqual(i18n.tr('bindings.moveToWorkspace', [4]), expected['bindings.moveToWorkspace'].replace('%1', '4'))
                 self.assertEqual(i18n.tr('missing.key'), 'missing.key')
-                self.assertEqual(i18n.tr('bindings.moveToWorkspace'), 'Sposta al workspace %1' if lang == 'it_IT' else 'Move to workspace %1')
-                self.assertEqual(i18n.tr('bindings.moveDirection', ['$&']), 'Sposta $&' if lang == 'it_IT' else 'Move $&')
+                self.assertEqual(i18n.tr('bindings.moveToWorkspace'), expected['bindings.moveToWorkspace'])
+                self.assertEqual(i18n.tr('bindings.moveDirection', ['$&']), expected['bindings.moveDirection'].replace('%1', '$&'))
 
     def test_nested_lookup_and_english_fallback(self):
         self.assertEqual(i18n.lookup({'clipboard': {'title': 'Clipboard'}}, 'clipboard.title'), 'Clipboard')
@@ -115,6 +116,9 @@ class TranslationTests(unittest.TestCase):
                     with self.subTest(file=str(path), key=value):
                         self.assert_translation_key(value, catalog)
         adapters = (DESKTOP / 'i18n/Sources.js').read_text()
+        bind_labels = json.loads(re.search(r'var bindKeys = (\{.*?\});', adapters, re.S)[1])
+        for label, key in bind_labels.items():
+            self.assertEqual(label, catalog[key], 'Bind source descriptions must use the English catalog text')
         for match in re.finditer(r':\s*("[^"\n]+")', adapters):
             self.assert_translation_key(json.loads(match[1]), catalog)
 

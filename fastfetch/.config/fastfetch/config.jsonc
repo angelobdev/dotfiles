@@ -31,7 +31,7 @@
     "separator",
     {
       "type": "os",
-      "key": "Sistema"
+      "key": "System"
     },
     {
       "type": "kernel",
@@ -43,7 +43,7 @@
     },
     {
       "type": "packages",
-      "key": "Pacchetti"
+      "key": "Packages"
     },
     "break",
     {
@@ -61,11 +61,11 @@
     },
     {
       "type": "terminal",
-      "key": "Terminale"
+      "key": "Terminal"
     },
     {
       "type": "cursor",
-      "key": "Cursore"
+      "key": "Cursor"
     },
     "break",
     {
@@ -84,7 +84,7 @@
     },
     {
       "type": "disk",
-      "key": "Disco",
+      "key": "Disk",
       "folders": "/"
     },
     {
@@ -93,7 +93,7 @@
     },
     {
       "type": "battery",
-      "key": "Batteria"
+      "key": "Battery"
     },
     "break",
     "colors"

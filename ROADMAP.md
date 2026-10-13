@@ -1,103 +1,103 @@
 # ROADMAP
 
-Stato aggiornato al 13 ottobre 2026, verificato sui file della repository.
-Le voci completate indicano funzionalità presenti nel codice; le verifiche hardware ancora necessarie sono elencate separatamente.
+Status updated on October 13, 2026, verified against repository files.
+Completed items indicate features present in the code; outstanding hardware checks are listed separately.
 
-## Direzione attuale
+## Current direction
 
-- Seguire questa roadmap per i prossimi sviluppi.
-- Conservare la palette grafite; la nuova richiesta del 13 ottobre introduce il blur glass tramite Hyprglass, senza richiedere il precedente restyling chiaro di macOS.
-- Mantenere l’interfaccia desktop custom in Quickshell, con Hyprland Lua e pacchetti GNU Stow.
+- Follow this roadmap for future development.
+- Retain the graphite palette; the October 13 request introduces glass blur through Hyprglass without returning to the earlier light macOS restyling request.
+- Keep the custom desktop interface in Quickshell, with Hyprland Lua and GNU Stow packages.
+- Keep code, comments, documentation, and default labels in English; Italian text belongs only in `i18n/it_IT.json`.
 
-## Completato
+## Completed
 
-### Base del desktop
+### Desktop foundation
 
-- [x] Repository dotfiles organizzata in pacchetti Stow, con simulazione, backup dei conflitti e script di verifica.
-- [x] Configurazione Hyprland modulare in Lua: monitor, input, aspetto, regole, scorciatoie, sessione e override locali.
-- [x] Avvio e gestione della sessione tramite gli script `desktop-shell` e `desktop-session`.
-- [x] Supporto XWayland di base e fallback dei backend GTK/Qt.
-- [x] Integrazione di hypridle, hyprlock e hyprpaper; blocco, DPMS e sospensione automatica configurati.
-- [x] Hyprlock: layout moderno grafite, password PAM e autenticazione impronta nativa in parallelo; lettore Synaptics acquisito e verifica dell’indice destro avviata nel test headless.
+- [x] Dotfiles repository organized into Stow packages, with simulation, conflict backups, and verification scripts.
+- [x] Modular Hyprland Lua configuration: monitors, input, appearance, rules, shortcuts, session, and local overrides.
+- [x] Session startup/management through `desktop-shell` and `desktop-session`.
+- [x] Basic XWayland support and GTK/Qt backend fallback.
+- [x] hypridle, hyprlock, and hyprpaper integration; locking, DPMS, and automatic suspend configured.
+- [x] Hyprlock: modern graphite layout, PAM password, and parallel native fingerprint authentication; Synaptics reader acquired and right-index verification started in the headless test.
+- [x] Quickshell reorganized by function (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), with shared components/services and updated imports.
+- [x] ChatGPT/Nautilus blurred-text investigation: both reported instances were XWayland; native Wayland startup verified with isolated instances, local launchers corrected, and session environment updated. User applications need restarting to apply the backend.
 
-- [x] Quickshell riorganizzato per funzione (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), con componenti e servizi condivisi e import aggiornati.
-- [x] Verifica testi sfocati di ChatGPT e Nautilus: entrambe le istanze segnalate erano XWayland; avvio nativo Wayland verificato con istanze isolate, launcher locali corretti e ambiente di sessione aggiornato. Riavvio delle app dell’utente necessario per applicare il backend.
+### Cursor and terminal
 
-### Cursore e terminale
+- [x] Complete Kitty 0.47.1 configuration: 470 options, commented defaults/mappings, 33 existing custom values retained; native parser reports no errors.
+- [x] Fastfetch 2.68.1 configuration in a dedicated Stow package: Fedora logo, neutral palette, system/session/hardware sections, and display, battery, and cursor modules; execution verified.
 
-- [x] Configurazione Kitty 0.47.1 completa: 470 opzioni, default e mapping commentati, 33 valori personalizzati conservati; parser nativo senza errori.
-- [x] Config Fastfetch 2.68.1 in pacchetto Stow dedicato: logo Fedora, palette neutra, sezioni sistema/sessione/hardware e moduli per display, batteria e cursore; esecuzione verificata.
+### Bar and navigation
 
-### Barra e navigazione
+- [x] 38 px top bar with transparent/translucent background, Fedora logo, and application menu.
+- [x] Occupied and active workspaces represented by pills, highlighting active and urgent states.
+- [x] At least two pills per monitor, empty placeholders with globally unique IDs, and wheel/touchpad navigation across the workspace area's full height.
+- [x] Window title, spacer, tray, battery percentage/icon, Hints, notifications, Control Center, date/time, and power menu.
+- [x] QML tray menus with matching background/border, rounded corners, hover, submenus, anchoring below the icon on its monitor, and keyboard navigation; Esc and outside clicks close the menu.
+- [x] Centered status icons and native tooltips below buttons.
+- [x] Launcher with search, application icons, left-aligned titles, and keyboard navigation.
+- [x] Hints panel with search, categories, and shortcuts/descriptions read from actual Hyprland bindings.
+- [x] Keyboard-accessible session menu with lock, suspend, logout, reboot, and shutdown; confirmation for the relevant actions.
+- [x] Monthly calendar with day selection, keyboard navigation, indicators, and an agenda from GNOME/Online Accounts calendars through Evolution Data Server; recurring, all-day, multi-day, and time-zone-aware events, without account modifications.
+- [x] OSDs for volume, speaker/microphone mute, and brightness, with level/device, configurable timeout, and positioning on the affected monitor; detects changes even with panels closed.
+- [x] QML wallpaper picker on `Super + Shift + W`, with previews and persistence across sessions.
+- [x] HyprCapture editor bindings for areas (`Super + Shift + S` / `Print`) and monitors (`Super + Shift + Alt + S` / `Alt + Print`); scratchpad bindings and shortcut conflicts removed.
 
-- [x] Top bar da 38 px con sfondo trasparente/traslucido, logo Fedora e menu applicazioni.
-- [x] Workspace occupati e attivo rappresentati da pill, con evidenza dello stato attivo e urgente.
-- [x] Almeno due pill per monitor, segnaposto vuoti con ID globalmente unici e navigazione con rotella/touchpad sull’intera altezza dell’area workspace.
-- [x] Titolo della finestra, spacer, tray, batteria con percentuale e icona, Hints, notifiche, Control Center, giorno/ora e power.
-- [x] Menu tray QML con sfondo/bordo coordinati, angoli arrotondati, hover, sottomenu, ancoraggio sotto l’icona sul relativo monitor e navigazione da tastiera; Esc e clic esterno chiudono il menu.
-- [x] Icone di stato centrate e tooltip nativi posizionati sotto i pulsanti.
-- [x] Launcher con ricerca, icone applicazioni, titoli allineati a sinistra e navigazione da tastiera.
-- [x] Pannello Hints con ricerca, categorie e scorciatoie/descrizioni lette dai bind reali di Hyprland.
-- [x] Menu sessione con navigazione da tastiera, lock, sospensione, logout, riavvio e spegnimento; conferma per le azioni previste.
-- [x] Calendario mensile con selezione del giorno, navigazione da tastiera, indicatori e agenda degli eventi dai calendari GNOME/Account online tramite Evolution Data Server; supporto ricorrenze, giornate intere, più giorni e fusi orari, lettura senza modifica degli account.
-- [x] OSD per volume, mute speaker/microfono e luminosità, con livello/dispositivo, timeout configurabile e posizionamento sul monitor interessato; rilevamento dei cambiamenti anche a pannello chiuso.
-- [x] Selettore sfondi QML su `Super + Shift + W`, anteprima e persistenza della scelta tra sessioni.
-- [x] Bind HyprCapture con editor per area (`Super + Shift + S` / `Stamp`) e monitor (`Super + Shift + Alt + S` / `Alt + Stamp`); rimossi i bind scratchpad e il conflitto di scorciatoie.
+### Compositor plugins
 
-### Plugin del compositor
+- [x] Dedicated Lua configuration with API availability guards, supporting startup without plugins.
+- [x] Five plugins compiled and loaded in the isolated session: Hyprspace, Hyprgrass, Hyprglass, hypr-hot-edge, and HyprCapture.
+- [x] Local hyprpm packaging with pinned upstream revisions, matching COPR RPM headers, and a Lua 5.4 build patch for hypr-hot-edge; manifest names aligned with runtime names.
+- [x] Top-left hot corner connected to Hyprspace, rearming on exit, with no keyboard binding to open it; opening/closing the internal workspace verified in an isolated session.
+- [x] Hyprgrass touchscreen gestures for workspaces, overview, launcher, and controls; touchpad gestures retained.
+- [x] Neutral Hyprglass preset with light refraction, no chromatic aberration or center distortion, applied to translucent surfaces and Quickshell panels.
+- [x] Screenshot bindings migrated to HyprCapture; test-monitor PNG capture verified. RPM/ABI version guard prevents autoload of stale builds after COPR updates.
+- [x] Hyprspace: extra 200 px reservation removed, bars/overlays excluded from previews; invisible bars release space and input while keeping surfaces available for restoration. 38 → 0 → 38 verified on the affected monitor in an isolated session.
+- [x] Top-left hot corner toggles opening/closing after rearming on leaving the corner.
+- [x] Native HyprCapture editor on all four screenshot shortcuts; Hints groups them under “Screen capture”, displays “Print”, and updates bindings on Hyprland reload while open.
+- [x] HyprCapture overlay moves across monitors; virtual outputs at scales 1.667 and 1 verified with native 2880×1800/1920×1080 PNGs and an editor toolbar on the fractional-scale display.
+- [x] Installation into hyprpm's protected cache and loading in the main session: all five enabled and loaded; autoload verified with `desktop-plugins reload`, configuration has no errors.
+- [ ] Physical testing of touchscreen gestures, hot corners on both monitors, and glass appearance during daily use.
 
-- [x] Configurazione Lua dedicata con controlli sulla disponibilità delle API, compatibile anche con avvio senza plugin.
-- [x] Cinque plugin compilati e caricati nella sessione isolata: Hyprspace, Hyprgrass, Hyprglass, hypr-hot-edge e HyprCapture.
-- [x] Packaging locale hyprpm con revisioni upstream fissate, header RPM COPR corrispondenti e patch di compilazione Lua 5.4 per hypr-hot-edge; nomi manifest allineati a quelli runtime.
-- [x] Hot corner top-left collegato a Hyprspace, con riarmo all’uscita e nessun bind keyboard per l’apertura; apertura e chiusura del workspace interno verificate in sessione isolata.
-- [x] Gesture touchscreen Hyprgrass per workspace, overview, launcher e controlli; gesture touchpad conservate.
-- [x] Preset Hyprglass neutro con rifrazione leggera, senza aberrazione cromatica né distorsione centrale, applicato alle superfici traslucide e ai pannelli Quickshell.
-- [x] Bind screenshot migrati a HyprCapture; cattura PNG del monitor di prova verificata. Autoload con controllo versione RPM/ABI per evitare build obsolete dopo aggiornamenti COPR.
-- [x] Hyprspace: eliminata la riserva aggiuntiva da 200 px, barre/overlay esclusi dalle miniature; la barra invisibile rilascia spazio e input senza perdere la superficie da ripristinare. Verifica 38 → 0 → 38 sul monitor interessato in sessione isolata.
-- [x] Hot corner top-left con toggle apertura/chiusura dopo il riarmo all’uscita dall’angolo.
-- [x] Editor nativo HyprCapture su tutte e quattro le scorciatoie screenshot; Hints usa la categoria “Cattura schermo”, mostra “Stamp” e aggiorna i bind anche al reload di Hyprland con pannello aperto.
-- [x] Overlay HyprCapture mobile tra monitor; verificati output virtuali a scala 1,667 e 1 con PNG nativi 2880×1800/1920×1080 e toolbar editor sul display frazionario.
-- [x] Installazione nella cache protetta di hyprpm e caricamento nella sessione principale: tutti e cinque abilitati e caricati; autoload verificato con `desktop-plugins reload`, configurazione senza errori.
-- [ ] Prova fisica delle gesture touchscreen, dell’hot corner su entrambi i monitor e dell’aspetto glass durante l’uso quotidiano.
+### Panels and Control Center
 
-### Pannelli e Control Center
+- [x] Modular Control Center with order, visibility, and dimensions configurable in `Config.qml`.
+- [x] Network and Bluetooth subpanels at the top right, with return to Control Center and shared headers.
+- [x] Wi-Fi: enable/disable, scanning, network search/selection, connection, and Personal-network password prompts; enterprise networks use preconfigured profiles.
+- [x] Bluetooth: adapters, enable/disable, scanning, pairing through a BlueZ `KeyboardDisplay` agent with PIN/passkey, explicit confirmation/authorization, cancellation/timeout, connection/disconnection, and battery. Protocol verified on an isolated bus; physical pairing still needs UI testing.
+- [x] Brightness: main slider, expandable section for other monitors, and configurable backlight/DDC backend mapping.
+- [x] Immediate brightness slider updates and writes while dragging, with stale-reading and error handling.
+- [x] MPRIS Control Center controls: title/artist, previous, play/pause, next, position, and player selection; capabilities and disappearing players handled through native Quickshell APIs.
+- [x] Audio: volume slider/percentage, mute, input/output selection, and microphone level; expandable Control Center section and dedicated panel.
+- [x] Do Not Disturb in the Control Center, with a right-aligned switch.
+- [x] Notification center at the top right: in-memory history, actions, and Do Not Disturb/Clear all icons to the right of the title.
+- [x] Notification popups with icons, limited safe markup, left-click for the default action, and right-click to hide while retaining history; Activate/Delete/Hide buttons removed from popups. Secondary actions and notification-center controls retained. Do Not Disturb silences popups.
+- [x] Battery panel at the top right: percentage, power, energy, estimated times, and power-profile selection with icons.
+- [x] Power-profile indicator in the bar's battery block: leaf for Power Saver, lightning bolt for Performance, and no extra icon for Balanced; current-profile tooltip and system-service updates.
+- [x] Text buttons retain padding; compact variant removes padding for chevrons and narrow audio controls. Individual notification deletion is red, aligned with the title, and uses the same text size.
+- [x] Shared side-panel dimensions and 22 px back/close icons.
+- [x] Keep awake toggle connected to a Wayland `IdleInhibitor` on the bars: independent of Control Center visibility, with no additional packages.
+- [x] Quickshell clipboard manager with search, keyboard navigation, text/images, pause, and deletion; cliphist history and XWayland bridge verified in both directions.
 
-- [x] Control Center modulare, con ordine, visibilità e dimensioni configurabili in `Config.qml`.
-- [x] Sottopannelli Rete e Bluetooth in alto a destra, con ritorno al Control Center e intestazioni condivise.
-- [x] Wi-Fi: attivazione, scansione, ricerca/selezione reti, connessione e prompt password per reti Personal; Enterprise tramite profili preconfigurati.
-- [x] Bluetooth: adattatori, attivazione, ricerca, associazione tramite agente BlueZ `KeyboardDisplay` con PIN/passkey, conferma e autorizzazione esplicita, annullamento/timeout, connessione/disconnessione e batteria. Protocollo verificato su bus isolato; associazione con un dispositivo fisico da provare dall’interfaccia.
-- [x] Luminosità: slider principale, accordion per altri monitor e associazione configurabile dei backend backlight/DDC.
-- [x] Aggiornamento immediato dello slider luminosità e invio delle modifiche durante il trascinamento, con gestione delle letture precedenti e degli errori.
-- [x] Controlli MPRIS nel Control Center: titolo/artista, precedente, riproduci/pausa, successivo, posizione e scelta del lettore; capacità e scomparsa dei lettori gestite con API native Quickshell.
-- [x] Audio: slider e percentuale del volume, mute, selezione ingressi/uscite e livello microfono; accordion nel Control Center e pannello dedicato.
-- [x] Non disturbare nel Control Center, con switch allineato a destra.
-- [x] Centro notifiche in alto a destra: storico in memoria, azioni e controlli Non disturbare/Elimina tutte con icone a destra del titolo.
-- [x] Popup notifiche con icone, markup di testo limitato e sicuro, clic sinistro per l’azione predefinita e clic destro per nascondere conservando lo storico; pulsanti Activate/Elimina/Nascondi rimossi dai popup. Azioni secondarie e controlli del centro notifiche conservati. Non disturbare silenzia i popup.
-- [x] Pannello batteria in alto a destra: percentuale, potenza, energia, tempi stimati e selezione dei profili energetici con icone.
-- [x] Indicatore del profilo energetico nel blocco batteria della barra: foglia per Risparmio, fulmine per Prestazioni e nessuna icona aggiuntiva per Bilanciato; tooltip con profilo corrente e aggiornamento dal servizio di sistema.
-- [x] Pulsanti con testo e padding conservato; variante compatta senza padding per chevron e controlli audio stretti. Eliminazione singola delle notifiche rossa, in linea con il titolo e con la stessa dimensione del testo.
-- [x] Dimensioni comuni dei pannelli laterali e icone di ritorno/chiusura da 22 px.
-- [x] Toggle “Resta attivo” collegato a un `IdleInhibitor` Wayland sulle barre: indipendente dall’apertura del Control Center, senza pacchetti aggiuntivi.
-- [x] Clipboard manager Quickshell con ricerca, tastiera, testo/immagini, pausa ed eliminazione; storico cliphist e bridge XWayland verificati in entrambe le direzioni.
+### Integrations and documentation
 
-### Integrazioni e documentazione
+- [x] Multilingual Quickshell/helpers: nested Italian/US English JSON catalogs with semantic keys independent of text, selection from `/etc/locale.conf` (`LC_MESSAGES`/`LANG`), English fallback, live text updates, and localized calendar/clock/number formats. Hints translates categories and known descriptions; automated catalog/parameter checks. Active shell verified in `en_US`, both languages tested in isolated QML instances.
+- [x] English documentation, filenames, comments, binding descriptions, default labels, helper errors, and test fixtures; Italian content confined to `i18n/it_IT.json`.
+- [x] Quickshell Polkit authentication agent.
+- [x] Consistent dark glass theme: shared graphite palette across Quickshell, GTK 3/4, and Qt 5/6; translucent shell surfaces with opaque text and a neutral accent; applications retain native geometry and may use their own styling.
+- [x] Matching Kitty theme, Adwaita Mono, translucent background, and ANSI palette.
+- [x] Neutral primary and borderless Hyprland windows, inactive opacity, and blur.
+- [x] Electron Wayland environment and explicit Wayland/X11 wrapper; VS Code verified on both backends with temporary profiles, existing Zen window identified as native Wayland.
+- [x] XDG portals: Hyprland/GTK routing, environment import before startup, and a custom Quickshell sharing picker.
+- [x] Screen sharing through ScreenCast/PipeWire and monitor/area recording through wf-recorder, with QML panel, audio selection, bar indicator, and video saving; real portal test and recording of a dedicated window, with the specific web app test still outstanding.
+- [x] Concise README and separate `docs/` guides for installation, interface/shortcuts, configuration, integrations, and troubleshooting; updated for pairing, MPRIS, calendars, and DDC/CI results.
+- [x] Physical HDMI hotplug verified with Philips FTV: monitor, bar, and brightness list removed/restored without restarting the shell. I²C permissions applied through ddcutil's udev rules.
 
-- [x] Supporto multilingua Quickshell e helper: cataloghi JSON annidati italiano/inglese americano con chiavi semantiche indipendenti dai testi, selezione da `/etc/locale.conf` (`LC_MESSAGES`/`LANG`), fallback inglese, aggiornamento dei testi e formati locali per calendario/orologio/numeri. Hints traduce categorie e descrizioni note; controlli automatici per cataloghi e parametri. Shell attiva verificata in `en_US`, entrambe le lingue provate in istanze QML isolate.
+## Next developments
 
-- [x] Agente di autenticazione Polkit in Quickshell.
-- [x] Tema dark-glassy coerente: palette grafite condivisa tra Quickshell, GTK 3/4 e Qt 5/6, superfici shell traslucide con testo opaco e accento neutro; le app conservano la geometria nativa e possono avere stili propri.
-- [x] Tema Kitty coordinato, font Adwaita Mono, sfondo traslucido e palette ANSI.
-- [x] Primary neutro e configurazione Hyprland senza bordi finestra, con opacità delle finestre inattive e blur.
-- [x] Ambiente Electron Wayland e wrapper per scelta esplicita Wayland/X11; VS Code verificato su entrambi i backend con profili temporanei, Zen aperto rilevato nativo Wayland.
-- [x] Portali XDG: routing Hyprland/GTK, importazione dell’ambiente prima dell’avvio e selettore di condivisione custom Quickshell.
-- [x] Screen sharing via ScreenCast/PipeWire e registrazione monitor/area via wf-recorder, pannello QML, scelta audio, indicatore nella barra e salvataggio video; test reale del portale e registrazione di una finestra dedicata, prova nella web app specifica elencata sotto.
-- [x] README sintetico e guide separate in `docs/` per installazione, interfaccia/scorciatoie, configurazione, integrazioni e diagnostica; aggiornate per pairing, MPRIS, calendari e risultati DDC/CI.
-- [x] Hotplug fisico HDMI verificato con Philips FTV: rimozione e ripristino del monitor, della barra e dell’elenco luminosità, senza riavvio della shell. Permessi I²C applicati tramite le regole udev del pacchetto ddcutil.
+- [ ] Complete a successful DDC/CI test (read, minimal change, restore) with a display that responds to the protocol. The connected Philips FTV is identified on bus 14 but responds to neither VCP 10 nor capabilities, even after applying permissions and increasing timings. GNOME's built-in control may use software brightness; this does not confirm the display's DDC/CI support.
 
-## Prossimi sviluppi
+## Possible extensions identified
 
-- [ ] Completare la prova positiva DDC/CI (lettura, variazione minima e ripristino) con un display che risponda al protocollo. Il Philips FTV collegato viene identificato sul bus 14 ma non risponde a VCP 10 né alle capabilities, anche dopo l’applicazione dei permessi e con tempi maggiorati. Il controllo integrato GNOME può usare luminosità software: non è una conferma del supporto DDC/CI del display.
-
-## Possibili estensioni individuate
-
-- [ ] Multi-distro installation support (add debian, arch)
+- [ ] Multi-distro installation support (add Debian and Arch).

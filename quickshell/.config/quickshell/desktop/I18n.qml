@@ -32,9 +32,9 @@ Singleton {
         return tr(count === 1 ? singular : plural, [count].concat(args || []));
     }
     function bindDescription(description) {
-        let match = description.match(/^(Focus|Sposta) (left|right|up|down)$/);
+        let match = description.match(/^(Focus|Move) (left|right|up|down)$/);
         if (match) return tr(match[1] === "Focus" ? "bindings.focusDirection" : "bindings.moveDirection", [tr("directions." + match[2])]);
-        match = description.match(/^Sposta al workspace (\d+)$/);
+        match = description.match(/^Move to workspace (\d+)$/);
         if (match) return tr("bindings.moveToWorkspace", [match[1]]);
         const key = Sources.bindKeys[description];
         return typeof key === "string" ? tr(key) : description;

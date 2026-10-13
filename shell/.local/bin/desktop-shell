@@ -21,15 +21,15 @@ sys.exit(0 if running else 1)
             fi
             sleep 0.1
         done
-        echo 'La vecchia istanza Quickshell non si è chiusa entro 5 secondi.' >&2
+        echo 'The previous Quickshell instance did not exit within 5 seconds.' >&2
         exit 1
         ;;
     toggle)
         case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|clipboard|recording|power) ;;
-            *) echo 'Uso: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|clipboard|recording|power}' >&2; exit 2 ;;
+            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|clipboard|recording|power}' >&2; exit 2 ;;
         esac
         exec qs ipc -p "$config" call desktop toggle "$2"
         ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Uso: desktop-shell {start|stop|restart|status|toggle PANEL}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|restart|status|toggle PANEL}' >&2; exit 2 ;;
 esac
