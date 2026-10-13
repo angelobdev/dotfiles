@@ -8,3 +8,4 @@ singleton Recording 1.0 Recording.qml
 singleton Media 1.0 Media.qml
 singleton BluetoothAgent 1.0 BluetoothAgent.qml
 singleton Calendar 1.0 Calendar.qml
+singleton BarVisibility 1.0 BarVisibility.qml

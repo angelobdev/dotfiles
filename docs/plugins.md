@@ -27,13 +27,13 @@ Lo script richiede sudo per la cache protetta di hyprpm; confermare l’aggiunta
 
 Il packaging in [`scripts/hyprpm`](../scripts/hyprpm) scarica i cinque progetti originali alle revisioni della tabella seguente. Lo script ne crea una copia Git locale sotto `~/.local/share/dotfiles/hyprpm/`, registrata da hyprpm come **dotfiles-desktop**. I cinque plugin si abilitano/disabilitano singolarmente con i loro nomi runtime. Nessun commit viene creato nella repository dei dotfiles.
 
-| Plugin / sorgente | Revisione fissata |
-| --- | --- |
-| [Hyprspace](https://github.com/KZDKM/Hyprspace) | `cf08bed82621c1fb943ef4934ff0ba36540fea77` |
-| [Hyprgrass](https://github.com/horriblename/hyprgrass) | `8e605468cbf429791d61ddbfaeb14ff5e08fec3e` |
-| [Hyprglass](https://github.com/hyprnux/hyprglass) | `84c1a5ab217101a317d4edaab7fba2efcc1bf346` |
+| Plugin / sorgente                                              | Revisione fissata                          |
+| -------------------------------------------------------------- | ------------------------------------------ |
+| [Hyprspace](https://github.com/KZDKM/Hyprspace)                | `cf08bed82621c1fb943ef4934ff0ba36540fea77` |
+| [Hyprgrass](https://github.com/horriblename/hyprgrass)         | `8e605468cbf429791d61ddbfaeb14ff5e08fec3e` |
+| [Hyprglass](https://github.com/hyprnux/hyprglass)              | `84c1a5ab217101a317d4edaab7fba2efcc1bf346` |
 | [hypr-hot-edge](https://github.com/claychinasky/hypr-hot-edge) | `32b2dffdf2900a5a4b8cd10133f6a58cfd7ec4d6` |
-| [HyprCapture](https://github.com/gfhdhytghd/HyprCapture) | `bf4d1f9021fc288200002f5a7d8291ed56f0df83` |
+| [HyprCapture](https://github.com/gfhdhytghd/HyprCapture)       | `bf4d1f9021fc288200002f5a7d8291ed56f0df83` |
 
 ## Adattamenti per Fedora COPR
 
@@ -45,11 +45,13 @@ Il manifest usa il nome runtime **HyprCapture** (maiuscole incluse), evitando il
 
 ## Comportamento
 
-- **Hyprspace:** overview dal top-left o da tre dita verso l’alto sul touchscreen. Nessuna scorciatoia keyboard per aprirla; `Esc` per chiuderla.
-- **hypr-hot-edge:** attiva un workspace speciale interno vuoto; il callback Lua lo chiude e apre subito Hyprspace sul monitor interessato. Il trigger si riarma quando il puntatore lascia l’angolo. Non è uno scratchpad utilizzabile dalle applicazioni.
+- **Hyprspace:** overview dal top-left o da tre dita verso l’alto sul touchscreen. Lo stesso angolo la chiude al passaggio successivo; nessuna scorciatoia keyboard per aprirla, `Esc` per chiuderla. `affectStrut = false` evita lo spostamento del layout e `hideTopLayers`/`hideOverlayLayers` escludono le superfici shell dalle miniature.
+- **hypr-hot-edge:** attiva un workspace speciale interno vuoto; il callback Lua lo chiude e alterna apertura/chiusura di Hyprspace sul monitor interessato. Il trigger si riarma quando il puntatore lascia l’angolo. Non è uno scratchpad utilizzabile dalle applicazioni.
 - **Hyprgrass:** tre dita orizzontali per i workspace; dal basso verso l’alto per le app; dall’alto verso il basso per i controlli. Le gesture sono registrate nuovamente a ogni reload.
 - **Hyprglass:** preset `desktop` basato su `subtle`, blur moderato, tinta grafite e rifrazione leggera. Distorsione centrale e aberrazione cromatica a zero. Le app completamente opache restano opache; le superfici traslucide ricevono l’effetto. I namespace dei pannelli Quickshell sono espliciti; la soglia alpha esclude l’area trasparente esterna ai pannelli. La top bar senza sfondo non viene filtrata sui soli testi.
-- **HyprCapture:** area, monitor corrente, selezione finestra e finestra attiva sui bind `Stamp` esistenti. Salvataggio PNG nella directory Immagini XDG, sottocartella `Screenshots`, copia e notifica di sistema. `allow_quick` è attivo per `Alt + Stamp`.
+- **HyprCapture:** area, monitor corrente, selezione finestra e finestra attiva sui bind `Stamp` esistenti. Salvataggio PNG nella directory Immagini XDG, sottocartella `Screenshots`, copia e notifica di sistema. `allow_quick` è attivo per `Alt + Stamp`. `overlay_scope = "focus"` consente di spostare la selezione tra monitor; `Super + Ctrl + S` e `Ctrl + Stamp` usano l’editor `open_editor()`.
+
+`BarVisibility.qml` usa il piccolo helper `bar_visibility.py` per osservare l’alpha delle superfici `desktop-bar` via socket IPC locale Hyprland (100 ms, processo unico, output solo quando cambia lo stato). Quando Hyprspace le rende invisibili, Quickshell porta a zero la zona esclusiva e la regione di input sul monitor interessato. La superficie rimane mappata, mantenendo anche l’IdleInhibitor: Hyprspace può ripristinarne l’alpha alla chiusura. La barra torna a riservare 38 px. In caso di disconnessione il servizio ripristina il comportamento normale.
 
 La [guida interfaccia](interfaccia.md) contiene la tabella dei bind e delle gesture.
 
@@ -80,4 +82,4 @@ L’installer riabilita tutti e cinque. I blocchi Lua sono protetti e permettono
 
 Installazione nella sessione principale completata: i cinque plugin risultano abilitati in hyprpm e caricati in Hyprland; `desktop-plugins reload` e `hyprctl configerrors` passano senza errori.
 
-Verificato in sessione isolata: caricamento dei cinque `.so`, parsing dei file Lua reali, hot-edge → overview con chiusura del workspace interno, riarmo e screenshot del monitor di prova. Le gesture fisiche e l’aspetto su entrambi i monitor richiedono una prova nella sessione quotidiana.
+Verificato in sessione isolata: caricamento dei cinque `.so`, parsing dei file Lua reali, hot-edge → overview con chiusura del workspace interno, riarmo e screenshot del monitor di prova. Verifiche aggiuntive su due output virtuali 2880×1800 a scala 1,667 e 1920×1080 a scala 1: stesso hot corner per aprire/chiudere, zona riservata 38 → 0 → 38 sul solo monitor interessato, overlay HyprCapture su entrambi, PNG alle risoluzioni native e toolbar dell’editor visibile sul display frazionario. Le gesture fisiche e la selezione sui display reali rimangono da confermare nell’uso quotidiano.

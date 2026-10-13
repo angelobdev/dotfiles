@@ -48,6 +48,10 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Gesture touchscreen Hyprgrass per workspace, overview, launcher e controlli; gesture touchpad conservate.
 - [x] Preset Hyprglass neutro con rifrazione leggera, senza aberrazione cromatica né distorsione centrale, applicato alle superfici traslucide e ai pannelli Quickshell.
 - [x] Bind screenshot migrati a HyprCapture; cattura PNG del monitor di prova verificata. Autoload con controllo versione RPM/ABI per evitare build obsolete dopo aggiornamenti COPR.
+- [x] Hyprspace: eliminata la riserva aggiuntiva da 200 px, barre/overlay esclusi dalle miniature; la barra invisibile rilascia spazio e input senza perdere la superficie da ripristinare. Verifica 38 → 0 → 38 sul monitor interessato in sessione isolata.
+- [x] Hot corner top-left con toggle apertura/chiusura dopo il riarmo all’uscita dall’angolo.
+- [x] Editor nativo HyprCapture sui bind `Super + Ctrl + S` (area) e `Ctrl + Stamp` (monitor); catture dirette conservate.
+- [x] Overlay HyprCapture mobile tra monitor; verificati output virtuali a scala 1,667 e 1 con PNG nativi 2880×1800/1920×1080 e toolbar editor sul display frazionario.
 - [x] Installazione nella cache protetta di hyprpm e caricamento nella sessione principale: tutti e cinque abilitati e caricati; autoload verificato con `desktop-plugins reload`, configurazione senza errori.
 - [ ] Prova fisica delle gesture touchscreen, dell’hot corner su entrambi i monitor e dell’aspetto glass durante l’uso quotidiano.
 
@@ -82,7 +86,6 @@ Le voci completate indicano funzionalità presenti nel codice; le verifiche hard
 - [x] Screen sharing via ScreenCast/PipeWire e registrazione monitor/area via wf-recorder, pannello QML, scelta audio, indicatore nella barra e salvataggio video; test reale del portale e registrazione di una finestra dedicata, prova nella web app specifica elencata sotto.
 - [x] README sintetico e guide separate in `docs/` per installazione, interfaccia/scorciatoie, configurazione, integrazioni e diagnostica; aggiornate per pairing, MPRIS, calendari e risultati DDC/CI.
 - [x] Hotplug fisico HDMI verificato con Philips FTV: rimozione e ripristino del monitor, della barra e dell’elenco luminosità, senza riavvio della shell. Permessi I²C applicati tramite le regole udev del pacchetto ddcutil.
-
 
 ## Prossimi sviluppi
 

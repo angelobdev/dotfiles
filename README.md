@@ -30,6 +30,8 @@ desktop-shell restart
 
 Non usare sudo con Stow. `apply` salva eventuali file in conflitto prima di collegarli alla repo. Dopo l’aggiunta di nuovi file ripetere `apply`.
 
+L’angolo top-left alterna Hyprspace e desktop; la barra rilascia spazio e input durante l’overview. HyprCapture segue il puntatore tra monitor: `Super + Shift + S` apre la cattura area con editor, `Super + Shift + Ctrl + S` quella del monitor con editor.
+
 Le impostazioni principali sono in [`Config.qml`](quickshell/.config/quickshell/desktop/Config.qml), la palette in [`Theme.qml`](quickshell/.config/quickshell/desktop/Theme.qml) e gli override della macchina in [`local.lua`](hypr/.config/hypr/config/local.lua).
 
 Quickshell è organizzato per funzione (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), con componenti e servizi condivisi. Il [layout delle cartelle](docs/configurazione.md#struttura-quickshell) descrive dove intervenire. I launcher locali di ChatGPT e File/Nautilus preferiscono Wayland; vedere [XWayland e nitidezza](docs/integrazioni.md#xwayland).

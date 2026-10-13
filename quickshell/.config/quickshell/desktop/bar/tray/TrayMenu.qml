@@ -27,7 +27,10 @@ Menu {
         border.width: 1
         border.color: Theme.stroke
     }
-    QsMenuOpener { id: opener; menu: root.visible ? root.menuEntry : null }
+    QsMenuOpener {
+        id: opener
+        menu: root.visible ? root.menuEntry : null
+    }
     MenuItem {
         text: "Nessuna azione disponibile"
         visible: opener.children.values.length === 0
@@ -37,20 +40,31 @@ Menu {
         palette.windowText: Theme.muted
         background: Item {}
     }
-    Component { id: action; TrayMenuItem {} }
+    Component {
+        id: action
+        TrayMenuItem {}
+    }
     Component {
         id: separator
         MenuSeparator {
             implicitHeight: 9
-            topPadding: 4; bottomPadding: 4
-            contentItem: Rectangle { implicitHeight: 1; color: Theme.stroke }
-            leftPadding: 6; rightPadding: 6
+            topPadding: 4
+            bottomPadding: 4
+            contentItem: Rectangle {
+                implicitHeight: 1
+                color: Theme.stroke
+            }
+            leftPadding: 6
+            rightPadding: 6
         }
     }
     function remove(control, submenu) {
-        if (!control) return;
-        if (submenu) removeMenu(control);
-        else removeItem(control);
+        if (!control)
+            return;
+        if (submenu)
+            removeMenu(control);
+        else
+            removeItem(control);
         control.destroy();
     }
     Instantiator {
@@ -69,16 +83,24 @@ Menu {
                 if (submenu) {
                     // Load only this level; QsMenuOpener requests descendants when opened.
                     const component = Qt.createComponent(Qt.resolvedUrl("TrayMenu.qml"));
-                    control = component.createObject(root, {menuEntry: modelData});
-                    if (control) root.insertMenu(index, control);
-                    else console.warn(component.errorString());
+                    control = component.createObject(root, {
+                        menuEntry: modelData
+                    });
+                    if (control)
+                        root.insertMenu(index, control);
+                    else
+                        console.warn(component.errorString());
                 } else {
-                    control = isSeparator ? separator.createObject(root.contentItem) : action.createObject(root.contentItem, {entry: modelData});
+                    control = isSeparator ? separator.createObject(root.contentItem) : action.createObject(root.contentItem, {
+                        entry: modelData
+                    });
                     root.insertItem(index, control);
                 }
             }
-            onSubmenuChanged: if (control) rebuild()
-            onIsSeparatorChanged: if (control) rebuild()
+            onSubmenuChanged: if (control)
+                rebuild()
+            onIsSeparatorChanged: if (control)
+                rebuild()
         }
         onObjectAdded: (index, object) => object.rebuild()
         onObjectRemoved: (index, object) => root.remove(object.control, object.wasSubmenu)

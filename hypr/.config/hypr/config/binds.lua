@@ -14,21 +14,27 @@ bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Finestra flottant
 bind("SUPER + P", hl.dsp.window.pseudo(), "Pseudo tiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Cambia orientamento split")
 bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Schermo intero")
-local function screenshot(mode, quick)
+local function screenshot(mode, quick, editor)
     return function()
         local capture = (hl.plugin or {}).hyprcapture
         if not capture then
             hl.exec_cmd('notify-send "Screenshot" "HyprCapture non caricato: vedere docs/plugins.md"')
             return
         end
-        if quick then capture.quick(mode) else capture.open(mode) end
+        if editor then
+            capture.open_editor(mode)
+        elseif quick then
+            capture.quick(mode)
+        else
+            capture.open(mode)
+        end
     end
 end
-bind("SUPER + SHIFT + S", screenshot("region"), "Screenshot · Area")
-bind("SHIFT + Print", screenshot("region"), "Screenshot · Area")
-bind("Print", screenshot("fullscreen"), "Screenshot · Monitor")
-bind("SUPER + Print", screenshot("window"), "Screenshot · Finestra")
-bind("ALT + Print", screenshot("window", true), "Screenshot · Finestra attiva")
+bind("SUPER + SHIFT + S", screenshot("region", false, true), "Screenshot · Area con editor")
+bind("SUPER + SHIFT + ALT + S", screenshot("fullscreen", false, true), "Screenshot · Monitor con editor")
+
+bind("Print", screenshot("region", false, true), "Screenshot · Area con editor")
+bind("ALT + Print", screenshot("fullscreen", false, true), "Screenshot · Monitor con editor")
 
 -- System (Quickshell)
 bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(shell .. " restart"), "Riavvia Quickshell")

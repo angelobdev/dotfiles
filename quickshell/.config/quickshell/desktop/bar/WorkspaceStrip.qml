@@ -14,24 +14,34 @@ RowLayout {
     signal activated(int id)
     spacing: 0
     function scroll(angle, pixels) {
-        if (!scrollEnabled || workspaces.length === 0) return;
+        if (!scrollEnabled || workspaces.length === 0)
+            return;
         const usePixels = pixels !== 0;
         const delta = usePixels ? pixels : angle;
-        if (!delta) return;
-        if (pixelGesture !== usePixels || accumulated * delta < 0) accumulated = 0;
+        if (!delta)
+            return;
+        if (pixelGesture !== usePixels || accumulated * delta < 0)
+            accumulated = 0;
         pixelGesture = usePixels;
         accumulated += delta;
         reset.restart();
         const threshold = usePixels ? 30 : 120;
         const steps = Math.trunc(accumulated / threshold);
-        if (!steps) return;
+        if (!steps)
+            return;
         accumulated -= steps * threshold;
         const current = workspaces.findIndex(w => w.id === activeId);
-        if (current < 0) return;
+        if (current < 0)
+            return;
         const next = Math.max(0, Math.min(workspaces.length - 1, current - steps));
-        if (next !== current) activated(workspaces[next].id);
+        if (next !== current)
+            activated(workspaces[next].id);
     }
-    Timer { id: reset; interval: 200; onTriggered: root.accumulated = 0 }
+    Timer {
+        id: reset
+        interval: 200
+        onTriggered: root.accumulated = 0
+    }
     WheelHandler {
         target: null
         enabled: root.scrollEnabled
@@ -66,7 +76,11 @@ RowLayout {
                     height: 8
                     radius: 4
                     color: workspace.active ? Theme.accent : workspace.modelData.urgent ? Theme.danger : Theme.muted
-                    Behavior on width { NumberAnimation { duration: 160 } }
+                    Behavior on width {
+                        NumberAnimation {
+                            duration: 160
+                        }
+                    }
                 }
             }
             onClicked: root.activated(modelData.id)

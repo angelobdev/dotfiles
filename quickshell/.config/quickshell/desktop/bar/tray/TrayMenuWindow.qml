@@ -10,14 +10,20 @@ PanelWindow {
     readonly property alias menu: menu
     property point menuOrigin: Qt.point(0, 0)
     visible: false
-    anchors { top: true; bottom: true; left: true; right: true }
+    anchors {
+        top: true
+        bottom: true
+        left: true
+        right: true
+    }
     exclusionMode: ExclusionMode.Ignore
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "desktop-tray-menu"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     function popup(item, x, y) {
-        if (!menuEntry) return;
+        if (!menuEntry)
+            return;
         menuOrigin = item.mapToItem(item.QsWindow.window.contentItem, x, y);
         visible = true;
         Qt.callLater(() => {
@@ -26,7 +32,8 @@ PanelWindow {
         });
     }
     function positionMenu() {
-        if (!menu.visible) return;
+        if (!menu.visible)
+            return;
         menu.x = Math.max(6, Math.min(menuOrigin.x, width - menu.width - 6));
         menu.y = Math.max(6, Math.min(menuOrigin.y, height - menu.height - 6));
     }
@@ -38,8 +45,10 @@ PanelWindow {
         menu.dismiss();
         visible = false;
     }
-    onVisibleChanged: if (!visible) menu.dismiss()
-    onMenuEntryChanged: if (!menuEntry) dismiss()
+    onVisibleChanged: if (!visible)
+        menu.dismiss()
+    onMenuEntryChanged: if (!menuEntry)
+        dismiss()
     HyprlandFocusGrab {
         active: root.visible
         windows: [root]

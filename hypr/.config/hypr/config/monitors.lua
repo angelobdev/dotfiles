@@ -15,9 +15,8 @@ hl.monitor({
 })
 
 hl.monitor({
-  output = "DP-1",
-  mode = "preferred",
-  position = "auto",
-  scale = 1,
+    output = "DP-1",
+    mode = "preferred",
+    position = "auto",
+    scale = 1,
 })
-

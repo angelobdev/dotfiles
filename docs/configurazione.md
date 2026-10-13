@@ -6,16 +6,16 @@
 
 Dentro `quickshell/.config/quickshell/desktop/`, `shell.qml` resta il punto di ingresso del desktop e `share.qml` quello del selettore di condivisione. `Config.qml`, `Theme.qml` e `ShellState.qml` rimangono nella radice.
 
-| Cartella | Contenuto |
-| --- | --- |
-| `bar/` | Barra, workspace e pulsanti della barra; `tray/` contiene i menu della tray. |
-| `controlcenter/` | Pannello del Centro di controllo e moduli caricati dalla configurazione. |
-| `panels/` | Launcher, rete, Bluetooth, audio, batteria, calendario, Hints, clipboard, registrazione e sfondi. |
-| `notifications/` | Centro, popup e componenti specifici delle notifiche. |
-| `session/` | Menu power e richieste di autenticazione Polkit/Bluetooth. |
-| `osd/` | Indicatori temporanei di volume e luminosità. |
-| `components/` | Pulsanti, slider, card e altri elementi condivisi. |
-| `services/` | Stato e collegamenti ai backend; `assets/icons/` contiene le icone. |
+| Cartella         | Contenuto                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| `bar/`           | Barra, workspace e pulsanti della barra; `tray/` contiene i menu della tray.                      |
+| `controlcenter/` | Pannello del Centro di controllo e moduli caricati dalla configurazione.                          |
+| `panels/`        | Launcher, rete, Bluetooth, audio, batteria, calendario, Hints, clipboard, registrazione e sfondi. |
+| `notifications/` | Centro, popup e componenti specifici delle notifiche.                                             |
+| `session/`       | Menu power e richieste di autenticazione Polkit/Bluetooth.                                        |
+| `osd/`           | Indicatori temporanei di volume e luminosità.                                                     |
+| `components/`    | Pulsanti, slider, card e altri elementi condivisi.                                                |
+| `services/`      | Stato e collegamenti ai backend; `assets/icons/` contiene le icone.                               |
 
 I componenti specifici stanno accanto alla funzione che li usa; quelli riutilizzati da più pannelli restano in `components/`. Non è più presente la cartella generica `modules/`.
 

@@ -83,28 +83,34 @@ I video vengono salvati nella directory Video XDG, sottocartella `Recordings`, c
 
 HyprCapture gestisce la cattura; `Stamp` corrisponde al keysym `Print`.
 
-| Scorciatoia | Cattura |
-| --- | --- |
-| `Super + Shift + S` / `Shift + Stamp` | Selezione area |
-| `Stamp` | Monitor corrente |
-| `Super + Stamp` | Selezione finestra |
-| `Alt + Stamp` | Finestra attiva, immediata |
+| Scorciatoia                           | Cattura                      |
+| ------------------------------------- | ---------------------------- |
+| `Super + Shift + S` / `Shift + Stamp` | Selezione area               |
+| `Stamp`                               | Monitor corrente             |
+| `Super + Stamp`                       | Selezione finestra           |
+| `Alt + Stamp`                         | Finestra attiva, immediata   |
+| `Super + Ctrl + S`                    | Selezione area, poi editor   |
+| `Ctrl + Stamp`                        | Monitor corrente, poi editor |
 
-`Esc` annulla la selezione. I PNG vengono salvati in `Immagini/Screenshots` (directory XDG), copiati negli appunti e notificati tramite Quickshell. Directory e comportamento si configurano in `hypr/config/plugins.lua`, sezione `hyprcapture`. I bind dello scratchpad restano rimossi. L’editor di HyprCapture è disponibile tramite `hl.plugin.hyprcapture.open_editor("region")`; i bind ordinari usano la cattura diretta.
+`Esc` annulla la selezione. I PNG vengono salvati in `Immagini/Screenshots` (directory XDG), copiati negli appunti e notificati tramite Quickshell. Directory e comportamento si configurano in `hypr/config/plugins.lua`, sezione `hyprcapture`. I bind dello scratchpad restano rimossi. L’editor nativo di HyprCapture si apre dopo la selezione con i due bind dedicati: rettangoli, ellissi, frecce, disegno, testo, pixelatura e numerazione. `Invio` o la spunta esportano; `Esc` annulla. I bind ordinari usano la cattura diretta. Non servono altri programmi di editing.
+
+L’overlay segue il puntatore tra i monitor (`overlay_scope = "focus"`), anche con scale diverse. Per catturare sul display integrato si può iniziare lì oppure spostare il puntatore dal monitor esterno prima della selezione. Una selezione area rimane entro un singolo monitor; `fullscreen_scope = "current"` cattura il monitor scelto, non l’intero desktop.
 
 Per attivare il backend seguire [Plugin Hyprland](plugins.md). Se il plugin non è caricato, il bind mostra una notifica. La registrazione del pannello Quickshell continua a usare wf-recorder.
 
 ## Hot corner e touchscreen
 
-L’angolo superiore sinistro di ogni monitor apre Hyprspace tramite hypr-hot-edge. La zona è di 8 px, con attesa di 220 ms; il pixel esatto dell’angolo attiva immediatamente, come previsto dal plugin. Dopo l’apertura occorre uscire dalla zona prima di riattivarla. `Esc` chiude l’overview. Non sono aggiunti bind da tastiera per aprirla.
+L’angolo superiore sinistro di ogni monitor apre o chiude Hyprspace tramite hypr-hot-edge. La zona è di 8 px, con attesa di 220 ms; il pixel esatto dell’angolo attiva immediatamente, come previsto dal plugin. Dopo ogni attivazione occorre uscire dalla zona prima di riattivarla; tornando nell’angolo si chiude l’overview aperta. `Esc` chiude l’overview. Non sono aggiunti bind da tastiera per aprirla.
 
-| Gesture touchscreen (Hyprgrass) | Azione |
-| --- | --- |
-| Tre dita, scorrimento orizzontale | Workspace |
-| Tre dita, verso l’alto | Hyprspace |
-| Dal bordo inferiore verso l’alto | Applicazioni |
-| Dal bordo superiore verso il basso | Centro di controllo |
-| Pressione prolungata su bordo finestra | Ridimensionamento |
+Durante l’overview la barra del monitor interessato è invisibile, rilascia i suoi 38 px e non riceve clic. Le miniature escludono barre e overlay; Hyprspace non aggiunge un’area riservata da 200 px. Alla chiusura la barra e il normale layout si ripristinano.
+
+| Gesture touchscreen (Hyprgrass)        | Azione              |
+| -------------------------------------- | ------------------- |
+| Tre dita, scorrimento orizzontale      | Workspace           |
+| Tre dita, verso l’alto                 | Hyprspace           |
+| Dal bordo inferiore verso l’alto       | Applicazioni        |
+| Dal bordo superiore verso il basso     | Centro di controllo |
+| Pressione prolungata su bordo finestra | Ridimensionamento   |
 
 Sensibilità, margine dei bordi e azioni sono in `hypr/config/plugins.lua`. Le gesture del touchpad rimangono in `input.lua`: tre dita orizzontali per i workspace, verso l’alto per le applicazioni, verso il basso per i controlli.
 

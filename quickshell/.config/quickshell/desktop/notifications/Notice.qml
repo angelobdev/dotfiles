@@ -14,7 +14,8 @@ Rectangle {
     readonly property var buttons: notification.actions.filter(a => !popup || a.identifier !== "default")
     readonly property string appIcon: {
         const icon = notification.appIcon || notification.desktopEntry || "";
-        if (icon.startsWith("/") || icon.startsWith("file:") || icon.startsWith("image:")) return icon;
+        if (icon.startsWith("/") || icon.startsWith("file:") || icon.startsWith("image:"))
+            return icon;
         return icon && !icon.includes(":") ? Quickshell.iconPath(icon, true) : "";
     }
     color: Theme.raised
@@ -26,19 +27,27 @@ Rectangle {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         cursorShape: root.defaultAction ? Qt.PointingHandCursor : Qt.ArrowCursor
         onClicked: mouse => {
-            if (mouse.button === Qt.RightButton) root.hidePopup();
-            else if (root.defaultAction) root.defaultAction.invoke();
+            if (mouse.button === Qt.RightButton)
+                root.hidePopup();
+            else if (root.defaultAction)
+                root.defaultAction.invoke();
         }
     }
     ColumnLayout {
         id: column
-        anchors { left: parent.left; right: parent.right; top: parent.top; margins: 12 }
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+            margins: 12
+        }
         spacing: 6
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
             Item {
-                Layout.preferredWidth: 24; Layout.preferredHeight: 24
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 24
                 Image {
                     id: appImage
                     anchors.fill: parent
@@ -46,12 +55,18 @@ Rectangle {
                     sourceSize: Qt.size(48, 48)
                     fillMode: Image.PreserveAspectFit
                 }
-                Icon { anchors.fill: parent; name: "bell"; visible: appImage.status !== Image.Ready }
+                Icon {
+                    anchors.fill: parent
+                    name: "bell"
+                    visible: appImage.status !== Image.Ready
+                }
             }
             Text {
                 text: root.notification.appName || "Notifica"
-                color: Theme.muted; font.pixelSize: 11
-                textFormat: Text.PlainText; elide: Text.ElideRight
+                color: Theme.muted
+                font.pixelSize: 11
+                textFormat: Text.PlainText
+                elide: Text.ElideRight
                 Layout.fillWidth: true
             }
         }
@@ -61,16 +76,21 @@ Rectangle {
             Text {
                 id: summary
                 text: root.notification.summary
-                color: Theme.text; font.bold: true; font.pixelSize: 13
-                Layout.fillWidth: true; wrapMode: Text.Wrap
+                color: Theme.text
+                font.bold: true
+                font.pixelSize: 13
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
                 maximumLineCount: root.popup ? 3 : 2147483647
-                elide: Text.ElideRight; textFormat: Text.PlainText
+                elide: Text.ElideRight
+                textFormat: Text.PlainText
             }
             ActionButton {
                 visible: !root.popup
                 Layout.alignment: Qt.AlignTop
                 implicitHeight: Math.max(24, summary.font.pixelSize + 8)
-                topPadding: 0; bottomPadding: 0
+                topPadding: 0
+                bottomPadding: 0
                 compact: true
                 destructive: true
                 text: "Elimina"
@@ -81,10 +101,13 @@ Rectangle {
         }
         Text {
             text: NotificationText.styled(root.notification.body)
-            color: Theme.text; visible: text !== ""
-            Layout.fillWidth: true; wrapMode: Text.Wrap
+            color: Theme.text
+            visible: text !== ""
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
             maximumLineCount: root.popup ? 6 : 2147483647
-            elide: Text.ElideRight; textFormat: Text.StyledText
+            elide: Text.ElideRight
+            textFormat: Text.StyledText
         }
         Flow {
             Layout.fillWidth: true

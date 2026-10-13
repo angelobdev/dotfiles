@@ -11,7 +11,8 @@ Overlay {
     id: root
     panelName: "bluetooth"
     onVisibleChanged: if (!visible) {
-        for (const adapter of Bluetooth.adapters.values) adapter.discovering = false;
+        for (const adapter of Bluetooth.adapters.values)
+            adapter.discovering = false;
     }
     SidePanelCard {
         ColumnLayout {
@@ -38,7 +39,7 @@ Overlay {
                         ColumnLayout {
                             id: adapterGroup
                             required property var modelData
-                            readonly property var discovered: modelData.devices.values.filter(d => !d.paired).sort((a,b) => a.name.localeCompare(b.name))
+                            readonly property var discovered: modelData.devices.values.filter(d => !d.paired).sort((a, b) => a.name.localeCompare(b.name))
                             readonly property var paired: modelData.devices.values.filter(d => d.paired).sort((a, b) => Number(b.connected) - Number(a.connected) || a.name.localeCompare(b.name))
                             Layout.fillWidth: true
                             spacing: 8
@@ -97,7 +98,9 @@ Overlay {
                             }
                             Text {
                                 visible: adapterGroup.discovered.length > 0
-                                text: "Dispositivi disponibili"; color: Theme.muted; font.pixelSize: 12
+                                text: "Dispositivi disponibili"
+                                color: Theme.muted
+                                font.pixelSize: 12
                             }
                             Repeater {
                                 model: adapterGroup.discovered
@@ -106,7 +109,8 @@ Overlay {
                                     readonly property bool pairing: modelData.pairing || BluetoothAgent.pairing.includes(modelData.dbusPath)
                                     Layout.fillWidth: true
                                     ActionButton {
-                                        Layout.fillWidth: true; alignLeft: true
+                                        Layout.fillWidth: true
+                                        alignLeft: true
                                         iconSource: Quickshell.iconPath(modelData.icon || "bluetooth", "bluetooth")
                                         text: modelData.name + (parent.pairing ? " · Associazione…" : "")
                                         tooltip: modelData.address
@@ -114,7 +118,9 @@ Overlay {
                                         onClicked: BluetoothAgent.pair(modelData)
                                     }
                                     PanelIconButton {
-                                        visible: parent.pairing; iconName: "close"; tooltip: "Annulla associazione"
+                                        visible: parent.pairing
+                                        iconName: "close"
+                                        tooltip: "Annulla associazione"
                                         onClicked: BluetoothAgent.cancel(modelData.dbusPath)
                                     }
                                 }

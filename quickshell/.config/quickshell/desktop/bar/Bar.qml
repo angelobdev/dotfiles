@@ -28,10 +28,26 @@ PanelWindow {
     implicitHeight: 38
     color: "transparent"
     WlrLayershell.namespace: "desktop-bar"
+    // Keep the surface mapped: Hyprspace restores its alpha when it closes.
+    // An invisible bar must neither reserve space nor intercept preview clicks.
+    readonly property bool compositorHidden: BarVisibility.hidden(screen.name)
+    exclusiveZone: compositorHidden ? 0 : implicitHeight
+    mask: compositorHidden ? emptyInput : null
+    Region {
+        id: emptyInput
+        width: 0
+        height: 0
+    }
     readonly property var monitor: Hyprland.monitorFor(screen)
-    readonly property var workspaces: WorkspaceModel.build(
-        Hyprland.workspaces.values.map(w => ({id: w.id, monitor: w.monitor?.name, count: w.toplevels.values.length, urgent: w.urgent})),
-        Hyprland.monitors.values.map(m => ({name: m.name, activeId: m.activeWorkspace?.id})), Config.minimumWorkspaces)[screen.name] || []
+    readonly property var workspaces: WorkspaceModel.build(Hyprland.workspaces.values.map(w => ({
+                id: w.id,
+                monitor: w.monitor?.name,
+                count: w.toplevels.values.length,
+                urgent: w.urgent
+            })), Hyprland.monitors.values.map(m => ({
+                name: m.name,
+                activeId: m.activeWorkspace?.id
+            })), Config.minimumWorkspaces)[screen.name] || []
     function focusWorkspace(id) {
         Hyprland.dispatch("hl.dsp.focus({ monitor = " + JSON.stringify(screen.name) + " })");
         Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })");
@@ -48,7 +64,10 @@ PanelWindow {
     }
     Connections {
         target: ShellState
-        function onPanelChanged() { if (ShellState.panel !== "") trayMenu.dismiss(); }
+        function onPanelChanged() {
+            if (ShellState.panel !== "")
+                trayMenu.dismiss();
+        }
     }
     SystemClock {
         id: clock
