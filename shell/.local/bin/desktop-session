@@ -14,9 +14,11 @@ case "${1:-start}" in
         dbus-update-activation-environment --systemd GDK_BACKEND QT_QPA_PLATFORM PATH WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE
         "$HOME/.local/bin/desktop-theme"
         systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service
+        # Apple devices expose AFC volumes, not UDisks block devices.
+        systemctl --user start gvfs-afc-volume-monitor.service
         "$HOME/.local/bin/desktop-wallpaper" --ensure
-        for daemon in hyprpaper hypridle; do
-            command -v "$daemon" >/dev/null || { echo "Manca $daemon." >&2; exit 1; }
+        for daemon in hyprpaper hypridle udiskie; do
+            command -v "$daemon" >/dev/null || { echo "Missing required daemon: $daemon." >&2; exit 1; }
             if ! pgrep -u "$(id -u)" -x "$daemon" >/dev/null; then
                 # Close our flock fd in children; it must only serialize startup.
                 nohup "$daemon" >"$state/$daemon.log" 2>&1 9>&- &
@@ -24,9 +26,9 @@ case "${1:-start}" in
         done
         ;;
     status)
-        for daemon in hyprpaper hypridle hyprlock; do
+        for daemon in hyprpaper hypridle hyprlock udiskie; do
             if pgrep -u "$(id -u)" -x "$daemon" >/dev/null; then
-                printf '%s: attivo\n' "$daemon"
+                printf '%s: running\n' "$daemon"
             else printf '%s: not running\n' "$daemon"; fi
         done
         ;;

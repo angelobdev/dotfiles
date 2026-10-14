@@ -151,3 +151,18 @@ PY
 On October 12, 2026, Hyprland exposed the HDMI-connected display as `DP-1`, I²C bus 14. After installing `ddcutil` and applying udev rules, EDID and connector information were readable, but `getvcp 10` and `capabilities` did not respond correctly; reads also failed with initial checks disabled and longer timings. No hardware value was written. Physical hotplug was verified: the monitor and controls disappear on disconnection and return on reconnection.
 
 GNOME's built-in control can use software brightness through Mutter, especially in HDR: see the [GNOME developer's explanation](https://blog.sebastianwick.net/posts/gnome-49-backlight-changes/). This may explain the different behavior; it does not prove that the Philips exposes DDC/CI. This desktop controls hardware backlight/DDC without automatically introducing a software dimmer. A successful read/write/restore DDC test requires a display that responds to the protocol.
+
+## Removable media
+
+The `udiskie` Stow package manages `~/.config/udiskie/config.yml`. `desktop-session start` launches one udiskie process alongside hyprpaper/hypridle, with logs in `~/.local/state/desktop-session/udiskie.log`; repeated startup does not create duplicate processes. `desktop-session status` includes udiskie.
+
+Automatic mounting and notifications are enabled, the tray icon is disabled, and system-internal disks are ignored. Notification browsing opens Nautilus; Quickshell displays the notifications using its existing notification server. Mounted drives normally appear under `/run/media/$USER/` and in Files. Use Files' eject control before unplugging a drive, or run `udiskie-umount --detach "/run/media/$USER/DRIVE_LABEL"` for a specific USB drive. Close files on the drive first.
+
+After changing the udiskie configuration, restart only that daemon:
+
+```sh
+pkill -x udiskie
+desktop-session start
+```
+
+Udiskie manages UDisks block devices. iPhones use the separate GVfs/AFC backend; see [iPhone access](integrations.md#removable-drives-and-iphone).

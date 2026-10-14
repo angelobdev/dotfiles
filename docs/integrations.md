@@ -55,3 +55,27 @@ journalctl --user -b -u xdg-desktop-portal-hyprland -u xdg-desktop-portal
 ```
 
 The isolated test completed CreateSession/SelectSources/Start and received five real PipeWire frames from a test window through the QML picker. End-to-end testing in the specific calling web app in Zen remains manual: start sharing, verify the display/window, and stop sharing from the application.
+
+## Removable drives and iPhone
+
+`desktop-session start` starts udiskie without a tray icon and activates `gvfs-afc-volume-monitor.service` in the user session. USB drives are automatically mounted through UDisks2; their notifications appear in Quickshell and Files handles browsing/ejection. Configuration is in the `udiskie` Stow package.
+
+An iPhone is not a USB block disk: GVfs/AFC provides access in Nautilus, while usbmuxd and libimobiledevice handle USB communication and pairing. Connect a data-capable cable, unlock the phone, and accept **Trust This Computer** on the device, including its passcode if requested. Open Files and select the iPhone or its Documents entry. The GPhoto2 backend can also expose photos/camera content. Availability depends on iOS and the services/apps exposed by the phone; AFC does not grant access to the entire iOS filesystem, and app documents require the app's file-sharing support. No jailbreak or iOS modification is configured.
+
+For pairing diagnostics, as the regular desktop user:
+
+```sh
+idevice_id -l
+idevicepair validate
+# Only when pairing is missing: unlock the phone and approve its trust dialog.
+idevicepair pair
+gio mount -li
+systemctl --user status gvfs-afc-volume-monitor.service
+systemctl status usbmuxd.service
+```
+
+With multiple devices, use `idevicepair -u DEVICE_ID validate` / `pair` to select one. If trust was denied, unlock and reconnect the phone, then accept the new prompt. Do not reset pairing or change permissions on `/var/lib/lockdown` as routine troubleshooting. usbmuxd is activated by the system's device rules; no manual `enable` or root-owned file manager is needed.
+
+GVfs volumes use `afc://` URIs and appear in Files rather than `/run/media`. Use Files' unmount action when done. The currently connected iPhone was accessible after accepting its trust prompt. Pairing validation, a GVfs AFC mount, and a root metadata query succeeded without reading personal file contents; udiskie itself is not involved in that AFC connection.
+
+References: [udiskie usage](https://github.com/coldfix/udiskie/wiki/Usage), [libimobiledevice](https://github.com/libimobiledevice/libimobiledevice), [GVfs AFC backend](https://gitlab.gnome.org/GNOME/gvfs/-/tree/master/daemon).

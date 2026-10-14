@@ -10,7 +10,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, and Polkit provide the back
 - [Hyprland plugins: overview, touch gestures, glass, and screenshots](docs/plugins.md)
 - [Interface and shortcuts](docs/interface.md)
 - [Configuration, language, theme, brightness, and wallpapers](docs/configuration.md)
-- [Lock screen, fingerprints, XWayland, and screen sharing](docs/integrations.md)
+- [Lock screen, fingerprints, XWayland, screen sharing, and iPhone](docs/integrations.md)
 - [Troubleshooting and verification status](docs/troubleshooting.md)
 - [Roadmap](ROADMAP.md)
 
@@ -39,3 +39,5 @@ Kitty includes a complete reference with commented defaults; Fastfetch uses a Fe
 Main settings are in [`Config.qml`](quickshell/.config/quickshell/desktop/Config.qml), the palette in [`Theme.qml`](quickshell/.config/quickshell/desktop/Theme.qml), and machine overrides in [`local.lua`](hypr/.config/hypr/config/local.lua).
 
 Quickshell is organized by function (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), with shared components and services. The [directory layout](docs/configuration.md#quickshell-layout) explains where to make changes. Local ChatGPT and Files/Nautilus launchers prefer Wayland; see [XWayland and text clarity](docs/integrations.md#xwayland).
+
+Removable drives are automounted by udiskie without an external tray icon; notifications appear in Quickshell. iPhones use GVfs/AFC in Files after device trust is granted. See [removable drives and iPhone](docs/integrations.md#removable-drives-and-iphone).

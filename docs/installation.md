@@ -17,6 +17,7 @@ Verified versions: Hyprland 0.56.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | `gtk` | Palette, fonts, icons, and dark preference for GTK 3/4 |
 | `qt` | Fusion palette and icons for Qt 5/6 via qt5ct/qt6ct |
 | `kitty` | Graphite terminal with translucent background and shared ANSI palette |
+| `udiskie` | Removable-drive automounting, Quickshell notifications, and no external tray icon |
 | `portals` | XDG preferences: Hyprland for capture/sharing, GTK for files and settings |
 
 ## Installation and updates
@@ -30,7 +31,8 @@ sudo dnf install hyprland quickshell stow kitty brightnessctl ddcutil wireplumbe
   f44-backgrounds-base xorg-x11-server-Xwayland ImageMagick python3 libnotify jq grim slurp \
   xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
   wl-clipboard cliphist wf-recorder pulseaudio-utils fprintd fprintd-pam \
-  python3-gobject evolution-data-server
+  python3-gobject evolution-data-server \
+  udiskie udisks2 gvfs gvfs-afc gvfs-gphoto2 usbmuxd libimobiledevice-utils
 cd ~/.dotfiles
 ./scripts/stow.py dry-run
 ./scripts/stow.py apply
@@ -48,10 +50,12 @@ Multilingual support uses the existing Qt and Python installations, with no addi
 
 Packages use standard XDG paths under `$HOME`. The two Qt `color_scheme_path` settings contain `/home/angelo`: update them when installing for another user. The Fedora 44 wallpaper is included as JPEG in `hyprpaper/.local/share/wallpapers`, converted from the installed JPEG XL image because this hyprpaper build cannot decode it. It comes from `f44-backgrounds-base`; the original CC BY-SA 4.0 license and Fedora attribution are included in the package files.
 
+Removable drives use udiskie; iPhone access uses GVfs/AFC and usbmuxd. See [Removable drives and iPhone](integrations.md#removable-drives-and-iphone). The usbmuxd system service is activated by device discovery; no manual service enablement is required.
+
 ## Compositor plugins
 
 Hyprspace, Hyprgrass, Hyprglass, hypr-hot-edge, and HyprCapture are managed through hyprpm. Build dependencies, installation, and updates are described in [Hyprland plugins](plugins.md). Run Stow after adding files, then run `./scripts/install-hypr-plugins.py` from a terminal in the Hyprland session.
 
 ## Removal
 
-First stop the shell (`desktop-shell stop`) and daemons (`pkill -x hypridle; pkill -x hyprpaper`), then run `./scripts/stow.py remove`. Removal unlinks the files, preserves the repository, and does not automatically restore backups. Copy the desired files from the backup and reload Hyprland. GSettings preferences remain: restore them using the values in `interface-before-theme.ini` with `gsettings set org.gnome.desktop.interface KEY VALUE`. Log in again to change the Qt environment.
+First stop the shell (`desktop-shell stop`) and daemons (`pkill -x hypridle; pkill -x hyprpaper; pkill -x udiskie`), then run `./scripts/stow.py remove`. Removal unlinks the files, preserves the repository, and does not automatically restore backups. Copy the desired files from the backup and reload Hyprland. GSettings preferences remain: restore them using the values in `interface-before-theme.ini` with `gsettings set org.gnome.desktop.interface KEY VALUE`. Log in again to change the Qt environment.

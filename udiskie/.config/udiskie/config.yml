@@ -1,0 +1,20 @@
+# Removable block devices use UDisks2; iPhones use GVfs/AFC separately.
+program_options:
+  automount: true
+  notify: true
+  tray: false
+  file_manager: nautilus
+
+# Keep system disks outside the automounter's scope.
+device_config:
+  - is_systeminternal: true
+    ignore: true
+
+notifications:
+  timeout: 5
+  device_added: false
+  device_removed: false
+
+# Quickshell renders these notifications and their file-manager action.
+notification_actions:
+  device_mounted: [browse]

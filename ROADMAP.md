@@ -1,6 +1,6 @@
 # ROADMAP
 
-Status updated on October 13, 2026, verified against repository files.
+Status updated on October 14, 2026, verified against repository files.
 Completed items indicate features present in the code; outstanding hardware checks are listed separately.
 
 ## Current direction
@@ -84,6 +84,7 @@ Completed items indicate features present in the code; outstanding hardware chec
 
 - [x] Multilingual Quickshell/helpers: nested Italian/US English JSON catalogs with semantic keys independent of text, selection from `/etc/locale.conf` (`LC_MESSAGES`/`LANG`), English fallback, live text updates, and localized calendar/clock/number formats. Hints translates categories and known descriptions; automated catalog/parameter checks. Active shell verified in `en_US`, both languages tested in isolated QML instances.
 - [x] English documentation, filenames, comments, binding descriptions, default labels, helper errors, and test fixtures; Italian content confined to `i18n/it_IT.json`.
+- [x] Udiskie Stow configuration and session autostart without a tray icon; automatic mounting of removable UDisks devices, Quickshell notifications, and Nautilus browsing. GVfs/AFC iPhone support with usbmuxd/libimobiledevice; pairing validation and GVfs AFC mounting verified on the connected iPhone after accepting the trust prompt.
 - [x] Quickshell Polkit authentication agent.
 - [x] Consistent dark glass theme: shared graphite palette across Quickshell, GTK 3/4, and Qt 5/6; translucent shell surfaces with opaque text and a neutral accent; applications retain native geometry and may use their own styling.
 - [x] Matching Kitty theme, Adwaita Mono, translucent background, and ANSI palette.
