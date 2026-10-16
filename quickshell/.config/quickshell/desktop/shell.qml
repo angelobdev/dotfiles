@@ -25,6 +25,9 @@ ShellRoot {
         function toggle(panel: string): void {
             ShellState.toggle(panel);
         }
+        function media(action: string): bool {
+            return Media.control(action);
+        }
         function close(): void {
             ShellState.close();
         }

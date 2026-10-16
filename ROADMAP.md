@@ -1,6 +1,6 @@
 # ROADMAP
 
-Status updated on October 14, 2026, verified against repository files.
+Status updated on October 16, 2026, verified against repository files.
 Completed items indicate features present in the code; outstanding hardware checks are listed separately.
 
 ## Current direction
@@ -35,7 +35,7 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] At least two pills per monitor, empty placeholders with globally unique IDs, and wheel/touchpad navigation across the workspace area's full height.
 - [x] Window title, spacer, tray, battery percentage/icon, Hints, notifications, Control Center, date/time, and power menu.
 - [x] QML tray menus with matching background/border, rounded corners, hover, submenus, anchoring below the icon on its monitor, and keyboard navigation; Esc and outside clicks close the menu.
-- [x] Centered status icons and native tooltips below buttons.
+- [x] Centered status icons and native tooltips below buttons; bar buttons no longer retain a highlight from mouse focus after panels close, while keyboard and panel focus indicators remain available.
 - [x] Launcher with search, application icons, left-aligned titles, and keyboard navigation.
 - [x] Hints panel with search, categories, and shortcuts/descriptions read from actual Hyprland bindings.
 - [x] Keyboard-accessible session menu with lock, suspend, logout, reboot, and shutdown; confirmation for the relevant actions.
@@ -43,6 +43,8 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] OSDs for volume, speaker/microphone mute, and brightness, with level/device, configurable timeout, and positioning on the affected monitor; detects changes even with panels closed.
 - [x] QML wallpaper picker on `Super + Shift + W`, with previews and persistence across sessions.
 - [x] HyprCapture editor bindings for areas (`Super + Shift + S` / `Print`) and monitors (`Super + Shift + Alt + S` / `Alt + Print`); scratchpad bindings and shortcut conflicts removed.
+
+- [x] XF86 MPRIS play/pause, pause, next, previous, and stop bindings through the native Quickshell media service, following the selected player and capabilities. Omnibook F1/F2/F10/F11 events captured; calculator and Control Center aliases configured, pseudotiling moved to `Super + Ctrl + P` to avoid the firmware `Super + P` conflict.
 
 ### Compositor plugins
 

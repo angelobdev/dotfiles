@@ -129,7 +129,7 @@ The shell uses dark translucent surfaces with blur and thin neutral borders. Hyp
 
 ## Media and calendars
 
-The Control Center's `media` module uses native Quickshell MPRIS: title/artist, previous, play/pause, next, and position when exposed by the player. With multiple players, select the desired one. Buttons follow the application's published capabilities; `playerctl` is not required.
+The Control Center's `media` module uses native Quickshell MPRIS: title/artist, previous, play/pause, next, and position when exposed by the player. With multiple players, select the desired one. Buttons and XF86 transport keys follow the application's published capabilities; `playerctl` is not required. `desktop-shell media {play-pause|play|pause|next|previous|stop}` routes commands through the shell's native MPRIS service and respects the selected player. Unknown actions are rejected by the wrapper, and unavailable/unsupported actions produce no playback change.
 
 `calendarSources: []` in `Config.qml` includes all enabled EDS calendars. To limit them, supply source UIDs, for example `calendarSources: ["system-calendar"]`. Names can change; UIDs identify sources. Configure accounts using the existing GNOME tools; the panel uses the same credentials and events without storing passwords in the repository. EDS expands recurrences. The calendar refreshes events on opening, month changes, every minute while open, and with **Refresh**. Errors show the cause and preserve already loaded events in memory for the unavailable source.
 

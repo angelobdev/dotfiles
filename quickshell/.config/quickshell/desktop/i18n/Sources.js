@@ -3,6 +3,12 @@
 // Labels supplied by Hyprland/Quickshell APIs are mapped to stable catalog keys.
 // Unrecognized custom labels are preserved by the caller.
 var bindKeys = {
+    "Play / pause": "media.playPause",
+    "Pause": "media.pause",
+    "Next": "media.next",
+    "Previous": "media.previous",
+    "Stop": "media.stop",
+    "Calculator": "apps.calculator",
     "Terminal": "apps.terminal",
     "Browser": "apps.browser",
     "1Password": "apps.passwordManager",

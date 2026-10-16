@@ -29,11 +29,12 @@ end
 
 -- Applications
 bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminal")
+bind("XF86Calculator", hl.dsp.exec_cmd("gnome-calculator"), "Calculator")
 
 -- System (Hyprland)
 bind("SUPER + Q", hl.dsp.window.close(), "Close window")
 bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Toggle floating window")
-bind("SUPER + P", hl.dsp.window.pseudo(), "Toggle pseudotiling")
+bind("SUPER + CTRL + P", hl.dsp.window.pseudo(), "Toggle pseudotiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Toggle split orientation")
 bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Fullscreen")
 
@@ -78,6 +79,12 @@ bind("SUPER + mouse:272", hl.dsp.window.drag(), "Drag window", { mouse = true })
 bind("SUPER + mouse:273", hl.dsp.window.resize(), "Resize window", { mouse = true })
 
 -- Keyboard Controls
+-- Use the same selected MPRIS player as the Quickshell Control Center.
+bind("XF86AudioPlay", hl.dsp.exec_cmd(shell .. " media play-pause"), "Play / pause", { locked = true })
+bind("XF86AudioPause", hl.dsp.exec_cmd(shell .. " media pause"), "Pause", { locked = true })
+bind("XF86AudioNext", hl.dsp.exec_cmd(shell .. " media next"), "Next", { locked = true })
+bind("XF86AudioPrev", hl.dsp.exec_cmd(shell .. " media previous"), "Previous", { locked = true })
+bind("XF86AudioStop", hl.dsp.exec_cmd(shell .. " media stop"), "Stop", { locked = true })
 bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), "Volume up",
     { locked = true, repeating = true })
 bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"), "Volume down",

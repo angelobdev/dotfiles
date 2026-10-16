@@ -7,6 +7,8 @@ import ".."
 Button {
     id: root
     property bool destructive: false
+    // Bar controls should not retain a focus highlight after mouse clicks.
+    property bool keyboardFocusOnly: false
     // Text buttons keep their inset; small icon controls can opt out.
     property bool compact: false
     property string iconName: ""
@@ -74,8 +76,8 @@ Button {
     }
     background: Rectangle {
         radius: 11
-        color: root.highlighted ? Theme.accent : root.down ? Theme.raised : root.hovered || root.activeFocus ? Theme.raised : "transparent"
-        border.width: root.activeFocus ? 0 : 0
+        color: root.highlighted ? Theme.accent : root.down ? Theme.raised : root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
+        border.width: 0
         border.color: Theme.accent
         Behavior on color {
             ColorAnimation {

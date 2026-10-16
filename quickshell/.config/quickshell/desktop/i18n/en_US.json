@@ -2,7 +2,8 @@
   "apps": {
     "browser": "Browser",
     "passwordManager": "1Password",
-    "terminal": "Terminal"
+    "terminal": "Terminal",
+    "calculator": "Calculator"
   },
   "audio": {
     "devices": "Inputs & outputs",
@@ -283,7 +284,9 @@
     "position": "Playback position",
     "previous": "Previous",
     "title": "Media",
-    "unavailable": "No media available"
+    "unavailable": "No media available",
+    "playPause": "Play / pause",
+    "stop": "Stop"
   },
   "network": {
     "connect": "Connect",

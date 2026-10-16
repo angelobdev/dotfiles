@@ -30,6 +30,12 @@ sys.exit(0 if running else 1)
         esac
         exec qs ipc -p "$config" call desktop toggle "$2"
         ;;
+    media)
+        case "${2:-}" in play-pause|play|pause|next|previous|stop) ;;
+            *) echo 'Usage: desktop-shell media {play-pause|play|pause|next|previous|stop}' >&2; exit 2 ;;
+        esac
+        exec qs ipc -p "$config" call desktop media "$2"
+        ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|restart|status|toggle PANEL}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|restart|status|toggle PANEL|media ACTION}' >&2; exit 2 ;;
 esac

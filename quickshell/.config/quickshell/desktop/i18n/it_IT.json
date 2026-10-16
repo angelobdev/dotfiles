@@ -2,7 +2,8 @@
   "apps": {
     "browser": "Browser",
     "passwordManager": "1Password",
-    "terminal": "Terminale"
+    "terminal": "Terminale",
+    "calculator": "Calcolatrice"
   },
   "audio": {
     "devices": "Ingressi e uscite",
@@ -283,7 +284,9 @@
     "position": "Posizione riproduzione",
     "previous": "Precedente",
     "title": "Multimedia",
-    "unavailable": "Nessuna riproduzione disponibile"
+    "unavailable": "Nessuna riproduzione disponibile",
+    "playPause": "Riproduci / pausa",
+    "stop": "Ferma"
   },
   "network": {
     "connect": "Connetti",

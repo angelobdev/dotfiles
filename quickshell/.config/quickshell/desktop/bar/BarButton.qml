@@ -2,6 +2,7 @@ import QtQuick
 import "../components"
 
 ActionButton {
+    keyboardFocusOnly: true
     implicitHeight: 30
     iconSize: 16
     topPadding: 0

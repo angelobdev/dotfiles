@@ -46,18 +46,36 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + L` / `XF86Sleep` | Lock / suspend with lock |
 | `Super + Shift + R` | Restart Quickshell |
 | `Super + V` / `Super + Shift + F` | Floating / fullscreen |
-| `Super + P` / `Super + J` | Pseudotiling / split orientation |
+| `Super + Ctrl + P` / `Super + J` | Pseudotiling / split orientation |
 | `Super + arrows` / `Super + Shift + arrows` | Focus / move window |
 | `Super + 1…9,0` / `Super + Shift + 1…9,0` | Workspace / move to workspace |
 | `Super + Shift + S` / `Print` | Area screenshot with editor |
 | `Super + Shift + Alt + S` / `Alt + Print` | Monitor screenshot with editor |
 | `Super + left/right drag` | Move / resize window |
+| `XF86AudioPlay` / `XF86AudioPause` | Play/pause toggle / pause |
+| `XF86AudioNext` / `XF86AudioPrev` / `XF86AudioStop` | Next / previous / stop |
+| `XF86Calculator` | Calculator (`gnome-calculator`) |
 | Multimedia keys | Volume, microphone, brightness |
 | `Esc` / outside click | Close panel |
 
 In the session menu, **↑/↓ and Tab/Shift+Tab** move focus; **Enter or Space** activates the button. Confirmation requests focus **Cancel**: use **←/→ or Tab** to choose Confirm. **Esc** cancels confirmation, then closes the panel. The first button receives focus on opening.
 
 In the calendar, arrow keys move between days, PgUp/PgDn changes months, and Home selects today. In the wallpaper picker, arrows navigate the list, Enter opens a directory/selects an image, and Backspace goes to the parent; Tab reaches the path, apply, and restore controls.
+
+## Omnibook action keys
+
+Verified with `wev` on this machine. Fn/Fn Lock determines whether the action keys require holding Fn; ordinary F1/F2 function keys are not rebound.
+
+| Physical action key | Event emitted by firmware | Action |
+| --- | --- | --- |
+| F1, two displays | `Super + P` | Control Center (including display brightness controls) |
+| F2, calculator | `XF86Calculator` | GNOME Calculator |
+| F10, play/pause | `XF86AudioPlay` | Play/pause the selected MPRIS player |
+| F11, three diamonds | `XF86Launch2` | Control Center |
+
+The original `Super + P` pseudotiling shortcut conflicted with the firmware's display key; pseudotiling now uses `Super + Ctrl + P`. Machine-specific Control Center aliases live in `hypr/config/local.lua`. The screenshot shortcut remains `Super + Shift + S`; no ordinary function-key shortcut was added for screenshots.
+
+Media keys call Quickshell through `desktop-shell media ACTION`, using the same selected/playing/fallback player as the Control Center. Commands unsupported by that player, or commands with no available player, do nothing. Play/pause, pause, next, previous, and stop remain available while locked, without repeat-triggering transport actions. No additional media daemon or playerctl process is required.
 
 ## Workspaces per monitor
 

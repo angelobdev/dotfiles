@@ -26,7 +26,7 @@ Overlay {
             return I18n.tr("session.title");
         if (/applications|control center|notifications|quickshell|network|wi-fi|sound.*devices|battery|calendar|hints|wallpaper|clipboard/.test(name))
             return I18n.tr("hints.categories.shell");
-        if (/browser|terminal|kitty|1password/.test(name))
+        if (/browser|terminal|kitty|1password|calculator/.test(name))
             return I18n.tr("launcher.title");
         if (/window|focus|floating|fullscreen|^move |tiling|split|pseudo/.test(name))
             return I18n.tr("hints.categories.windows");
