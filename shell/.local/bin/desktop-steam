@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Steam games inherit this PATH, including the optional gamescope wrapper.
+export PATH="$HOME/.local/bin:$PATH"
+exec python3 "$HOME/.local/libexec/desktop/gaming.py" steam "$@"

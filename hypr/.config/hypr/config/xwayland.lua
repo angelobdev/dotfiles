@@ -1,7 +1,7 @@
--- Legacy X11 applications use XWayland; native applications continue to use Wayland.
+-- Render X11 surfaces at 1:1; HiDPI-aware clients (including desktop-steam) scale their UI.
 hl.config({
     xwayland = {
         enabled = true,
-        force_zero_scaling = false
+        force_zero_scaling = true
     }
 })

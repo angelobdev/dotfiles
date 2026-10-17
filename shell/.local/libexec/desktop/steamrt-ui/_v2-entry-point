@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+"""Add the UI scaling library only inside Steam's web-helper runtime."""
+import os
+from pathlib import Path
+import sys
+
+runtime = Path(os.environ['DESKTOP_STEAM_REAL_RUNTIME'])
+arguments = sys.argv[1:]
+if arguments[:1] == ['--']:
+    arguments = arguments[1:]
+environment = dict(os.environ, STEAM_RUNTIME_STEAMRT=str(runtime))
+command = [str(runtime / '_v2-entry-point'), '--']
+# Other users of this runtime must not inherit our renderer library.
+if arguments and Path(arguments[0]).name == 'steamwebhelper_sniper_wrap.sh':
+    library = os.environ['DESKTOP_STEAM_CEF_LIBRARY']
+    preload = ':'.join(filter(None, (library, environment.get('LD_PRELOAD', ''))))
+    command += ['/usr/bin/env', f'LD_PRELOAD={preload}']
+os.execvpe(command[0], [*command, *arguments], environment)

@@ -10,7 +10,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, and Polkit provide the back
 - [Hyprland plugins: overview, touch gestures, glass, and screenshots](docs/plugins.md)
 - [Interface and shortcuts](docs/interface.md)
 - [Configuration, language, theme, brightness, and wallpapers](docs/configuration.md)
-- [Lock screen, fingerprints, XWayland, screen sharing, and iPhone](docs/integrations.md)
+- [Lock screen, fingerprints, XWayland, Steam/gamescope, screen sharing, and iPhone](docs/integrations.md)
 - [Troubleshooting and verification status](docs/troubleshooting.md)
 - [Roadmap](ROADMAP.md)
 
@@ -41,3 +41,5 @@ Main settings are in [`Config.qml`](quickshell/.config/quickshell/desktop/Config
 Quickshell is organized by function (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), with shared components and services. The [directory layout](docs/configuration.md#quickshell-layout) explains where to make changes. Local ChatGPT and Files/Nautilus launchers prefer Wayland; see [XWayland and text clarity](docs/integrations.md#xwayland).
 
 Removable drives are automounted by udiskie without an external tray icon; notifications appear in Quickshell. iPhones use GVfs/AFC in Files after device trust is granted. See [removable drives and iPhone](docs/integrations.md#removable-drives-and-iphone).
+
+Steam uses a monitor-aware launcher with 1:1 XWayland rendering for clearer HiDPI text. Gamescope is available per game through `desktop-gamescope -- %command%`; see [Steam and gamescope](docs/integrations.md#steam-and-gamescope) for setup and scaling options.

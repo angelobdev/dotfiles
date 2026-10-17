@@ -20,17 +20,42 @@ The hyprlock configuration was tested in a nested Hyprland session: PAM initiali
 
 ## XWayland
 
-`hypr/.config/hypr/config/xwayland.lua` explicitly enables Fedora's XWayland server. `force_zero_scaling = false` retains compositor scaling on HiDPI screens. Qt uses `wayland;xcb` and GTK `wayland,x11,*`, with `DISPLAY` imported into the D-Bus/systemd environment at login. Native applications use Wayland; X11 applications use the bridge without a separate X desktop.
+`hypr/.config/hypr/config/xwayland.lua` explicitly enables Fedora's XWayland server. `force_zero_scaling = true` renders X11 surfaces at 1:1 to avoid compositor upscaling blur on HiDPI screens. Qt uses `wayland;xcb` and GTK `wayland,x11,*`, with `DISPLAY` imported into the D-Bus/systemd environment at login. Native applications use Wayland; X11 applications use the bridge without a separate X desktop.
 
-The machine was checked with XWayland active and `xprop -root`. To change X11 application scaling policy, use `hypr/.config/hypr/config/local.lua`; forcing zero scaling may make applications without their own HiDPI support very small.
+The machine was checked with XWayland active and `xprop -root`. X11 applications must scale their own interface; legacy applications without HiDPI support may appear smaller. Set per-application scaling where supported. The policy can be overridden in `hypr/.config/hypr/config/local.lua`; it is global to XWayland, not specific to Steam.
 
 ### Blurred text on fractional-scale displays
 
-The reported ChatGPT and Nautilus windows were both XWayland on the eDP monitor at scale 1.667. Nautilus had `GDK_BACKEND=x11`; ChatGPT had started without Wayland display variables. Scaling X11 surfaces can blur text ([Hyprland documentation](https://wiki.hypr.land/0.54.0/Configuring/XWayland/)). Isolated instances of both applications were verified as native Wayland without changing CSS, fonts, or monitor scale.
+The reported ChatGPT and Nautilus windows were both XWayland on the eDP monitor at scale 1.667. Nautilus had `GDK_BACKEND=x11`; ChatGPT had started without Wayland display variables. Scaling X11 surfaces can blur text ([Hyprland documentation](https://wiki.hypr.land/configuring/extra/xwayland/)). Isolated instances of both applications were verified as native Wayland without changing CSS, fonts, or monitor scale.
 
 The `shell` Stow package includes `~/.local/share/applications/chatgpt.desktop` with `--ozone-platform=wayland` and `org.gnome.Nautilus.desktop` with `GDK_BACKEND=wayland`. Nautilus launcher D-Bus activation is disabled so the command environment applies; the application still retains its single-instance behavior. `desktop-session start` also updates `GDK_BACKEND` and `QT_QPA_PLATFORM` in the service environment. These overrides require a Wayland session.
 
-**Completely close and reopen applications** to apply the backend: opening a new window from an existing X11 process is insufficient. User instances were not terminated during verification. Check the `xwayland` field in `hyprctl -j clients`: `false` indicates a native window. `force_zero_scaling` stays disabled to retain other X11 applications' sizes. Inactive window opacity remains 0.92 and can reduce contrast even with native rendering.
+**Completely close and reopen applications** to apply the backend: opening a new window from an existing X11 process is insufficient. User instances were not terminated during verification. Check the `xwayland` field in `hyprctl -j clients`: `false` indicates a native window. XWayland surfaces now use 1:1 rendering; native Wayland windows retain per-monitor scaling. Inactive window opacity remains 0.92 and can reduce contrast even with native rendering.
+
+## Steam and gamescope
+
+The RPM Steam client currently uses XWayland. On the built-in 2880×1800 display at scale 1.667, compositor upscaling softened its text. XWayland now renders at 1:1. `desktop-steam` selects the focused monitor's scale, with per-monitor preferences from `~/.config/desktop/steam.json` (`monitorScales`). The built-in eDP-1 uses a preferred UI scale of 2 for readability; other outputs retain their detected scale (1 on an unscaled external display). The local `steam.desktop` override routes the app menu, Steam links, and desktop actions through this wrapper. The desktop entry uses `/home/angelo/.local/bin/desktop-steam`; update that path for another user. The launcher adds `~/.local/bin` to Steam's PATH so games can find the gamescope wrapper. Direct `/usr/bin/steam` invocations bypass the wrapper.
+
+**Exit Steam completely, including its tray process, then reopen it from the app menu** to apply the change. A running client receives requests without changing its startup scale. Steam does not dynamically rescale when moved between differently scaled monitors: exit and relaunch on the desired monitor. An explicit `-forcedesktopscaling` argument takes precedence; `DESKTOP_STEAM_SCALE=1.5 desktop-steam` provides a manual override. Outside Hyprland, Steam's normal automatic scaling is retained unless an override is supplied. No global GTK/Qt scaling variables or Electron flags are applied.
+
+The installed client build 1788652215 ignored the legacy `-forcedesktopscaling` argument and `STEAM_FORCE_DESKTOPUI_SCALING` for visible desktop scaling, even with Steam's HiDPI switch enabled. `rendererScaling: true` in `steam.json` enables a small local CEF initialization workaround. The launcher compiles `steam-scale.c` once into `~/.cache/desktop/steam-ui/` (requires `cc`, provided by Fedora's `gcc` package). A dedicated runtime entry point loads it only in `steamwebhelper`; the Steam client and games do not receive the library through `LD_PRELOAD`. Original Steam scripts and binaries are not edited. The legacy controls remain for compatibility with other builds.
+
+The workaround calls the renderer's existing scale API after successful initialization, producing larger text rendered at the target resolution. It depends on Steam's current runtime entry-point convention and CEF API; check it after client updates. Set `rendererScaling` to `false` and completely exit/reopen Steam to disable it. An unknown CEF scale symbol leaves the normal renderer unchanged. The approach was investigated using the [steam-hidpi-shim documentation](https://github.com/katerinakosac51-creator/steam-hidpi-shim); this repository keeps its own small implementation and limits loading to the web-helper runtime.
+
+Gamescope is optional **per game**, leaving the regular Steam client outside it. Install `gamescope` with DNF; the Intel GPU also needs Mesa Vulkan drivers, including i686 drivers for 32-bit games. This machine already has both architectures. In **Game → Properties → General → Launch Options**, use one of:
+
+```sh
+# Native physical output/render resolution of the focused Hyprland monitor:
+desktop-gamescope -- %command%
+# Lower internal resolution, FSR 1 upscaling, and a 60 FPS limit on this 16:10 display:
+desktop-gamescope --render 1920x1200 --fsr --fps 60 -- %command%
+# Explicit output dimensions or a window rather than fullscreen:
+desktop-gamescope --output 1920x1080 --windowed -- %command%
+```
+
+The wrapper uses gamescope's Wayland backend. It distinguishes physical pixels from Hyprland logical geometry, handles rotated outputs, defaults to native rendering without an FPS cap, and forwards the game command without shell evaluation. Focus the intended monitor before launching; normal Hyprland window rules still determine placement. `--output` changes dimensions, not the selected monitor. Keep render/output aspect ratios aligned to avoid unwanted bars. FSR 1 is spatial upscaling; lower resolutions trade detail for GPU workload. When Steam was started before the launcher PATH update, use the absolute `/home/angelo/.local/bin/desktop-gamescope` path in launch options or exit and reopen Steam. Remove the launch option to run the game normally. HDR, frame generation, driver overrides, and a separate gamescope login session are not enabled.
+
+References: [Hyprland XWayland scaling](https://wiki.hypr.land/configuring/extra/xwayland/), [Valve Steam scaling discussion](https://github.com/ValveSoftware/steam-for-linux/issues/5460), [Valve gamescope options and per-game examples](https://github.com/ValveSoftware/gamescope#examples).
 
 ## Electron, portals, and screen sharing
 

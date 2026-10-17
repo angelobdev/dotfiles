@@ -1,6 +1,6 @@
 # ROADMAP
 
-Status updated on October 16, 2026, verified against repository files.
+Status updated on October 17, 2026, verified against repository files.
 Completed items indicate features present in the code; outstanding hardware checks are listed separately.
 
 ## Current direction
@@ -22,6 +22,8 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] Hyprlock: modern graphite layout, PAM password, and parallel native fingerprint authentication; Synaptics reader acquired and right-index verification started in the headless test.
 - [x] Quickshell reorganized by function (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), with shared components/services and updated imports.
 - [x] ChatGPT/Nautilus blurred-text investigation: both reported instances were XWayland; native Wayland startup verified with isolated instances, local launchers corrected, and session environment updated. User applications need restarting to apply the backend.
+
+- [x] Steam HiDPI startup: 1:1 XWayland rendering and a monitor-aware Steam launcher/desktop override and renderer-scoped CEF initialization workaround (visible 2× UI verified); optional per-game gamescope wrapper with native physical resolution, lower render resolution, FSR, and FPS controls.
 
 ### Cursor and terminal
 
