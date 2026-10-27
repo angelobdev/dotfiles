@@ -33,6 +33,13 @@ ControlTile {
             CompactIconButton {
                 iconName: "chevron-down"
                 rotation: root.expanded ? 180 : 0
+                Behavior on rotation {
+                    NumberAnimation {
+                        duration: Theme.motionNormal
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.easeOut
+                    }
+                }
                 tooltip: I18n.tr("audio.devices")
                 implicitHeight: 26
                 implicitWidth: 28
@@ -65,9 +72,8 @@ ControlTile {
                 Accessible.name: I18n.tr("audio.outputVolume")
             }
         }
-        ColumnLayout {
-            visible: root.expanded
-            Layout.fillWidth: true
+        Expander {
+            expanded: root.expanded
             spacing: 4
             Text {
                 text: I18n.tr("audio.outputsHeading")

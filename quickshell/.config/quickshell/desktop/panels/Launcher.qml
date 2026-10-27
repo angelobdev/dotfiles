@@ -57,6 +57,14 @@ Overlay {
                 Layout.fillHeight: true
                 clip: true
                 spacing: 4
+                // The selection glides between rows instead of jumping.
+                highlight: Rectangle {
+                    radius: 11
+                    color: Theme.accent
+                }
+                highlightMoveDuration: Theme.motionNormal
+                highlightMoveVelocity: -1
+                highlightResizeDuration: 0
                 model: DesktopEntries.applications.values.filter(e => !e.noDisplay && (e.name + " " + e.genericName + " " + e.keywords.join(" ")).toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name))
                 delegate: ActionButton {
                     required property var modelData
@@ -68,6 +76,7 @@ Overlay {
                     alignLeft: true
                     text: modelData.name + (modelData.runInTerminal ? I18n.tr("launcher.terminalSuffix") : "")
                     highlighted: apps.currentIndex === index
+                    highlightBackground: false
                     onClicked: root.launch(modelData)
                 }
                 ScrollBar.vertical: ScrollBar {}

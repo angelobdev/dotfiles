@@ -71,6 +71,8 @@ Phase 3: `tailscale up` while already running was confirmed to be a no-op (only 
 
 Phase 2: two `notify-send` toasts were captured mid-entrance (the second offset and translucent, the first unmoved, so it was not recreated), with no log warnings. A separate instance with the Control Center and Network panels drove `ShellState.push("network")` and `back()`; burst-captured frames showed the Network panel entering from the right and, on Back, leaving to the right while the Control Center returned. The live `layer_rule` now also covers `desktop-notifications`.
 
+Phase 3: after `stow.py apply` linked `Expander.qml`, the shell restarted cleanly and the Control Center, launcher, notification center, and clipboard opened and closed with no log warnings. A separate instance switched three 96 px icons from `wifi` to `wifi-off` and grabbed them at 40, 100, and 600 ms: both glyphs overlapping, the new one dominant, then only the new one.
+
 ## Steam and gamescope verification
 
 The user confirmed improved text clarity with 1:1 XWayland rendering, but changing `-forcedesktopscaling` from 1.667 to 2 did not visibly enlarge the interface. Exporting `STEAM_FORCE_DESKTOPUI_SCALING` to both client and web helper also left the header unchanged. Steam's Interface HiDPI switch was already on. SDL reported content scale 1 through Wayland and 2 through X11 with its hint, but that alternate backend did not change the desktop UI either. Those diagnostics establish that startup arguments and environment alone are insufficient for this installed build.

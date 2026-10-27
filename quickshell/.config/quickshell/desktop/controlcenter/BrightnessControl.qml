@@ -34,6 +34,13 @@ ControlTile {
                 visible: Brightness.others.length > 0
                 iconName: "chevron-down"
                 rotation: root.expanded ? 180 : 0
+                Behavior on rotation {
+                    NumberAnimation {
+                        duration: Theme.motionNormal
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.easeOut
+                    }
+                }
                 tooltip: I18n.tr("brightness.otherDisplays")
                 implicitHeight: 26
                 implicitWidth: 28
@@ -74,9 +81,8 @@ ControlTile {
             color: Theme.muted
             font.pixelSize: 11
         }
-        ColumnLayout {
-            visible: root.expanded && Brightness.others.length > 0
-            Layout.fillWidth: true
+        Expander {
+            expanded: root.expanded && Brightness.others.length > 0
             Repeater {
                 model: Brightness.otherNames
                 ColumnLayout {

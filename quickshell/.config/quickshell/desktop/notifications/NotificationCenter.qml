@@ -38,6 +38,48 @@ Overlay {
                 clip: true
                 spacing: 10
                 model: Notices.notifications
+                add: Transition {
+                    NumberAnimation {
+                        property: "opacity"
+                        from: 0
+                        to: 1
+                        duration: Theme.motionNormal
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.easeOut
+                    }
+                    NumberAnimation {
+                        property: "scale"
+                        from: 0.96
+                        to: 1
+                        duration: Theme.motionNormal
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.easeOut
+                    }
+                }
+                remove: Transition {
+                    NumberAnimation {
+                        property: "x"
+                        to: 64
+                        duration: Theme.motionFast
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.easeIn
+                    }
+                    NumberAnimation {
+                        property: "opacity"
+                        to: 0
+                        duration: Theme.motionFast
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.easeIn
+                    }
+                }
+                displaced: Transition {
+                    NumberAnimation {
+                        properties: "x,y"
+                        duration: Theme.motionNormal
+                        easing.type: Easing.BezierSpline
+                        easing.bezierCurve: Theme.easeOut
+                    }
+                }
                 delegate: Notice {
                     required property var modelData
                     width: list.width

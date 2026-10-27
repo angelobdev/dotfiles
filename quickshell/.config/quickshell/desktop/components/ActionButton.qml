@@ -17,6 +17,8 @@ Button {
     property bool iconAfterText: false
     property int textElide: Text.ElideRight
     property string tooltip: ""
+    // Lists with a moving selection (ListView.highlight) draw the highlighted background themselves.
+    property bool highlightBackground: true
     readonly property bool hasIcon: iconName !== "" || iconSource.toString() !== ""
     readonly property color foreground: destructive ? Theme.danger : highlighted ? Theme.accentText : Theme.text
     implicitHeight: 36
@@ -26,6 +28,15 @@ Button {
     font.family: Theme.font
     font.pixelSize: 13
     opacity: enabled ? 1 : 0.45
+    // A press sinks by a couple of pixels whatever the width, so wide rows barely move and icons visibly do.
+    scale: down ? 1 - Math.min(0.04, 6 / Math.max(width, 1)) : 1
+    Behavior on scale {
+        NumberAnimation {
+            duration: Theme.motionFast
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.easeOut
+        }
+    }
     Accessible.name: text || tooltip
     // Only buttons with a tooltip pay for a tooltip window.
     Loader {
@@ -84,7 +95,7 @@ Button {
     }
     background: Rectangle {
         radius: 11
-        color: root.highlighted ? Theme.accent : root.down || root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
+        color: root.highlighted ? (root.highlightBackground ? Theme.accent : "transparent") : root.down || root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
         Behavior on color {
             ColorAnimation {
                 duration: Theme.motionFast
