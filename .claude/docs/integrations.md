@@ -1,6 +1,6 @@
 # Session and integrations
 
-[← README](../README.md)
+[← README](../../README.md)
 
 ## Lock, idle, and suspend
 

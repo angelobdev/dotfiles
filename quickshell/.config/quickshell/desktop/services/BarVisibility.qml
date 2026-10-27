@@ -6,12 +6,13 @@ import Quickshell.Io
 Singleton {
     id: root
     property var hiddenMonitors: []
+    readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/bar_visibility.py"
     function hidden(name) {
         return hiddenMonitors.indexOf(name) !== -1;
     }
     Process {
         id: watcher
-        command: ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/bar_visibility.py"]
+        command: ["python3", root.helper]
         running: true
         stdout: SplitParser {
             onRead: data => {

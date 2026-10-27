@@ -59,7 +59,7 @@ RowLayout {
             readonly property bool active: root.activeId === modelData.id
             implicitWidth: active ? 46 : 28
             implicitHeight: 28
-            Accessible.name: "Workspace " + modelData.id
+            Accessible.name: I18n.tr("workspaces.accessibleName", [modelData.id])
             HintTooltip {
                 target: workspace
                 hovered: workspace.hovered

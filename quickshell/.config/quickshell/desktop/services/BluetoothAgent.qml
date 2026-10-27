@@ -10,6 +10,7 @@ Singleton {
     property var prompt: null
     property string error: ""
     property var pairing: []
+    readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/bluetooth_agent.py"
     function send(data) {
         if (process.running)
             process.write(JSON.stringify(data) + "\n");
@@ -44,7 +45,7 @@ Singleton {
     }
     Process {
         id: process
-        command: ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/bluetooth_agent.py"]
+        command: ["python3", root.helper]
         running: true
         stdinEnabled: true
         stdout: SplitParser {

@@ -4,7 +4,6 @@ import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Services.Notifications
 import ".."
-import "../components"
 import "../services"
 
 PanelWindow {

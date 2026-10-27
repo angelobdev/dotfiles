@@ -1,4 +1,4 @@
--- Hyprland >= 0.55. Modules are resolved relative to this config, not $PWD.
+-- Hyprland >= 0.55. Modules resolve from $XDG_CONFIG_HOME/hypr (fallback ~/.config/hypr), not $PWD.
 local base = (os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")) .. "/hypr"
 package.path = base .. "/?.lua;" .. base .. "/?/init.lua;" .. package.path
 

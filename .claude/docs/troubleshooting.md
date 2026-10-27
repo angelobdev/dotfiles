@@ -1,6 +1,6 @@
 # Troubleshooting and verification
 
-[← README](../README.md)
+[← README](../../README.md)
 
 ## Customization and diagnostics
 

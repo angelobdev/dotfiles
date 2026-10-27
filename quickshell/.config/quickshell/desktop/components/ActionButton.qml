@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Quickshell
 import ".."
 
 Button {
@@ -28,10 +27,14 @@ Button {
     font.pixelSize: 13
     opacity: enabled ? 1 : 0.45
     Accessible.name: text || tooltip
-    HintTooltip {
-        target: root
-        text: root.tooltip
-        hovered: root.hovered && !root.down
+    // Only buttons with a tooltip pay for a tooltip window.
+    Loader {
+        active: root.tooltip !== ""
+        sourceComponent: HintTooltip {
+            target: root
+            text: root.tooltip
+            hovered: root.hovered && !root.down
+        }
     }
     contentItem: RowLayout {
         layoutDirection: root.iconAfterText ? Qt.RightToLeft : Qt.LeftToRight
@@ -76,9 +79,7 @@ Button {
     }
     background: Rectangle {
         radius: 11
-        color: root.highlighted ? Theme.accent : root.down ? Theme.raised : root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
-        border.width: 0
-        border.color: Theme.accent
+        color: root.highlighted ? Theme.accent : root.down || root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
         Behavior on color {
             ColorAnimation {
                 duration: 120

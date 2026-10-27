@@ -44,6 +44,8 @@
     "availableEnergy": "Energia disponibile",
     "charging": "In carica",
     "chargingPower": "Potenza di ricarica",
+    "durationHours": "%1 h %2 min",
+    "durationMinutes": "%1 min",
     "empty": "Batteria scarica",
     "estimateUnavailable": "Stima non disponibile",
     "estimatesHint": "Potenza e tempi sono stime aggiornate dal sistema.",
@@ -171,6 +173,7 @@
     },
     "loading": "Lettura calendari…",
     "longDateFormat": "dddd d MMMM yyyy",
+    "monthFormat": "MMMM yyyy",
     "navigationHint": "Frecce: giorno · PgUp/PgDn: mese · Home: oggi",
     "nextMonth": "Mese successivo",
     "noCalendars": "Nessun calendario disponibile negli Account online",
@@ -185,7 +188,7 @@
   "capture": {
     "displayWithEditor": "Screenshot · Monitor con editor",
     "errors": {
-      "pluginMissing": "HyprCapture non caricato: vedere docs/plugins.md"
+      "pluginMissing": "HyprCapture non caricato: vedere .claude/docs/plugins.md"
     },
     "regionWithEditor": "Screenshot · Area con editor",
     "title": "Screenshot"
@@ -232,7 +235,6 @@
   },
   "hints": {
     "actionColumn": "Azione",
-    "bindingCount": "%1 bind dalla sessione attiva",
     "categories": {
       "audioBrightness": "Audio e luminosità",
       "mouse": "Mouse",
@@ -339,7 +341,7 @@
   },
   "plugins": {
     "errors": {
-      "rebuildRequired": "Hyprland è cambiato. Verificare i pin e ricompilare: docs/plugins.md.",
+      "rebuildRequired": "Hyprland è cambiato. Verificare i pin e ricompilare: .claude/docs/plugins.md.",
       "unverifiedBuild": "Build diversa da quella verificata: autoload sospeso."
     },
     "notificationTitle": "Plugin Hyprland non caricati"
@@ -382,7 +384,7 @@
     "menuTitle": "Menu sessione",
     "navigationHint": "↑ ↓ / Tab: seleziona · Invio / Spazio: attiva · Esc: annulla o chiudi",
     "noActions": "Nessuna azione disponibile",
-    "operationFailedPrefix": "Operazione non riuscita (",
+    "operationFailed": "Operazione non riuscita (%1).",
     "powerOff": "Spegni il computer",
     "reboot": "Riavvia il computer",
     "suspend": "Sospendi",
@@ -422,6 +424,7 @@
     "title": "Scegli sfondo"
   },
   "workspaces": {
+    "accessibleName": "Workspace %1",
     "windowCount": {
       "one": "Workspace %1 · %2 finestra",
       "other": "Workspace %1 · %2 finestre"

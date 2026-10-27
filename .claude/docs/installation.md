@@ -1,6 +1,6 @@
 # Installation and maintenance
 
-[← README](../README.md)
+[← README](../../README.md)
 
 Verified versions: Hyprland 0.56.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0.9.6, and hyprpaper 0.8.4.
 
@@ -17,8 +17,10 @@ Verified versions: Hyprland 0.56.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | `gtk` | Palette, fonts, icons, and dark preference for GTK 3/4 |
 | `qt` | Fusion palette and icons for Qt 5/6 via qt5ct/qt6ct |
 | `kitty` | Graphite terminal with translucent background and shared ANSI palette |
+| `fastfetch` | Fedora layout with a neutral palette |
 | `udiskie` | Removable-drive automounting, Quickshell notifications, and no external tray icon |
 | `portals` | XDG preferences: Hyprland for capture/sharing, GTK for files and settings |
+| `electron` | `~/.config/electron-flags.conf` with Wayland flags for launchers that read it |
 
 ## Installation and updates
 

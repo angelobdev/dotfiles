@@ -15,11 +15,7 @@ REPO = Path(__file__).resolve().parent.parent
 PACKAGING = REPO / 'scripts/hyprpm'
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(PACKAGING))
-from build import PLUGINS, fingerprint, rpm_version
-
-
-def run(*args, **kwargs):
-    return subprocess.run(args, check=True, **kwargs)
+from build import PLUGINS, fingerprint, rpm_version, run
 
 
 def main():

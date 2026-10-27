@@ -56,7 +56,6 @@ Overlay {
                                     enabled: ![BluetoothAdapterState.Blocked, BluetoothAdapterState.Enabling, BluetoothAdapterState.Disabling].includes(adapterGroup.modelData.state)
                                     onToggled: adapterGroup.modelData.enabled = checked
                                     Accessible.name: I18n.tr("osd.bluetoothPrefix") + adapterGroup.modelData.name
-                                    palette.highlight: Theme.accent
                                 }
                             }
                             ActionButton {

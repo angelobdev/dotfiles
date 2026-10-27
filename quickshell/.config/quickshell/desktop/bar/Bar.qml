@@ -1,10 +1,8 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
-import Quickshell.Networking
 import Quickshell.Services.SystemTray
 import Quickshell.Services.UPower
 import ".."
@@ -19,11 +17,6 @@ PanelWindow {
         top: true
         left: true
         right: true
-    }
-    margins {
-        top: 0
-        left: 0
-        right: 0
     }
     implicitHeight: 38
     color: "transparent"
@@ -75,16 +68,14 @@ PanelWindow {
     }
     Rectangle {
         anchors.fill: parent
-        radius: 0
-        // border.color: Theme.stroke
         gradient: Gradient {
             GradientStop {
                 position: 0
-                color: '#55000000'
+                color: "#55000000"
             }
             GradientStop {
                 position: 1
-                color: '#44000000'
+                color: "#44000000"
             }
         }
     }

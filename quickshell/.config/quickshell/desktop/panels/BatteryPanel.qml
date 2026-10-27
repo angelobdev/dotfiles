@@ -34,7 +34,7 @@ Overlay {
         if (!Number.isFinite(seconds) || seconds <= 0)
             return I18n.tr("battery.estimateUnavailable");
         const minutes = Math.max(1, Math.round(seconds / 60));
-        return (minutes >= 60 ? Math.floor(minutes / 60) + " h " : "") + (minutes % 60) + " min";
+        return minutes >= 60 ? I18n.tr("battery.durationHours", [Math.floor(minutes / 60), minutes % 60]) : I18n.tr("battery.durationMinutes", [minutes]);
     }
 
     SidePanelCard {

@@ -10,8 +10,9 @@ if command -v gsettings >/dev/null; then
     if [[ ! -e "$state/interface-before-theme.ini" ]]; then
         gsettings list-recursively "$schema" >"$state/interface-before-theme.ini"
     fi
+    keys=$(gsettings list-keys "$schema") || keys=
     set_key() {
-        if gsettings list-keys "$schema" | rg -qx "$1"; then
+        if rg -qx -- "$1" <<<"$keys"; then
             gsettings set "$schema" "$1" "$2"
         fi
     }

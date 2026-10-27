@@ -96,7 +96,7 @@ Overlay {
                 if (ShellState.panel === root.panelName)
                     ShellState.close();
             } else {
-                root.failure = errors.text.trim() || I18n.tr("session.operationFailedPrefix") + code + ").";
+                root.failure = errors.text.trim() || I18n.tr("session.operationFailed", [code]);
                 root.cancelAction();
             }
         }

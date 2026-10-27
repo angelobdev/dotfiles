@@ -37,7 +37,7 @@ Singleton {
     }
     Timer {
         interval: 2000
-        running: root.collecting
+        running: root.collecting && !(textWatcher.running && imageWatcher.running)
         repeat: true
         onTriggered: {
             if (!textWatcher.running)

@@ -16,7 +16,7 @@ PanelWindow {
         right: true
     }
     exclusionMode: ExclusionMode.Ignore
-    color: "#14000000"
+    color: Theme.scrim
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "desktop-overlay"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive

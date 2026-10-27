@@ -19,7 +19,7 @@ case "${1:-start}" in
         "$HOME/.local/bin/desktop-wallpaper" --ensure
         for daemon in hyprpaper hypridle udiskie; do
             command -v "$daemon" >/dev/null || { echo "Missing required daemon: $daemon." >&2; exit 1; }
-            if ! pgrep -u "$(id -u)" -x "$daemon" >/dev/null; then
+            if ! pgrep -u "$EUID" -x "$daemon" >/dev/null; then
                 # Close our flock fd in children; it must only serialize startup.
                 nohup "$daemon" >"$state/$daemon.log" 2>&1 9>&- &
             fi
@@ -27,7 +27,7 @@ case "${1:-start}" in
         ;;
     status)
         for daemon in hyprpaper hypridle hyprlock udiskie; do
-            if pgrep -u "$(id -u)" -x "$daemon" >/dev/null; then
+            if pgrep -u "$EUID" -x "$daemon" >/dev/null; then
                 printf '%s: running\n' "$daemon"
             else printf '%s: not running\n' "$daemon"; fi
         done

@@ -1,6 +1,6 @@
 # Interface and shortcuts
 
-[← README](../README.md)
+[← README](../../README.md)
 
 ## Interface
 

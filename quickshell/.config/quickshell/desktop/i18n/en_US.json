@@ -44,6 +44,8 @@
     "availableEnergy": "Available energy",
     "charging": "Charging",
     "chargingPower": "Charging power",
+    "durationHours": "%1 h %2 min",
+    "durationMinutes": "%1 min",
     "empty": "Battery empty",
     "estimateUnavailable": "Estimate unavailable",
     "estimatesHint": "Power and time values are estimates updated by the system.",
@@ -171,6 +173,7 @@
     },
     "loading": "Loading calendars…",
     "longDateFormat": "dddd, MMMM d, yyyy",
+    "monthFormat": "MMMM yyyy",
     "navigationHint": "Arrow keys: day · PgUp/PgDn: month · Home: today",
     "nextMonth": "Next month",
     "noCalendars": "No calendars available in Online Accounts",
@@ -185,7 +188,7 @@
   "capture": {
     "displayWithEditor": "Screenshot · Display with editor",
     "errors": {
-      "pluginMissing": "HyprCapture is not loaded: see docs/plugins.md"
+      "pluginMissing": "HyprCapture is not loaded: see .claude/docs/plugins.md"
     },
     "regionWithEditor": "Screenshot · Area with editor",
     "title": "Screenshot"
@@ -232,7 +235,6 @@
   },
   "hints": {
     "actionColumn": "Action",
-    "bindingCount": "%1 keybindings from the current session",
     "categories": {
       "audioBrightness": "Audio & brightness",
       "mouse": "Mouse",
@@ -339,7 +341,7 @@
   },
   "plugins": {
     "errors": {
-      "rebuildRequired": "Hyprland has changed. Verify pins and rebuild: docs/plugins.md.",
+      "rebuildRequired": "Hyprland has changed. Verify pins and rebuild: .claude/docs/plugins.md.",
       "unverifiedBuild": "Build differs from the verified version: autoload suspended."
     },
     "notificationTitle": "Hyprland plugins not loaded"
@@ -382,7 +384,7 @@
     "menuTitle": "Session menu",
     "navigationHint": "↑ ↓ / Tab: select · Enter / Space: activate · Esc: cancel or close",
     "noActions": "No actions available",
-    "operationFailedPrefix": "Operation failed (",
+    "operationFailed": "Operation failed (%1).",
     "powerOff": "Shut down computer",
     "reboot": "Restart computer",
     "suspend": "Suspend",
@@ -422,6 +424,7 @@
     "title": "Choose wallpaper"
   },
   "workspaces": {
+    "accessibleName": "Workspace %1",
     "windowCount": {
       "one": "Workspace %1 · %2 window",
       "other": "Workspace %1 · %2 windows"

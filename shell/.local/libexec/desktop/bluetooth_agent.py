@@ -6,8 +6,7 @@ import os
 import re
 import signal
 import sys
-import gi
-from gi.repository import Gio, GLib
+from gi.repository import Gio, GLib, GLibUnix
 
 PATH = '/org/angelo/Desktop/BluetoothAgent'
 XML = '''<node><interface name="org.bluez.Agent1">
@@ -194,9 +193,9 @@ def main():
             except (ValueError, TypeError, KeyError) as error:
                 emit(type='error', error=str(error))
         return True
-    GLib.io_add_watch(sys.stdin, GLib.IO_IN | GLib.IO_HUP | GLib.IO_ERR, read)
+    GLib.io_add_watch(sys.stdin, GLib.PRIORITY_DEFAULT, GLib.IO_IN | GLib.IO_HUP | GLib.IO_ERR, read)
     for sig in (signal.SIGINT, signal.SIGTERM):
-        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, sig, lambda: (loop.quit(), False)[1])
+        GLibUnix.signal_add(GLib.PRIORITY_DEFAULT, sig, lambda: (loop.quit(), False)[1])
     try:
         loop.run()
     finally:

@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import sys
 
-PACKAGES = ('hypr', 'quickshell', 'shell', 'hypridle', 'hyprlock', 'hyprpaper', 'gtk', 'qt', 'kitty', 'fastfetch', 'portals', 'udiskie')
+PACKAGES = ('hypr', 'quickshell', 'shell', 'hypridle', 'hyprlock', 'hyprpaper', 'gtk', 'qt', 'kitty', 'fastfetch', 'portals', 'udiskie', 'electron')
 ROOT = Path(__file__).resolve().parents[1]
 parser = ArgumentParser(description=__doc__)
 parser.add_argument('action', choices=('dry-run', 'apply', 'remove'))

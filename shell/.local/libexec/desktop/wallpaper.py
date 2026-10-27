@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """Apply a wallpaper through hyprpaper, persisting a managed local JPEG copy."""
 from i18n import tr
-from pathlib import Path
 import fcntl
 import hashlib
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
 
 EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp', '.jxl', '.avif', '.bmp', '.tif', '.tiff'}
+
 
 def main():
     home = Path.home()
@@ -67,6 +68,7 @@ def main():
                 cached.unlink()
         print(tr('wallpaper.appliedPrefix') + original.name)
 
+
 def replace_link(destination, target):
     # Unique name plus atomic rename: a failed conversion never replaces the prior selection.
     fd, name = tempfile.mkstemp(prefix='.current-', dir=destination.parent)
@@ -78,6 +80,7 @@ def replace_link(destination, target):
         os.replace(temporary, destination)
     finally:
         temporary.unlink(missing_ok=True)
+
 
 if __name__ == '__main__':
     try:

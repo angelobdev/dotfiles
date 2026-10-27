@@ -36,7 +36,7 @@ Singleton {
     function show(type, level, isMuted, description, monitorName) {
         if (!Config.osdEnabled || suppressed(type) || !Number.isFinite(level))
             return;
-        const screen = Quickshell.screens.find(s => s.name === (monitorName || Hyprland.focusedMonitor?.name)) || Quickshell.screens[0];
+        const screen = ShellState.screenNamed(monitorName || Hyprland.focusedMonitor?.name);
         if (!screen)
             return;
         targetScreen = screen;
@@ -112,13 +112,6 @@ Singleton {
         target: Quickshell
         function onScreensChanged() {
             if (!Quickshell.screens.includes(root.targetScreen))
-                root.dismiss();
-        }
-    }
-    Connections {
-        target: Config
-        function onOsdEnabledChanged() {
-            if (!Config.osdEnabled)
                 root.dismiss();
         }
     }

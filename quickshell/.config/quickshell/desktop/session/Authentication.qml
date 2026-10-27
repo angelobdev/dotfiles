@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
@@ -8,13 +7,19 @@ import ".."
 import "../components"
 
 Scope {
+    id: root
     readonly property bool registered: agent.isRegistered
+    function submit() {
+        if (!response.enabled)
+            return;
+        agent.flow.submit(response.text);
+        response.clear();
+    }
     PolkitAgent {
         id: agent
         onAuthenticationRequestStarted: ShellState.close()
     }
     PanelWindow {
-        id: window
         visible: agent.isActive
         screen: ShellState.activeScreen || Quickshell.screens[0]
         anchors {
@@ -24,7 +29,7 @@ Scope {
             right: true
         }
         exclusionMode: ExclusionMode.Ignore
-        color: "#bb000000"
+        color: Theme.scrimStrong
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "desktop-authentication"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
@@ -82,10 +87,7 @@ Scope {
                     Layout.fillWidth: true
                     enabled: agent.flow?.isResponseRequired ?? false
                     echoMode: agent.flow?.responseVisible ? TextInput.Normal : TextInput.Password
-                    onAccepted: if (enabled) {
-                        agent.flow.submit(text);
-                        clear();
-                    }
+                    onAccepted: root.submit()
                 }
                 Text {
                     text: agent.flow?.supplementaryMessage ?? ""
@@ -98,10 +100,7 @@ Scope {
                     ActionButton {
                         text: I18n.tr("authentication.authenticate")
                         enabled: response.enabled
-                        onClicked: {
-                            agent.flow.submit(response.text);
-                            response.clear();
-                        }
+                        onClicked: root.submit()
                     }
                     ActionButton {
                         text: I18n.tr("common.cancel")

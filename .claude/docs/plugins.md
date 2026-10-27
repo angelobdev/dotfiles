@@ -1,8 +1,8 @@
 # Hyprland plugins
 
-[← README](../README.md)
+[← README](../../README.md)
 
-Configuration: [`plugins.lua`](../hypr/.config/hypr/config/plugins.lua). Screenshot bindings are in [`binds.lua`](../hypr/.config/hypr/config/binds.lua); touchpad gestures remain in `input.lua`.
+Configuration: [`plugins.lua`](../../hypr/.config/hypr/config/plugins.lua). Screenshot bindings are in [`binds.lua`](../../hypr/.config/hypr/config/binds.lua); touchpad gestures remain in `input.lua`.
 
 ## Installation
 
@@ -25,7 +25,7 @@ cd ~/.dotfiles
 
 The script requests sudo for hyprpm's protected cache; confirm the local repository addition when hyprpm asks. Builds run as the user and may take several minutes initially. Verified builds are already cached on the development machine.
 
-Packaging in [`scripts/hyprpm`](../scripts/hyprpm) downloads the five original projects at the revisions below. The script creates a local Git copy under `~/.local/share/dotfiles/hyprpm/`, registered with hyprpm as **dotfiles-desktop**. Enable/disable each plugin individually using its runtime name. No commit is created in the dotfiles repository.
+Packaging in [`scripts/hyprpm`](../../scripts/hyprpm) downloads the five original projects at the revisions below. The script creates a local Git copy under `~/.local/share/dotfiles/hyprpm/`, registered with hyprpm as **dotfiles-desktop**. Enable/disable each plugin individually using its runtime name. No commit is created in the dotfiles repository.
 
 | Plugin / source | Pinned revision |
 | --- | --- |

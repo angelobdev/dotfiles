@@ -14,14 +14,19 @@ Singleton {
 
     function selectLanguage(text) {
         language = LocaleData.languageFromConfig(text, {
-            LC_ALL: Quickshell.env("LC_ALL"), LC_MESSAGES: Quickshell.env("LC_MESSAGES"), LANG: Quickshell.env("LANG")
+            LC_ALL: Quickshell.env("LC_ALL"),
+            LC_MESSAGES: Quickshell.env("LC_MESSAGES"),
+            LANG: Quickshell.env("LANG")
         });
     }
     function catalog(text) {
         try {
             const value = JSON.parse(text);
-            if (value && typeof value === "object" && !Array.isArray(value)) return value;
-        } catch (error) { console.warn("Invalid translation catalog:", error); }
+            if (value && typeof value === "object" && !Array.isArray(value))
+                return value;
+        } catch (error) {
+            console.warn("Invalid translation catalog:", error);
+        }
         return {};
     }
     function tr(key, args) {
@@ -33,9 +38,11 @@ Singleton {
     }
     function bindDescription(description) {
         let match = description.match(/^(Focus|Move) (left|right|up|down)$/);
-        if (match) return tr(match[1] === "Focus" ? "bindings.focusDirection" : "bindings.moveDirection", [tr("directions." + match[2])]);
+        if (match)
+            return tr(match[1] === "Focus" ? "bindings.focusDirection" : "bindings.moveDirection", [tr("directions." + match[2])]);
         match = description.match(/^Move to workspace (\d+)$/);
-        if (match) return tr("bindings.moveToWorkspace", [match[1]]);
+        if (match)
+            return tr("bindings.moveToWorkspace", [match[1]]);
         const key = Sources.bindKeys[description];
         return typeof key === "string" ? tr(key) : description;
     }

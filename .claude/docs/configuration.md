@@ -1,6 +1,6 @@
 # Configuration
 
-[← README](../README.md)
+[← README](../../README.md)
 
 ## Quickshell layout
 
@@ -38,8 +38,8 @@ Translations cover panels, controls, tooltips, Hints, the sharing picker, and me
 
 Both catalogs share the same keys:
 
-- [`it_IT.json`](../quickshell/.config/quickshell/desktop/i18n/it_IT.json)
-- [`en_US.json`](../quickshell/.config/quickshell/desktop/i18n/en_US.json)
+- [`it_IT.json`](../../quickshell/.config/quickshell/desktop/i18n/it_IT.json)
+- [`en_US.json`](../../quickshell/.config/quickshell/desktop/i18n/en_US.json)
 
 Catalogs are nested JSON objects grouped by function, with English camelCase keys independent of the translated text:
 

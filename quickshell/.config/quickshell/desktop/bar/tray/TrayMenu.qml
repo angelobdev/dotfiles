@@ -6,7 +6,6 @@ import "../.."
 Menu {
     id: root
     property var menuEntry: null
-    readonly property bool traySubmenu: true
     title: menuEntry?.text ?? ""
     enabled: menuEntry?.enabled ?? true
     popupType: Popup.Item
@@ -39,10 +38,6 @@ Menu {
         font: root.font
         palette.windowText: Theme.muted
         background: Item {}
-    }
-    Component {
-        id: action
-        TrayMenuItem {}
     }
     Component {
         id: separator
@@ -91,7 +86,7 @@ Menu {
                     else
                         console.warn(component.errorString());
                 } else {
-                    control = isSeparator ? separator.createObject(root.contentItem) : action.createObject(root.contentItem, {
+                    control = isSeparator ? separator.createObject(root.contentItem) : root.delegate.createObject(root.contentItem, {
                         entry: modelData
                     });
                     root.insertItem(index, control);

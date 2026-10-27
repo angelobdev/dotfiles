@@ -23,7 +23,7 @@ PanelWindow {
         right: true
     }
     exclusionMode: ExclusionMode.Ignore
-    color: "#99000000"
+    color: Theme.scrimModal
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "desktop-bluetooth-auth"
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive

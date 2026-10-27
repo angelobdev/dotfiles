@@ -96,12 +96,27 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] Electron Wayland environment and explicit Wayland/X11 wrapper; VS Code verified on both backends with temporary profiles, existing Zen window identified as native Wayland.
 - [x] XDG portals: Hyprland/GTK routing, environment import before startup, and a custom Quickshell sharing picker.
 - [x] Screen sharing through ScreenCast/PipeWire and monitor/area recording through wf-recorder, with QML panel, audio selection, bar indicator, and video saving; real portal test and recording of a dedicated window, with the specific web app test still outstanding.
-- [x] Concise README and separate `docs/` guides for installation, interface/shortcuts, configuration, integrations, and troubleshooting; updated for pairing, MPRIS, calendars, and DDC/CI results.
+- [x] Concise README and separate `.claude/docs/` guides for installation, interface/shortcuts, configuration, integrations, and troubleshooting; updated for pairing, MPRIS, calendars, and DDC/CI results.
 - [x] Physical HDMI hotplug verified with Philips FTV: monitor, bar, and brightness list removed/restored without restarting the shell. I²C permissions applied through ddcutil's udev rules.
 
 ## Next developments
 
 - [ ] Complete a successful DDC/CI test (read, minimal change, restore) with a display that responds to the protocol. The connected Philips FTV is identified on bus 14 but responds to neither VCP 10 nor capabilities, even after applying permissions and increasing timings. GNOME's built-in control may use software brightness; this does not confirm the display's DDC/CI support.
+
+## Review follow-ups (behavior changes awaiting approval)
+
+Found during the October 27, 2026 repository review; each changes runtime behavior, so none was applied.
+
+- [ ] Screen-share picker path: `xdph.conf` sets `custom_picker_binary = desktop-portal-picker`, but the systemd user `PATH` (and the running xdph) is `/usr/local/bin:/usr/bin`. Use `~/.local/bin/desktop-portal-picker` (or fix the PATH import in `desktop-session`) and test a real share.
+- [ ] Power menu: `Overlay` and `PowerMenu` both handle Escape and QML runs both, so Esc closes the menu instead of cancelling a pending confirmation, contrary to the hint text. Add an `Overlay.closeOnEscape` switch.
+- [ ] Share picker: arrow keys move `choices.currentIndex` but the highlight follows the clicked item, so Enter can share an item that is not highlighted. Highlight `currentIndex` like Launcher/Clipboard.
+- [ ] Battery panel: `palette.highlight` has no effect on the Basic-style ProgressBar (it fills with `palette.dark`), so the accent fill never shows.
+- [ ] Audio panel uses plain `Slider` (Basic palette, no `Accessible.name`) instead of `ControlSlider`.
+- [ ] Environment import runs twice concurrently (`session.lua` and `desktop-session`) with different variable lists; consolidate into one call.
+- [ ] Blur coverage differs: the layer rule blurs `desktop-bar` but not `desktop-tray-menu`, Hyprglass the reverse.
+- [ ] `electron-flags.conf` is not read by any Fedora launcher and `UseOzonePlatform` is obsolete; keep or drop the package.
+- [ ] Performance with some risk: workspace delegates are rebuilt on every Hyprland change (needs a diffing model such as `ScriptModel`); every panel is instantiated at startup; each `Icon` carries a `MultiEffect`; `pragma ComponentBehavior: Bound` for `Bar`, `TrayMenu`, `WorkspaceStrip` after a runtime smoke test.
+- [ ] Optional: `$HOME` in the qt5ct/qt6ct `color_scheme_path` (supported by qtXct, but the GUI rewrites it as absolute); subprocess timeouts in helpers; clearer messages for `StopIteration`/decode errors in the plugin scripts.
 
 ## Possible extensions identified
 

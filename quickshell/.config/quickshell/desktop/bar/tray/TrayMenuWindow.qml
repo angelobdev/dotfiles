@@ -7,7 +7,6 @@ import Quickshell.Hyprland
 PanelWindow {
     id: root
     property var menuEntry: null
-    readonly property alias menu: menu
     property point menuOrigin: Qt.point(0, 0)
     visible: false
     anchors {

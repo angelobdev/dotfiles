@@ -13,6 +13,7 @@ Overlay {
     property int month: selected.getMonth()
     property int year: selected.getFullYear()
     readonly property var locale: I18n.locale
+    readonly property var selectedEvents: Calendar.forDay(selected)
     readonly property var days: {
         const first = new Date(year, month, 1, 12);
         const offset = (first.getDay() - (locale.firstDayOfWeek % 7) + 7) % 7;
@@ -27,7 +28,8 @@ Overlay {
         const last = days[41];
         Calendar.load(new Date(first.getFullYear(), first.getMonth(), first.getDate()), new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1));
     }
-    onDaysChanged: loadEvents()
+    // Coalesce year+month updates (and onOpened) into one load per event-loop turn.
+    onDaysChanged: Qt.callLater(loadEvents)
     SystemClock {
         id: clock
         precision: SystemClock.Minutes
@@ -59,7 +61,7 @@ Overlay {
     }
     onOpened: {
         today();
-        loadEvents();
+        Qt.callLater(loadEvents);
         keyboard.forceActiveFocus();
     }
     Card {
@@ -105,7 +107,7 @@ Overlay {
                     }
                     Text {
                         Layout.fillWidth: true
-                        text: root.locale.toString(new Date(root.year, root.month, 1), "MMMM yyyy")
+                        text: root.locale.toString(new Date(root.year, root.month, 1), I18n.tr("calendar.monthFormat"))
                         horizontalAlignment: Text.AlignHCenter
                         font.pixelSize: 18
                         font.family: Theme.font
@@ -123,7 +125,9 @@ Overlay {
                     columnSpacing: 3
                     rowSpacing: 3
                     Repeater {
-                        model: Array.from({length: 7}, (_, i) => root.locale.dayName((root.locale.firstDayOfWeek + i) % 7, Locale.NarrowFormat))
+                        model: Array.from({
+                            length: 7
+                        }, (_, i) => root.locale.dayName((root.locale.firstDayOfWeek + i) % 7, Locale.NarrowFormat))
                         Text {
                             required property string modelData
                             Layout.fillWidth: true
@@ -158,7 +162,7 @@ Overlay {
                                 height: 4
                                 radius: 2
                                 color: parent.highlighted ? Theme.accentText : Theme.accent
-                                visible: root.sameDay(parent.modelData, clock.date) || Calendar.forDay(parent.modelData).length > 0
+                                visible: root.sameDay(parent.modelData, clock.date) || Calendar.hasEvents(parent.modelData)
                             }
                         }
                     }
@@ -181,7 +185,7 @@ Overlay {
                         width: parent.width
                         spacing: 8
                         Repeater {
-                            model: Calendar.forDay(root.selected)
+                            model: root.selectedEvents
                             Rectangle {
                                 required property var modelData
                                 Layout.fillWidth: true
@@ -239,7 +243,7 @@ Overlay {
                             }
                         }
                         Text {
-                            visible: Calendar.forDay(root.selected).length === 0
+                            visible: root.selectedEvents.length === 0
                             text: Calendar.busy ? I18n.tr("calendar.loading") : Calendar.sources.length ? I18n.tr("calendar.noEvents") : I18n.tr("calendar.noCalendars")
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap

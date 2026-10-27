@@ -31,8 +31,8 @@ Slider {
         width: 18
         height: 18
         radius: 9
-        color: root.pressed ? "#ffffff" : Theme.text
+        color: root.pressed ? Theme.handlePressed : Theme.text
         border.width: root.activeFocus ? 2 : 0
-        border.color: "#888c94"
+        border.color: Theme.handleFocus
     }
 }

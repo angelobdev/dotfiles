@@ -28,6 +28,7 @@ def selection(value, outputs, entries, allow_token=False):
 
 
 def main():
+    allow_token = '--allow-token' in sys.argv
     entries = windows(os.environ.get('XDPH_WINDOW_SHARING_LIST', ''))
     monitors = json.loads(subprocess.run(['hyprctl', '-j', 'monitors'], capture_output=True, text=True, check=True).stdout)
     outputs = [m['name'] for m in monitors]
@@ -39,13 +40,14 @@ def main():
         result.write_text('')
         result.chmod(0o600)
         env = dict(os.environ, DESKTOP_SHARE_WINDOWS=json.dumps(entries), DESKTOP_SHARE_RESULT=str(result),
-                   DESKTOP_SHARE_ALLOW_TOKEN='1' if '--allow-token' in sys.argv else '0')
+                   DESKTOP_SHARE_ALLOW_TOKEN='1' if allow_token else '0')
         config = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home()/'.config')))/'quickshell/desktop/share.qml'
         # Only our validated selection goes to stdout. Quickshell diagnostics use stderr.
         child = subprocess.run(['qs', '-p', str(config)], env=env, stdout=sys.stderr)
-        if child.returncode or not result.read_text().strip():
+        text = result.read_text()
+        if child.returncode or not text.strip():
             return 1
-        print(selection(json.loads(result.read_text()), outputs, entries, '--allow-token' in sys.argv), flush=True)
+        print(selection(json.loads(text), outputs, entries, allow_token), flush=True)
         return 0
 
 

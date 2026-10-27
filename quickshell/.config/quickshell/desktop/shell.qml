@@ -88,9 +88,10 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
         delegate: Scope {
+            id: scope
             required property var modelData
             Bar {
-                screen: modelData
+                screen: scope.modelData
             }
         }
     }

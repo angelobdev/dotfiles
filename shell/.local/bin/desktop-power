@@ -8,12 +8,12 @@ case "${1:-}" in
         # Serialize all lock requests; a second request is already satisfied.
         exec 9>"$XDG_RUNTIME_DIR/desktop-lock.lock"
         flock -n 9 || exit 0
-        pgrep -u "$(id -u)" -x hyprlock >/dev/null && exit 0
+        pgrep -u "$EUID" -x hyprlock >/dev/null && exit 0
         exec hyprlock --grace 0
         ;;
     suspend)
         command -v hyprlock >/dev/null || { message 'session.errors.suspendLockMissing' >&2; exit 1; }
-        pgrep -u "$(id -u)" -x hypridle >/dev/null || {
+        pgrep -u "$EUID" -x hypridle >/dev/null || {
             message 'session.errors.idleNotRunning' >&2
             exit 1
         }

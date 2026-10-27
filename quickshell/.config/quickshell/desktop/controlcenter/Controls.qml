@@ -7,15 +7,17 @@ import "../components"
 Overlay {
     id: root
     panelName: "controls"
+    readonly property var moduleSources: ({
+            network: "NetworkTile.qml",
+            bluetooth: "BluetoothTile.qml",
+            brightness: "BrightnessControl.qml",
+            audio: "AudioControl.qml",
+            media: "MediaControl.qml",
+            doNotDisturb: "FocusControl.qml",
+            idle: "IdleControl.qml"
+        })
     onOpened: closeButton.forceActiveFocus()
-    Card {
-        anchors {
-            top: parent.top
-            right: parent.right
-            topMargin: 58
-            rightMargin: 12
-        }
-        width: Math.min(Config.controlCenterWidth, parent.width - 24)
+    SidePanelCard {
         height: Math.min(layout.implicitHeight + 32, parent.height - 76)
         ColumnLayout {
             id: layout
@@ -53,20 +55,12 @@ Overlay {
                     rowSpacing: 10
                     columnSpacing: 10
                     Repeater {
-                        model: Config.controlCenterModules.filter((name, index, all) => ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle"].includes(name) && all.indexOf(name) === index)
+                        model: Config.controlCenterModules.filter((name, index, all) => Object.prototype.hasOwnProperty.call(root.moduleSources, name) && all.indexOf(name) === index)
                         Loader {
                             required property string modelData
                             Layout.fillWidth: true
                             Layout.columnSpan: ["network", "bluetooth"].includes(modelData) ? 1 : 2
-                            source: ({
-                                    network: "NetworkTile.qml",
-                                    bluetooth: "BluetoothTile.qml",
-                                    brightness: "BrightnessControl.qml",
-                                    audio: "AudioControl.qml",
-                                    media: "MediaControl.qml",
-                                    doNotDisturb: "FocusControl.qml",
-                                    idle: "IdleControl.qml"
-                                })[modelData]
+                            source: root.moduleSources[modelData]
                         }
                     }
                 }

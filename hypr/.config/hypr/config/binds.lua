@@ -8,20 +8,14 @@ local function bind(keys, dispatcher, description, flags)
     hl.bind(keys, dispatcher, flags)
 end
 
-local function screenshot(mode, quick, editor)
+local function screenshot(mode)
     return function()
         local capture = (hl.plugin or {}).hyprcapture
         if not capture then
             hl.exec_cmd('python3 "' .. os.getenv("HOME") .. '/.local/libexec/desktop/i18n.py" --notify "capture.title" "capture.errors.pluginMissing"')
             return
         end
-        if editor then
-            capture.open_editor(mode)
-        elseif quick then
-            capture.quick(mode)
-        else
-            capture.open(mode)
-        end
+        capture.open_editor(mode)
     end
 end
 
@@ -38,11 +32,11 @@ bind("SUPER + CTRL + P", hl.dsp.window.pseudo(), "Toggle pseudotiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Toggle split orientation")
 bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Fullscreen")
 
-bind("SUPER + SHIFT + S", screenshot("region", false, true), "Screenshot · Area with editor")
-bind("SUPER + SHIFT + ALT + S", screenshot("fullscreen", false, true), "Screenshot · Display with editor")
+bind("SUPER + SHIFT + S", screenshot("region"), "Screenshot · Area with editor")
+bind("SUPER + SHIFT + ALT + S", screenshot("fullscreen"), "Screenshot · Display with editor")
 
-bind("Print", screenshot("region", false, true), "Screenshot · Area with editor")
-bind("ALT + Print", screenshot("fullscreen", false, true), "Screenshot · Display with editor")
+bind("Print", screenshot("region"), "Screenshot · Area with editor")
+bind("ALT + Print", screenshot("fullscreen"), "Screenshot · Display with editor")
 
 -- System (Quickshell)
 bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(shell .. " restart"), "Restart Quickshell")

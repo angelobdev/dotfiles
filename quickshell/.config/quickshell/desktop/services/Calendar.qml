@@ -9,10 +9,11 @@ Singleton {
     property var events: []
     property var sources: []
     property string error: ""
-    property int start: 0
-    property int end: 0
+    property real start: 0
+    property real end: 0
     property bool again: false
     readonly property bool busy: process.running
+    readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/calendar.py"
     function load(first, last) {
         start = Math.floor(first.getTime() / 1000);
         end = Math.floor(last.getTime() / 1000);
@@ -26,7 +27,7 @@ Singleton {
         if (!start || !end || process.running)
             return;
         error = "";
-        process.command = ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/calendar.py", String(start), String(end), JSON.stringify(Config.calendarSources)];
+        process.command = ["python3", helper, String(start), String(end), JSON.stringify(Config.calendarSources)];
         process.running = true;
         deadline.restart();
     }
@@ -34,6 +35,11 @@ Singleton {
         const first = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
         const last = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime();
         return events.filter(e => e.start < last && (e.end > first || e.start >= first)).sort((a, b) => Number(b.allDay) - Number(a.allDay) || a.start - b.start);
+    }
+    function hasEvents(date) {
+        const first = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+        const last = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime();
+        return events.some(e => e.start < last && (e.end > first || e.start >= first));
     }
     function source(uid) {
         return sources.find(s => s.uid === uid);

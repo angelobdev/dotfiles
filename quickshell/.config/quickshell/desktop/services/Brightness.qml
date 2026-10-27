@@ -144,9 +144,8 @@ Singleton {
         id: watcherRetry
         interval: 2000
         repeat: true
-        running: Config.osdEnabled
-        onTriggered: if (!watcher.running)
-            watcher.running = true
+        running: Config.osdEnabled && !watcher.running
+        onTriggered: watcher.running = true
     }
     Process {
         id: reader

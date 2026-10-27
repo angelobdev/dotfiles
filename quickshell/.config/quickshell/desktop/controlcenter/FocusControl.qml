@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import ".."
 import "../components"
@@ -35,7 +34,6 @@ ControlTile {
             checked: Notices.quiet
             onToggled: Notices.quiet = checked
             Accessible.name: I18n.tr("notifications.doNotDisturb")
-            palette.highlight: Theme.accent
         }
     }
 }

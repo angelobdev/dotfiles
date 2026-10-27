@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Steam HiDPI startup and opt-in gamescope sessions for individual games."""
 import argparse
+import functools
 import hashlib
-import tempfile
 import json
 import math
 import os
@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 
 
 def hypr_json(*args):
@@ -42,6 +43,7 @@ def scale_value(value):
     return f'{scale:.3f}'.rstrip('0').rstrip('.')
 
 
+@functools.cache
 def steam_settings():
     config = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'desktop/steam.json'
     try:
@@ -91,7 +93,6 @@ def prepare_steam_renderer(scale):
         raise ValueError('Steam UI runtime not found. Start /usr/bin/steam once to complete its installation.')
     os.environ.update(STEAM_RUNTIME_STEAMRT=str(wrapper), DESKTOP_STEAM_REAL_RUNTIME=str(runtime),
                       DESKTOP_STEAM_CEF_LIBRARY=str(library), DESKTOP_STEAM_CEF_SCALE=scale)
-
 
 
 def steam_command(arguments):
@@ -180,15 +181,15 @@ def main():
             if argument == '-forcedesktopscaling':
                 if index + 1 == len(command):
                     raise ValueError('-forcedesktopscaling requires a scale value.')
-                scale = scale_value(command[index + 1])
-                os.environ['STEAM_FORCE_DESKTOPUI_SCALING'] = scale
-                prepare_steam_renderer(scale)
-                break
-            if argument.startswith('-forcedesktopscaling='):
-                scale = scale_value(argument.split('=', 1)[1])
-                os.environ['STEAM_FORCE_DESKTOPUI_SCALING'] = scale
-                prepare_steam_renderer(scale)
-                break
+                value = command[index + 1]
+            elif argument.startswith('-forcedesktopscaling='):
+                value = argument.split('=', 1)[1]
+            else:
+                continue
+            scale = scale_value(value)
+            os.environ['STEAM_FORCE_DESKTOPUI_SCALING'] = scale
+            prepare_steam_renderer(scale)
+            break
     else:
         command = gamescope_command(sys.argv[2:])
     if not shutil.which(command[0]):

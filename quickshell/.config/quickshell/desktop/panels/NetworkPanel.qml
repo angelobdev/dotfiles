@@ -5,7 +5,6 @@ import Quickshell
 import Quickshell.Networking
 import ".."
 import "../components"
-import "../services"
 
 Overlay {
     id: root
@@ -16,21 +15,28 @@ Overlay {
     function personal(network) {
         return [WifiSecurityType.WpaPsk, WifiSecurityType.Wpa2Psk, WifiSecurityType.Sae].includes(network.security);
     }
+    function askPassword(network) {
+        passwordNetwork = network;
+        password.clear();
+        password.forceActiveFocus();
+    }
+    function cancelPassword() {
+        passwordNetwork = null;
+        password.clear();
+    }
     onOpened: {
         search.clear();
         search.forceActiveFocus();
     }
     onVisibleChanged: if (!visible) {
-        passwordNetwork = null;
-        password.clear();
+        cancelPassword();
         error = "";
     }
     Connections {
         target: root.passwordNetwork
         function onConnectedChanged() {
             if (root.passwordNetwork?.connected) {
-                root.passwordNetwork = null;
-                password.clear();
+                root.cancelPassword();
             }
         }
     }
@@ -120,22 +126,17 @@ Overlay {
                                         }
                                         if (modelData.known || deviceRow.modelData.type !== DeviceType.Wifi || modelData.security === WifiSecurityType.Open || modelData.security === WifiSecurityType.Owe)
                                             modelData.connect();
-                                        else if (root.personal(modelData)) {
-                                            root.passwordNetwork = modelData;
-                                            password.clear();
-                                            password.forceActiveFocus();
-                                        } else
+                                        else if (root.personal(modelData))
+                                            root.askPassword(modelData);
+                                        else
                                             root.error = I18n.tr("network.errors.enterpriseProfileRequired");
                                     }
                                     Connections {
                                         target: networkRow.modelData
                                         function onConnectionFailed(reason) {
                                             root.error = I18n.tr("network.connectionFailedPrefix") + I18n.networkDescription(ConnectionFailReason.toString(reason));
-                                            if (root.personal(networkRow.modelData) && reason === ConnectionFailReason.NoSecrets) {
-                                                root.passwordNetwork = networkRow.modelData;
-                                                password.clear();
-                                                password.forceActiveFocus();
-                                            }
+                                            if (root.personal(networkRow.modelData) && reason === ConnectionFailReason.NoSecrets)
+                                                root.askPassword(networkRow.modelData);
                                         }
                                     }
                                 }
@@ -175,10 +176,7 @@ Overlay {
                             }
                             ActionButton {
                                 text: I18n.tr("common.cancel")
-                                onClicked: {
-                                    root.passwordNetwork = null;
-                                    password.clear();
-                                }
+                                onClicked: root.cancelPassword()
                             }
                         }
                     }

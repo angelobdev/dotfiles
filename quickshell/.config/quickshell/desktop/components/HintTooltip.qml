@@ -28,7 +28,7 @@ PopupWindow {
     Rectangle {
         anchors.fill: parent
         radius: 9
-        color: "#f02b2d32"
+        color: Theme.tooltip
         border.color: Theme.stroke
     }
     Text {

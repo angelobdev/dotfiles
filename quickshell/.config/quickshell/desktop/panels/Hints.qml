@@ -65,9 +65,18 @@ Overlay {
     }
     Connections {
         target: I18n
-        function onLanguageChanged() { if (root.visible) root.refreshBindings(); }
-        function onItalianChanged() { if (root.visible) root.refreshBindings(); }
-        function onEnglishChanged() { if (root.visible) root.refreshBindings(); }
+        function onLanguageChanged() {
+            if (root.visible)
+                root.refreshBindings();
+        }
+        function onItalianChanged() {
+            if (root.visible)
+                root.refreshBindings();
+        }
+        function onEnglishChanged() {
+            if (root.visible)
+                root.refreshBindings();
+        }
     }
     onOpened: {
         search.clear();

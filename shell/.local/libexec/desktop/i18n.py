@@ -38,7 +38,7 @@ def language():
 @functools.lru_cache(maxsize=4)
 def read_catalog(path, mtime_ns):
     try:
-        data = json.loads(Path(path).read_text())
+        data = json.loads(Path(path).read_text(encoding='utf-8'))
         return data if isinstance(data, dict) else {}
     except (OSError, ValueError):
         return {}

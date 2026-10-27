@@ -14,6 +14,7 @@ Singleton {
     property string path: ""
     property string error: ""
     property int seconds: 0
+    readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/recording.py"
     readonly property string elapsed: Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0")
     function start(monitor, area, audioMode) {
         if (running || selecting)
@@ -30,7 +31,7 @@ Singleton {
             record("");
     }
     function record(geometry) {
-        recorder.command = ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/recording.py", "--output", output, "--audio", audio, "--codec", Config.recordingCodec, "--fps", String(Config.recordingFramerate)].concat(geometry ? ["--geometry", geometry] : []);
+        recorder.command = ["python3", helper, "--output", output, "--audio", audio, "--codec", Config.recordingCodec, "--fps", String(Config.recordingFramerate)].concat(geometry ? ["--geometry", geometry] : []);
         recorder.running = true;
     }
     function stop() {

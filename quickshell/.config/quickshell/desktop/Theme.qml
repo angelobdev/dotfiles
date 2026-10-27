@@ -13,6 +13,12 @@ QtObject {
     readonly property color muted: "#b8bbc1"
     readonly property color accent: "#d4d6dc"
     readonly property color danger: "#e99595"
+    readonly property color scrim: "#14000000"
+    readonly property color scrimModal: "#99000000"
+    readonly property color scrimStrong: "#bb000000"
+    readonly property color tooltip: "#f02b2d32"
+    readonly property color handlePressed: "#ffffff"
+    readonly property color handleFocus: "#888c94"
     readonly property string font: "Adwaita Sans"
     readonly property int radius: 18
 }
