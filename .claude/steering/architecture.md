@@ -28,7 +28,7 @@ The IPC target also exposes `media(action)` (MPRIS through `services/Media.qml`)
 
 - `shell.qml`: `ShellRoot` with one `Bar` per screen (`Variants`) and exactly one instance of every panel, the OSD, notification popups/center and session prompts. It references some services through `property var` so they load eagerly (`Notices` owns the notification D-Bus name).
 - `share.qml`: a separate root launched by `portal_picker.py` for XDPH screen sharing; input through `DESKTOP_SHARE_*` environment variables, answer written to a file, then `Qt.quit()`.
-- Singletons: root `qmldir` (Theme, ShellState, Config, I18n) and `services/qmldir` (Audio, Notices, Brightness, Idle, Osd, Clipboard, Recording, Media, BluetoothAgent, Calendar, BarVisibility). Each file has `pragma Singleton` *and* a qmldir line.
+- Singletons: root `qmldir` (Theme, ShellState, Config, I18n) and `services/qmldir` (Audio, Notices, Brightness, Idle, Osd, Clipboard, Recording, Media, BluetoothAgent, Calendar, BarVisibility, NetworkInfo). Each file has `pragma Singleton` *and* a qmldir line.
 - `Config.qml` is constant (`readonly` properties); editing it hot-reloads the whole shell.
 - Panels are `components/Overlay.qml` (full-screen layer-shell window, namespace `desktop-overlay`, exclusive keyboard focus, Esc/backdrop click close) containing a centred `Card` (dialog-style) or a `SidePanelCard` (top-right side panels with `PanelHeader`).
 - Control Center modules are files in `controlcenter/` selected by name from `Config.controlCenterModules` through the `moduleSources` table in `Controls.qml`.
@@ -41,7 +41,7 @@ Services spawn `python3 ~/.local/libexec/desktop/<helper>.py …` through Quicks
 | --- | --- | --- |
 | Long-lived watcher | `bar_visibility.py`, `brightness.py watch`, `clipboard.py watch-*`, `recording.py` | One compact JSON document per line on stdout (`flush=True`), parsed by `SplitParser` |
 | Two-way agent | `bluetooth_agent.py` | JSON lines on stdin (`pair`/`cancel`/`reply`) and stdout (`status`/`prompt`/`error`/`operation`) |
-| One-shot | `calendar.py`, `brightness.py read/set`, `clipboard.py list/…`, `wallpaper.py` | One JSON document collected by `StdioCollector`; errors as `{"error": …}` or translated stderr |
+| One-shot | `calendar.py`, `brightness.py read/set`, `clipboard.py list/…`, `wallpaper.py`, `network.py` (details, profile, set, set-dns, secret, copy-secret, qr) | One JSON document collected by `StdioCollector`; errors as `{"error": …}` or translated stderr |
 
 Crashed watchers restart through a `Timer` whose `running` is `<enabled> && !process.running`. Treat argv and stdout formats as a byte-exact contract between QML and Python.
 

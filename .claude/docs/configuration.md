@@ -67,9 +67,12 @@ readonly property var controlCenterModules: ["network", "bluetooth", "brightness
 readonly property int controlCenterWidth: 400
 readonly property bool expandMonitors: false
 readonly property bool expandAudioDevices: false
+readonly property var dnsPresets: [{ name: "Cloudflare", servers: ["1.1.1.1", "1.0.0.1", "2606:4700:4700::1111", "2606:4700:4700::1001"] }, …]
 readonly property string primaryMonitor: "eDP-1"
 readonly property var brightnessDevices: ({})
 ```
+
+`dnsPresets` lists the DNS choices in the network details view (Cloudflare, Quad9, Google, and AdGuard by default); each preset gives IPv4 and IPv6 servers. Applying a preset or custom servers sets `ipv4/ipv6.dns` with `ignore-auto-dns` on the saved NetworkManager profile and reapplies it to an active device without disconnecting; **Automatic** restores the router's DNS.
 
 Removing a name disables its module; reordering the list changes the layout. Unknown and duplicate names are ignored. Each module has its own file in `controlcenter/`. Network and Bluetooth each occupy half a row; other modules occupy a full row. The panel scrolls when expanded sections exceed the available space. If the primary monitor is disconnected, the first connected display is used.
 

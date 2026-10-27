@@ -38,7 +38,8 @@ Button {
     }
     contentItem: RowLayout {
         layoutDirection: root.iconAfterText ? Qt.RightToLeft : Qt.LeftToRight
-        spacing: root.text && root.hasIcon ? 10 : 0
+        // The centering fillers must not add spacing, or centred icon+text buttons overflow their implicit width.
+        spacing: 0
         Item {
             Layout.fillWidth: true
             visible: !root.alignLeft
@@ -60,6 +61,10 @@ Button {
                 fillMode: Image.PreserveAspectFit
                 sourceSize: Qt.size(root.iconSize * 2, root.iconSize * 2)
             }
+        }
+        Item {
+            visible: root.text !== "" && root.hasIcon
+            Layout.preferredWidth: 10
         }
         Text {
             id: label

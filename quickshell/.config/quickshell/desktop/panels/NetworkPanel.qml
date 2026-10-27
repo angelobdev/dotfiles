@@ -5,13 +5,19 @@ import Quickshell
 import Quickshell.Networking
 import ".."
 import "../components"
+import "../services"
 
 Overlay {
     id: root
     panelName: "network"
+    closeOnEscape: false
     property var passwordNetwork: null
+    property var detailsNetwork: null
     property string error: ""
     readonly property var wifiDevices: Networking.devices.values.filter(d => d.type === DeviceType.Wifi)
+    readonly property var activeDevice: Networking.devices.values.find(d => d.connected) ?? null
+    readonly property var activeNetwork: activeDevice?.networks.values.find(n => n.connected) ?? null
+    readonly property var activeInfo: NetworkInfo.details[activeDevice?.name ?? ""] ?? null
     function personal(network) {
         return [WifiSecurityType.WpaPsk, WifiSecurityType.Wpa2Psk, WifiSecurityType.Sae].includes(network.security);
     }
@@ -24,13 +30,36 @@ Overlay {
         passwordNetwork = null;
         password.clear();
     }
+    function openDetails(network) {
+        cancelPassword();
+        error = "";
+        detailsNetwork = network;
+        scroll.ScrollBar.vertical.position = 0;
+        if (network.connected)
+            NetworkInfo.refreshDetails(network.device?.name);
+    }
+    function closeDetails() {
+        detailsNetwork = null;
+        scroll.ScrollBar.vertical.position = 0;
+        search.forceActiveFocus();
+    }
     onOpened: {
         search.clear();
         search.forceActiveFocus();
+        NetworkInfo.refreshDetails(activeDevice?.name);
     }
     onVisibleChanged: if (!visible) {
         cancelPassword();
+        detailsNetwork = null;
         error = "";
+    }
+    onActiveNetworkChanged: if (visible)
+        NetworkInfo.refreshDetails(activeDevice?.name)
+    contentItem.Keys.onEscapePressed: {
+        if (detailsNetwork)
+            closeDetails();
+        else
+            ShellState.close();
     }
     Connections {
         target: root.passwordNetwork
@@ -61,15 +90,20 @@ Overlay {
             spacing: 12
             PanelHeader {
                 Layout.fillWidth: true
-                title: I18n.tr("network.title")
+                title: root.detailsNetwork?.name ?? I18n.tr("network.title")
                 showBack: true
+                backToControls: root.detailsNetwork === null
+                backTooltip: root.detailsNetwork ? I18n.tr("network.title") : I18n.tr("controlCenter.title")
+                onBack: root.closeDetails()
             }
             InputField {
                 id: search
+                visible: root.detailsNetwork === null
                 Layout.fillWidth: true
                 placeholderText: I18n.tr("network.searchPlaceholder")
             }
             ScrollView {
+                id: scroll
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 clip: true
@@ -77,7 +111,17 @@ Overlay {
                 ColumnLayout {
                     width: parent.width
                     spacing: 14
+                    Loader {
+                        active: root.detailsNetwork !== null
+                        visible: active
+                        Layout.fillWidth: true
+                        sourceComponent: NetworkDetails {
+                            network: root.detailsNetwork
+                            onForgotten: root.closeDetails()
+                        }
+                    }
                     RowLayout {
+                        visible: root.detailsNetwork === null
                         ActionButton {
                             iconName: Networking.wifiEnabled ? "wifi" : "wifi-off"
                             text: Networking.wifiEnabled ? I18n.tr("network.wifiOn") : I18n.tr("network.wifiOff")
@@ -93,14 +137,72 @@ Overlay {
                             elide: Text.ElideRight
                         }
                     }
+                    ColumnLayout {
+                        visible: root.detailsNetwork === null && root.activeNetwork !== null
+                        Layout.fillWidth: true
+                        spacing: 6
+                        Text {
+                            text: I18n.tr("network.currentConnection")
+                            color: Theme.muted
+                            font.pixelSize: 11
+                        }
+                        ActionButton {
+                            id: currentConnection
+                            Layout.fillWidth: true
+                            implicitHeight: 58
+                            text: root.activeNetwork?.name ?? ""
+                            tooltip: I18n.tr("network.details")
+                            onClicked: root.openDetails(root.activeNetwork)
+                            background: Rectangle {
+                                radius: 12
+                                color: currentConnection.down || currentConnection.hovered || currentConnection.activeFocus ? Theme.raised : Theme.tile
+                            }
+                            contentItem: RowLayout {
+                                spacing: 12
+                                Icon {
+                                    name: NetworkInfo.icon(root.activeNetwork)
+                                    Layout.preferredWidth: 22
+                                    Layout.preferredHeight: 22
+                                }
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 2
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: currentConnection.text
+                                        color: Theme.text
+                                        font.family: Theme.font
+                                        font.pixelSize: 14
+                                        elide: Text.ElideRight
+                                        textFormat: Text.PlainText
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: [(root.activeInfo?.ipv4 ?? []).map(a => a.split("/")[0])[0] ?? "", root.activeInfo?.frequency ? I18n.tr("network.band", [(root.activeInfo.frequency / 1000).toLocaleString(I18n.locale, "f", 1), root.activeInfo.channel]) : root.activeDevice?.type === DeviceType.Wired && root.activeDevice.linkSpeed > 0 ? I18n.tr("network.linkSpeedValue", [root.activeDevice.linkSpeed]) : ""].filter(part => part !== "").join(" · ")
+                                        color: Theme.muted
+                                        font.family: Theme.font
+                                        font.pixelSize: 11
+                                        elide: Text.ElideRight
+                                    }
+                                }
+                                Icon {
+                                    name: "chevron-right"
+                                    color: Theme.muted
+                                    Layout.preferredWidth: 16
+                                    Layout.preferredHeight: 16
+                                }
+                            }
+                        }
+                    }
                     Repeater {
-                        model: Networking.devices
+                        model: root.detailsNetwork === null ? Networking.devices : []
                         ColumnLayout {
                             id: deviceRow
                             required property var modelData
+                            readonly property bool wired: modelData.type === DeviceType.Wired
                             Layout.fillWidth: true
                             Text {
-                                text: deviceRow.modelData.name + " · " + I18n.networkDescription(ConnectionState.toString(deviceRow.modelData.state))
+                                text: [deviceRow.wired ? I18n.tr("network.ethernet") + " (" + deviceRow.modelData.name + ")" : deviceRow.modelData.name, deviceRow.wired && !deviceRow.modelData.hasLink ? I18n.tr("network.cableUnplugged") : I18n.networkDescription(ConnectionState.toString(deviceRow.modelData.state))].join(" · ")
                                 color: Theme.muted
                                 textFormat: Text.PlainText
                                 font.pixelSize: 11
@@ -109,27 +211,47 @@ Overlay {
                             }
                             Repeater {
                                 model: deviceRow.modelData.networks.values.filter(n => n.name.toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
-                                ActionButton {
+                                RowLayout {
                                     id: networkRow
                                     required property var modelData
+                                    readonly property bool secured: !deviceRow.wired && modelData.security !== WifiSecurityType.Open && modelData.security !== WifiSecurityType.Owe
                                     Layout.fillWidth: true
-                                    alignLeft: true
-                                    iconName: deviceRow.modelData.type !== DeviceType.Wifi ? "ethernet" : (modelData.signalStrength ?? 1) < 0.34 ? "wifi-1" : (modelData.signalStrength ?? 1) < 0.67 ? "wifi-2" : "wifi"
-                                    text: modelData.name + (modelData.stateChanging ? " …" : "")
-                                    highlighted: modelData.connected
-                                    enabled: !modelData.stateChanging
-                                    onClicked: {
-                                        root.error = "";
-                                        if (modelData.connected) {
-                                            modelData.disconnect();
-                                            return;
+                                    spacing: 2
+                                    ActionButton {
+                                        Layout.fillWidth: true
+                                        alignLeft: true
+                                        iconName: NetworkInfo.icon(networkRow.modelData)
+                                        text: networkRow.modelData.name + (networkRow.modelData.stateChanging ? " …" : "")
+                                        highlighted: networkRow.modelData.connected
+                                        enabled: !networkRow.modelData.stateChanging
+                                        onClicked: {
+                                            root.error = "";
+                                            if (networkRow.modelData.connected) {
+                                                networkRow.modelData.disconnect();
+                                                return;
+                                            }
+                                            if (networkRow.modelData.known || deviceRow.wired || !networkRow.secured)
+                                                networkRow.modelData.connect();
+                                            else if (root.personal(networkRow.modelData))
+                                                root.askPassword(networkRow.modelData);
+                                            else
+                                                root.error = I18n.tr("network.errors.enterpriseProfileRequired");
                                         }
-                                        if (modelData.known || deviceRow.modelData.type !== DeviceType.Wifi || modelData.security === WifiSecurityType.Open || modelData.security === WifiSecurityType.Owe)
-                                            modelData.connect();
-                                        else if (root.personal(modelData))
-                                            root.askPassword(modelData);
-                                        else
-                                            root.error = I18n.tr("network.errors.enterpriseProfileRequired");
+                                    }
+                                    Icon {
+                                        visible: networkRow.secured && !networkRow.modelData.known
+                                        name: "lock"
+                                        color: Theme.muted
+                                        Layout.preferredWidth: 14
+                                        Layout.preferredHeight: 14
+                                        Layout.rightMargin: 7
+                                    }
+                                    CompactIconButton {
+                                        visible: networkRow.modelData.known
+                                        iconName: "chevron-right"
+                                        iconSize: 16
+                                        tooltip: I18n.tr("network.details")
+                                        onClicked: root.openDetails(networkRow.modelData)
                                     }
                                     Connections {
                                         target: networkRow.modelData
@@ -144,12 +266,12 @@ Overlay {
                         }
                     }
                     Text {
-                        visible: Networking.devices.values.length === 0
+                        visible: root.detailsNetwork === null && Networking.devices.values.length === 0
                         text: I18n.tr("network.noDevices")
                         color: Theme.muted
                     }
                     ColumnLayout {
-                        visible: root.passwordNetwork !== null
+                        visible: root.detailsNetwork === null && root.passwordNetwork !== null
                         Layout.fillWidth: true
                         Text {
                             text: I18n.tr("network.passwordPrefix") + (root.passwordNetwork?.name ?? "")
@@ -181,7 +303,7 @@ Overlay {
                         }
                     }
                     Text {
-                        visible: root.error !== ""
+                        visible: root.detailsNetwork === null && root.error !== ""
                         text: root.error
                         color: Theme.danger
                         Layout.fillWidth: true
