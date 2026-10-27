@@ -92,7 +92,7 @@ Overlay {
                     left: parent.left
                     right: parent.right
                     top: parent.top
-                    margins: 22
+                    margins: Theme.dialogPadding
                     bottom: parent.bottom
                 }
                 spacing: 14

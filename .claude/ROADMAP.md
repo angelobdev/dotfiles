@@ -105,17 +105,20 @@ Completed items indicate features present in the code; outstanding hardware chec
 
 ## Review follow-ups (behavior changes awaiting approval)
 
-Found during the October 27, 2026 repository review; each changes runtime behavior, so none was applied.
+Found during the October 27, 2026 repository review. Checked items were approved and applied the same day; the rest still change runtime behavior and await a decision.
 
-- [ ] Screen-share picker path: `xdph.conf` sets `custom_picker_binary = desktop-portal-picker`, but the systemd user `PATH` (and the running xdph) is `/usr/local/bin:/usr/bin`. Use `~/.local/bin/desktop-portal-picker` (or fix the PATH import in `desktop-session`) and test a real share.
-- [ ] Power menu: `Overlay` and `PowerMenu` both handle Escape and QML runs both, so Esc closes the menu instead of cancelling a pending confirmation, contrary to the hint text. Add an `Overlay.closeOnEscape` switch.
-- [ ] Share picker: arrow keys move `choices.currentIndex` but the highlight follows the clicked item, so Enter can share an item that is not highlighted. Highlight `currentIndex` like Launcher/Clipboard.
-- [ ] Battery panel: `palette.highlight` has no effect on the Basic-style ProgressBar (it fills with `palette.dark`), so the accent fill never shows.
-- [ ] Audio panel uses plain `Slider` (Basic palette, no `Accessible.name`) instead of `ControlSlider`.
+- [x] Screen-share picker path: the systemd user `PATH` had lost `~/.local/bin` (the login-time import works when re-run, so it was likely reset later), leaving xdph unable to find `desktop-portal-picker`. `xdph.conf` now uses `~/.local/bin/desktop-portal-picker` (xdph runs it through `/bin/sh`). A real share from the calling web app still needs a manual test.
+- [x] Power menu: `Overlay` and `PowerMenu` both handled Escape, so Esc closed the menu instead of cancelling a pending confirmation. `Overlay.closeOnEscape: false` now lets the menu cancel first, then close.
+- [x] Share picker: the keyboard cursor is now the selection (highlight, Enter and Share all use `currentIndex`, like Launcher/Clipboard); the first source is preselected.
+- [x] Battery panel: the level bar now draws the same track/accent fill as `ControlSlider` instead of relying on an ignored palette role.
+- [x] Audio panel uses `ControlSlider` with accessible names; the microphone button shows the muted icon when muted.
+- [x] Spacing: `Theme.panelPadding` (16, side panels) and `Theme.dialogPadding` (22, centred dialogs); Clipboard, Recording and the power menu now follow them, and the Control Center uses the shared `PanelHeader`. Fonts were already uniform at runtime (qt5ct default is Adwaita Sans).
 - [ ] Environment import runs twice concurrently (`session.lua` and `desktop-session`) with different variable lists; consolidate into one call.
 - [ ] Blur coverage differs: the layer rule blurs `desktop-bar` but not `desktop-tray-menu`, Hyprglass the reverse.
 - [ ] `electron-flags.conf` is not read by any Fedora launcher and `UseOzonePlatform` is obsolete; keep or drop the package.
-- [ ] Performance with some risk: workspace delegates are rebuilt on every Hyprland change (needs a diffing model such as `ScriptModel`); every panel is instantiated at startup; each `Icon` carries a `MultiEffect`; `pragma ComponentBehavior: Bound` for `Bar`, `TrayMenu`, `WorkspaceStrip` after a runtime smoke test.
+- [x] Workspace pills use `ScriptModel` keyed by `id`: delegates (button, tooltip window, timer) survive Hyprland updates and the width animation now runs.
+- [ ] Lazy panels: deliberately not done. The shell uses about 200 MB RSS and 0.4% CPU, hidden panels gate their own work, and lazy loading would reset state that persists today (Control Center expanded sections, wallpaper directory) and needs first-open focus handling. Revisit if memory matters.
+- [ ] Each `Icon` carries a `MultiEffect` for recolouring; `pragma ComponentBehavior: Bound` for `Bar`, `TrayMenu`, `WorkspaceStrip` after a runtime smoke test.
 - [ ] Optional: `$HOME` in the qt5ct/qt6ct `color_scheme_path` (supported by qtXct, but the GUI rewrites it as absolute); subprocess timeouts in helpers; clearer messages for `StopIteration`/decode errors in the plugin scripts.
 
 ## Possible extensions identified

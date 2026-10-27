@@ -21,4 +21,6 @@ QtObject {
     readonly property color handleFocus: "#888c94"
     readonly property string font: "Adwaita Sans"
     readonly property int radius: 18
+    readonly property int panelPadding: 16
+    readonly property int dialogPadding: 22
 }

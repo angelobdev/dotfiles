@@ -7,6 +7,7 @@ RowLayout {
     property string title: ""
     property bool showBack: false
     default property alias actions: actionsRow.data
+    readonly property alias closeButton: closeIcon
     spacing: 6
     PanelIconButton {
         visible: root.showBack
@@ -26,6 +27,7 @@ RowLayout {
         spacing: 2
     }
     PanelIconButton {
+        id: closeIcon
         iconName: "close"
         tooltip: I18n.tr("common.close")
         onClicked: ShellState.close()

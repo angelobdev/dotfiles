@@ -16,31 +16,20 @@ Overlay {
             doNotDisturb: "FocusControl.qml",
             idle: "IdleControl.qml"
         })
-    onOpened: closeButton.forceActiveFocus()
+    onOpened: header.closeButton.forceActiveFocus()
     SidePanelCard {
         height: Math.min(layout.implicitHeight + 32, parent.height - 76)
         ColumnLayout {
             id: layout
             anchors {
                 fill: parent
-                margins: 16
+                margins: Theme.panelPadding
             }
             spacing: 12
-            RowLayout {
-                Text {
-                    text: I18n.tr("controlCenter.title")
-                    font.family: Theme.font
-                    font.pixelSize: 15
-                    font.weight: Font.DemiBold
-                    color: Theme.text
-                    Layout.fillWidth: true
-                }
-                PanelIconButton {
-                    id: closeButton
-                    iconName: "close"
-                    tooltip: I18n.tr("common.close")
-                    onClicked: ShellState.close()
-                }
+            PanelHeader {
+                id: header
+                title: I18n.tr("controlCenter.title")
+                Layout.fillWidth: true
             }
             ScrollView {
                 Layout.fillWidth: true

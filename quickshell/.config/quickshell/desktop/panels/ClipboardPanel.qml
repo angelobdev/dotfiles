@@ -21,7 +21,7 @@ Overlay {
         height: Math.min(560, parent.height - 76)
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 20
+            anchors.margins: Theme.dialogPadding
             spacing: 12
             PanelHeader {
                 title: I18n.tr("clipboard.title")

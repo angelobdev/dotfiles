@@ -14,7 +14,7 @@ Overlay {
         ColumnLayout {
             anchors {
                 fill: parent
-                margins: 22
+                margins: Theme.dialogPadding
             }
             spacing: 14
             Heading {
@@ -39,10 +39,9 @@ Overlay {
                             highlighted: Audio.muted
                             onClicked: Audio.toggleMute()
                         }
-                        Slider {
+                        ControlSlider {
                             Layout.fillWidth: true
-                            from: 0
-                            to: 1
+                            Accessible.name: I18n.tr("audio.volume")
                             value: Audio.volume / 100
                             enabled: !!Audio.sink
                             onMoved: Audio.setVolume(value)
@@ -79,16 +78,15 @@ Overlay {
                     }
                     RowLayout {
                         ActionButton {
-                            iconName: "microphone"
+                            iconName: Audio.source?.audio?.muted ? "microphone-muted" : "microphone"
                             tooltip: I18n.tr("audio.toggleMicrophone")
                             enabled: !!Audio.source
                             highlighted: Audio.source?.audio?.muted ?? false
                             onClicked: Audio.toggleMic()
                         }
-                        Slider {
+                        ControlSlider {
                             Layout.fillWidth: true
-                            from: 0
-                            to: 1
+                            Accessible.name: I18n.tr("audio.microphone")
                             value: Audio.inputVolume / 100
                             enabled: !!Audio.source
                             onMoved: Audio.setInputVolume(value)

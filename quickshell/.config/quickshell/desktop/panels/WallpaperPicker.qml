@@ -74,7 +74,7 @@ Overlay {
         ColumnLayout {
             anchors {
                 fill: parent
-                margins: 22
+                margins: Theme.dialogPadding
             }
             spacing: 12
             Heading {

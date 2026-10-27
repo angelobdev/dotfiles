@@ -6,6 +6,8 @@ import ".."
 PanelWindow {
     id: root
     required property string panelName
+    // Panels with a multi-step Escape (cancel, then close) handle it themselves.
+    property bool closeOnEscape: true
     signal opened
     screen: ShellState.activeScreen || Quickshell.screens[0]
     visible: ShellState.panel === panelName
@@ -24,7 +26,8 @@ PanelWindow {
         contentItem.forceActiveFocus();
         opened();
     }
-    contentItem.Keys.onEscapePressed: ShellState.close()
+    contentItem.Keys.onEscapePressed: if (closeOnEscape)
+        ShellState.close()
     MouseArea {
         anchors.fill: parent
         onClicked: ShellState.close()

@@ -8,6 +8,7 @@ import "../components"
 Overlay {
     id: root
     panelName: "power"
+    closeOnEscape: false
     property string pending: ""
     property string failure: ""
     property int selectedAction: 0
@@ -111,7 +112,7 @@ Overlay {
                 left: parent.left
                 right: parent.right
                 top: parent.top
-                margins: 24
+                margins: Theme.dialogPadding
             }
             spacing: 10
             Heading {

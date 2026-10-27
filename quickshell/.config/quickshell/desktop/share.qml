@@ -13,18 +13,18 @@ ShellRoot {
     id: root
     readonly property var windows: JSON.parse(Quickshell.env("DESKTOP_SHARE_WINDOWS") || "[]")
     property bool windowTab: false
-    property string chosenKind: ""
-    property string chosenId: ""
-    function choose(kind, id) {
-        chosenKind = kind;
-        chosenId = id;
+    // The keyboard cursor is the selection: Enter and Share use the highlighted row.
+    readonly property var current: choices.model[choices.currentIndex] ?? null
+    function showTab(windows) {
+        windowTab = windows;
+        choices.currentIndex = 0;
     }
     function accept() {
-        if (!chosenId)
+        if (!current)
             return;
         result.setText(JSON.stringify({
-            kind: chosenKind,
-            id: chosenId,
+            kind: current.kind,
+            id: current.id,
             remember: remember.checked
         }));
     }
@@ -74,18 +74,12 @@ ShellRoot {
                     ActionButton {
                         text: I18n.tr("recording.display")
                         highlighted: !root.windowTab
-                        onClicked: {
-                            root.windowTab = false;
-                            root.chosenId = "";
-                        }
+                        onClicked: root.showTab(false)
                     }
                     ActionButton {
                         text: I18n.tr("hints.categories.windows")
                         highlighted: root.windowTab
-                        onClicked: {
-                            root.windowTab = true;
-                            root.chosenId = "";
-                        }
+                        onClicked: root.showTab(true)
                     }
                 }
                 InputField {
@@ -95,13 +89,7 @@ ShellRoot {
                     Keys.onDownPressed: choices.currentIndex = Math.min(choices.count - 1, choices.currentIndex + 1)
                     Keys.onUpPressed: choices.currentIndex = Math.max(0, choices.currentIndex - 1)
                     onTextChanged: choices.currentIndex = 0
-                    onAccepted: {
-                        const entry = choices.model[choices.currentIndex];
-                        if (entry) {
-                            root.choose(entry.kind, entry.id);
-                            root.accept();
-                        }
-                    }
+                    onAccepted: root.accept()
                 }
                 ListView {
                     id: choices
@@ -130,11 +118,8 @@ ShellRoot {
                         alignLeft: true
                         iconSource: modelData.app ? Quickshell.iconPath(modelData.app, "application-x-executable") : ""
                         iconName: modelData.kind === "screen" ? "monitor" : ""
-                        highlighted: root.chosenId === modelData.id && root.chosenKind === modelData.kind
-                        onClicked: {
-                            choices.currentIndex = index;
-                            root.choose(modelData.kind, modelData.id);
-                        }
+                        highlighted: choices.currentIndex === index
+                        onClicked: choices.currentIndex = index
                     }
                     ScrollBar.vertical: ScrollBar {}
                     Text {
@@ -167,7 +152,7 @@ ShellRoot {
                     ActionButton {
                         text: I18n.tr("sharing.share")
                         highlighted: true
-                        enabled: !!root.chosenId
+                        enabled: !!root.current
                         onClicked: root.accept()
                     }
                 }

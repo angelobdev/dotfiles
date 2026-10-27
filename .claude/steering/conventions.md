@@ -13,9 +13,11 @@ Match the surrounding code. Comments are sparse one-liners that explain *why* ("
 - Delegates declare `required property var modelData` (and `index`) and qualify access through an id (`trayItem.modelData`).
 - JS uses `===`/`!==`, `?.`/`??`, double-quoted strings, arrow handlers (`onExited: (code, status) => {…}`). Replace arrays/objects instead of mutating them so bindings notice (`Object.assign({}, …)`, `filter`, `concat`).
 - `textFormat: Text.PlainText` on any `Text` showing external data; markup only through `NotificationText.styled`.
-- Colours come from `Theme` (including scrims, tooltip and slider-handle tokens). Radii and font sizes are still literals; there is no type scale yet.
+- Colours and panel padding come from `Theme` (scrims, tooltip, slider-handle tokens; `panelPadding` for side panels, `dialogPadding` for centred dialogs). Radii and font sizes are still literals; there is no type scale yet.
 - Keep idle work gated: timers and scans run only while their panel is open (`ShellState.panel === "<name>"`) or their feature is enabled. Coalesce repeated requests with `Qt.callLater` or a `pending/again` flag.
-- Do not try to override an `Overlay` handler from a panel: QML runs both the base and the derived handler.
+- Do not try to override an `Overlay` handler from a panel: QML runs both the base and the derived handler. For Escape, set `closeOnEscape: false` and handle it in the panel (see `PowerMenu`).
+- Models rebuilt from fresh JS arrays recreate every delegate; when delegates are heavy or animate, wrap the array in `ScriptModel { values: …; objectProp: "id" }` (delegates are reused and `modelData` is updated).
+- Side panels use `SidePanelCard` + `PanelHeader`; centred dialogs use `Card` + `Heading`.
 - JS libraries use `.pragma library`.
 
 ## Python helpers

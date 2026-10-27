@@ -41,7 +41,7 @@ Overlay {
         ColumnLayout {
             anchors {
                 fill: parent
-                margins: 16
+                margins: Theme.panelPadding
             }
             spacing: 14
             PanelHeader {
@@ -75,12 +75,26 @@ Overlay {
                         color: Theme.muted
                     }
                     ProgressBar {
+                        id: level
                         Layout.fillWidth: true
                         visible: root.available
                         from: 0
                         to: 1
                         value: root.battery?.percentage ?? 0
-                        palette.highlight: Theme.accent
+                        background: Rectangle {
+                            implicitHeight: 7
+                            radius: 4
+                            color: Theme.track
+                        }
+                        contentItem: Item {
+                            implicitHeight: 7
+                            Rectangle {
+                                width: level.visualPosition * parent.width
+                                height: parent.height
+                                radius: 4
+                                color: Theme.accent
+                            }
+                        }
                     }
                     GridLayout {
                         visible: root.available

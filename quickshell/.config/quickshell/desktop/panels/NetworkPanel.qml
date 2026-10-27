@@ -56,7 +56,7 @@ Overlay {
         ColumnLayout {
             anchors {
                 fill: parent
-                margins: 16
+                margins: Theme.panelPadding
             }
             spacing: 12
             PanelHeader {

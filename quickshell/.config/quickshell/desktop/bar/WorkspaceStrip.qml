@@ -2,6 +2,7 @@ import QtQuick
 import "../components"
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 import ".."
 
 RowLayout {
@@ -52,7 +53,11 @@ RowLayout {
         }
     }
     Repeater {
-        model: root.workspaces
+        // Reuse pills by workspace id so updates do not rebuild them (and width animations run).
+        model: ScriptModel {
+            values: root.workspaces
+            objectProp: "id"
+        }
         Button {
             id: workspace
             required property var modelData

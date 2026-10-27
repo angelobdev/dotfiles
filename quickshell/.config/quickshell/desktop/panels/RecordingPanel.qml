@@ -16,7 +16,7 @@ Overlay {
         height: Math.min(460, parent.height - 76)
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 20
+            anchors.margins: Theme.panelPadding
             spacing: 14
             PanelHeader {
                 title: I18n.tr("recording.title")
