@@ -12,6 +12,7 @@ ColumnLayout {
     property bool showQr: false
     property bool confirmForget: false
     property bool editDns: false
+    property bool editIp: false
     readonly property var device: network?.device ?? null
     readonly property bool wifi: device?.type === DeviceType.Wifi
     readonly property string uuid: network?.nmSettings?.[0]?.uuid ?? ""
@@ -33,6 +34,7 @@ ColumnLayout {
         showQr = false;
         confirmForget = false;
         editDns = false;
+        editIp = false;
         NetworkInfo.forgetSensitive();
     }
     spacing: 16
@@ -208,54 +210,116 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
         Text {
+            text: I18n.tr("network.ipConfig")
+            color: Theme.muted
+            font.pixelSize: 11
+        }
+        ChoiceChips {
+            enabled: !NetworkInfo.busy
+            options: [
+                {
+                    name: "auto",
+                    label: I18n.tr("network.ipAutomatic")
+                },
+                {
+                    name: "manual",
+                    label: I18n.tr("network.ipManual")
+                }
+            ]
+            current: root.editIp || root.profile?.ipv4Method === "manual" ? "manual" : "auto"
+            onChosen: name => {
+                if (name === "manual") {
+                    // Start from the current lease, the usual way to pin an address.
+                    root.editIp = true;
+                    addressField.text = root.profile.ipv4Address || ((root.info?.ipv4 ?? [])[0] ?? "");
+                    gatewayField.text = root.profile.ipv4Gateway || (root.info?.gateway ?? "");
+                    addressField.forceActiveFocus();
+                    return;
+                }
+                root.editIp = false;
+                if (root.profile.ipv4Method === "manual")
+                    NetworkInfo.run("set-ipv4", [root.uuid, "auto"]);
+            }
+        }
+        ColumnLayout {
+            visible: root.editIp || root.profile?.ipv4Method === "manual"
+            Layout.fillWidth: true
+            spacing: 6
+            InputField {
+                id: addressField
+                Layout.fillWidth: true
+                implicitHeight: 36
+                font.pixelSize: 13
+                placeholderText: I18n.tr("network.addressPlaceholder")
+                text: root.profile?.ipv4Address ?? ""
+                onAccepted: gatewayField.forceActiveFocus()
+            }
+            RowLayout {
+                Layout.fillWidth: true
+                InputField {
+                    id: gatewayField
+                    Layout.fillWidth: true
+                    implicitHeight: 36
+                    font.pixelSize: 13
+                    placeholderText: I18n.tr("network.gatewayPlaceholder")
+                    text: root.profile?.ipv4Gateway ?? ""
+                    onAccepted: applyIp.clicked()
+                }
+                ActionButton {
+                    id: applyIp
+                    text: I18n.tr("network.apply")
+                    enabled: !NetworkInfo.busy && addressField.text.trim() !== ""
+                    onClicked: if (enabled) {
+                        root.editIp = false;
+                        NetworkInfo.run("set-ipv4", [root.uuid, "manual", addressField.text.trim(), gatewayField.text.trim()]);
+                    }
+                }
+            }
+            Text {
+                visible: root.profile?.dnsAutomatic ?? false
+                Layout.fillWidth: true
+                text: I18n.tr("network.manualDnsHint")
+                color: Theme.muted
+                font.pixelSize: 11
+                wrapMode: Text.Wrap
+            }
+        }
+    }
+    ColumnLayout {
+        visible: root.profile !== null
+        Layout.fillWidth: true
+        spacing: 8
+        Text {
             text: I18n.tr("network.dns")
             color: Theme.muted
             font.pixelSize: 11
         }
-        Flow {
-            Layout.fillWidth: true
-            spacing: 6
-            Repeater {
-                model: [
-                    {
-                        name: "automatic",
-                        label: I18n.tr("network.dnsAutomatic"),
-                        servers: []
-                    }
-                ].concat(Config.dnsPresets.map(preset => ({
-                            name: preset.name,
-                            label: preset.name,
-                            servers: preset.servers
-                        }))).concat([
-                    {
-                        name: "custom",
-                        label: I18n.tr("network.dnsCustom"),
-                        servers: null
-                    }
-                ])
-                ActionButton {
-                    id: dnsOption
-                    required property var modelData
-                    implicitHeight: 30
-                    text: modelData.label
-                    font.pixelSize: 12
-                    enabled: !NetworkInfo.busy
-                    highlighted: root.editDns ? modelData.name === "custom" : root.dnsChoice === modelData.name
-                    background: Rectangle {
-                        radius: 15
-                        color: dnsOption.highlighted ? Theme.accent : dnsOption.down || dnsOption.hovered || dnsOption.activeFocus ? Theme.raised : Theme.tile
-                    }
-                    onClicked: {
-                        if (modelData.servers === null) {
-                            root.editDns = true;
-                            dnsField.text = root.dnsChoice === "custom" ? root.profile.dns.join(" ") : "";
-                            dnsField.forceActiveFocus();
-                            return;
-                        }
-                        root.editDns = false;
-                        NetworkInfo.run("set-dns", [root.uuid].concat(modelData.servers));
-                    }
+        ChoiceChips {
+            enabled: !NetworkInfo.busy
+            options: [
+                {
+                    name: "automatic",
+                    label: I18n.tr("network.dnsAutomatic")
                 }
+            ].concat(Config.dnsPresets.map(preset => ({
+                        name: preset.name,
+                        label: preset.name
+                    }))).concat([
+                {
+                    name: "custom",
+                    label: I18n.tr("network.dnsCustom")
+                }
+            ])
+            current: root.editDns ? "custom" : root.dnsChoice
+            onChosen: name => {
+                if (name === "custom") {
+                    root.editDns = true;
+                    dnsField.text = root.dnsChoice === "custom" ? root.profile.dns.join(" ") : "";
+                    dnsField.forceActiveFocus();
+                    return;
+                }
+                root.editDns = false;
+                NetworkInfo.run("set-dns", [root.uuid].concat(name === "automatic" ? [] : Config.dnsPresets.find(preset => preset.name === name).servers));
             }
         }
         RowLayout {
@@ -279,6 +343,49 @@ ColumnLayout {
                     NetworkInfo.run("set-dns", [root.uuid].concat(dnsField.text.split(/[\s,]+/).filter(server => server !== "")));
                 }
             }
+        }
+    }
+    ColumnLayout {
+        visible: (root.profile?.mac ?? "") !== ""
+        Layout.fillWidth: true
+        spacing: 8
+        Text {
+            text: root.wifi ? I18n.tr("network.mac") : I18n.tr("network.macWired")
+            color: Theme.muted
+            font.pixelSize: 11
+        }
+        ChoiceChips {
+            enabled: !NetworkInfo.busy
+            options: [
+                {
+                    name: "default",
+                    label: I18n.tr("network.macDefault")
+                },
+                {
+                    name: "private",
+                    label: I18n.tr("network.macPrivate")
+                },
+                {
+                    name: "rotating",
+                    label: I18n.tr("network.macRotating")
+                },
+                {
+                    name: "fixed",
+                    label: I18n.tr("network.macFixed")
+                }
+            ]
+            current: root.profile?.mac ?? ""
+            onChosen: name => {
+                if (name !== root.profile.mac)
+                    NetworkInfo.run("set-mac", [root.uuid, name]);
+            }
+        }
+        Text {
+            Layout.fillWidth: true
+            text: I18n.tr("network.macHint")
+            color: Theme.muted
+            font.pixelSize: 11
+            wrapMode: Text.Wrap
         }
     }
     ColumnLayout {

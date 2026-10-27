@@ -13,7 +13,11 @@ import time
 
 CLEAR_AFTER = 45
 WIFI = '802-11-wireless'
+WIRED = '802-3-ethernet'
 PERSONAL = {'wpa-psk', 'sae'}
+VPN_TYPES = {'vpn', 'wireguard'}
+# Values of {wifi,ethernet}.cloned-mac-address; '' leaves the choice to the system default.
+MAC_MODES = {'default': '', 'private': 'stable-ssid', 'rotating': 'random', 'fixed': 'permanent'}
 
 
 def nmcli(*args, secrets=False):
@@ -96,13 +100,16 @@ def details(device):
 
 def profile(uuid):
     kind = connection(uuid)[0]
-    fields = 'connection.autoconnect,connection.metered,ipv4.dns,ipv4.ignore-auto-dns,ipv6.dns,ipv6.ignore-auto-dns'
+    fields = ('connection.autoconnect,connection.metered,ipv4.dns,ipv4.ignore-auto-dns,ipv6.dns,ipv6.ignore-auto-dns,'
+        'ipv4.method,ipv4.addresses,ipv4.gateway')
     if kind == WIFI:
-        fields += ',802-11-wireless-security.key-mgmt'
-    result = values('-g', fields, 'connection', 'show', uuid)
-    autoconnect, metered, dns4, ignore4, dns6, ignore6 = result[:6]
-    security = result[6] if kind == WIFI else ''
+        fields += ',802-11-wireless.cloned-mac-address,802-11-wireless-security.key-mgmt'
+    elif kind == WIRED:
+        fields += ',802-3-ethernet.cloned-mac-address'
+    result = values('-g', fields, 'connection', 'show', uuid) + ['', '']
+    autoconnect, metered, dns4, ignore4, dns6, ignore6, method, addresses, gateway, mac, security = result[:11]
     dns = multi(dns4, ',') + multi(dns6, ',')
+    mode = {'stable': 'private', 'stable-ssid': 'private', 'random': 'rotating', 'permanent': 'fixed'}.get(mac, 'default')
     return {
         'uuid': uuid,
         'type': kind,
@@ -110,7 +117,11 @@ def profile(uuid):
         'metered': metered == 'yes',
         'dns': dns,
         'dnsAutomatic': not dns and ignore4 != 'yes' and ignore6 != 'yes',
-        'personal': security in PERSONAL,
+        'personal': kind == WIFI and security in PERSONAL,
+        'ipv4Method': method,
+        'ipv4Address': (multi(addresses, ',') or [''])[0],
+        'ipv4Gateway': gateway,
+        'mac': mode if kind in (WIFI, WIRED) else '',
     }
 
 
@@ -136,6 +147,79 @@ def set_option(uuid, option, enabled):
     # "unknown" lets NetworkManager guess again (for example on phone hotspots) instead of forcing "no".
     nmcli('connection', 'modify', uuid, 'connection.metered', 'yes' if enabled else 'unknown')
     reapply(uuid)
+
+
+def set_ipv4(uuid, method, address, gateway):
+    if method == 'auto':
+        nmcli('connection', 'modify', uuid, 'ipv4.method', 'auto', 'ipv4.addresses', '', 'ipv4.gateway', '')
+    else:
+        try:
+            interface = ipaddress.IPv4Interface(address)
+        except ValueError:
+            raise ValueError(tr('network.errors.invalidAddress', (address,))) from None
+        if '/' not in address or interface.ip in (interface.network.network_address, interface.network.broadcast_address):
+            raise ValueError(tr('network.errors.invalidAddress', (address,)))
+        if gateway:
+            try:
+                router = ipaddress.IPv4Address(gateway)
+            except ValueError:
+                raise ValueError(tr('network.errors.invalidAddress', (gateway,))) from None
+            if router not in interface.network:
+                raise ValueError(tr('network.errors.gatewayOutside', (gateway, interface.network)))
+        nmcli('connection', 'modify', uuid, 'ipv4.method', 'manual',
+            'ipv4.addresses', interface.with_prefixlen, 'ipv4.gateway', gateway)
+    reapply(uuid)
+
+
+def set_mac(uuid, mode):
+    kind, _, device = connection(uuid)
+    if kind not in (WIFI, WIRED):
+        raise ValueError(tr('network.errors.commandFailed', (kind,)))
+    value = MAC_MODES[mode]
+    if kind == WIRED and value == 'stable-ssid':
+        value = 'stable'
+    nmcli('connection', 'modify', uuid, ('802-11-wireless' if kind == WIFI else '802-3-ethernet') + '.cloned-mac-address', value)
+    # The address is only chosen while activating, so an active connection has to reconnect.
+    if device:
+        nmcli('connection', 'up', uuid)
+
+
+def add_hidden(device, ssid, secure):
+    psk = sys.stdin.read().rstrip('\n') if secure else ''
+    if not ssid.strip() or any(char in ssid for char in '\r\n'):
+        raise ValueError(tr('network.errors.invalidSsid'))
+    if secure and (any(char in psk for char in '\r\n') or not 8 <= len(psk) <= 64):
+        raise ValueError(tr('network.errors.invalidPassword'))
+    # The interactive editor reads the password from stdin, so it never appears in a process command line.
+    # Saving with autoconnect on makes nmcli ask for confirmation; it is enabled once the network works.
+    commands = ['set connection.id ' + ssid, 'set wifi.ssid ' + ssid, 'set wifi.hidden yes',
+        'set connection.interface-name ' + device, 'set connection.autoconnect no']
+    if secure:
+        commands += ['set wifi-sec.key-mgmt wpa-psk', 'set wifi-sec.psk ' + psk]
+    result = subprocess.run(['nmcli', 'connection', 'edit', 'type', 'wifi'], input='\n'.join(commands + ['save persistent', 'quit']) + '\n',
+        capture_output=True, text=True, timeout=15)
+    # Without a terminal nmcli reports the saved profile on stderr.
+    saved = [line for line in (result.stderr + result.stdout).splitlines() if 'successfully saved' in line]
+    if result.returncode != 0 or not saved:
+        # stdout echoes the editor session, password included, so only stderr is reported.
+        raise ValueError(tr('network.errors.commandFailed', (result.stderr.strip()[-300:] or result.returncode,)))
+    uuid = saved[-1].rsplit('(', 1)[1].split(')', 1)[0]
+    activation = subprocess.run(['nmcli', 'connection', 'up', uuid], capture_output=True, text=True, timeout=60)
+    if activation.returncode != 0:
+        # Do not leave a broken profile behind for a mistyped name or password.
+        subprocess.run(['nmcli', 'connection', 'delete', uuid], capture_output=True, timeout=15)
+        raise ValueError(tr('network.errors.commandFailed', ((activation.stderr or activation.stdout).strip()[:300],)))
+    nmcli('connection', 'modify', uuid, 'connection.autoconnect', 'yes')
+    return uuid
+
+
+def vpns():
+    found = []
+    for line in nmcli('-f', 'NAME,UUID,TYPE,ACTIVE', 'connection', 'show').splitlines():
+        name, uuid, kind, active = (split_terse(line) + ['', '', '', ''])[:4]
+        if kind in VPN_TYPES:
+            found.append({'name': name, 'uuid': uuid, 'type': kind, 'active': active == 'yes'})
+    return sorted(found, key=lambda vpn: vpn['name'].lower())
 
 
 def secret(uuid):
@@ -220,6 +304,21 @@ def main():
     option.add_argument('uuid')
     option.add_argument('option', choices=('autoconnect', 'metered'))
     option.add_argument('value', choices=('yes', 'no'))
+    ipv4 = commands.add_parser('set-ipv4')
+    ipv4.add_argument('uuid')
+    ipv4.add_argument('method', choices=('auto', 'manual'))
+    ipv4.add_argument('address', nargs='?', default='')
+    ipv4.add_argument('gateway', nargs='?', default='')
+    mac = commands.add_parser('set-mac')
+    mac.add_argument('uuid')
+    mac.add_argument('mode', choices=tuple(MAC_MODES))
+    hidden = commands.add_parser('add-hidden', description='The password, if any, is read from stdin.')
+    hidden.add_argument('device')
+    hidden.add_argument('ssid')
+    hidden.add_argument('--secure', action='store_true')
+    commands.add_parser('vpn')
+    for name in ('vpn-up', 'vpn-down'):
+        commands.add_parser(name).add_argument('uuid')
     commands.add_parser('clear-clipboard')
     args = parser.parse_args()
     if args.command == 'clear-clipboard':
@@ -236,6 +335,19 @@ def main():
         result = {'copied': True, 'clearAfter': CLEAR_AFTER}
     elif args.command == 'qr':
         result = qr(wifi_payload(args.uuid))
+    elif args.command == 'set-ipv4':
+        set_ipv4(args.uuid, args.method, args.address, args.gateway)
+        result = profile(args.uuid)
+    elif args.command == 'set-mac':
+        set_mac(args.uuid, args.mode)
+        result = profile(args.uuid)
+    elif args.command == 'add-hidden':
+        result = {'uuid': add_hidden(args.device, args.ssid, args.secure)}
+    elif args.command == 'vpn':
+        result = {'vpn': vpns()}
+    elif args.command in ('vpn-up', 'vpn-down'):
+        nmcli('connection', 'up' if args.command == 'vpn-up' else 'down', args.uuid)
+        result = {'vpn': vpns()}
     elif args.command == 'set-dns':
         set_dns(args.uuid, args.servers)
         result = profile(args.uuid)

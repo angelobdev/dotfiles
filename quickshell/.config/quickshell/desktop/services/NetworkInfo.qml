@@ -15,10 +15,13 @@ Singleton {
     property bool copied: false
     property string error: ""
     property string pendingDevice: ""
+    property var vpns: []
     // Seconds until network.py clears a copied password; reported by the helper.
     property int clearAfter: 0
-    readonly property bool busy: operation.running || profileLoader.running
+    readonly property bool busy: operation.running || profileLoader.running || joiner.running
+    readonly property bool joining: joiner.running
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/network.py"
+    signal joined
     function icon(network) {
         if (network?.device?.type === DeviceType.Wired)
             return "ethernet";
@@ -47,6 +50,19 @@ Singleton {
         operation.action = action;
         operation.command = ["python3", helper, action].concat(args);
         operation.running = true;
+    }
+    function refreshVpns() {
+        if (!vpnLoader.running)
+            vpnLoader.running = true;
+    }
+    function joinHidden(device, ssid, psk) {
+        if (joiner.running)
+            return;
+        error = "";
+        joiner.psk = psk;
+        joiner.stdinEnabled = true;
+        joiner.command = ["python3", helper, "add-hidden", device, ssid].concat(psk !== "" ? ["--secure"] : []);
+        joiner.running = true;
     }
     function forgetSensitive() {
         secret = "";
@@ -113,6 +129,8 @@ Singleton {
                     root.secret = data.secret;
                 else if (operation.action === "qr")
                     root.qr = data;
+                else if (operation.action === "vpn-up" || operation.action === "vpn-down")
+                    root.vpns = data.vpn;
                 else if (operation.action === "copy-secret") {
                     root.clearAfter = data.clearAfter;
                     root.copied = true;
@@ -122,6 +140,39 @@ Singleton {
             } catch (e) {
                 root.error = I18n.tr("network.errors.commandFailed", [result.text.trim()]);
             }
+        }
+    }
+    Process {
+        id: vpnLoader
+        command: ["python3", root.helper, "vpn"]
+        stdout: StdioCollector {
+            id: vpnData
+        }
+        onExited: (code, status) => {
+            if (code !== 0)
+                return;
+            try {
+                root.vpns = JSON.parse(vpnData.text).vpn;
+            } catch (e) {}
+        }
+    }
+    Process {
+        id: joiner
+        // Handed to network.py on stdin so the password never appears in a command line.
+        property string psk: ""
+        stderr: StdioCollector {
+            id: joinErrors
+        }
+        onStarted: {
+            write(psk);
+            psk = "";
+            stdinEnabled = false;
+        }
+        onExited: (code, status) => {
+            if (code === 0)
+                root.joined();
+            else
+                root.error = joinErrors.text.trim() || I18n.tr("network.errors.commandFailed", [code]);
         }
     }
     Timer {

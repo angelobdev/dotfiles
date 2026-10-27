@@ -13,6 +13,8 @@ Overlay {
     closeOnEscape: false
     property var passwordNetwork: null
     property var detailsNetwork: null
+    property var hiddenDevice: null
+    property bool hiddenSecure: true
     property string error: ""
     readonly property var wifiDevices: Networking.devices.values.filter(d => d.type === DeviceType.Wifi)
     readonly property var activeDevice: Networking.devices.values.find(d => d.connected) ?? null
@@ -29,6 +31,20 @@ Overlay {
     function cancelPassword() {
         passwordNetwork = null;
         password.clear();
+    }
+    function openHidden(device) {
+        cancelPassword();
+        error = "";
+        hiddenSecure = true;
+        hiddenSsid.clear();
+        hiddenPassword.clear();
+        hiddenDevice = device;
+        hiddenSsid.forceActiveFocus();
+    }
+    function cancelHidden() {
+        hiddenDevice = null;
+        hiddenSsid.clear();
+        hiddenPassword.clear();
     }
     function openDetails(network) {
         cancelPassword();
@@ -47,9 +63,12 @@ Overlay {
         search.clear();
         search.forceActiveFocus();
         NetworkInfo.refreshDetails(activeDevice?.name);
+        NetworkInfo.refreshVpns();
     }
     onVisibleChanged: if (!visible) {
         cancelPassword();
+        cancelHidden();
+        NetworkInfo.forgetSensitive();
         detailsNetwork = null;
         error = "";
     }
@@ -68,6 +87,19 @@ Overlay {
                 root.cancelPassword();
             }
         }
+    }
+    Connections {
+        target: NetworkInfo
+        function onJoined() {
+            root.cancelHidden();
+        }
+    }
+    // VPN state is not exposed by Quickshell.Networking; poll it only while the panel is open.
+    Timer {
+        interval: 4000
+        running: root.visible && root.detailsNetwork === null
+        repeat: true
+        onTriggered: NetworkInfo.refreshVpns()
     }
     Variants {
         model: root.wifiDevices
@@ -263,6 +295,91 @@ Overlay {
                                     }
                                 }
                             }
+                            ActionButton {
+                                visible: !deviceRow.wired && search.text === "" && root.hiddenDevice === null
+                                Layout.fillWidth: true
+                                alignLeft: true
+                                // Line the label up with the network names next to their icons.
+                                leftPadding: 42
+                                text: I18n.tr("network.otherNetwork")
+                                onClicked: root.openHidden(deviceRow.modelData)
+                            }
+                        }
+                    }
+                    ColumnLayout {
+                        visible: root.detailsNetwork === null && NetworkInfo.vpns.length > 0
+                        Layout.fillWidth: true
+                        Text {
+                            text: I18n.tr("network.vpn")
+                            color: Theme.muted
+                            font.pixelSize: 11
+                        }
+                        Repeater {
+                            model: NetworkInfo.vpns
+                            ActionButton {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                alignLeft: true
+                                iconName: "vpn"
+                                text: modelData.name
+                                highlighted: modelData.active
+                                enabled: !NetworkInfo.busy
+                                onClicked: NetworkInfo.run(modelData.active ? "vpn-down" : "vpn-up", [modelData.uuid])
+                            }
+                        }
+                    }
+                    ColumnLayout {
+                        visible: root.detailsNetwork === null && root.hiddenDevice !== null
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Text {
+                            text: I18n.tr("network.otherNetwork")
+                            color: Theme.text
+                        }
+                        InputField {
+                            id: hiddenSsid
+                            Layout.fillWidth: true
+                            placeholderText: I18n.tr("network.ssidPlaceholder")
+                            onAccepted: root.hiddenSecure ? hiddenPassword.forceActiveFocus() : joinButton.clicked()
+                        }
+                        ChoiceChips {
+                            options: [
+                                {
+                                    name: "personal",
+                                    label: I18n.tr("network.securityPersonal")
+                                },
+                                {
+                                    name: "open",
+                                    label: I18n.tr("network.securityNone")
+                                }
+                            ]
+                            current: root.hiddenSecure ? "personal" : "open"
+                            onChosen: name => root.hiddenSecure = name === "personal"
+                        }
+                        InputField {
+                            id: hiddenPassword
+                            visible: root.hiddenSecure
+                            Layout.fillWidth: true
+                            echoMode: TextInput.Password
+                            placeholderText: I18n.tr("network.passwordPlaceholder")
+                            onAccepted: joinButton.clicked()
+                        }
+                        RowLayout {
+                            ActionButton {
+                                id: joinButton
+                                text: NetworkInfo.joining ? I18n.tr("network.joining") : I18n.tr("network.join")
+                                enabled: !NetworkInfo.busy && hiddenSsid.text.trim() !== "" && (!root.hiddenSecure || hiddenPassword.text.length >= 8)
+                                onClicked: if (enabled) {
+                                    root.error = "";
+                                    NetworkInfo.joinHidden(root.hiddenDevice.name, hiddenSsid.text.trim(), root.hiddenSecure ? hiddenPassword.text : "");
+                                    hiddenPassword.clear();
+                                }
+                            }
+                            ActionButton {
+                                text: I18n.tr("common.cancel")
+                                enabled: !NetworkInfo.joining
+                                onClicked: root.cancelHidden()
+                            }
                         }
                     }
                     Text {
@@ -303,8 +420,8 @@ Overlay {
                         }
                     }
                     Text {
-                        visible: root.detailsNetwork === null && root.error !== ""
-                        text: root.error
+                        visible: root.detailsNetwork === null && (root.error !== "" || NetworkInfo.error !== "")
+                        text: root.error || NetworkInfo.error
                         color: Theme.danger
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
