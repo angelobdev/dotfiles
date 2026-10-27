@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# apply: set X resources (DPI, cursor) for the focused monitor's scale; status: show them.
+exec python3 "$HOME/.local/libexec/desktop/xwayland.py" "${1:-apply}" "${@:2}"

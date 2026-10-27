@@ -41,7 +41,7 @@ Services spawn `python3 ~/.local/libexec/desktop/<helper>.py …` through Quicks
 | --- | --- | --- |
 | Long-lived watcher | `bar_visibility.py`, `brightness.py watch`, `clipboard.py watch-*`, `recording.py` | One compact JSON document per line on stdout (`flush=True`), parsed by `SplitParser` |
 | Two-way agent | `bluetooth_agent.py` | JSON lines on stdin (`pair`/`cancel`/`reply`) and stdout (`status`/`prompt`/`error`/`operation`) |
-| One-shot | `calendar.py`, `brightness.py read/set`, `clipboard.py list/…`, `wallpaper.py`, `network.py` (details, profile, set, set-dns, set-ipv4, set-mac, add-hidden with the password on stdin, vpn/vpn-up/vpn-down, hotspot/hotspot-on/hotspot-off, tailscale/tailscale-up/tailscale-down, extras (one poll for VPN, hotspot and Tailscale), secret, copy-secret, qr) | One JSON document collected by `StdioCollector`; errors as `{"error": …}` or translated stderr |
+| One-shot | `calendar.py`, `brightness.py read/set`, `clipboard.py list/…`, `wallpaper.py`, `xwayland.py` (apply/status, `aseprite` launcher), `network.py` (details, profile, set, set-dns, set-ipv4, set-mac, add-hidden with the password on stdin, vpn/vpn-up/vpn-down, hotspot/hotspot-on/hotspot-off, tailscale/tailscale-up/tailscale-down, extras (one poll for VPN, hotspot and Tailscale), secret, copy-secret, qr) | One JSON document collected by `StdioCollector`; errors as `{"error": …}` or translated stderr |
 
 Crashed watchers restart through a `Timer` whose `running` is `<enabled> && !process.running`. Treat argv and stdout formats as a byte-exact contract between QML and Python.
 

@@ -500,5 +500,12 @@
       "one": "Workspace %1 · %2 window",
       "other": "Workspace %1 · %2 windows"
     }
+  },
+  "xwayland": {
+    "errors": {
+      "asepriteScale": "DESKTOP_ASEPRITE_SCALE must be a number, such as 2 for 200%",
+      "asepriteUsage": "Usage: desktop-aseprite COMMAND (set \"desktop-aseprite %command%\" as Aseprite's Steam launch option)",
+      "noMonitor": "No active Hyprland monitor found"
+    }
   }
 }

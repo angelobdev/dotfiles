@@ -176,6 +176,8 @@ def main():
         raise ValueError('Expected steam or gamescope mode.')
     if sys.argv[1] == 'steam':
         command = steam_command(sys.argv[2:])
+        # A session-wide XCURSOR_SIZE would override the scaled X cursor resource from desktop-xwayland.
+        os.environ.pop('XCURSOR_SIZE', None)
         # Keep legacy client controls and the opt-in CEF workaround aligned.
         for index, argument in enumerate(command):
             if argument == '-forcedesktopscaling':

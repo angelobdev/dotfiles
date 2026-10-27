@@ -13,6 +13,8 @@ case "${1:-start}" in
         export QT_QPA_PLATFORM='wayland;xcb'
         dbus-update-activation-environment --systemd GDK_BACKEND QT_QPA_PLATFORM PATH WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE
         "$HOME/.local/bin/desktop-theme"
+        # X11 clients take DPI and cursor size from X resources matching the monitor scale.
+        "$HOME/.local/bin/desktop-xwayland" apply >/dev/null || echo "XWayland profile not applied." >&2
         systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service
         # Apple devices expose AFC volumes, not UDisks block devices.
         systemctl --user start gvfs-afc-volume-monitor.service

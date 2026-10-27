@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Aseprite's Steam launch option: desktop-aseprite %command%
+exec python3 "$HOME/.local/libexec/desktop/xwayland.py" aseprite "$@"
