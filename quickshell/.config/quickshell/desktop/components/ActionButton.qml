@@ -87,7 +87,7 @@ Button {
         color: root.highlighted ? Theme.accent : root.down || root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
         Behavior on color {
             ColorAnimation {
-                duration: 120
+                duration: Theme.motionFast
             }
         }
     }

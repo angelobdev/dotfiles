@@ -130,6 +130,12 @@ The palette uses graphite gray, neutral primary `#d4d6dc`, light text, Adwaita S
 
 The shell uses dark translucent surfaces with blur and thin neutral borders. Hyprland draws no window borders: active/fullscreen opacity 1, inactive opacity 0.92, and blur enabled. These values are in `hypr/.config/hypr/config/appearance.lua`. Active windows retain full readability.
 
+## Motion
+
+Animations are restrained: quick ease-out entrances, quicker accelerating exits, and no overshoot. Hyprland (`appearance.lua`) defines the curves `out`, `accel`, and `inout` plus a critically damped spring `move`. Windows pop in from 87% with a fade (about 220 ms) and pop out to 92% (about 150 ms); tiling reflow, dragging, and resizing use the spring; workspaces slide with a fade over 18% of the width (special workspace vertically); focus, dim, shadow, border, layer, and popup fades take 140–250 ms. `speed` is in deciseconds. A layer rule in `rules.lua` turns compositor animations off for `desktop-overlay` and `desktop-osd`, which Quickshell animates itself.
+
+Quickshell panels share the same curves through `Theme.easeOut`/`Theme.easeIn` and the durations `Theme.motionFast` (120 ms), `motionNormal` (220 ms), and `motionSlow` (320 ms). Side panels slide 10 px down from the bar and scale from 97% while fading in; centred dialogs scale from the middle. Closing reverses it in 120 ms, during which the panel no longer takes keyboard focus or clicks. Set `reduceMotion: true` in `Config.qml` to turn the shell's animations off; turn Hyprland's off with `animations = { enabled = false }` in `config/local.lua`.
+
 ## Media and calendars
 
 The Control Center's `media` module uses native Quickshell MPRIS: title/artist, previous, play/pause, next, and position when exposed by the player. With multiple players, select the desired one. Buttons and XF86 transport keys follow the application's published capabilities; `playerctl` is not required. `desktop-shell media {play-pause|play|pause|next|previous|stop}` routes commands through the shell's native MPRIS service and respects the selected player. Unknown actions are rejected by the wrapper, and unavailable/unsupported actions produce no playback change.

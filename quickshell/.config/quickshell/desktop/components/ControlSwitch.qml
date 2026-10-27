@@ -30,13 +30,13 @@ Switch {
             color: root.checked ? Theme.accentText : Theme.text
             Behavior on x {
                 NumberAnimation {
-                    duration: 120
+                    duration: Theme.motionFast
                 }
             }
         }
         Behavior on color {
             ColorAnimation {
-                duration: 120
+                duration: Theme.motionFast
             }
         }
     }

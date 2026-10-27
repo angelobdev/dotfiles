@@ -10,6 +10,7 @@ import "../components"
 Overlay {
     id: root
     panelName: "wallpaper"
+    dialog: true
     property url selectedUrl: ""
     property string selectedPath: ""
     property string failure: ""

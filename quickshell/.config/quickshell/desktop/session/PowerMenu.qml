@@ -8,6 +8,7 @@ import "../components"
 Overlay {
     id: root
     panelName: "power"
+    dialog: true
     closeOnEscape: false
     property string pending: ""
     property string failure: ""

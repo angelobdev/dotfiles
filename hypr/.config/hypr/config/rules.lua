@@ -36,3 +36,12 @@ hl.layer_rule({
     blur = true,
     ignore_alpha = 0.2,
 })
+
+-- Panels and the OSD animate themselves in Quickshell; a compositor fade on top would double the motion.
+hl.layer_rule({
+    name = "desktop-shell-motion",
+    match = {
+        namespace = "^desktop-(overlay|osd)$"
+    },
+    no_anim = true,
+})

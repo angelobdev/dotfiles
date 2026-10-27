@@ -36,30 +36,145 @@ hl.config({
     },
 })
 
-hl.curve("desktop", {
+-- Restrained motion: quick ease-out entrances, quicker accelerating exits, no overshoot.
+-- "out" and "accel" match Theme.easeOut/easeIn in Quickshell, so the shell and the compositor move alike.
+hl.curve("out", {
     type = "bezier",
-    points = { { 0.2, 0.8 }, { 0.2, 1.0 } }
+    points = { { 0.16, 1.0 }, { 0.3, 1.0 } }
+})
+
+hl.curve("accel", {
+    type = "bezier",
+    points = { { 0.3, 0.0 }, { 0.8, 0.15 } }
+})
+
+hl.curve("inout", {
+    type = "bezier",
+    points = { { 0.65, 0.0 }, { 0.35, 1.0 } }
+})
+
+-- Critically damped (dampening = 2 * sqrt(stiffness)): tiling reflow glides without bouncing.
+hl.curve("move", {
+    type = "spring",
+    mass = 1,
+    stiffness = 240,
+    dampening = 31
 })
 
 hl.animation({
-    leaf = "windows",
+    leaf = "windowsIn",
     enabled = true,
-    speed = 4,
-    bezier = "desktop",
-    style = "slide"
+    speed = 2.2,
+    bezier = "out",
+    style = "popin 87%"
+})
+
+hl.animation({
+    leaf = "windowsOut",
+    enabled = true,
+    speed = 1.5,
+    bezier = "accel",
+    style = "popin 92%"
+})
+
+hl.animation({
+    leaf = "windowsMove",
+    enabled = true,
+    speed = 3,
+    spring = "move"
+})
+
+hl.animation({
+    leaf = "fadeIn",
+    enabled = true,
+    speed = 2.2,
+    bezier = "out"
+})
+
+hl.animation({
+    leaf = "fadeOut",
+    enabled = true,
+    speed = 1.5,
+    bezier = "accel"
+})
+
+hl.animation({
+    leaf = "fadeSwitch",
+    enabled = true,
+    speed = 2.5,
+    bezier = "out"
+})
+
+hl.animation({
+    leaf = "fadeShadow",
+    enabled = true,
+    speed = 2.5,
+    bezier = "out"
+})
+
+hl.animation({
+    leaf = "fadeDim",
+    enabled = true,
+    speed = 2.5,
+    bezier = "inout"
+})
+
+hl.animation({
+    leaf = "fadeLayersIn",
+    enabled = true,
+    speed = 1.8,
+    bezier = "out"
+})
+
+hl.animation({
+    leaf = "fadeLayersOut",
+    enabled = true,
+    speed = 1.4,
+    bezier = "accel"
+})
+
+hl.animation({
+    leaf = "fadePopups",
+    enabled = true,
+    speed = 1.5,
+    bezier = "out"
+})
+
+hl.animation({
+    leaf = "layersIn",
+    enabled = true,
+    speed = 1.8,
+    bezier = "out",
+    style = "fade"
+})
+
+hl.animation({
+    leaf = "layersOut",
+    enabled = true,
+    speed = 1.4,
+    bezier = "accel",
+    style = "fade"
+})
+
+hl.animation({
+    leaf = "border",
+    enabled = true,
+    speed = 2.5,
+    bezier = "out"
 })
 
 hl.animation({
     leaf = "workspaces",
     enabled = true,
-    speed = 4,
-    bezier = "desktop",
-    style = "slide"
+    speed = 3,
+    bezier = "out",
+    style = "slidefade 18%"
 })
 
 hl.animation({
-    leaf = "fade",
+    leaf = "specialWorkspace",
     enabled = true,
     speed = 3,
-    bezier = "desktop"
+    bezier = "out",
+    style = "slidefadevert 20%"
 })

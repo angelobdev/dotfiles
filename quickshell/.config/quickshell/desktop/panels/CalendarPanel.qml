@@ -9,6 +9,7 @@ import "../services"
 Overlay {
     id: root
     panelName: "calendar"
+    dialog: true
     property date selected: new Date()
     property int month: selected.getMonth()
     property int year: selected.getFullYear()

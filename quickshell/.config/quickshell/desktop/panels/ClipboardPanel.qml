@@ -8,6 +8,7 @@ import "../services"
 Overlay {
     id: root
     panelName: "clipboard"
+    dialog: true
     property bool confirmClear: false
     onOpened: {
         confirmClear = false;

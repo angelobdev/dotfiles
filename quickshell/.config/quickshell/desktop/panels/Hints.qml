@@ -9,6 +9,7 @@ import "../components"
 Overlay {
     id: root
     panelName: "hints"
+    dialog: true
     property var bindings: []
     property string error: ""
     readonly property var categories: [I18n.tr("launcher.title"), I18n.tr("hints.categories.shell"), I18n.tr("hints.categories.screenCapture"), I18n.tr("hints.categories.windows"), I18n.tr("hints.categories.workspaces"), I18n.tr("hints.categories.mouse"), I18n.tr("hints.categories.audioBrightness"), I18n.tr("session.title"), I18n.tr("hints.categories.other")]

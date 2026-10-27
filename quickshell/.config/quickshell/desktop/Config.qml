@@ -4,6 +4,8 @@ import QtQuick
 QtObject {
     readonly property int minimumWorkspaces: 2
     readonly property bool workspaceScroll: true
+    // Turns the shell's own animations off (Hyprland's live in hypr/config/appearance.lua).
+    readonly property bool reduceMotion: false
     readonly property bool clipboardEnabled: true
     readonly property int clipboardMaxItems: 200
     readonly property int recordingFramerate: 30

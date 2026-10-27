@@ -7,6 +7,7 @@ import "../services"
 
 Overlay {
     panelName: "audio"
+    dialog: true
     Card {
         anchors.centerIn: parent
         width: Math.min(620, parent.width - 48)

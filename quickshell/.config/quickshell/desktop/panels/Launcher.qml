@@ -8,6 +8,7 @@ import "../components"
 Overlay {
     id: root
     panelName: "launcher"
+    dialog: true
     onOpened: {
         search.clear();
         apps.currentIndex = 0;

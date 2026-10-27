@@ -23,4 +23,10 @@ QtObject {
     readonly property int radius: 18
     readonly property int panelPadding: 16
     readonly property int dialogPadding: 22
+    // Motion shared with Hyprland's "out" and "accel" curves in appearance.lua.
+    readonly property int motionFast: Config.reduceMotion ? 0 : 120
+    readonly property int motionNormal: Config.reduceMotion ? 0 : 220
+    readonly property int motionSlow: Config.reduceMotion ? 0 : 320
+    readonly property var easeOut: [0.16, 1, 0.3, 1, 1, 1]
+    readonly property var easeIn: [0.3, 0, 0.8, 0.15, 1, 1]
 }
