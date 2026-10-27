@@ -13,6 +13,9 @@ hl.config({
             scroll_factor = 1
         },
     },
+    misc = {
+        middle_click_paste = false
+    }
 })
 
 hl.gesture({
