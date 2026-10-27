@@ -10,9 +10,10 @@ PanelWindow {
     id: root
     screen: Osd.targetScreen || Quickshell.screens[0]
     anchors.bottom: true
-    margins.bottom: Math.max(0, Config.osdBottomMargin)
+    // 8 px of room below the card for its rise; the card itself stays where the margin puts it.
+    margins.bottom: Math.max(0, Config.osdBottomMargin - 8)
     implicitWidth: Math.min(Math.max(240, Config.osdWidth), (screen?.width ?? 800) - 24)
-    implicitHeight: 96
+    implicitHeight: 104
     color: "transparent"
     visible: Osd.visible || card.opacity > 0
     exclusionMode: ExclusionMode.Ignore
@@ -24,15 +25,25 @@ PanelWindow {
 
     Rectangle {
         id: card
-        anchors.fill: parent
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        height: 96
         radius: Theme.radius
         color: Theme.surface
         border.width: 1
         border.color: Theme.stroke
         opacity: Osd.visible ? 1 : 0
+        transform: Translate {
+            y: 8 * (1 - card.opacity)
+        }
         Behavior on opacity {
             NumberAnimation {
-                duration: 140
+                duration: Osd.visible ? Theme.motionFast : Theme.motionNormal
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Osd.visible ? Theme.easeOut : Theme.easeIn
             }
         }
         RowLayout {

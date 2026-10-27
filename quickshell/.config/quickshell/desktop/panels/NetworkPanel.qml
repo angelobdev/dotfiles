@@ -61,12 +61,16 @@ Overlay {
         error = "";
         detailsNetwork = network;
         scroll.ScrollBar.vertical.position = 0;
+        pageEnter.direction = 1;
+        pageEnter.restart();
         if (network.connected)
             NetworkInfo.refreshDetails(network.device?.name);
     }
     function closeDetails() {
         detailsNetwork = null;
         scroll.ScrollBar.vertical.position = 0;
+        pageEnter.direction = -1;
+        pageEnter.restart();
         search.forceActiveFocus();
     }
     onOpened: {
@@ -111,6 +115,29 @@ Overlay {
         repeat: true
         onTriggered: NetworkInfo.refreshExtras()
     }
+    // List and details push like the Control Center sub-panels: the new page slides in from the side it comes from.
+    ParallelAnimation {
+        id: pageEnter
+        property int direction: 1
+        NumberAnimation {
+            target: pageShift
+            property: "x"
+            from: 24 * pageEnter.direction
+            to: 0
+            duration: Theme.motionNormal
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.easeOut
+        }
+        NumberAnimation {
+            target: page
+            property: "opacity"
+            from: 0
+            to: 1
+            duration: Theme.motionNormal
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Theme.easeOut
+        }
+    }
     Variants {
         model: root.wifiDevices
         delegate: QtObject {
@@ -151,8 +178,12 @@ Overlay {
                 clip: true
                 contentWidth: availableWidth
                 ColumnLayout {
+                    id: page
                     width: parent.width
                     spacing: 14
+                    transform: Translate {
+                        id: pageShift
+                    }
                     Loader {
                         active: root.detailsNetwork !== null
                         visible: active

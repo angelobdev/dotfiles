@@ -131,7 +131,7 @@ Overlay {
                 ActionButton {
                     iconName: "arrow-left"
                     text: I18n.tr("controlCenter.title")
-                    onClicked: ShellState.toggle("controls", ShellState.activeScreen)
+                    onClicked: ShellState.back()
                 }
                 Item {
                     Layout.fillWidth: true

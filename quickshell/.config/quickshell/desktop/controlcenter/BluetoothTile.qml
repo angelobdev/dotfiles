@@ -18,7 +18,7 @@ ControlTile {
             iconName: "bluetooth"
             text: I18n.tr("bluetooth.title")
             tooltip: I18n.tr("bluetooth.devicesTitle")
-            onClicked: ShellState.toggle("bluetooth", ShellState.activeScreen)
+            onClicked: ShellState.push("bluetooth")
         }
         Text {
             Layout.fillWidth: true

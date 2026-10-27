@@ -16,11 +16,14 @@ PanelWindow {
     property Scale motionScale: Scale {
         origin.x: root.dialog ? root.width / 2 : root.width - 12 - Config.controlCenterWidth / 2
         origin.y: root.dialog ? root.height / 2 : 58
-        xScale: 0.97 + 0.03 * root.reveal
+        xScale: ShellState.navigation !== 0 ? 1 : 0.97 + 0.03 * root.reveal
         yScale: xScale
     }
+    // Moving between the Control Center and a sub-panel pushes sideways: the new panel comes in from the
+    // direction of travel while the old one leaves the other way.
     property Translate motionShift: Translate {
-        y: root.dialog ? 0 : -10 * (1 - root.reveal)
+        x: ShellState.navigation === 0 ? 0 : (root.open ? 1 : -1) * ShellState.navigation * 24 * (1 - root.reveal)
+        y: root.dialog || ShellState.navigation !== 0 ? 0 : -10 * (1 - root.reveal)
     }
     signal opened
     screen: ShellState.activeScreen || Quickshell.screens[0]

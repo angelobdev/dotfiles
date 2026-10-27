@@ -19,7 +19,7 @@ RowLayout {
         tooltip: root.backTooltip
         onClicked: {
             if (root.backToControls)
-                ShellState.toggle("controls", ShellState.activeScreen);
+                ShellState.back();
             else
                 root.back();
         }

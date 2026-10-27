@@ -143,7 +143,7 @@ ControlTile {
             ActionButton {
                 text: I18n.tr("audio.openPanel")
                 font.pixelSize: 12
-                onClicked: ShellState.toggle("audio", ShellState.activeScreen)
+                onClicked: ShellState.push("audio")
             }
         }
     }

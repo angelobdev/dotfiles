@@ -21,7 +21,7 @@ ControlTile {
             iconName: NetworkInfo.icon(root.network)
             text: I18n.tr("network.label")
             tooltip: I18n.tr("network.tooltip")
-            onClicked: ShellState.toggle("network", ShellState.activeScreen)
+            onClicked: ShellState.push("network")
         }
         Text {
             Layout.fillWidth: true
