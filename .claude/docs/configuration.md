@@ -16,7 +16,7 @@ Under `quickshell/.config/quickshell/desktop/`, `shell.qml` is the desktop entry
 | `osd/` | Temporary volume and brightness indicators. |
 | `i18n/` | Italian/US English JSON catalogs, locale selection (`Locale.js`), and source-label adapters (`Sources.js`). |
 | `components/` | Shared buttons, sliders, cards, and other reusable elements. |
-| `services/` | State and backend connections; `assets/icons/` contains icons. |
+| `services/` | State and backend connections; `assets/icons/` contains icons, exported from the Figma file [Desktop Icons](https://www.figma.com/design/FYQsa6b0razfxqGI4Q9rG5) (components `icon/<name>`; re-export as SVG with `white` fills and strokes). |
 
 Function-specific components stay beside their callers; components used by several panels remain in `components/`. The generic `modules/` directory has been removed.
 

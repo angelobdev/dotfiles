@@ -114,7 +114,7 @@ Overlay {
                                     required property var modelData
                                     Layout.fillWidth: true
                                     alignLeft: true
-                                    iconName: deviceRow.modelData.type === DeviceType.Wifi ? "wifi" : "ethernet"
+                                    iconName: deviceRow.modelData.type !== DeviceType.Wifi ? "ethernet" : (modelData.signalStrength ?? 1) < 0.34 ? "wifi-1" : (modelData.signalStrength ?? 1) < 0.67 ? "wifi-2" : "wifi"
                                     text: modelData.name + (modelData.stateChanging ? " …" : "")
                                     highlighted: modelData.connected
                                     enabled: !modelData.stateChanging

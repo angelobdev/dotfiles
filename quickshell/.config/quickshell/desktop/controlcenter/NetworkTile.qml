@@ -17,7 +17,7 @@ ControlTile {
         ActionButton {
             Layout.fillWidth: true
             alignLeft: true
-            iconName: root.device?.type === DeviceType.Ethernet ? "ethernet" : "wifi"
+            iconName: root.device?.type === DeviceType.Ethernet ? "ethernet" : (root.network?.signalStrength ?? 1) < 0.34 ? "wifi-1" : (root.network?.signalStrength ?? 1) < 0.67 ? "wifi-2" : "wifi"
             text: I18n.tr("network.label")
             tooltip: I18n.tr("network.tooltip")
             onClicked: ShellState.toggle("network", ShellState.activeScreen)

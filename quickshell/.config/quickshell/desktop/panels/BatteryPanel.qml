@@ -58,7 +58,7 @@ Overlay {
                     spacing: 12
                     RowLayout {
                         Icon {
-                            name: root.charging ? "battery-charging" : "battery"
+                            name: root.charging ? "battery-charging" : "battery-" + Math.round((root.battery?.percentage ?? 0) * 4) * 25
                             Layout.preferredWidth: 30
                             Layout.preferredHeight: 30
                         }

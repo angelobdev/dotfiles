@@ -160,7 +160,7 @@ PanelWindow {
             readonly property string profileIcon: PowerProfiles.profile === PowerProfile.PowerSaver ? "leaf" : PowerProfiles.profile === PowerProfile.Performance ? "performance" : ""
             readonly property string profileLabel: PowerProfiles.profile === PowerProfile.PowerSaver ? I18n.tr("battery.profiles.powerSaver") : PowerProfiles.profile === PowerProfile.Performance ? I18n.tr("battery.profiles.performance") : PowerProfiles.profile === PowerProfile.Balanced ? I18n.tr("battery.profiles.balanced") : I18n.tr("battery.profileUnavailable")
             visible: UPower.displayDevice?.isLaptopBattery ?? false
-            iconName: !UPower.onBattery ? "battery-charging" : bar.battery < 20 ? "battery-low" : "battery"
+            iconName: !UPower.onBattery ? "battery-charging" : "battery-" + Math.round(bar.battery / 25) * 25
             text: bar.battery + "%"
             implicitWidth: batteryContent.implicitWidth + leftPadding + rightPadding
             tooltip: (UPower.onBattery ? I18n.tr("battery.onBattery") : I18n.tr("battery.pluggedIn")) + " · " + profileLabel

@@ -53,6 +53,10 @@ The action-key capture identified F1 as `Super + P`, F2 as `XF86Calculator`, F10
 
 The bar's persistent button highlight was reproduced with a real BarButton and synthetic mouse events: a clicked button retained active focus after the pointer left. Bar buttons now visualize only keyboard focus (`visualFocus`), while panel buttons retain programmatic focus highlighting. Regression checks cover mouse exit, keyboard focus, and panel focus. MPRIS transport was tested with two simulated players on a private D-Bus bus, including selected-player routing and rejection of unsupported commands; no personal playback was controlled during those tests.
 
+## Icon pack verification
+
+The 48 icons were exported from Figma as plain SVG paths (knockouts flattened by boolean operations, so no masks are needed) and recolored to `white` for `MultiEffect` colorization. After `./scripts/stow.py apply` linked the seven new files and the dangling `battery`/`battery-low` links were removed, a `desktop-shell restart` loaded without icon warnings. A screenshot confirmed the bar battery at 61% rendering `battery-50`, filled bell/keyboard/Control Center icons, and the network tile showing `wifi-2` (connected network at signal 0.46, with the dimmed outer fan visible). Quickshell's `signalStrength` is in the 0–1 range.
+
 ## Steam and gamescope verification
 
 The user confirmed improved text clarity with 1:1 XWayland rendering, but changing `-forcedesktopscaling` from 1.667 to 2 did not visibly enlarge the interface. Exporting `STEAM_FORCE_DESKTOPUI_SCALING` to both client and web helper also left the header unchanged. Steam's Interface HiDPI switch was already on. SDL reported content scale 1 through Wayland and 2 through X11 with its hint, but that alternate backend did not change the desktop UI either. Those diagnostics establish that startup arguments and environment alone are insufficient for this installed build.

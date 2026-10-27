@@ -97,6 +97,7 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] XDG portals: Hyprland/GTK routing, environment import before startup, and a custom Quickshell sharing picker.
 - [x] Screen sharing through ScreenCast/PipeWire and monitor/area recording through wf-recorder, with QML panel, audio selection, bar indicator, and video saving; real portal test and recording of a dedicated window, with the specific web app test still outstanding.
 - [x] Concise README and separate `.claude/docs/` guides for installation, interface/shortcuts, configuration, integrations, and troubleshooting; updated for pairing, MPRIS, calendars, and DDC/CI results.
+- [x] Icon pack redesigned in Figma ([Desktop Icons](https://www.figma.com/design/FYQsa6b0razfxqGI4Q9rG5)) and exported to `assets/icons/`: filled macOS-like style, battery fill levels (`battery-100/75/50/25/0`, replacing `battery`/`battery-low`), Wi-Fi strength (`wifi-1`, `wifi-2`), gauge icons for power profiles, toggle-style Control Center icon. Bar, battery panel, network tile, and network list select the new icons.
 - [x] Physical HDMI hotplug verified with Philips FTV: monitor, bar, and brightness list removed/restored without restarting the shell. I²C permissions applied through ddcutil's udev rules.
 
 ## Next developments
