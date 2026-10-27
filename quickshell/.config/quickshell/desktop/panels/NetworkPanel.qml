@@ -20,6 +20,16 @@ Overlay {
     readonly property var activeDevice: Networking.devices.values.find(d => d.connected) ?? null
     readonly property var activeNetwork: activeDevice?.networks.values.find(n => n.connected) ?? null
     readonly property var activeInfo: NetworkInfo.details[activeDevice?.name ?? ""] ?? null
+    readonly property string tailscaleSummary: {
+        const tailscale = NetworkInfo.tailscale;
+        if (tailscale.state === "Running")
+            return [I18n.tr("network.tailscaleConnected", [tailscale.address]), I18n.tr("network.tailscalePeers", [tailscale.online, tailscale.peers]), tailscale.exitNode ? I18n.tr("network.tailscaleExitNode", [tailscale.exitNode]) : ""].filter(part => part !== "").join(" · ");
+        if (tailscale.state === "Stopped")
+            return I18n.tr("network.tailscaleOff");
+        if (tailscale.state === "NeedsLogin")
+            return I18n.tr("network.tailscaleNeedsLogin");
+        return I18n.tr("network.tailscaleStarting");
+    }
     function personal(network) {
         return [WifiSecurityType.WpaPsk, WifiSecurityType.Wpa2Psk, WifiSecurityType.Sae].includes(network.security);
     }
@@ -63,12 +73,12 @@ Overlay {
         search.clear();
         search.forceActiveFocus();
         NetworkInfo.refreshDetails(activeDevice?.name);
-        NetworkInfo.refreshVpns();
+        NetworkInfo.refreshExtras();
     }
     onVisibleChanged: if (!visible) {
         cancelPassword();
         cancelHidden();
-        NetworkInfo.forgetSensitive();
+        hotspotPassword.reset();
         detailsNetwork = null;
         error = "";
     }
@@ -94,12 +104,12 @@ Overlay {
             root.cancelHidden();
         }
     }
-    // VPN state is not exposed by Quickshell.Networking; poll it only while the panel is open.
+    // VPN, hotspot and Tailscale state are not exposed by Quickshell.Networking; poll only while the list is open.
     Timer {
         interval: 4000
         running: root.visible && root.detailsNetwork === null
         repeat: true
-        onTriggered: NetworkInfo.refreshVpns()
+        onTriggered: NetworkInfo.refreshExtras()
     }
     Variants {
         model: root.wifiDevices
@@ -307,12 +317,50 @@ Overlay {
                         }
                     }
                     ColumnLayout {
-                        visible: root.detailsNetwork === null && NetworkInfo.vpns.length > 0
+                        visible: root.detailsNetwork === null && (NetworkInfo.vpns.length > 0 || NetworkInfo.tailscale.installed === true)
                         Layout.fillWidth: true
                         Text {
                             text: I18n.tr("network.vpn")
                             color: Theme.muted
                             font.pixelSize: 11
+                        }
+                        RowLayout {
+                            visible: NetworkInfo.tailscale.installed === true
+                            Layout.fillWidth: true
+                            spacing: 10
+                            Icon {
+                                name: "vpn"
+                                Layout.leftMargin: 12
+                                Layout.preferredWidth: 20
+                                Layout.preferredHeight: 20
+                            }
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+                                Text {
+                                    text: I18n.tr("network.tailscale")
+                                    color: Theme.text
+                                    font.family: Theme.font
+                                    font.pixelSize: 13
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: root.tailscaleSummary
+                                    color: Theme.muted
+                                    font.pixelSize: 11
+                                    elide: Text.ElideRight
+                                    textFormat: Text.PlainText
+                                }
+                            }
+                            ControlSwitch {
+                                enabled: !NetworkInfo.busy && ["Running", "Stopped"].includes(NetworkInfo.tailscale.state)
+                                onToggled: NetworkInfo.run(checked ? "tailscale-up" : "tailscale-down", [])
+                                Accessible.name: I18n.tr("network.tailscale")
+                                Binding on checked {
+                                    value: NetworkInfo.tailscale.state === "Running"
+                                    when: !NetworkInfo.busy
+                                }
+                            }
                         }
                         Repeater {
                             model: NetworkInfo.vpns
@@ -326,6 +374,51 @@ Overlay {
                                 enabled: !NetworkInfo.busy
                                 onClicked: NetworkInfo.run(modelData.active ? "vpn-down" : "vpn-up", [modelData.uuid])
                             }
+                        }
+                    }
+                    ColumnLayout {
+                        visible: root.detailsNetwork === null && root.wifiDevices.length > 0
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Text {
+                            text: I18n.tr("network.hotspot")
+                            color: Theme.muted
+                            font.pixelSize: 11
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 10
+                            Icon {
+                                name: "hotspot"
+                                Layout.leftMargin: 12
+                                Layout.preferredWidth: 20
+                                Layout.preferredHeight: 20
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                text: NetworkInfo.hotspot.active ? I18n.tr("network.hotspotOn", [NetworkInfo.hotspot.ssid]) : I18n.tr("network.hotspotHint")
+                                color: NetworkInfo.hotspot.active ? Theme.text : Theme.muted
+                                font.family: Theme.font
+                                font.pixelSize: NetworkInfo.hotspot.active ? 13 : 11
+                                wrapMode: Text.Wrap
+                                textFormat: Text.PlainText
+                            }
+                            ControlSwitch {
+                                enabled: !NetworkInfo.busy
+                                onToggled: NetworkInfo.run(checked ? "hotspot-on" : "hotspot-off", checked ? [root.wifiDevices[0].name] : [])
+                                Accessible.name: I18n.tr("network.hotspot")
+                                Binding on checked {
+                                    value: NetworkInfo.hotspot.active === true
+                                    when: !NetworkInfo.busy
+                                }
+                            }
+                        }
+                        NetworkPassword {
+                            id: hotspotPassword
+                            visible: NetworkInfo.hotspot.active === true
+                            Layout.fillWidth: true
+                            uuid: NetworkInfo.hotspot.uuid ?? ""
+                            name: NetworkInfo.hotspot.ssid ?? ""
                         }
                     }
                     ColumnLayout {
@@ -417,6 +510,18 @@ Overlay {
                                 text: I18n.tr("common.cancel")
                                 onClicked: root.cancelPassword()
                             }
+                        }
+                    }
+                    ActionButton {
+                        visible: root.detailsNetwork === null
+                        Layout.fillWidth: true
+                        alignLeft: true
+                        text: I18n.tr("network.advancedSettings")
+                        onClicked: {
+                            Quickshell.execDetached({
+                                command: ["nm-connection-editor"]
+                            });
+                            ShellState.close();
                         }
                     }
                     Text {

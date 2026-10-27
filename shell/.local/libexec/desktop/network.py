@@ -7,6 +7,9 @@ import ctypes.util
 import ipaddress
 import json
 import os
+import secrets
+import shutil
+import socket
 import subprocess
 import sys
 import time
@@ -222,6 +225,82 @@ def vpns():
     return sorted(found, key=lambda vpn: vpn['name'].lower())
 
 
+def edit(uuid, commands):
+    # The interactive editor reads values from stdin, so secrets never appear in a process command line.
+    result = subprocess.run(['nmcli', 'connection', 'edit', uuid], input='\n'.join(commands + ['save persistent', 'quit']) + '\n',
+        capture_output=True, text=True, timeout=15)
+    if result.returncode != 0 or 'successfully' not in result.stderr + result.stdout:
+        raise ValueError(tr('network.errors.commandFailed', (result.stderr.strip()[-300:] or result.returncode,)))
+
+
+def hotspot_profile():
+    for line in nmcli('-f', 'UUID,TYPE', 'connection', 'show').splitlines():
+        uuid, kind = (split_terse(line) + ['', ''])[:2]
+        if kind == WIFI and values('-g', '802-11-wireless.mode', 'connection', 'show', uuid)[0] == 'ap':
+            return uuid
+    return ''
+
+
+def hotspot():
+    uuid = hotspot_profile()
+    if not uuid:
+        return {'uuid': '', 'ssid': '', 'active': False}
+    _, ssid, device = connection(uuid)
+    return {'uuid': uuid, 'ssid': ssid, 'active': bool(device)}
+
+
+def hotspot_on(device):
+    uuid = hotspot_profile()
+    if not uuid:
+        name = socket.gethostname().split('.')[0] or 'Linux'
+        output = nmcli('connection', 'add', 'type', 'wifi', 'ifname', device, 'con-name', 'Hotspot', 'ssid', name,
+            '802-11-wireless.mode', 'ap', '802-11-wireless.band', 'bg', 'ipv4.method', 'shared', 'ipv6.method', 'shared',
+            'connection.autoconnect', 'no', 'wifi-sec.key-mgmt', 'wpa-psk', 'wifi-sec.proto', 'rsn', 'wifi-sec.pairwise', 'ccmp')
+        uuid = output.rsplit('(', 1)[1].split(')', 1)[0]
+        # Unambiguous characters only, so the password is easy to type on a phone.
+        alphabet = 'abcdefghjkmnpqrstuvwxyz23456789'
+        edit(uuid, ['set wifi-sec.psk ' + ''.join(secrets.choice(alphabet) for _ in range(12))])
+    nmcli('connection', 'up', uuid, 'ifname', device)
+    return hotspot()
+
+
+def hotspot_off():
+    uuid = hotspot_profile()
+    if uuid and connection(uuid)[2]:
+        nmcli('connection', 'down', uuid)
+    return hotspot()
+
+
+def tailscale():
+    if not shutil.which('tailscale'):
+        return {'installed': False}
+    result = subprocess.run(['tailscale', 'status', '--json'], capture_output=True, text=True, timeout=10)
+    try:
+        data = json.loads(result.stdout)
+    except ValueError:
+        return {'installed': True, 'state': 'Unavailable'}
+    peers = list((data.get('Peer') or {}).values())
+    exit_node = next((peer.get('HostName', '') for peer in peers if peer.get('ExitNode')), '')
+    addresses = (data.get('Self') or {}).get('TailscaleIPs') or []
+    return {
+        'installed': True,
+        'state': data.get('BackendState', ''),
+        'tailnet': (data.get('CurrentTailnet') or {}).get('Name', ''),
+        'address': next((address for address in addresses if ':' not in address), ''),
+        'peers': len(peers),
+        'online': sum(1 for peer in peers if peer.get('Online')),
+        'exitNode': exit_node,
+    }
+
+
+def tailscale_toggle(up):
+    # The current user must be the Tailscale operator (tailscale set --operator=$USER) to do this without root.
+    result = subprocess.run(['tailscale', 'up' if up else 'down'], capture_output=True, text=True, timeout=30)
+    if result.returncode != 0:
+        raise ValueError(tr('network.errors.commandFailed', ((result.stderr or result.stdout).strip()[:300],)))
+    return tailscale()
+
+
 def secret(uuid):
     if connection(uuid)[0] != WIFI:
         raise ValueError(tr('network.errors.noSecret'))
@@ -319,6 +398,13 @@ def main():
     commands.add_parser('vpn')
     for name in ('vpn-up', 'vpn-down'):
         commands.add_parser(name).add_argument('uuid')
+    commands.add_parser('hotspot')
+    commands.add_parser('hotspot-on').add_argument('device')
+    commands.add_parser('hotspot-off')
+    # One poll for everything the panel list shows besides Quickshell's own devices.
+    commands.add_parser('extras')
+    for name in ('tailscale', 'tailscale-up', 'tailscale-down'):
+        commands.add_parser(name)
     commands.add_parser('clear-clipboard')
     args = parser.parse_args()
     if args.command == 'clear-clipboard':
@@ -348,6 +434,18 @@ def main():
     elif args.command in ('vpn-up', 'vpn-down'):
         nmcli('connection', 'up' if args.command == 'vpn-up' else 'down', args.uuid)
         result = {'vpn': vpns()}
+    elif args.command == 'hotspot':
+        result = hotspot()
+    elif args.command == 'hotspot-on':
+        result = hotspot_on(args.device)
+    elif args.command == 'hotspot-off':
+        result = hotspot_off()
+    elif args.command == 'tailscale':
+        result = tailscale()
+    elif args.command == 'extras':
+        result = {'vpn': vpns(), 'hotspot': hotspot(), 'tailscale': tailscale()}
+    elif args.command in ('tailscale-up', 'tailscale-down'):
+        result = tailscale_toggle(args.command == 'tailscale-up')
     elif args.command == 'set-dns':
         set_dns(args.uuid, args.servers)
         result = profile(args.uuid)

@@ -16,6 +16,8 @@ Singleton {
     property string error: ""
     property string pendingDevice: ""
     property var vpns: []
+    property var hotspot: ({})
+    property var tailscale: ({})
     // Seconds until network.py clears a copied password; reported by the helper.
     property int clearAfter: 0
     readonly property bool busy: operation.running || profileLoader.running || joiner.running
@@ -51,9 +53,9 @@ Singleton {
         operation.command = ["python3", helper, action].concat(args);
         operation.running = true;
     }
-    function refreshVpns() {
-        if (!vpnLoader.running)
-            vpnLoader.running = true;
+    function refreshExtras() {
+        if (!extrasLoader.running)
+            extrasLoader.running = true;
     }
     function joinHidden(device, ssid, psk) {
         if (joiner.running)
@@ -131,6 +133,10 @@ Singleton {
                     root.qr = data;
                 else if (operation.action === "vpn-up" || operation.action === "vpn-down")
                     root.vpns = data.vpn;
+                else if (operation.action === "hotspot-on" || operation.action === "hotspot-off")
+                    root.hotspot = data;
+                else if (operation.action === "tailscale-up" || operation.action === "tailscale-down")
+                    root.tailscale = data;
                 else if (operation.action === "copy-secret") {
                     root.clearAfter = data.clearAfter;
                     root.copied = true;
@@ -143,16 +149,19 @@ Singleton {
         }
     }
     Process {
-        id: vpnLoader
-        command: ["python3", root.helper, "vpn"]
+        id: extrasLoader
+        command: ["python3", root.helper, "extras"]
         stdout: StdioCollector {
-            id: vpnData
+            id: extrasData
         }
         onExited: (code, status) => {
             if (code !== 0)
                 return;
             try {
-                root.vpns = JSON.parse(vpnData.text).vpn;
+                const data = JSON.parse(extrasData.text);
+                root.vpns = data.vpn;
+                root.hotspot = data.hotspot;
+                root.tailscale = data.tailscale;
             } catch (e) {}
         }
     }
