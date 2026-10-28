@@ -109,6 +109,32 @@ Completed items indicate features present in the code; outstanding hardware chec
 
 ## Next developments
 
+Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctalia, caelestia, Claude Code docs). Implementation order: AI assistant → Dock → Theming.
+
+### AI assistant (Claude Code)
+
+- [x] `SUPER + A` toggles a floating Kitty window (`--class desktop-ai`) running `claude` on the special workspace `ai`; launched on first use, kept alive afterwards.
+- [x] Hold-Space dictation through Claude Code voice: `hold` mode passed with `--settings` to the assistant session only, language from the locale (`assistant.language`) or `DESKTOP_AI_LANGUAGE`; claude.ai login present, no `ANTHROPIC_API_KEY`, `arecord` available as recorder fallback. Confirmed by the user with the built-in microphone.
+- [x] Hints, i18n and docs (interface, integrations, troubleshooting).
+- [ ] Optional: global dictation into any app (whisper.cpp + wtype, Voxtype-style press/release bind).
+
+### Dock
+
+- [ ] Phase 1: `bar/Dock.qml` `PanelWindow` per screen (namespace `desktop-dock`, bottom anchor, `exclusiveZone: 0`). Always auto-hide: the surface stays mapped, a 3–4 px input strip away from the corners reveals it, it slides away on leave after a short delay, never reveals over fullscreen windows and follows `BarVisibility` during Hyprspace.
+- [ ] Phase 1: pinned apps (desktop-entry IDs), separator, running apps grouped by `appId` (`ToplevelManager`, `DesktopEntries.heuristicLookup`, icon fallback). Click focuses or launches, middle-click opens a new instance, running/active indicators. Pins in `~/.local/state/desktop-shell/dock.json` (atomic write).
+- [ ] Phase 1: IPC `dock(action)` (show/hide/toggle) and `launch(n)` behind `desktop-shell dock …`; `SUPER + D` toggles, `SUPER + ALT + 1-9` launches/focuses the Nth item. Blur layer rule and Hyprglass namespace; Theme motion tokens and `reduceMotion`.
+- [ ] Phase 2: hover magnification, context menu (pin/unpin, close, window list), drag reorder of pins, keyboard navigation when revealed by the shortcut.
+
+### Theming system (hand-authored themes + dynamic custom theme)
+
+- [ ] Phase 1, pipeline: `themes` package → `~/.local/share/desktop/themes/<name>/theme.json` (mode, semantic roles matching `Theme.qml`, ANSI 0–15, fonts, GTK/icon/cursor theme, Hyprglass tint, wallpaper manifest). `theme.py` renders templates atomically into `~/.local/state/desktop-theme/` and reloads apps (Kitty `SIGUSR1`, `hyprctl reload`, gsettings/GTK, btop `SIGUSR2`). Stowed configs only include generated files with Graphite fallbacks (kitty `include`, Lua `pcall(dofile)`, GTK `@import`, hyprlock `source`, generated qtXct conf, `Theme.qml` through `FileView` + `JsonAdapter`). Graphite is ported first with no visual change.
+- [ ] Phase 2, themes: Catppuccin Mocha, Tokyo Night, Gruvbox, Everforest.
+- [ ] Phase 3, wallpapers: per-theme manifest of pinned upstream URLs with sha256 and licence notes (Omarchy theme backgrounds, catppuccin/wallpapers, gruvbox-wallpapers, …), downloaded on demand into `~/.local/share/desktop/wallpapers/<theme>/`, never committed; last wallpaper remembered per theme; `wallpaper.py --next`.
+- [ ] Phase 4, panels: theme picker (`SUPER + CTRL + T`) with preview cards; theme-aware wallpaper gallery (`SUPER + SHIFT + W`) with the active theme's pack and a "Custom…" entry; next wallpaper on `SUPER + CTRL + W`.
+- [ ] Phase 5, dynamic theme: a custom image → matugen (`nett00n/hyprland` COPR) → generated `custom` theme through the same templates; installation docs updated.
+
+### Hardware
+
 - [ ] Complete a successful DDC/CI test (read, minimal change, restore) with a display that responds to the protocol. The connected Philips FTV is identified on bus 14 but responds to neither VCP 10 nor capabilities, even after applying permissions and increasing timings. GNOME's built-in control may use software brightness; this does not confirm the display's DDC/CI support.
 
 ## Review follow-ups (behavior changes awaiting approval)

@@ -24,6 +24,7 @@ end
 -- Applications
 bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminal")
 bind("XF86Calculator", hl.dsp.exec_cmd("gnome-calculator"), "Calculator")
+bind("SUPER + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-ai"'), "AI assistant")
 
 -- System (Hyprland)
 bind("SUPER + Q", hl.dsp.window.close(), "Close window")

@@ -5,6 +5,13 @@
     "terminal": "Terminale",
     "calculator": "Calcolatrice"
   },
+  "assistant": {
+    "errors": {
+      "claudeMissing": "Claude Code non è installato: vedi .claude/docs/integrations.md"
+    },
+    "language": "italian",
+    "title": "Assistente AI"
+  },
   "audio": {
     "devices": "Ingressi e uscite",
     "input": "Ingresso",

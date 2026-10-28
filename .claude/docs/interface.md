@@ -31,6 +31,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + B` | Browser (`zen-browser`) |
 | `Super + Shift + Space` | 1Password quick access (local override) |
 | `Super + Enter` | Kitty |
+| `Super + A` | AI assistant (Claude Code; hold `Space` to dictate) |
 | `Super + Q` | Close window |
 | `Super + Space` | Applications |
 | `Super + Shift + C` | Control Center |

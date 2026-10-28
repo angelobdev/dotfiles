@@ -9,6 +9,7 @@ var bindKeys = {
     "Previous": "media.previous",
     "Stop": "media.stop",
     "Calculator": "apps.calculator",
+    "AI assistant": "assistant.title",
     "Terminal": "apps.terminal",
     "Browser": "apps.browser",
     "1Password": "apps.passwordManager",

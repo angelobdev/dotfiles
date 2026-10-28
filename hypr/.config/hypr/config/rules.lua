@@ -27,6 +27,16 @@ hl.window_rule({
     move = { "monitor_w-window_w-20", "monitor_h-window_h-20" },
 })
 
+-- desktop-ai launches Claude Code in Kitty; Super+A toggles this special workspace.
+hl.window_rule({
+    name = "desktop-ai",
+    match = { class = "^desktop-ai$" },
+    workspace = "special:ai",
+    float = true,
+    size = { "monitor_w*0.6", "monitor_h*0.7" },
+    center = true,
+})
+
 -- Transparent margins/backdrops stay clear; the glass surfaces receive blur.
 hl.layer_rule({
     name = "desktop-glass",

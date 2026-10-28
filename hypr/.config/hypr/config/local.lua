@@ -1,6 +1,11 @@
 -- Overrides for this machine. Example:
 -- hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 2 })
 
+-- ENVIRONMENT --
+
+-- The AI assistant (Super+A) dictates and replies in Italian; the UI locale stays en_US.
+hl.env("DESKTOP_AI_LANGUAGE", "italian")
+
 -- BINDS --
 
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'

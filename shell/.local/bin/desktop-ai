@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Hyprland's exec PATH does not include ~/.local/bin, where the Claude Code installer puts `claude`.
+export PATH="$HOME/.local/bin:$PATH"
+case "${1:-toggle}" in
+    toggle)
+        if hyprctl clients -j | python3 -c '
+import json, sys
+sys.exit(0 if any(client.get("class") == "desktop-ai" for client in json.load(sys.stdin)) else 1)
+'; then
+            exec hyprctl dispatch 'hl.dsp.workspace.toggle_special("ai")'
+        fi
+        if ! command -v claude >/dev/null; then
+            exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify assistant.title assistant.errors.claudeMissing
+        fi
+        # Session-only settings: hold-Space dictation, and one language for dictation and replies
+        # (the system locale unless DESKTOP_AI_LANGUAGE names another, e.g. "italian").
+        language="${DESKTOP_AI_LANGUAGE:-$(python3 "$HOME/.local/libexec/desktop/i18n.py" assistant.language)}"
+        settings="$(python3 -c '
+import json, sys
+print(json.dumps({"voice": {"enabled": True, "mode": "hold"}, "language": sys.argv[1]}))
+' "$language")"
+        # The desktop-ai window rule places the window on the special workspace "ai".
+        setsid -f kitty --class desktop-ai --directory "$HOME" -e claude --settings "$settings" >/dev/null 2>&1
+        ;;
+    *) echo 'Usage: desktop-ai [toggle]' >&2; exit 2 ;;
+esac
