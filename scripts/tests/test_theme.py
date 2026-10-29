@@ -26,9 +26,16 @@ class GraphiteTests(unittest.TestCase):
     def test_hyprlock_matches_the_stowed_fallback(self):
         self.assertEqual(self.out['hyprlock.conf'], (REPO / 'hyprlock/.config/hypr/hyprlock.conf').read_text(encoding='utf-8'))
 
-    def test_qt_matches_the_stowed_schemes(self):
-        for version in ('qt5ct', 'qt6ct'):
-            self.assertEqual(self.out['qt-colors.conf'], (REPO / f'qt/.config/{version}/colors/desktop.conf').read_text(encoding='utf-8'))
+    def test_qt_scheme_has_every_role_of_each_group(self):
+        lines = self.out['qt-colors.conf'].splitlines()
+        self.assertEqual(lines[0], '[ColorScheme]')
+        groups = dict(line.split('=', 1) for line in lines[1:])
+        self.assertEqual(sorted(groups), ['active_colors', 'disabled_colors', 'inactive_colors'])
+        for colors in groups.values():
+            self.assertRegex(colors, r'^#ff[0-9a-f]{6}(, #ff[0-9a-f]{6}){20}$')
+        # WindowText, Window and Highlight of the active group are the Graphite fg, bg and accent.
+        active = groups['active_colors'].split(', ')
+        self.assertEqual((active[0], active[10], active[12]), ('#fff0f0f2', '#ff191a1d', '#ffd4d6dc'))
 
     def test_kitty_matches_the_values_in_kitty_conf(self):
         stowed = {}

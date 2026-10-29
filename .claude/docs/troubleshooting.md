@@ -424,3 +424,12 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 ## Electron entry fix, 2026-10-29
 
 - Electron: `stow.py dry-run` reported a conflict on `shell` because `electron.py` had replaced the ChatGPT link with a generated copy. `stow.py apply` backed the copy up (`~/.local/state/dotfiles/backups/20261029-191244-205186`) and restored the link; the repo entry now has the three flags, the same Exec line as the copy. `electron.py status` lists VS Code only (current), and `apply` left its entry untouched.
+
+## Deferred cleanups, 2026-10-29
+
+- `common.py`: `test_common.py` (new files 0644, replaced files keep their mode, links followed or replaced, a failed block leaves the old file and no temporary). Live: a wallpaper render into a scratch state directory gave the same digest name as the current one (`hyprctl` left out, so nothing was applied); a thumbnail was made at 0644 with no temporary left; `monitor_size` gave 1728×1080 and the tone mean 0.1197, both as in the live `tone.json`; `xwayland.py status` and an Aseprite ini write in a scratch directory; `gaming.focused_monitor` through the shared module.
+- Menus on `MenuLayer`: the window menu from `desktop-shell window-menu` opened under the title with Floating checked and closed when a panel opened; `qs log` reloaded cleanly after each file.
+- Control Center rows on `SwitchRow`: with `doNotDisturb`, `idle` and `rotation` added for the test, the open Control Center was pixel-identical with the old and the new files (ImageMagick AE 0 on the panel area); the module list was restored afterwards.
+- `qt` package: `stow --delete qt` removed both links, the empty `colors` directories went with them, and `qt5ct.conf`/`qt6ct.conf` still point at `~/.local/state/desktop-theme/qt-colors.conf`.
+- Bar double-tap: a qmltestrunner scene with the structure of the bar (a TapHandler under a Button and a MouseArea), with touch: a double tap on the button or the title toggled nothing and on the empty bar toggled once. QTest moves mouse timestamps apart on purpose, so a mouse double click could not be tested there.
+- By hand, the user confirmed the tray and dock menus (open, close on an outside click, dock menu above the dock) and that a double click on a bar button leaves the bar style alone.

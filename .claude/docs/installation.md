@@ -15,7 +15,6 @@ Verified versions: Hyprland 0.56.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | `hyprlock` | Wayland lock screen with PAM and fprintd fingerprints |
 | `hyprpaper` | Fedora 44 night wallpaper on every monitor |
 | `gtk` | Palette, fonts, icons, and dark preference for GTK 3/4 |
-| `qt` | Graphite colour scheme for Qt 5/6 (qt5ct/qt6ct); `qt5ct.conf`/`qt6ct.conf` themselves are rendered by `desktop-theme` |
 | `kitty` | Graphite terminal with translucent background and shared ANSI palette |
 | `fastfetch` | Fedora layout with a neutral palette |
 | `udiskie` | Removable-drive automounting, Quickshell notifications, and no external tray icon |

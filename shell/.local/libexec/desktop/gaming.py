@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Steam HiDPI startup and opt-in gamescope sessions for individual games."""
+from common import focused_monitor, hypr_json
 import argparse
 import functools
 import hashlib
@@ -12,25 +13,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-
-
-def hypr_json(*args):
-    if not os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
-        return None
-    try:
-        result = subprocess.run(['hyprctl', '-j', *args], check=True,
-                                capture_output=True, text=True, timeout=2)
-        return json.loads(result.stdout)
-    except (OSError, subprocess.SubprocessError, ValueError):
-        return None
-
-
-def focused_monitor():
-    monitors = hypr_json('monitors')
-    if not isinstance(monitors, list):
-        return None
-    active = [m for m in monitors if isinstance(m, dict) and not m.get('disabled')]
-    return next((m for m in active if m.get('focused')), active[0] if active else None)
 
 
 def scale_value(value):

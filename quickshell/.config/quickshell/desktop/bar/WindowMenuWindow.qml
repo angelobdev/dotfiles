@@ -1,27 +1,15 @@
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
 import Quickshell.Hyprland
 import ".."
 import "../components"
 
 // Actions on the active window, from a long press or right click on its title in the bar (or on the app
 // button that replaces the title on a narrow bar): touch has no Super+Q, Super+Shift+F or Super+V.
-PanelWindow {
+MenuLayer {
     id: root
     property point origin: Qt.point(0, 0)
-    visible: false
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    exclusionMode: ExclusionMode.Ignore
-    color: "transparent"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "desktop-tray-menu"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    onDismissRequested: dismiss()
     function popup(item, x, y) {
         if (!Hyprland.activeToplevel)
             return;
@@ -73,20 +61,10 @@ PanelWindow {
             }
         ];
     }
-    HyprlandFocusGrab {
-        active: root.visible
-        windows: [root]
-        onCleared: root.dismiss()
-    }
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.AllButtons
-        onPressed: root.dismiss()
-    }
     PopupMenu {
         id: menu
-        x: Math.max(6, Math.min(root.origin.x, root.width - width - 6))
-        y: Math.max(6, Math.min(root.origin.y, root.height - height - 6))
+        x: root.clampX(root.origin.x, width)
+        y: root.clampY(root.origin.y, height)
         entries: root.visible ? root.entries() : []
         onTriggered: root.dismiss()
         onDismissed: root.dismiss()

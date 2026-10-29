@@ -217,13 +217,13 @@ Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_T
 
 **E. Cleanup and i18n**
 - [x] Shared code: the workspace slots (`WorkspaceModel.fromHyprland`, used by the bar and the assist button); one watcher of `selection.json` (`DynamicTheme.wallpaper`, read by Theming and BarStyle); `Theming.query()` for `refresh()` and the queue; consistent XDG fallbacks (`get(var) or default`) in the helpers.
-- [ ] Deferred (no visible change, more files than they are worth now): one menu layer component for the tray, window and dock menus; a shared helper module for atomic writes, image extensions and the magick calls; the legacy Control Center rows that duplicate `SwitchGrid` (kept as documented alternatives); `qt*ct/colors/desktop.conf`, which only the Graphite test reads.
+- [x] Deferred cleanups (no visible change): `components/MenuLayer.qml` is the full-screen layer of the tray, window and dock menus (grab, outside press, edge clamp); `libexec/desktop/common.py` holds atomic writes, image types, the `magick` call and the focused monitor for theme, wallpaper, xwayland, rotation, gaming and electron; the legacy Control Center rows stay as documented alternatives, now three short files on `controlcenter/SwitchRow.qml`; the `qt` Stow package (`qt*ct/colors/desktop.conf`, a stale Graphite scheme in the qtXct GUI) is gone, its links removed, and the test checks the rendered scheme instead.
 - [x] Fix: `electron.py apply` had replaced the Stow link of the ChatGPT entry with a generated copy, so `stow.py` reported a conflict on `shell`. The repo entry now carries the flags itself, ChatGPT left `electron-apps.conf`, and a linked entry is never replaced.
 - [x] Dead or stale: hyprgrass `edge_margin`, `osk.MASKS`, the keys `tablet.mode` and `osk.title`, the dangling `wifi-weak.svg` link in `$HOME`.
 - [x] i18n: prefix strings now take `%1` (battery, OSD, recording, network, Bluetooth, sharing, wallpaper); modifier names in Hints come from the catalog (Maiusc in Italian); the workspace tooltip uses `I18n.plural`; "Workspace N" binds are translated; `check-i18n.py` scans every `i18n.py` call in the wrappers and the Hyprland config. Units (%, W, Wh) stay as symbols.
 - [x] Accessibility: names for tray items, assist buttons, the share picker "Remember" switch and the wallpaper parent button; `ToggleTile` shows keyboard focus.
 - [x] Timeouts on the one-shot calls of recording, portal picker, osk layout and clipboard; `check.sh` globs `scripts/tests/test_*.py`; fastfetch "threads"; the two animation literals follow `reduceMotion`.
-- [ ] To verify: the bar double-tap handler may also fire on a double click of a bar button.
+- [x] Checked: the bar double-tap does not fire from a bar button or the window title. Buttons and the title accept the press, so the handler underneath never sees it (qmltestrunner with touch on the same structure: button and title 0 toggles, empty bar 1); the user confirmed it with the mouse.
 
 ### Hardware
 

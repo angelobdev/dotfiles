@@ -1,14 +1,12 @@
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
-import Quickshell.Wayland
 import ".."
 import "../components"
 import "../services"
 
 // The dock context menu lives in a full-screen layer, like tray menus, so it can grab the keyboard
 // and close on any outside click.
-PanelWindow {
+MenuLayer {
     id: root
     property string key: ""
     // Asking before closing several windows; reset whenever the menu opens.
@@ -122,35 +120,14 @@ PanelWindow {
             ], group);
         return result;
     }
-    visible: false
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    exclusionMode: ExclusionMode.Ignore
-    color: "transparent"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "desktop-tray-menu"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    onDismissRequested: dismiss()
     // The app quit or lost its last window while its menu was open.
     onItemChanged: if (visible && !item)
         dismiss()
-    HyprlandFocusGrab {
-        active: root.visible
-        windows: [root]
-        onCleared: root.dismiss()
-    }
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.AllButtons
-        onPressed: root.dismiss()
-    }
     PopupMenu {
         id: menu
-        x: Math.max(6, Math.min(root.origin.x - width / 2, root.width - width - 6))
-        y: Math.max(6, root.origin.y - height - 8)
+        x: root.clampX(root.origin.x - width / 2, width)
+        y: root.clampY(root.origin.y - height - 8, height)
         entries: root.visible ? root.entries() : []
         onTriggered: entry => {
             if (!entry.keepOpen)

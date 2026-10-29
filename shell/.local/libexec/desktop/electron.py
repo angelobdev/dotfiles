@@ -11,6 +11,7 @@ carries its flags itself. Flags these files used to carry for the same purpose a
 apply: write the entries (run by desktop-session at login, so package updates are followed).
 status: print, per app, the source entry, whether the generated one is current and whether it is a link.
 """
+from common import write_atomic
 from i18n import tr
 import json
 import os
@@ -119,19 +120,12 @@ def plan():
     return result
 
 
-def write(path, text):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name('.' + path.name + '.tmp')
-    temporary.write_text(text, encoding='utf-8')
-    os.replace(temporary, path)
-
-
 def main():
     arguments = sys.argv[1:]
     if arguments == ['apply']:
         for entry in plan():
             if 'text' in entry and not entry['current']:
-                write(entry['target'], entry['text'])
+                write_atomic(entry['target'], entry['text'])
     elif arguments == ['status']:
         print(json.dumps([{key: value for key, value in entry.items() if key in ('app', 'source', 'current', 'linked')}
                           for entry in plan()], indent=2))

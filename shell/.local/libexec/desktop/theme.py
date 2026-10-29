@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Render the desktop theme into the files the shell and applications read."""
+from common import IMAGES, focused_monitor, magick, replacing, write_atomic
 from i18n import tr
 import argparse
 import colorsys
@@ -10,10 +11,8 @@ import os
 from pathlib import Path
 import re
 import shutil
-import stat
 import subprocess
 import sys
-import tempfile
 import urllib.request
 
 HOME = Path.home()
@@ -36,7 +35,6 @@ VSCODE_EXTENSIONS = HOME / '.vscode/extensions'
 WALLPAPERS = DATA / 'wallpapers'
 SELECTION = Path(os.environ.get('XDG_STATE_HOME') or HOME / '.local/state') / 'desktop-session/wallpaper/selection.json'
 WALLPAPER = Path(__file__).resolve().with_name('wallpaper.py')
-IMAGES = {'.png', '.jpg', '.jpeg', '.webp', '.jxl', '.avif', '.bmp', '.tif', '.tiff'}
 REQUIRED = ('bg', 'base', 'raised', 'border', 'fg', 'muted', 'dim', 'accent', 'accentFg', 'link', 'danger',
             'success', 'warning')
 DEFAULT = 'graphite'
@@ -304,17 +302,9 @@ def make_thumb(path):
     target = thumb_path(path)
     if target.is_file():
         return target
-    target.parent.mkdir(parents=True, exist_ok=True)
-    handle, temporary = tempfile.mkstemp(dir=target.parent, prefix='.thumb-', suffix='.jpg')
-    os.close(handle)
-    try:
-        subprocess.run(['magick', '-limit', 'memory', '256MiB', '-limit', 'map', '512MiB', str(path) + '[0]',
-                        '-auto-orient', '-thumbnail', '480x300^', '-gravity', 'center', '-extent', '480x300',
-                        '-quality', '85', temporary], capture_output=True, check=True, timeout=60)
-        os.chmod(temporary, 0o644)
-        os.replace(temporary, target)
-    finally:
-        Path(temporary).unlink(missing_ok=True)
+    with replacing(target, suffix='.jpg') as temporary:
+        magick(str(path) + '[0]', '-auto-orient', '-thumbnail', '480x300^', '-gravity', 'center', '-extent', '480x300',
+               '-quality', '85', temporary, check=True)
     return target
 
 
@@ -352,13 +342,11 @@ def bar_text(mean, light_text='#f0f0f2', dark_text='#191a1d'):
 
 
 def monitor_size():
+    monitor = focused_monitor()
     try:
-        monitors = json.loads(subprocess.run(['hyprctl', 'monitors', '-j'], capture_output=True, text=True,
-                                             timeout=5).stdout)
-        monitor = next((m for m in monitors if m.get('focused')), monitors[0])
         scale = monitor.get('scale') or 1
         return round(monitor['width'] / scale), round(monitor['height'] / scale)
-    except (OSError, ValueError, subprocess.SubprocessError, IndexError, KeyError, StopIteration):
+    except (AttributeError, KeyError, TypeError, ValueError):
         return 1920, 1080
 
 
@@ -383,10 +371,9 @@ def tone():
     except (OSError, ValueError, KeyError):
         pass
     strip = max(1, round(height * 0.04))
-    result = subprocess.run(['magick', '-limit', 'memory', '256MiB', rendered + '[0]', '-resize', f'{width}x{height}^',
-                             '-gravity', 'center', '-extent', f'{width}x{height}', '-gravity', 'north', '-crop',
-                             f'{width}x{strip}+0+0', '+repage', '-colorspace', 'Gray', '-format', '%[fx:mean]', 'info:'],
-                            capture_output=True, text=True, check=True, timeout=60)
+    result = magick(rendered + '[0]', '-resize', f'{width}x{height}^', '-gravity', 'center', '-extent', f'{width}x{height}',
+                    '-gravity', 'north', '-crop', f'{width}x{strip}+0+0', '+repage', '-colorspace', 'Gray',
+                    '-format', '%[fx:mean]', 'info:', check=True)
     mean = round(float(result.stdout.strip()), 4)
     write_atomic(cache, json.dumps({'key': key, 'mean': mean}) + '\n')
     return dict(bar_text(mean, light_text, dark_text), mean=mean)
@@ -634,25 +621,7 @@ def dynamic_info():
 
 # A destination that is still an old Stow link is replaced, never written through into the repository.
 def install(path, text):
-    if path.is_symlink():
-        path.unlink()
-    write_atomic(path, text)
-
-
-def write_atomic(path, text):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    # Write through a symlink to its target, and keep the permissions of a file being replaced.
-    path = path.resolve() if path.is_symlink() else path
-    handle, temporary = tempfile.mkstemp(dir=path.parent, prefix='.' + path.name + '.')
-    try:
-        with os.fdopen(handle, 'w', encoding='utf-8') as file:
-            file.write(text)
-        # mkstemp creates 0600; these are ordinary config files, readable like the rest of ~/.config.
-        os.chmod(temporary, stat.S_IMODE(path.stat().st_mode) if path.exists() else 0o644)
-        os.replace(temporary, path)
-    except BaseException:
-        Path(temporary).unlink(missing_ok=True)
-        raise
+    write_atomic(path, text, follow=False)
 
 
 # A saved theme that no longer exists (removed by hand, a deleted dynamic theme) falls back to the default,
@@ -835,20 +804,14 @@ def apply_wallpaper(path):
 
 
 def download(entry, destination):
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    handle, temporary = tempfile.mkstemp(dir=destination.parent, prefix='.' + destination.name + '.')
     digest = hashlib.sha256()
-    try:
-        with os.fdopen(handle, 'wb') as file, urllib.request.urlopen(entry['url'], timeout=30) as response:
+    with replacing(destination) as temporary:
+        with temporary.open('wb') as file, urllib.request.urlopen(entry['url'], timeout=30) as response:
             for block in iter(lambda: response.read(1024 * 1024), b''):
                 digest.update(block)
                 file.write(block)
         if digest.hexdigest() != entry['sha256']:
             raise ValueError(tr('theme.errors.checksum', [entry['file']]))
-        os.chmod(temporary, 0o644)
-        os.replace(temporary, destination)
-    finally:
-        Path(temporary).unlink(missing_ok=True)
 
 
 # Downloads what is missing, one JSON line per entry. With show, the theme's wallpaper is applied as soon

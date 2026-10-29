@@ -1,25 +1,13 @@
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
-import Quickshell.Hyprland
+import "../../components"
 
 // QML menus live in a layer surface so cascades can extend beyond the 38 px bar.
-PanelWindow {
+MenuLayer {
     id: root
     property var menuEntry: null
     property point menuOrigin: Qt.point(0, 0)
-    visible: false
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    exclusionMode: ExclusionMode.Ignore
-    color: "transparent"
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "desktop-tray-menu"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    onDismissRequested: dismiss()
     function popup(item, x, y) {
         if (!menuEntry)
             return;
@@ -33,8 +21,8 @@ PanelWindow {
     function positionMenu() {
         if (!menu.visible)
             return;
-        menu.x = Math.max(6, Math.min(menuOrigin.x, width - menu.width - 6));
-        menu.y = Math.max(6, Math.min(menuOrigin.y, height - menu.height - 6));
+        menu.x = clampX(menuOrigin.x, menu.width);
+        menu.y = clampY(menuOrigin.y, menu.height);
     }
     // Layer surfaces receive their monitor size after being mapped. Keep the
     // original icon position instead of retaining the clamp to the initial size.
@@ -48,16 +36,6 @@ PanelWindow {
         menu.dismiss()
     onMenuEntryChanged: if (!menuEntry)
         dismiss()
-    HyprlandFocusGrab {
-        active: root.visible
-        windows: [root]
-        onCleared: root.dismiss()
-    }
-    MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.AllButtons
-        onPressed: root.dismiss()
-    }
     TrayMenu {
         id: menu
         parent: root.contentItem

@@ -7,6 +7,7 @@ is claimed only while this runs, so the shell runs it only in tablet mode.
 apply N: rotates the internal display with touch and stylus input (Hyprland transform 0-3) and keeps the
 value for config reloads.
 """
+from common import write_atomic
 from i18n import tr
 import json
 import os
@@ -83,10 +84,7 @@ def watch():
 
 
 def apply(transform):
-    STATE.parent.mkdir(parents=True, exist_ok=True)
-    temporary = STATE.with_name(STATE.name + '.tmp')
-    temporary.write_text('return { transform = %d }\n' % transform, encoding='utf-8')
-    os.replace(temporary, STATE)
+    write_atomic(STATE, 'return { transform = %d }\n' % transform)
     # config/tablet.lua defines desktop_rotate, which reapplies the internal monitor with the transform.
     result = subprocess.run(['hyprctl', 'eval', 'if desktop_rotate then desktop_rotate(%d) end' % transform],
                             capture_output=True, text=True, timeout=10)

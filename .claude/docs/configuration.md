@@ -225,7 +225,7 @@ The stowed configs only point at those files:
 - `config/theme.lua` loads `hyprland.lua` on every Hyprland reload.
 - `kitty.conf` ends with an `include`.
 - `gtk.css` is a single relative `@import`.
-- qt5ct/qt6ct: `qtct.conf.tpl` is rendered to `~/.config/qt5ct/qt5ct.conf` and `~/.config/qt6ct/qt6ct.conf`; they are no longer stowed. The rendered file sets the fonts, icon pack, Fusion style and `color_scheme_path` to `qt-colors.conf`. Settings saved from the qt5ct/qt6ct GUI land in that file and are replaced on the next theme change; set fonts and icons in the Theming panel instead.
+- qt5ct/qt6ct: `qtct.conf.tpl` is rendered to `~/.config/qt5ct/qt5ct.conf` and `~/.config/qt6ct/qt6ct.conf`; nothing Qt is stowed any more (the old `qt` package and its `colors/desktop.conf`, which showed up in the qtXct GUI as a stale Graphite scheme, are gone). The rendered file sets the fonts, icon pack, Fusion style and `color_scheme_path` to `qt-colors.conf`. Settings saved from the qt5ct/qt6ct GUI land in that file and are replaced on the next theme change; set fonts and icons in the Theming panel instead.
 - `desktop-power lock` passes `--config` to hyprlock when the themed file exists.
 
 Each consumer keeps Graphite as its fallback, so a missing state directory changes nothing. GTK is the exception: it falls back to plain Adwaita-dark until the next `desktop-theme` run.

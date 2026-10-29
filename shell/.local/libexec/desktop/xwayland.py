@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Match XWayland clients to the monitor scale: X resources for text and cursor, integer scaling for Aseprite."""
+from common import focused_monitor, write_atomic
 from i18n import tr
 import argparse
 import json
@@ -7,9 +8,6 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-import tempfile
-
-from gaming import focused_monitor
 
 CURSOR_SIZE = 24
 # Aseprite's usual 200% on an unscaled monitor; DESKTOP_ASEPRITE_SCALE overrides it.
@@ -95,14 +93,7 @@ def set_ini_value(path, section, key, value, overwrite=True):
         out.append(line)
     if not done:
         out += ([] if current == section else [f'[{section}]']) + [f'{key} = {value}']
-    path.parent.mkdir(parents=True, exist_ok=True)
-    fd, temporary = tempfile.mkstemp(prefix='.aseprite-', dir=path.parent)
-    try:
-        with os.fdopen(fd, 'w', encoding='utf-8') as handle:
-            handle.write('\n'.join(out) + '\n')
-        os.replace(temporary, path)
-    finally:
-        Path(temporary).unlink(missing_ok=True)
+    write_atomic(path, '\n'.join(out) + '\n')
 
 
 def prepare_aseprite(monitor_scale):

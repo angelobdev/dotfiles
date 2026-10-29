@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Apply a wallpaper through hyprpaper, persisting a managed local JPEG copy."""
+from common import IMAGES, magick, replacing, write_atomic
 from i18n import tr
 import fcntl
 import hashlib
@@ -9,9 +10,6 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
-
-EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp', '.jxl', '.avif', '.bmp', '.tif', '.tiff'}
-
 
 def main():
     home = Path.home()
@@ -31,7 +29,7 @@ def main():
         if len(sys.argv) != 2:
             raise ValueError(tr('wallpaper.errors.usage'))
         original = default if sys.argv[1] == '--reset' else Path(sys.argv[1]).expanduser().resolve()
-        if not original.is_file() or original.suffix.lower() not in EXTENSIONS:
+        if not original.is_file() or original.suffix.lower() not in IMAGES:
             raise ValueError(tr('wallpaper.errors.invalidImage'))
         digest = hashlib.sha256()
         with original.open('rb') as data:
@@ -39,28 +37,18 @@ def main():
                 digest.update(block)
         rendered = state / (digest.hexdigest()[:24] + '.jpg')
         if not rendered.is_file():
-            fd, temporary = tempfile.mkstemp(suffix='.jpg', prefix='.render-', dir=state)
-            os.close(fd)
-            try:
-                result = subprocess.run(['magick', '-limit', 'memory', '256MiB', '-limit', 'map', '512MiB',
-                    str(original) + '[0]', '-auto-orient', '-quality', '92', temporary],
-                    capture_output=True, text=True, timeout=45)
-                if result.returncode != 0 or Path(temporary).stat().st_size == 0:
+            with replacing(rendered, suffix='.jpg') as temporary:
+                result = magick(str(original) + '[0]', '-auto-orient', '-quality', '92', temporary, timeout=45)
+                if result.returncode != 0 or temporary.stat().st_size == 0:
                     raise ValueError(tr('wallpaper.errors.decode', [result.stderr.strip()[:400]]))
-                os.replace(temporary, rendered)
-            finally:
-                Path(temporary).unlink(missing_ok=True)
         # The generated path contains no commas/newlines, so IPC filenames are unambiguous.
         applied = subprocess.run(['hyprctl', 'hyprpaper', 'wallpaper', ',' + str(rendered) + ',cover'],
             capture_output=True, text=True, timeout=10)
         if applied.returncode != 0 or 'error' in (applied.stdout + applied.stderr).lower():
             raise ValueError(tr('wallpaper.errors.applyFailed', [(applied.stderr or applied.stdout).strip()[:300]]))
         replace_link(current, rendered)
-        fd, temporary = tempfile.mkstemp(prefix='.selection-', dir=state)
-        with os.fdopen(fd, 'w') as output:
-            json.dump({'source': str(original), 'rendered': str(rendered)}, output, ensure_ascii=False)
-            output.write('\n')
-        os.replace(temporary, state / 'selection.json')
+        write_atomic(state / 'selection.json',
+                     json.dumps({'source': str(original), 'rendered': str(rendered)}, ensure_ascii=False) + '\n')
         # Keep the current image only: the original selected file is never modified.
         for cached in state.glob('*.jpg'):
             if cached != current and cached != rendered and not cached.is_symlink():
