@@ -173,7 +173,7 @@ Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_T
 - [x] Phase 4, automatic keyboard: the helper also registers as `zwp_input_method_v2`, used only as a focus signal: activate shows the keyboard, deactivate hides it, and the content purpose picks the layout (digits, email, password, terminal). Keys still go through the virtual keyboard. Works with text-input-v3 clients (GTK, Firefox/Zen, Qt6); Electron/Chromium need `--enable-wayland-ime`; Kitty reports its terminal as a text-input-v3 field (purpose `terminal`). Manual opening stays available everywhere.
 - [x] Phase 5, touch-friendly shell: a touch scale (larger hit targets and spacing for bar, dock and panels) switched on in tablet mode; long press for context menus (dock, launcher); swipe to dismiss notifications.
 - [x] Tablet review after the first physical test: the docked keyboard lifts the assistant (floating windows fit the usable area); gestures without edge swipes (three fingers as on the touchpad, four for windows and the overview); a window menu on the bar title (close, fullscreen, floating, move); the keyboard over the lock screen in tablet mode; `scripts/tablet-auth.sh` makes PAM skip the fingerprint reader in tablet mode.
-- [ ] Phase 6, physical testing on the OmniBook in both postures (includes the open "physical testing of touchscreen gestures" item), and docs.
+- [x] Phase 6, physical testing on the OmniBook in both postures (includes the open "physical testing of touchscreen gestures" item), and docs. Done 2026-10-29 in both postures: gestures, dock, launcher, window menu, keyboard (automatic, hold-to-talk, over panels), rotation and the lock screen with the password field above the keyboard.
 
 ### Codebase review
 
