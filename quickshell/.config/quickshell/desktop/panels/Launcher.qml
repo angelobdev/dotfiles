@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import ".."
 import "../components"
+import "../services"
 
 Overlay {
     id: root
@@ -17,14 +18,7 @@ Overlay {
     function launch(entry) {
         if (!entry)
             return;
-        // Never pass desktop-file Exec strings through a shell.
-        if (entry.runInTerminal)
-            Quickshell.execDetached({
-                command: ["kitty", "-e"].concat(entry.command),
-                workingDirectory: entry.workingDirectory || Quickshell.env("HOME")
-            });
-        else
-            entry.execute();
+        Apps.launch(entry);
         ShellState.close();
     }
     Card {

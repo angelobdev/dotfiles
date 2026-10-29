@@ -80,6 +80,7 @@
     "brightnessDown": "Brightness down",
     "brightnessUp": "Brightness up",
     "closeWindow": "Close window",
+    "dockItem": "Dock item %1",
     "dragWindow": "Drag window",
     "focusDirection": "Focus %1",
     "fullscreen": "Fullscreen",
@@ -239,6 +240,9 @@
     "left": "left",
     "right": "right",
     "up": "up"
+  },
+  "dock": {
+    "title": "Dock"
   },
   "hints": {
     "actionColumn": "Action",

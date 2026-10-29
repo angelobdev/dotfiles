@@ -51,6 +51,10 @@ bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calenda
 bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Keyboard shortcuts")
 bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper"'), "Choose wallpaper")
 bind("SUPER + SHIFT + Q", hl.dsp.exec_cmd(shell .. " toggle power"), "Session menu")
+bind("SUPER + D", hl.dsp.exec_cmd(shell .. " dock toggle"), "Dock")
+for i = 1, 9 do
+    bind("SUPER + ALT + " .. i, hl.dsp.exec_cmd(shell .. " dock launch " .. i), "Dock item " .. i)
+end
 
 -- System (Extensions)
 bind("SUPER + CTRL + C", hl.dsp.exec_cmd(shell .. " toggle clipboard"), "Clipboard · History")

@@ -139,7 +139,7 @@ if plugins.hyprglass then
     })
     -- The bar has no background: exclude it rather than glassing its glyphs.
     -- 0.2 excludes the almost transparent fullscreen overlay dismissal area.
-    for _, namespace in ipairs({ "desktop-overlay", "desktop-notifications", "desktop-osd",
+    for _, namespace in ipairs({ "desktop-dock", "desktop-overlay", "desktop-notifications", "desktop-osd",
         "desktop-share-picker", "desktop-tray-menu" }) do
         glass.layer(namespace, { preset = "desktop", mask_threshold = 0.2 })
     end

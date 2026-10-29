@@ -10,3 +10,5 @@ singleton BluetoothAgent 1.0 BluetoothAgent.qml
 singleton Calendar 1.0 Calendar.qml
 singleton BarVisibility 1.0 BarVisibility.qml
 singleton NetworkInfo 1.0 NetworkInfo.qml
+singleton Apps 1.0 Apps.qml
+singleton Dock 1.0 Dock.qml

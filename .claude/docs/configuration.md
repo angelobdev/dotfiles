@@ -58,6 +58,10 @@ To add text, add the same path to both files and use `I18n.tr("clipboard.deleteI
 
 `python3 scripts/check-i18n.py`, included in `./scripts/check.sh`, checks locale selection, nested key structure/parity, parameters, fallback, and QML/Python/command/adapter references. Run Stow after adding files; restart the shell after changing singleton code.
 
+## Dock configuration
+
+In `Config.qml`: `dockEnabled: true`; `dockPinned`, the desktop-entry IDs (file names without `.desktop`) pinned in order, by default Kitty, Zen, Files, VS Code, ChatGPT and Steam, with unknown IDs skipped; `dockIconSize: 44` (logical px); `dockTriggerHeight: 3`, the height of the reveal strip (1 px can round away at fractional scales); `dockRevealDelay: 120` ms of hover before it slides up. The layer namespace is `desktop-dock` (blurred like the panels, Hyprglass, no compositor animation).
+
 ## Control Center configuration
 
 Edit `quickshell/.config/quickshell/desktop/Config.qml`. Configuration is declarative, with no UI editor:

@@ -7,14 +7,16 @@ PopupWindow {
     required property Item target
     required property string text
     property bool hovered: false
+    // Controls at the bottom of the screen (the dock) open their tooltip above.
+    property bool above: false
     anchor.item: target
     anchor.rect.x: target.width / 2
-    anchor.rect.y: target.height + 8
+    anchor.rect.y: above ? -8 : target.height + 8
     anchor.rect.width: 1
     anchor.rect.height: 1
-    anchor.edges: Edges.Bottom
-    anchor.gravity: Edges.Bottom
-    // Slide horizontally at screen edges, preserving the position below the control.
+    anchor.edges: above ? Edges.Top : Edges.Bottom
+    anchor.gravity: above ? Edges.Top : Edges.Bottom
+    // Slide horizontally at screen edges, preserving the position beside the control.
     anchor.adjustment: PopupAdjustment.SlideX
     visible: delay.running === false && hovered && text !== "" && target.visible && !!target.QsWindow.window?.visible
     implicitWidth: Math.min(360, label.implicitWidth + 25)

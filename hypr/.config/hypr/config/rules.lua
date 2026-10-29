@@ -41,17 +41,17 @@ hl.window_rule({
 hl.layer_rule({
     name = "desktop-glass",
     match = {
-        namespace = "^desktop-(bar|overlay|notifications|osd|share-picker)$"
+        namespace = "^desktop-(bar|dock|overlay|notifications|osd|share-picker)$"
     },
     blur = true,
     ignore_alpha = 0.2,
 })
 
--- Panels, the OSD and notification toasts animate themselves in Quickshell; a compositor fade on top would double the motion.
+-- The dock, panels, the OSD and notification toasts animate themselves in Quickshell; a compositor fade on top would double the motion.
 hl.layer_rule({
     name = "desktop-shell-motion",
     match = {
-        namespace = "^desktop-(overlay|osd|notifications)$"
+        namespace = "^desktop-(dock|overlay|osd|notifications)$"
     },
     no_anim = true,
 })

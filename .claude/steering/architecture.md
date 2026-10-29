@@ -22,15 +22,16 @@ binds.lua  bind("SUPER + SHIFT + C", exec(desktop-shell toggle controls), "Contr
                        └─ Overlay { panelName: NAME } becomes visible, focuses, emits opened()
 ```
 
-The IPC target also exposes `media(action)` (MPRIS through `services/Media.qml`), `close()` and `status()` (a JSON debug snapshot used for verification).
+The IPC target also exposes `media(action)` (MPRIS through `services/Media.qml`), `dock(action)` and `dockLaunch(index)` (`desktop-shell dock …`, through `services/Dock.qml`), `close()` and `status()` (a JSON debug snapshot used for verification).
 
 ## Quickshell structure
 
-- `shell.qml`: `ShellRoot` with one `Bar` per screen (`Variants`) and exactly one instance of every panel, the OSD, notification popups/center and session prompts. It references some services through `property var` so they load eagerly (`Notices` owns the notification D-Bus name).
+- `shell.qml`: `ShellRoot` with one `Bar` and one `DockWindow` per screen (`Variants`) and exactly one instance of every panel, the OSD, notification popups/center and session prompts. It references some services through `property var` so they load eagerly (`Notices` owns the notification D-Bus name).
 - `share.qml`: a separate root launched by `portal_picker.py` for XDPH screen sharing; input through `DESKTOP_SHARE_*` environment variables, answer written to a file, then `Qt.quit()`.
-- Singletons: root `qmldir` (Theme, ShellState, Config, I18n) and `services/qmldir` (Audio, Notices, Brightness, Idle, Osd, Clipboard, Recording, Media, BluetoothAgent, Calendar, BarVisibility, NetworkInfo). Each file has `pragma Singleton` *and* a qmldir line.
+- Singletons: root `qmldir` (Theme, ShellState, Config, I18n) and `services/qmldir` (Audio, Notices, Brightness, Idle, Osd, Clipboard, Recording, Media, BluetoothAgent, Calendar, BarVisibility, NetworkInfo, Apps, Dock). Each file has `pragma Singleton` *and* a qmldir line.
 - `Config.qml` is constant (`readonly` properties); editing it hot-reloads the whole shell.
 - Panels are `components/Overlay.qml` (full-screen layer-shell window, namespace `desktop-overlay`, exclusive keyboard focus, Esc/backdrop click close) containing a centred `Card` (dialog-style) or a `SidePanelCard` (top-right side panels with `PanelHeader`).
+- The dock is not a panel: `dock/DockWindow.qml` is a bottom `PanelWindow` (namespace `desktop-dock`, no exclusive zone, no keyboard focus) that stays mapped and switches its input `mask` between a reveal strip and the dock body; `services/Dock.qml` builds the items (pins from `Config.dockPinned`, then `Hyprland.toplevels` grouped by `DesktopEntries.heuristicLookup`) and holds per-monitor requests and peeks. `services/Apps.qml` launches desktop entries for both the launcher and the dock.
 - Control Center modules are files in `controlcenter/` selected by name from `Config.controlCenterModules` through the `moduleSources` table in `Controls.qml`.
 
 ## Services ↔ Python helpers

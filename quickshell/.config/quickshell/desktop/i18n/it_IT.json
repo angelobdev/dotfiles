@@ -80,6 +80,7 @@
     "brightnessDown": "Luminosità -",
     "brightnessUp": "Luminosità +",
     "closeWindow": "Chiudi finestra",
+    "dockItem": "Elemento %1 della dock",
     "dragWindow": "Trascina finestra",
     "focusDirection": "Focus %1",
     "fullscreen": "Schermo intero",
@@ -239,6 +240,9 @@
     "left": "a sinistra",
     "right": "a destra",
     "up": "in alto"
+  },
+  "dock": {
+    "title": "Dock"
   },
   "hints": {
     "actionColumn": "Azione",

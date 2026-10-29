@@ -43,6 +43,9 @@ Singleton {
         match = description.match(/^Move to workspace (\d+)$/);
         if (match)
             return tr("bindings.moveToWorkspace", [match[1]]);
+        match = description.match(/^Dock item (\d+)$/);
+        if (match)
+            return tr("bindings.dockItem", [match[1]]);
         const key = Sources.bindKeys[description];
         return typeof key === "string" ? tr(key) : description;
     }

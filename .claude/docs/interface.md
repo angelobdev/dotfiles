@@ -45,6 +45,8 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + W` | Choose wallpaper |
 | `Super + Ctrl + C` | Clipboard / history |
 | `Super + Ctrl + R` | Screen recording |
+| `Super + D` | Show / hide the dock |
+| `Super + Alt + 1`…`9` | Open or focus the Nth dock item |
 | `Super + L` / `XF86Sleep` | Lock / suspend with lock |
 | `Super + Shift + R` | Restart Quickshell |
 | `Super + V` / `Super + Shift + F` | Floating / fullscreen |
@@ -84,6 +86,12 @@ Media keys call Quickshell through `desktop-shell media ACTION`, using the same 
 The bar shows occupied/active workspaces and at least two pills per monitor. Empty slots are placeholders: a workspace is created only when clicked or reached by scrolling. IDs are assigned globally without reusing another monitor's workspaces; special workspaces are excluded. Clicking first focuses the bar's monitor. Scrolling or a vertical touchpad gesture over the workspace area moves to the previous/next workspace, stopping at the ends. Touchpad deltas accumulate to prevent accidental switches; the area responds over the entire bar height.
 
 In `Config.qml`: `minimumWorkspaces: 2` (minimum 2, maximum 10) and `workspaceScroll: true`.
+
+## Dock
+
+A dock sits at the bottom of every monitor, hidden by default and reserving no space. Push the pointer against the bottom edge (a 3 px strip that leaves 64 px free at each corner for the hot corner and gestures) and it slides up after 120 ms; it slides away 400 ms after the pointer leaves. It also shows by itself on an empty workspace, for about a second after `Super + Alt + N`, and for about three seconds when a window asks for attention (its icon pulses and its dot turns red). It never shows over a fullscreen window or during the Hyprspace overview.
+
+Pinned apps come first (`dockPinned` in `Config.qml`), then a separator and the other running apps, grouped by desktop entry (the `zen` window class belongs to `zen-browser`); apps without a desktop entry keep their window class and a generic icon. A dot marks running apps and widens for the focused one. Left click opens a pinned app, focuses a running one (a window on the current workspace first), or, when it is already focused, cycles through its windows; middle click opens a new instance. `Super + D` shows or hides the dock on the focused monitor until the pointer has visited it; hiding also keeps it down on an empty workspace. `Super + Alt + 1`…`9` activate items by position. `desktop-shell dock show|hide|toggle|launch N` does the same from scripts. Pinning from the dock, magnification, reordering and keyboard navigation are planned (Dock phase 2 in the roadmap).
 
 ## Clipboard
 

@@ -120,10 +120,10 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 
 ### Dock
 
-- [ ] Phase 1: `bar/Dock.qml` `PanelWindow` per screen (namespace `desktop-dock`, bottom anchor, `exclusiveZone: 0`). Always auto-hide: the surface stays mapped, a 3–4 px input strip away from the corners reveals it, it slides away on leave after a short delay, never reveals over fullscreen windows and follows `BarVisibility` during Hyprspace.
-- [ ] Phase 1: pinned apps (desktop-entry IDs), separator, running apps grouped by `appId` (`ToplevelManager`, `DesktopEntries.heuristicLookup`, icon fallback). Click focuses or launches, middle-click opens a new instance, running/active indicators. Pins in `~/.local/state/desktop-shell/dock.json` (atomic write).
-- [ ] Phase 1: IPC `dock(action)` (show/hide/toggle) and `launch(n)` behind `desktop-shell dock …`; `SUPER + D` toggles, `SUPER + ALT + 1-9` launches/focuses the Nth item. Blur layer rule and Hyprglass namespace; Theme motion tokens and `reduceMotion`.
-- [ ] Phase 2: hover magnification, context menu (pin/unpin, close, window list), drag reorder of pins, keyboard navigation when revealed by the shortcut.
+- [x] Phase 1: `dock/DockWindow.qml` `PanelWindow` per screen (namespace `desktop-dock`, bottom anchor, `exclusiveZone: 0`). Always auto-hide: the surface stays mapped, a 3–4 px input strip away from the corners reveals it, it slides away on leave after a short delay, never reveals over fullscreen windows and follows `BarVisibility` during Hyprspace.
+- [x] Phase 1: pinned apps (desktop-entry IDs), separator, running apps grouped by `appId` (`ToplevelManager`, `DesktopEntries.heuristicLookup`, icon fallback). Click focuses or launches, middle-click opens a new instance, running/active indicators. Pins from `Config.dockPinned`; state-backed pin/unpin moves to phase 2.
+- [x] Phase 1: IPC `dock(action)` (show/hide/toggle) and `launch(n)` behind `desktop-shell dock …`; `SUPER + D` toggles, `SUPER + ALT + 1-9` launches/focuses the Nth item. Blur layer rule and Hyprglass namespace; Theme motion tokens and `reduceMotion`.
+- [ ] Phase 2: hover magnification, context menu (pin/unpin persisted in `~/.local/state/desktop-shell/dock.json` with an atomic write, close, window list), drag reorder of pins, keyboard navigation when revealed by the shortcut; optional `desktop-ai.desktop` entry so the assistant has its own name and icon.
 
 ### Theming system (hand-authored themes + dynamic custom theme)
 

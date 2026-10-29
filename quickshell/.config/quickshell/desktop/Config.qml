@@ -10,6 +10,12 @@ QtObject {
     readonly property int clipboardMaxItems: 200
     readonly property int recordingFramerate: 30
     readonly property string recordingCodec: "libvpx-vp9"
+    // Dock: desktop-entry IDs pinned in this order, a reveal strip along the bottom edge (logical px) and its hover delay (ms).
+    readonly property bool dockEnabled: true
+    readonly property var dockPinned: ["kitty", "zen-browser", "org.gnome.Nautilus", "com.microsoft.VSCode", "chatgpt", "steam"]
+    readonly property int dockIconSize: 44
+    readonly property int dockTriggerHeight: 3
+    readonly property int dockRevealDelay: 120
     // Order and presence of modules. Unknown names are ignored.
     readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle"]
     readonly property int controlCenterWidth: 400

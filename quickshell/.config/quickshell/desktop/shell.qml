@@ -7,6 +7,7 @@ import Quickshell.Services.UPower
 import Quickshell.Networking
 import Quickshell.Bluetooth
 import "bar"
+import "dock"
 import "panels"
 import "controlcenter"
 import "notifications"
@@ -27,6 +28,12 @@ ShellRoot {
         }
         function media(action: string): bool {
             return Media.control(action);
+        }
+        function dock(action: string): bool {
+            return Dock.request(action);
+        }
+        function dockLaunch(index: int): bool {
+            return Dock.launchIndex(index);
         }
         function close(): void {
             ShellState.close();
@@ -61,6 +68,12 @@ ShellRoot {
                     percent: Osd.percent,
                     monitor: Osd.targetScreen?.name ?? ""
                 },
+                dock: {
+                    items: Dock.items.map(i => i.key + (i.running ? "*" : "")),
+                    shown: Object.keys(Dock.shown),
+                    requested: Dock.requested,
+                    peeking: Object.keys(Dock.peeks)
+                },
                 clipboard: {
                     collecting: Clipboard.collecting,
                     count: Clipboard.entries.length
@@ -91,6 +104,9 @@ ShellRoot {
             id: scope
             required property var modelData
             Bar {
+                screen: scope.modelData
+            }
+            DockWindow {
                 screen: scope.modelData
             }
         }
