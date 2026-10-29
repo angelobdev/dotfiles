@@ -32,7 +32,7 @@ ControlTile {
         }
         ControlSwitch {
             checked: Idle.keepAwake
-            onToggled: Idle.keepAwake = checked
+            onToggled: Idle.setKeepAwake(checked)
             Accessible.name: I18n.tr("idle.keepAwake")
         }
     }

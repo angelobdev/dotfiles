@@ -32,6 +32,8 @@ var bindKeys = {
     "Choose wallpaper": "wallpaper.title",
     "Next wallpaper": "wallpaper.next",
     "Theming": "theming.title",
+    "Do Not Disturb": "notifications.doNotDisturb",
+    "Keep awake": "idle.keepAwake",
     "Session menu": "session.menuTitle",
     "Dock": "dock.title",
     "Clipboard · History": "clipboard.historyTitle",

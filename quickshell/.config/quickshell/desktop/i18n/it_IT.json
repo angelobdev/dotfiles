@@ -425,6 +425,7 @@
     "wifiOn": "Wi-Fi acceso"
   },
   "notifications": {
+    "archived": "Archiviata",
     "clearAll": "Elimina tutte",
     "doNotDisturb": "Non disturbare",
     "empty": "Nessuna notifica",

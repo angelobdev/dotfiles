@@ -425,6 +425,7 @@
     "wifiOn": "Wi-Fi on"
   },
   "notifications": {
+    "archived": "Archived",
     "clearAll": "Clear all",
     "doNotDisturb": "Do Not Disturb",
     "empty": "No notifications",

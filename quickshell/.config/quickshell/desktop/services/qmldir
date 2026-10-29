@@ -14,3 +14,4 @@ singleton Apps 1.0 Apps.qml
 singleton Dock 1.0 Dock.qml
 singleton Theming 1.0 Theming.qml
 singleton BarStyle 1.0 BarStyle.qml
+singleton SessionState 1.0 SessionState.qml

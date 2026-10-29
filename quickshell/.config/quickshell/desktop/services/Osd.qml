@@ -49,6 +49,23 @@ Singleton {
         visible = true;
         expiry.restart();
     }
+    // Feedback for a toggle (Do Not Disturb, Keep awake): an icon, a title and its new state, no level.
+    // Shown even with notifications silenced: it is the shell answering a key, not a notification.
+    function showState(icon, heading, state) {
+        if (!Config.osdEnabled)
+            return;
+        const screen = ShellState.screenNamed(Hyprland.focusedMonitor?.name);
+        if (!screen)
+            return;
+        targetScreen = screen;
+        kind = "state";
+        muted = false;
+        iconName = icon;
+        title = heading;
+        detail = state;
+        visible = true;
+        expiry.restart();
+    }
     function observeAudio(input) {
         const next = audioState(input);
         const previous = input ? inputState : outputState;

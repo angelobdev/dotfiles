@@ -3,6 +3,7 @@ import "../components"
 import QtQuick.Layouts
 import Quickshell
 import ".."
+import "../services"
 import "NotificationText.js" as NotificationText
 
 Rectangle {
@@ -10,6 +11,8 @@ Rectangle {
     required property var notification
     signal hidePopup
     property bool popup: false
+    // Restored from before a shell restart: readable and removable, with no actions left.
+    readonly property bool archived: notification.archived === true
     readonly property var defaultAction: notification.actions.find(a => a.identifier === "default") ?? null
     readonly property var buttons: notification.actions.filter(a => !popup || a.identifier !== "default")
     readonly property string appIcon: {
@@ -69,6 +72,13 @@ Rectangle {
                 elide: Text.ElideRight
                 Layout.fillWidth: true
             }
+            Text {
+                visible: root.archived
+                text: I18n.tr("notifications.archived")
+                color: Theme.muted
+                font.pixelSize: 11
+                font.italic: true
+            }
         }
         RowLayout {
             Layout.fillWidth: true
@@ -96,7 +106,7 @@ Rectangle {
                 text: I18n.tr("common.delete")
                 font.pixelSize: summary.font.pixelSize
                 font.bold: summary.font.bold
-                onClicked: root.notification.dismiss()
+                onClicked: root.archived ? Notices.forget(root.notification.id) : root.notification.dismiss()
             }
         }
         Text {

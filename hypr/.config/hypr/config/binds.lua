@@ -52,6 +52,8 @@ bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · K
 bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper"'), "Choose wallpaper")
 bind("SUPER + CTRL + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper" --next'), "Next wallpaper")
 bind("SUPER + CTRL + T", hl.dsp.exec_cmd(shell .. " toggle theming"), "Theming")
+bind("SUPER + CTRL + N", hl.dsp.exec_cmd(shell .. " dnd toggle"), "Do Not Disturb")
+bind("SUPER + CTRL + K", hl.dsp.exec_cmd(shell .. " keep-awake toggle"), "Keep awake")
 bind("SUPER + SHIFT + Q", hl.dsp.exec_cmd(shell .. " toggle power"), "Session menu")
 bind("SUPER + D", hl.dsp.exec_cmd(shell .. " dock toggle"), "Dock")
 for i = 1, 9 do

@@ -70,6 +70,7 @@ PanelWindow {
                         Layout.fillWidth: true
                     }
                     Text {
+                        visible: Osd.kind !== "state"
                         text: Osd.muted ? I18n.tr("audio.muted") : Osd.percent + "%"
                         color: Theme.text
                         font.family: Theme.font
@@ -78,6 +79,7 @@ PanelWindow {
                 }
                 Rectangle {
                     Layout.fillWidth: true
+                    visible: Osd.kind !== "state"
                     implicitHeight: 6
                     radius: 3
                     color: Theme.raised

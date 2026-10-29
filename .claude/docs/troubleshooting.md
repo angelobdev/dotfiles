@@ -274,3 +274,16 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 **Restart**
 - The automatic restart after font and icon changes was removed at the user's request. The panel shows the restart banner instead, and its button still reopens the panel on the same tab.
 
+## Shell state persistence verification
+
+**Keep awake and Do Not Disturb**
+- `desktop-shell dnd toggle` showed the new state OSD ("Do Not Disturb · On", bell-off).
+- Quick alternating toggles first left `session.json` behind the in-memory state: the `FileView` watched its own file, so the echo of one write reloaded the adapter over the next change. Only the shell writes the file, so it is no longer watched. Three rapid toggle pairs then left memory and file equal.
+- With both on, `desktop-shell restart` brought both back on (`status` `keepAwake`/`quiet` true), and both were then set off again.
+
+**Notification history**
+- `notify-send` entries were saved within 500 ms. After the restart, 30 entries came back archived: shown with "Archived", Delete only and no actions.
+- A probe file with 55 recent entries plus one 8 days old loaded as 50 archived, the old one dropped. The original file was restored.
+- Rewriting `shell.qml` with identical content does not reload Quickshell; a real change (a temporary comment) does.
+- The user confirmed the shortcuts and the archived entries.
+

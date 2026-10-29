@@ -141,9 +141,9 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 
 ### Shell state and shortcuts
 
-- [ ] Persistent notification history (`Notices` → state file), so shell restarts keep it.
-- [ ] Persist "Keep awake" (`Idle.keepAwake`) and "Do Not Disturb" (`Notices.quiet`) across shell restarts and logins (state file read at start).
-- [ ] Keyboard shortcuts to toggle "Keep awake" and "Do Not Disturb" (with an OSD/notice of the new state), listed in Hints.
+- [x] Persistent notification history (`Notices` → state file), so shell restarts keep it.
+- [x] Persist "Keep awake" (`Idle.keepAwake`) and "Do Not Disturb" (`Notices.quiet`) across shell restarts and logins (state file read at start).
+- [x] Keyboard shortcuts to toggle "Keep awake" (`Super + Ctrl + K`) and "Do Not Disturb" (`Super + Ctrl + N`) with a state OSD, listed in Hints.
 - [ ] Phase 5, dynamic theme: a custom image → matugen (`nett00n/hyprland` COPR) → generated `custom` theme through the same templates; installation docs updated.
 
 ### Hardware

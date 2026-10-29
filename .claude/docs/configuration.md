@@ -58,6 +58,15 @@ To add text, add the same path to both files and use `I18n.tr("clipboard.deleteI
 
 `python3 scripts/check-i18n.py`, included in `./scripts/check.sh`, checks locale selection, nested key structure/parity, parameters, fallback, and QML/Python/command/adapter references. Run Stow after adding files; restart the shell after changing singleton code.
 
+## Saved shell state
+
+`~/.local/state/desktop-shell/`:
+- **`session.json`** `{"keepAwake", "quiet"}`: Keep awake and Do Not Disturb (`services/SessionState.qml`). A missing file means both off.
+- **`notifications.json`** `{"entries": [...]}`: the notification history (app name and icon, summary, body, arrival time). It is rewritten 500 ms after a notification arrives or closes and after Delete or Clear all. Entries are capped at 50 and dropped after 7 days on load. Icons a notification served itself (`image://`) are not kept.
+- **`dock.json`**: dock pins.
+
+Delete a file to reset it. `desktop-shell keep-awake|dnd toggle|on|off` sets the switches from scripts.
+
 ## Dock configuration
 
 In `Config.qml`: `dockEnabled: true`; `dockPinned`, the default pins as desktop-entry IDs (file names without `.desktop`): Kitty, Zen, Files, VS Code, ChatGPT, the AI assistant and Steam, with unknown IDs skipped; `dockIconSize: 44` (logical px); `dockMagnification: 1.4`, the peak scale under the pointer (1 turns it off); `dockTriggerHeight: 3`, the height of the reveal strip (1 px can round away at fractional scales); `dockRevealDelay: 120` ms of hover before it slides up.

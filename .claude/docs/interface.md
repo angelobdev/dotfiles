@@ -45,6 +45,8 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + W` | Choose wallpaper |
 | `Super + Ctrl + W` | Next wallpaper of the current theme |
 | `Super + Ctrl + T` | Theming: theme, wallpaper, font, icons |
+| `Super + Ctrl + N` | Do Not Disturb on/off |
+| `Super + Ctrl + K` | Keep awake on/off |
 | `Super + Ctrl + C` | Clipboard / history |
 | `Super + Ctrl + R` | Screen recording |
 | `Super + D` | Show the dock with keyboard navigation / hide it |
@@ -100,6 +102,12 @@ Right click opens the app menu: its windows (choose one to focus it; the focused
 Pins can also be changed by dragging: hold a pinned icon and move it at least 6 px, then drop it on another slot to reorder, or lift it more than an icon above the dock until it fades and says "Remove", and release to unpin it. In the launcher (`Super + Space`), pinned apps carry a pin mark on the right; `Ctrl+P` or a right click pins or unpins the selected app.
 
 `Super + D` shows the dock on the focused monitor and gives it the keyboard: Left/Right (or Tab) move a selection ring with the app name, Home/End jump to the ends, Enter opens or focuses the app, Shift+Enter opens a new instance, the Menu key or Shift+F10 opens the app menu (Esc there returns to the dock), and Esc or `Super + D` hides the dock and keeps it down, even on an empty workspace, until the pointer visits it. Activating an app or clicking outside the dock ends keyboard mode. `Super + Alt + 1`…`9` activate items by position without taking the keyboard. `desktop-shell dock show|hide|toggle|launch N` does the same from scripts.
+
+## Do Not Disturb, Keep awake and notification history
+
+`Super + Ctrl + N` and `Super + Ctrl + K` toggle Do Not Disturb and Keep awake, the same switches as in the Control Center. An OSD shows the new state. It appears even with Do Not Disturb on, since it is the shell's own feedback rather than a notification. Both states are saved, so they survive shell restarts and logins until changed. With Keep awake on, the computer does not suspend on idle, and the bar shows the cup icon.
+
+The notification center keeps up to 50 notifications from the last 7 days across shell restarts. Those from before a restart are marked **Archived**: they can be read and deleted, but their action buttons are gone, because the sending application bound them to the previous notification server. **Clear all** removes live and archived ones.
 
 ## Theming
 

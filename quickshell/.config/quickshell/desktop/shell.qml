@@ -35,6 +35,12 @@ ShellRoot {
         function dockLaunch(index: int): bool {
             return Dock.launchIndex(index);
         }
+        function keepAwake(action: string): bool {
+            return Idle.request(action);
+        }
+        function quiet(action: string): bool {
+            return Notices.request(action);
+        }
         function close(): void {
             ShellState.close();
         }
@@ -101,6 +107,7 @@ ShellRoot {
                 quiet: Notices.quiet,
                 networkDevices: Networking.devices.values.length,
                 notifications: Notices.notifications.values.length,
+                archivedNotifications: Notices.archived.length,
                 polkitRegistered: authentication.registered,
                 popups: Notices.popups.length,
                 popupVisible: popupWindow.visible,

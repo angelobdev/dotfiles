@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 import ".."
 import "../components"
 import "../services"
@@ -22,12 +23,12 @@ Overlay {
                     iconName: Notices.quiet ? "bell-off" : "bell"
                     tooltip: I18n.tr("notifications.doNotDisturb")
                     highlighted: Notices.quiet
-                    onClicked: Notices.quiet = !Notices.quiet
+                    onClicked: Notices.setQuiet(!Notices.quiet)
                 }
                 PanelIconButton {
                     iconName: "trash"
                     tooltip: I18n.tr("notifications.clearAll")
-                    enabled: Notices.notifications.values.length > 0
+                    enabled: Notices.entries.length > 0
                     onClicked: Notices.clear()
                 }
             }
@@ -37,7 +38,11 @@ Overlay {
                 Layout.fillHeight: true
                 clip: true
                 spacing: 10
-                model: Notices.notifications
+                // Live notifications and the archive kept across shell restarts.
+                model: ScriptModel {
+                    values: Notices.entries
+                    objectProp: "id"
+                }
                 add: Transition {
                     NumberAnimation {
                         property: "opacity"

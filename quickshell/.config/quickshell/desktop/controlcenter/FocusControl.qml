@@ -32,7 +32,7 @@ ControlTile {
         }
         ControlSwitch {
             checked: Notices.quiet
-            onToggled: Notices.quiet = checked
+            onToggled: Notices.setQuiet(checked)
             Accessible.name: I18n.tr("notifications.doNotDisturb")
         }
     }

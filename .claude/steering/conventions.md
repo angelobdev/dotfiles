@@ -21,7 +21,7 @@ Match the surrounding code. Comments are sparse one-liners that explain *why* ("
 - Side panels use `SidePanelCard` + `PanelHeader`; centred dialogs use `Card` + `Heading`.
 - JS libraries use `.pragma library`.
 - Avoid apostrophes in QML comments (`the dock window`, not `the dock's window`): `check-i18n.py` scans every quoted literal in QML, and two apostrophes form a bogus string.
-- Edit QML in place (editors, Claude's Edit tool, Python `r+`). `sed -i` and other tools that replace the file give it a new inode, and Quickshell stops watching it, so later edits silently never load. If that happened, an in-place change to `shell.qml` reloads everything. Check what is actually loaded (`hyprctl layers`, `desktop-shell status`) before trusting a test.
+- Edit QML in place (editors, Claude's Edit tool, Python `r+`). `sed -i` and other tools that replace the file give it a new inode, and Quickshell stops watching it, so later edits silently never load. If that happened, a real in-place change to `shell.qml` (for example a temporary comment) reloads everything; rewriting identical content does not. Check what is actually loaded (`hyprctl layers`, `desktop-shell status`) before trusting a test.
 
 ## Python helpers
 
