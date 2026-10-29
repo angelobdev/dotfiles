@@ -502,11 +502,16 @@
   },
   "theme": {
     "errors": {
+      "checksum": "%1 non corrisponde al suo checksum ed è stato scartato.",
       "color": "Il valore %1 del tema non è un colore #rrggbb o #rrggbbaa: %2",
       "filter": "Filtro di template del tema sconosciuto: %1",
       "invalid": "Impossibile leggere il tema %1: %2",
       "template": "Il template %1 usa un valore che il tema non definisce: %2",
       "unknown": "Tema sconosciuto: %1"
+    },
+    "wallpapers": {
+      "downloading": "Scarico gli sfondi di %1; il primo compare appena arriva.",
+      "title": "Sfondi"
     }
   },
   "wallpaper": {
@@ -525,6 +530,7 @@
     },
     "folderPlaceholder": "Percorso di una cartella",
     "home": "Home",
+    "next": "Sfondo successivo",
     "parentFolder": "Cartella superiore",
     "previewHint": "Seleziona un’immagine per l’anteprima",
     "previewUnavailable": "Anteprima non disponibile. Il file verrà convertito all’applicazione.",

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import re
 import sys
+import tempfile
 import unittest
 
 REPO = Path(__file__).resolve().parents[2]
@@ -99,6 +100,49 @@ class ShippedThemeTests(unittest.TestCase):
         for section in ('palette', 'shell', 'hyprland'):
             for key, value in GRAPHITE[section].items():
                 self.assertEqual(completed[section][key], value, section + '.' + key)
+
+
+class WallpaperTests(unittest.TestCase):
+    def test_manifests_are_pinned_and_checksummed(self):
+        for path in sorted((REPO / 'shell/.local/share/desktop/themes').glob('*/theme.json')):
+            entries = json.loads(path.read_text(encoding='utf-8')).get('wallpapers', [])
+            files = [entry['file'] for entry in entries]
+            self.assertEqual(len(files), len(set(files)), path.parent.name)
+            for entry in entries:
+                with self.subTest(theme=path.parent.name, file=entry['file']):
+                    self.assertRegex(entry['url'], r'^https://raw\.githubusercontent\.com/[^/]+/[^/]+/[0-9a-f]{40}/')
+                    self.assertRegex(entry['sha256'], r'^[0-9a-f]{64}$')
+                    self.assertRegex(entry['file'], r'^\d{2}-[a-z0-9-]+\.(webp|jpg|png)$')
+
+    def test_next_wallpaper_cycles_and_starts_over(self):
+        files = [Path('/w/a.jpg'), Path('/w/b.jpg'), Path('/w/c.jpg')]
+        self.assertEqual(theme.next_wallpaper(files, '/w/a.jpg'), files[1])
+        self.assertEqual(theme.next_wallpaper(files, '/w/c.jpg'), files[0])
+        self.assertEqual(theme.next_wallpaper(files, '/elsewhere.jpg'), files[0])
+        self.assertIsNone(theme.next_wallpaper([], '/w/a.jpg'))
+
+    def test_files_and_memory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            saved = theme.STATE, theme.WALLPAPERS
+            theme.STATE, theme.WALLPAPERS = root / 'state', root / 'walls'
+            try:
+                (root / 'mine').mkdir()
+                for name in ('b.png', 'a.jpg', 'notes.txt'):
+                    (root / 'mine' / name).write_text('x')
+                listed = theme.wallpaper_files('local', {'wallpaperDirectories': [str(root / 'mine')]})
+                self.assertEqual([path.name for path in listed], ['a.jpg', 'b.png'])
+                pack = {'wallpapers': [{'file': '01-one.jpg'}, {'file': '02-two.jpg'}]}
+                self.assertEqual(theme.wallpaper_files('pack', pack), [])
+                (root / 'walls/pack').mkdir(parents=True)
+                (root / 'walls/pack/02-two.jpg').write_text('x')
+                self.assertEqual(theme.wallpaper_for('pack', pack), root / 'walls/pack/02-two.jpg')
+                theme.remember('pack', root / 'mine/a.jpg')
+                self.assertEqual(theme.wallpaper_for('pack', pack), root / 'mine/a.jpg')
+                (root / 'mine/a.jpg').unlink()
+                self.assertEqual(theme.wallpaper_for('pack', pack), root / 'walls/pack/02-two.jpg')
+            finally:
+                theme.STATE, theme.WALLPAPERS = saved
 
 
 class VscodeTests(unittest.TestCase):

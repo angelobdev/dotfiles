@@ -65,3 +65,5 @@ Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha
 - the Kitty values, the `Theme.qml` JsonAdapter defaults and the `theme.lua` defaults.
 
 A palette change in one place therefore fails the check until the fallback or the theme follows.
+
+Wallpapers: `theme.py` holds the per-theme sets (download with sha256 checks, memory in `~/.local/state/desktop-theme/wallpapers.json`, the next image) and applies images only through `wallpaper.py`, which stays the single place that converts and hands them to hyprpaper.

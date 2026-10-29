@@ -53,5 +53,55 @@
   "vscode": {
     "theme": "Tokyo Night",
     "extension": "enkia.tokyo-night"
-  }
+  },
+  "wallpapers": [
+    {
+      "file": "01-liftoff.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/tokyo-night/backgrounds/0-liftoff.webp",
+      "sha256": "c7e65d41f1a10e678d8fde799e4f01e81e1c9a95a7f1cb7b52e5f81ca7007e72",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-winding-road.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/tokyo-night/backgrounds/1-winding-road.webp",
+      "sha256": "b149c3e1c8ce383812e7bc3170c2cf8b160ca583d72d59173cd42efdb79ced2b",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-quattro.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/tokyo-night/backgrounds/2-quattro.webp",
+      "sha256": "c9b96c106d2758113986a8ddb621f3867edf65e09a89dad51abb9fc5f3447146",
+      "source": "omarchy"
+    },
+    {
+      "file": "04-swirl-buck.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/tokyo-night/backgrounds/3-swirl-buck.webp",
+      "sha256": "d068aa0ce70685b336fa15dfb8b8df96c03a75e045cb32fe101319c8d284105a",
+      "source": "omarchy"
+    },
+    {
+      "file": "05-sunset-lake.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/tokyo-night/backgrounds/4-sunset-lake.webp",
+      "sha256": "eabc95e4d5e2396b967970458f51a1a2ead80d5cad88a4d303af58989f5f8c49",
+      "source": "omarchy"
+    },
+    {
+      "file": "06-omakub.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/tokyo-night/backgrounds/5-omakub.webp",
+      "sha256": "1de02e50e19b1884c9195f1553cbb686ae0642963789b34d0a9f4f0478f80aa7",
+      "source": "omarchy"
+    },
+    {
+      "file": "07-oma-cityscape.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/tokyo-night/backgrounds/6-oma-cityscape.jpg",
+      "sha256": "22e1d639722b33fa6f0d3ac2733450b4bae961b481f5665cb16397bc5f714e5c",
+      "source": "omarchy"
+    },
+    {
+      "file": "08-oma.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/tokyo-night/backgrounds/7-oma.webp",
+      "sha256": "1dae1555422c3713381f09dd20b8ed91eaaf42cf73e73bfe255dfefe89b1d004",
+      "source": "omarchy"
+    }
+  ]
 }

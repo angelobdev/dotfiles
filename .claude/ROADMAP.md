@@ -129,8 +129,13 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 
 - [x] Phase 1, pipeline: `theme.py` renders `themes/<id>/theme.json` through `templates/*.tpl` into `~/.local/state/desktop-theme/` (Quickshell JSON watched live, Hyprland `config/theme.lua`, Kitty `include`, GTK relative `@import`, qtXct `color_scheme_path`, hyprlock `--config` from `desktop-power`), GSettings from the theme; `desktop-theme apply|set|list`. Graphite ported with no visual change (byte-identical renders, screenshots); `test_theme.py` guards the fallbacks.
 - [x] Phase 2, themes: Catppuccin Mocha (mauve), Tokyo Night (blue), Gruvbox (yellow), Everforest (green) from the projects' Kitty ports; derived shell/Qt/Hyprland values; WCAG contrast tests. VS Code follows (`workbench.colorTheme` and the preferred theme for the mode, extensions installed), btop gets a generated `desktop` theme (Graphite included), Zen follows `color-scheme`.
-- [ ] Phase 3, wallpapers: per-theme manifest of pinned upstream URLs with sha256 and licence notes (Omarchy theme backgrounds, catppuccin/wallpapers, gruvbox-wallpapers, …), downloaded on demand into `~/.local/share/desktop/wallpapers/<theme>/`, never committed; last wallpaper remembered per theme; `wallpaper.py --next`.
-- [ ] Phase 4, panels: theme picker (`SUPER + CTRL + T`) with preview cards; theme-aware wallpaper gallery (`SUPER + SHIFT + W`) with the active theme's pack and a "Custom…" entry; next wallpaper on `SUPER + CTRL + W`.
+- [x] Phase 3, wallpapers: eight per theme (Omarchy backgrounds plus community collections), pinned URLs with sha256, downloaded on demand into `~/.local/share/desktop/wallpapers/<theme>/`; theme switches apply the remembered or first wallpaper in the background; `Super + Ctrl + W` / `desktop-wallpaper --next` cycles the set; Graphite uses the local collections.
+- [ ] Phase 4, "Theming" panel (one Quickshell panel replacing the separate theme picker and gallery):
+  - [ ] Theme: list of themes with a palette preview (surfaces, accent, ANSI swatches), applied live through `desktop-theme set`.
+  - [ ] Wallpaper: gallery of the current theme's set (download progress from `theme.py fetch`) plus "Custom…" for any image (the existing picker or a file chooser); the choice is remembered per theme.
+  - [ ] System font: research how to switch the UI and monospace fonts across Quickshell, GTK (GSettings `font-name`), Qt (qtXct `[Fonts]`), Kitty and hyprlock; which installed families to offer (fontconfig, `fc-list`), size, and whether fonts belong to the theme or override it.
+  - [ ] Icon pack: research switching the application icon theme (GSettings `icon-theme`, qtXct `icon_theme`, Quickshell `iconPath` lookups); which installed themes to offer (Papirus variants, Adwaita, …), Papirus folder colours per theme, and whether the pack belongs to the theme or overrides it.
+  - [ ] Shortcut (`SUPER + CTRL + T`), i18n, docs.
 - [ ] Phase 5, dynamic theme: a custom image → matugen (`nett00n/hyprland` COPR) → generated `custom` theme through the same templates; installation docs updated.
 
 ### Hardware

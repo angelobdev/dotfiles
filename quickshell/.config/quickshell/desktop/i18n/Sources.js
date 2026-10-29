@@ -30,6 +30,7 @@ var bindKeys = {
     "Calendar": "calendar.title",
     "Hints · Keyboard shortcuts": "hints.title",
     "Choose wallpaper": "wallpaper.title",
+    "Next wallpaper": "wallpaper.next",
     "Session menu": "session.menuTitle",
     "Dock": "dock.title",
     "Clipboard · History": "clipboard.historyTitle",

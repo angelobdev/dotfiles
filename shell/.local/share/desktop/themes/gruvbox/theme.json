@@ -53,5 +53,55 @@
   "vscode": {
     "theme": "Gruvbox Dark Medium",
     "extension": "jdinhlife.gruvbox"
-  }
+  },
+  "wallpapers": [
+    {
+      "file": "01-the-backwater.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/gruvbox/backgrounds/1-the-backwater.jpg",
+      "sha256": "13cfc6ae370af984c08a820ff81b56a0febb0fbfe9712a6db128b94d14ecaac6",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-flower-basket.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/gruvbox/backgrounds/2-flower-basket.webp",
+      "sha256": "66c8d1df13776bcbf377b9463a981141c546b1fc0e87cd27aad8b2f81a98db77",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-village-square.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/gruvbox/backgrounds/3-village-square.jpg",
+      "sha256": "9ac4d52dbef06876a838e9cf9f97813dd86e99d2b977d9d11c5f389be6451cdc",
+      "source": "omarchy"
+    },
+    {
+      "file": "04-idyllic-procession.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/gruvbox/backgrounds/4-idyllic-procession.jpg",
+      "sha256": "be0ae73263a5eb69416fb13547826a60806859aa31bb031053afc73de60a55c5",
+      "source": "omarchy"
+    },
+    {
+      "file": "05-leaves.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/gruvbox/backgrounds/5-leaves.jpg",
+      "sha256": "cdbd3cd7b34a2c8e7e74818af5101a8531786878b0a3afcb8f6985b27394f66d",
+      "source": "omarchy"
+    },
+    {
+      "file": "06-gruvbox-forest.jpg",
+      "url": "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/293774acaa531ce106332f790c80301998066b25/wallpapers/photography/gruvbox-forest.jpg",
+      "sha256": "b24ba9a4c5ce1a5fcfbdb07e83defa16a29c46b8d1d4fecc300b3d5898152585",
+      "source": "gruvbox-wallpapers"
+    },
+    {
+      "file": "07-forest-mountain-cloudy-valley.png",
+      "url": "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/293774acaa531ce106332f790c80301998066b25/wallpapers/photography/forest-mountain-cloudy-valley.png",
+      "sha256": "7dad4ae3ba359c10870295588f5d921a74729bb2699e45359ef2ea03b3b2b253",
+      "source": "gruvbox-wallpapers"
+    },
+    {
+      "file": "08-gruvb-solarsys.png",
+      "url": "https://raw.githubusercontent.com/AngelJumbo/gruvbox-wallpapers/293774acaa531ce106332f790c80301998066b25/wallpapers/minimalistic/gruvb_solarsys.png",
+      "sha256": "42de569c1e9820c4a0a3c81e9f650fe0c2eb5c062acb6f674b987753fadf3ce4",
+      "source": "gruvbox-wallpapers"
+    }
+  ]
 }

@@ -43,6 +43,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + H` | Hints / active bindings |
 | `Super + Shift + Q` | Session menu |
 | `Super + Shift + W` | Choose wallpaper |
+| `Super + Ctrl + W` | Next wallpaper of the current theme |
 | `Super + Ctrl + C` | Clipboard / history |
 | `Super + Ctrl + R` | Screen recording |
 | `Super + D` | Show the dock with keyboard navigation / hide it |

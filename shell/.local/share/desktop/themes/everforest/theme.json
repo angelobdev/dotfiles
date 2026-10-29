@@ -53,5 +53,55 @@
   "vscode": {
     "theme": "Everforest Dark",
     "extension": "sainnhe.everforest"
-  }
+  },
+  "wallpapers": [
+    {
+      "file": "01-tree-tops.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/everforest/backgrounds/1-tree-tops.webp",
+      "sha256": "2360752bcfb976e65148b47f696d48cca0d94bb782ab1d7321c26c71bf2b2278",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-fog-forest-alt-1.png",
+      "url": "https://raw.githubusercontent.com/Apeiros-46B/everforest-walls/8f538b4e34a880748a471dc4c7aade6e29982417/nature/fog_forest_alt_1.png",
+      "sha256": "21e433bd271a4b5d3b47eeb7f49cc7fc96b1a38569d06fb0a409b7b9fa181db6",
+      "source": "everforest-walls"
+    },
+    {
+      "file": "03-foggy-valley-1.png",
+      "url": "https://raw.githubusercontent.com/Apeiros-46B/everforest-walls/8f538b4e34a880748a471dc4c7aade6e29982417/nature/foggy_valley_1.png",
+      "sha256": "a084e68b062145059aab7674c852493f9aa635324e67a74c100425936ebee3cd",
+      "source": "everforest-walls"
+    },
+    {
+      "file": "04-forest-stairs.jpg",
+      "url": "https://raw.githubusercontent.com/Apeiros-46B/everforest-walls/8f538b4e34a880748a471dc4c7aade6e29982417/nature/forest_stairs.jpg",
+      "sha256": "9f254a9d3241e747b504ec63efac9ddf67e3f7ec94f1bef90bc8bec4dacaf944",
+      "source": "everforest-walls"
+    },
+    {
+      "file": "05-ocean-front-1.png",
+      "url": "https://raw.githubusercontent.com/Apeiros-46B/everforest-walls/8f538b4e34a880748a471dc4c7aade6e29982417/nature/ocean_front_1.png",
+      "sha256": "8b7b12fdaef97c225717f262db24da13d53900996b6c26c7539da5cde0e9bb9e",
+      "source": "everforest-walls"
+    },
+    {
+      "file": "06-rock-1.png",
+      "url": "https://raw.githubusercontent.com/Apeiros-46B/everforest-walls/8f538b4e34a880748a471dc4c7aade6e29982417/nature/rock_1.png",
+      "sha256": "1711d800a57a425e43b5208b4ca869c3fd3c86773b28514397c4cd5df9846078",
+      "source": "everforest-walls"
+    },
+    {
+      "file": "07-streetlights-1.png",
+      "url": "https://raw.githubusercontent.com/Apeiros-46B/everforest-walls/8f538b4e34a880748a471dc4c7aade6e29982417/other/streetlights_1.png",
+      "sha256": "a457913af3b5deba4134e43b8e378a3884cb8a0fd76cf37145988f382ba908c2",
+      "source": "everforest-walls"
+    },
+    {
+      "file": "08-berries.png",
+      "url": "https://raw.githubusercontent.com/Apeiros-46B/everforest-walls/8f538b4e34a880748a471dc4c7aade6e29982417/close_up/berries.png",
+      "sha256": "0a81fde87bd9f009c9df378386ec2d0c6a155998c36764705f6a469b558995e0",
+      "source": "everforest-walls"
+    }
+  ]
 }

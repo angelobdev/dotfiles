@@ -2,6 +2,7 @@
 """Render the desktop theme into the files the shell and applications read."""
 from i18n import tr
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import urllib.request
 
 HOME = Path.home()
 STATE = Path(os.environ.get('XDG_STATE_HOME') or HOME / '.local/state') / 'desktop-theme'
@@ -21,6 +23,11 @@ TEMPLATES = DATA / 'templates'
 BTOP = Path(os.environ.get('XDG_CONFIG_HOME') or HOME / '.config') / 'btop'
 VSCODE = Path(os.environ.get('XDG_CONFIG_HOME') or HOME / '.config') / 'Code/User/settings.json'
 VSCODE_EXTENSIONS = HOME / '.vscode/extensions'
+# Downloaded theme wallpapers live outside the repository; wallpaper.py owns applying them.
+WALLPAPERS = DATA / 'wallpapers'
+SELECTION = Path(os.environ.get('XDG_STATE_HOME') or HOME / '.local/state') / 'desktop-session/wallpaper/selection.json'
+WALLPAPER = Path(__file__).resolve().with_name('wallpaper.py')
+IMAGES = {'.png', '.jpg', '.jpeg', '.webp', '.jxl', '.avif', '.bmp', '.tif', '.tiff'}
 REQUIRED = ('bg', 'base', 'raised', 'border', 'fg', 'muted', 'dim', 'accent', 'accentFg', 'link', 'danger',
             'success', 'warning')
 DEFAULT = 'graphite'
@@ -274,6 +281,122 @@ def apply_gsettings(theme):
             subprocess.run(['gsettings', 'set', SCHEMA, key, str(value)], check=False, timeout=5)
 
 
+def wallpaper_entries(name, theme):
+    entries = []
+    for entry in theme.get('wallpapers', []):
+        path = WALLPAPERS / name / entry['file']
+        entries.append(dict(entry, path=str(path), downloaded=path.is_file()))
+    return entries
+
+
+# The images a theme can show now: its downloaded pack in manifest order, or the directories it names.
+def wallpaper_files(name, theme):
+    if theme.get('wallpapers'):
+        return [Path(entry['path']) for entry in wallpaper_entries(name, theme) if entry['downloaded']]
+    files = []
+    for directory in theme.get('wallpaperDirectories', []):
+        directory = Path(directory).expanduser()
+        if directory.is_dir():
+            files += sorted(path for path in directory.iterdir() if path.suffix.lower() in IMAGES and path.is_file())
+    return files
+
+
+def next_wallpaper(files, current):
+    if not files:
+        return None
+    current = Path(current) if current else None
+    if current in files:
+        return files[(files.index(current) + 1) % len(files)]
+    return files[0]
+
+
+def memory():
+    try:
+        value = json.loads((STATE / 'wallpapers.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def remember(name, path):
+    if path:
+        write_atomic(STATE / 'wallpapers.json', json.dumps(dict(memory(), **{name: str(path)}), ensure_ascii=False) + '\n')
+
+
+def current_wallpaper():
+    try:
+        return json.loads(SELECTION.read_text(encoding='utf-8')).get('source')
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
+# The remembered wallpaper while it still exists, else the first available one.
+def wallpaper_for(name, theme):
+    remembered = memory().get(name)
+    if remembered and Path(remembered).is_file():
+        return Path(remembered)
+    files = wallpaper_files(name, theme)
+    return files[0] if files else None
+
+
+def apply_wallpaper(path):
+    result = subprocess.run([sys.executable, str(WALLPAPER), str(path)], capture_output=True, text=True, timeout=120)
+    if result.returncode != 0:
+        raise ValueError(result.stderr.strip() or str(path))
+
+
+def download(entry, destination):
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    handle, temporary = tempfile.mkstemp(dir=destination.parent, prefix='.' + destination.name + '.')
+    digest = hashlib.sha256()
+    try:
+        with os.fdopen(handle, 'wb') as file, urllib.request.urlopen(entry['url'], timeout=30) as response:
+            for block in iter(lambda: response.read(1024 * 1024), b''):
+                digest.update(block)
+                file.write(block)
+        if digest.hexdigest() != entry['sha256']:
+            raise ValueError(tr('theme.errors.checksum', [entry['file']]))
+        os.chmod(temporary, 0o644)
+        os.replace(temporary, destination)
+    finally:
+        Path(temporary).unlink(missing_ok=True)
+
+
+# Downloads what is missing, one JSON line per entry. With show, the theme's wallpaper is applied as soon
+# as one is available, unless the user switched theme in the meantime.
+def fetch(name, theme, show=False):
+    shown = False
+    def show_now():
+        nonlocal shown
+        if show and not shown and current() == name:
+            target = wallpaper_for(name, theme)
+            if target:
+                apply_wallpaper(target)
+                shown = True
+    show_now()
+    failures = 0
+    for entry in wallpaper_entries(name, theme):
+        status = {'theme': name, 'file': entry['file']}
+        if entry['downloaded']:
+            print(json.dumps(dict(status, status='present')), flush=True)
+            continue
+        try:
+            download(entry, Path(entry['path']))
+            print(json.dumps(dict(status, status='downloaded')), flush=True)
+            show_now()
+        except (OSError, ValueError) as error:
+            failures += 1
+            print(json.dumps(dict(status, status='failed', error=str(error)), ensure_ascii=False), flush=True)
+    return failures
+
+
+def spawn(arguments):
+    STATE.mkdir(parents=True, exist_ok=True)
+    with (STATE / 'wallpapers.log').open('a') as log:
+        subprocess.Popen([sys.executable, str(Path(__file__).resolve())] + arguments, stdin=subprocess.DEVNULL,
+                         stdout=log, stderr=log, start_new_session=True)
+
+
 # Applications that do not watch their files are told to reload; missing ones are skipped.
 def reload():
     for command in (['hyprctl', 'reload'], ['pkill', '-USR1', '-x', 'kitty'], ['pkill', '-USR2', '-x', 'btop']):
@@ -290,6 +413,12 @@ def main():
     choose = commands.add_parser('set')
     choose.add_argument('name')
     commands.add_parser('list')
+    pack = commands.add_parser('wallpapers')
+    pack.add_argument('name', nargs='?')
+    getter = commands.add_parser('fetch')
+    getter.add_argument('name', nargs='?')
+    getter.add_argument('--show', action='store_true')
+    commands.add_parser('next-wallpaper')
     preview = commands.add_parser('render')
     preview.add_argument('--theme', required=True)
     preview.add_argument('--out', required=True, type=Path)
@@ -297,8 +426,32 @@ def main():
     if arguments.command == 'apply':
         apply(current())
     elif arguments.command == 'set':
-        apply_vscode(apply(arguments.name))
+        previous = current()
+        theme = apply(arguments.name)
+        apply_vscode(theme)
         reload()
+        # Colours switch at once; the wallpaper (a conversion, maybe a download) follows in the background.
+        if previous != arguments.name:
+            remember(previous, current_wallpaper())
+            spawn(['fetch', arguments.name, '--show'])
+    elif arguments.command == 'wallpapers':
+        name = arguments.name or current()
+        print(json.dumps({'theme': name, 'remembered': memory().get(name), 'current': current_wallpaper(),
+                          'wallpapers': wallpaper_entries(name, load(name)),
+                          'files': [str(path) for path in wallpaper_files(name, load(name))]}, ensure_ascii=False))
+    elif arguments.command == 'fetch':
+        name = arguments.name or current()
+        return 1 if fetch(name, load(name), arguments.show) else 0
+    elif arguments.command == 'next-wallpaper':
+        name = current()
+        theme = load(name)
+        target = next_wallpaper(wallpaper_files(name, theme), current_wallpaper())
+        if target is None:
+            spawn(['fetch', name, '--show'])
+            subprocess.run(['notify-send', tr('theme.wallpapers.title'), tr('theme.wallpapers.downloading', [theme.get('name', name)])],
+                           check=False, timeout=5)
+            return 0
+        apply_wallpaper(target)
     elif arguments.command == 'list':
         print(json.dumps({'current': current(), 'themes': themes()}, ensure_ascii=False))
     else:

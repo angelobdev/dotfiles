@@ -83,5 +83,9 @@
   },
   "vscode": {
     "theme": "Default Dark Modern"
-  }
+  },
+  "wallpaperDirectories": [
+    "~/.local/share/wallpapers",
+    "~/Pictures/Wallpapers"
+  ]
 }

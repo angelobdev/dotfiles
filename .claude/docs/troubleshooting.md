@@ -190,3 +190,21 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - Backups of `settings.json` and `btop.conf` from before the first switch are kept outside the repository.
 - The user tried the themes and approved them.
 
+## Wallpapers per theme verification
+
+**Curation**
+- Candidates from the Omarchy theme backgrounds (branch `quattro`) and three community collections were downloaded into a scratch directory and viewed as contact sheets.
+- Eight per theme were kept, all landscape and at least 1920 px wide. Images under 1920 px or in portrait were replaced, for example a 1456 px Gruvbox painting and a 1582×2048 Everforest photo.
+- URLs are pinned to the commit SHAs resolved through the GitHub API at the time.
+
+**Fetch**
+- All four sets downloaded: 8/8 each, 5.9–18 MB per theme, and every sha256 re-checked on disk.
+- A probe manifest with a wrong sha256 rejected that file and left no temporary file. A second run reported every file as `present`.
+
+**Live**
+- Starting from Graphite with the user's Apple wallpaper, `set tokyo-night` showed `01-liftoff`. `--next` twice gave `02-winding-road`, then `03-quattro`.
+- `set graphite` brought back the Apple wallpaper, and `set tokyo-night` brought back `03-quattro`.
+- `hyprctl hyprpaper listactive` showed the render of that file.
+- With the Everforest set moved away, `set everforest` returned in 0.4 s. `01-tree-tops` was on screen after 1.6 s, and the full set of 8 followed in the background.
+- The user reviewed the final contact sheet and kept all 32.
+

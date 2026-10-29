@@ -53,5 +53,55 @@
   "vscode": {
     "theme": "Catppuccin Mocha",
     "extension": "catppuccin.catppuccin-vsc"
-  }
+  },
+  "wallpapers": [
+    {
+      "file": "01-totoro.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/catppuccin/backgrounds/1-totoro.webp",
+      "sha256": "4896da620ed3016b7e52eede8db8169591a9fa4856064db4039521be96f724b6",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-waves.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/catppuccin/backgrounds/2-waves.webp",
+      "sha256": "5fe347ef9814dbf1d5bc73a96381b8fe4908ed0f7e4293d2c3c8d860b46041ce",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-blue-eye.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/1676904e4f1d2fec52c316dee580722079a663fe/themes/catppuccin/backgrounds/3-blue-eye.webp",
+      "sha256": "70743c244575253b72f17978060f87239e0125575195f64e288479666129954a",
+      "source": "omarchy"
+    },
+    {
+      "file": "04-salty-mountains.png",
+      "url": "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/1023077979591cdeca76aae94e0359da1707a60e/landscapes/salty_mountains.png",
+      "sha256": "d621a20c5ec0b5e62bfb99b363c358da4acba50985254ecf222f8fa6d103bca2",
+      "source": "catppuccin-wallpapers"
+    },
+    {
+      "file": "05-shaded-landscape.png",
+      "url": "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/1023077979591cdeca76aae94e0359da1707a60e/landscapes/shaded_landscape.png",
+      "sha256": "1199a43751f1234d3fb92ecf614fbf34de2c07334d3fdd355891044f51bddada",
+      "source": "catppuccin-wallpapers"
+    },
+    {
+      "file": "06-forrest.png",
+      "url": "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/1023077979591cdeca76aae94e0359da1707a60e/landscapes/forrest.png",
+      "sha256": "8c3a838f9e9ef4a23fc601087044a4a67a49501a3acc9880ab50240d0c1c1d03",
+      "source": "catppuccin-wallpapers"
+    },
+    {
+      "file": "07-rainnight.jpg",
+      "url": "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/1023077979591cdeca76aae94e0359da1707a60e/landscapes/Rainnight.jpg",
+      "sha256": "aefe40d4c63634c837c213170f778770bd009d49e8b13b913d46cbc443aa5782",
+      "source": "catppuccin-wallpapers"
+    },
+    {
+      "file": "08-tropic-island-night.jpg",
+      "url": "https://raw.githubusercontent.com/zhichaoh/catppuccin-wallpapers/1023077979591cdeca76aae94e0359da1707a60e/landscapes/tropic_island_night.jpg",
+      "sha256": "166f34d21ec26c41ea70f0cbee829205222918184458b152ea2a15e6a334495c",
+      "source": "catppuccin-wallpapers"
+    }
+  ]
 }

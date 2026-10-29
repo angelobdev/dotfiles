@@ -502,11 +502,16 @@
   },
   "theme": {
     "errors": {
+      "checksum": "%1 did not match its checksum and was discarded.",
       "color": "Theme value %1 is not a #rrggbb or #rrggbbaa colour: %2",
       "filter": "Unknown theme template filter: %1",
       "invalid": "The theme %1 cannot be read: %2",
       "template": "Template %1 uses a value the theme does not define: %2",
       "unknown": "Unknown theme: %1"
+    },
+    "wallpapers": {
+      "downloading": "Downloading the %1 wallpapers; the first one appears as soon as it arrives.",
+      "title": "Wallpapers"
     }
   },
   "wallpaper": {
@@ -525,6 +530,7 @@
     },
     "folderPlaceholder": "Folder path",
     "home": "Home",
+    "next": "Next wallpaper",
     "parentFolder": "Parent folder",
     "previewHint": "Select an image to preview",
     "previewUnavailable": "Preview unavailable. The file will be converted when applied.",

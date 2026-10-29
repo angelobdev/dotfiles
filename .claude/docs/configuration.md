@@ -118,11 +118,37 @@ Dimensions and margins are in logical pixels; the timeout is in milliseconds. Di
 ~/.local/bin/desktop-wallpaper                     # open the QML picker
 ~/.local/bin/desktop-wallpaper /path/to/image.png
 ~/.local/bin/desktop-wallpaper --reset             # restore Fedora wallpaper
+~/.local/bin/desktop-wallpaper --next              # next wallpaper of the current theme (Super + Ctrl + W)
 ```
 
 The picker starts at home and supports moving to parent directories, entering a path, and opening the wallpaper collection. It supports PNG, JPEG, WebP, JXL, AVIF, BMP, and TIFF. ImageMagick converts the selected file into a managed JPEG, applies EXIF orientation, and preserves the original. Preview support depends on Qt decoders; a JXL without a preview can still be converted and applied.
 
 Selection lives in `~/.local/state/desktop-session/wallpaper/`: `selection.json` stores the original path and `current.jpg` points to the converted copy. Hyprpaper uses that link in the Stow configuration and restores the selection at login; the repository is not rewritten on each wallpaper change. `desktop-session start` initializes the Fedora wallpaper link only when missing. Failed conversion or application preserves the previous selection. The local copy remains usable if the original moves.
+
+### Wallpapers per theme
+
+Each theme has its own set of wallpapers:
+- **Graphite** uses the images in `~/.local/share/wallpapers` and `~/Pictures/Wallpapers` (`wallpaperDirectories`).
+- **The other four** list eight each in their `theme.json` (`wallpapers`). Each entry has a file name, a raw GitHub URL pinned to a commit, a sha256 and its source.
+
+Downloads:
+- They are fetched only when needed into `~/.local/share/desktop/wallpapers/<theme>/` and never committed.
+- A file is kept only when its sha256 matches. A failed or mismatched download is discarded, and the other entries still download.
+- `python3 ~/.local/libexec/desktop/theme.py fetch <theme>` downloads a whole set ahead of time.
+- `theme.py wallpapers [<theme>]` prints the set as JSON.
+
+Switching theme also switches the wallpaper:
+- `desktop-theme set` first remembers the current wallpaper (`selection.json` source) under the theme being left, in `~/.local/state/desktop-theme/wallpapers.json`.
+- In the background it then applies the new theme's remembered wallpaper, or its first one, downloading the set if needed (log in `wallpapers.log` there).
+- Wallpapers picked with `Super + Shift + W` or `Super + Ctrl + W` are remembered the same way.
+- `Super + Ctrl + W` cycles through the current theme's set in order. If nothing is downloaded yet, it starts the download and shows a notification.
+
+Sources:
+- Omarchy's theme backgrounds (`basecamp/omarchy`, MIT);
+- `zhichaoh/catppuccin-wallpapers` (MIT);
+- `AngelJumbo/gruvbox-wallpapers` and `Apeiros-46B/everforest-walls`.
+
+The last two declare no licence; their images are fetched for personal use and not redistributed. To change a set, edit `wallpapers` in the theme: a removed entry stays on disk until deleted from `~/.local/share/desktop/wallpapers/`.
 
 State data is excluded from Git and follows this repository's standard XDG layout. The script serializes concurrent requests, passes paths as arguments, and normalizes the name sent through IPC, including spaces, commas, and special characters.
 
