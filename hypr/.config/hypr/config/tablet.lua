@@ -6,6 +6,8 @@ local M = {}
 local state = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")) .. "/desktop-session/rotation.lua"
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
 local panel
+-- Touch and stylus devices of the internal display; without them every touchscreen and tablet follows it.
+local devices = {}
 
 local function saved()
     local ok, value = pcall(dofile, state)
@@ -22,17 +24,26 @@ local function apply(transform)
     end
     spec.transform = transform
     hl.monitor(spec)
-    hl.config({
-        input = {
-            touchdevice = { transform = transform, output = panel.output },
-            tablet = { transform = transform, output = panel.output },
-        }
-    })
+    if #devices > 0 then
+        for _, name in ipairs(devices) do
+            hl.device({ name = name, transform = transform, output = panel.output })
+        end
+    else
+        hl.config({
+            input = {
+                touchdevice = { transform = transform, output = panel.output },
+                tablet = { transform = transform, output = panel.output },
+            }
+        })
+    end
 end
 
--- Declares the internal display (in monitors.lua) instead of hl.monitor, with the saved rotation.
-function M.monitor(spec)
+-- Declares the internal display (in monitors.lua) instead of hl.monitor, with the saved rotation. touch lists
+-- its touchscreen and stylus by their `hyprctl devices` names, so an external touch monitor or drawing tablet
+-- is neither rotated nor mapped to the panel.
+function M.monitor(spec, touch)
     panel = spec
+    devices = touch or {}
     apply(saved())
 end
 

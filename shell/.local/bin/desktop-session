@@ -11,9 +11,13 @@ case "${1:-start}" in
         # Refresh graphical backends too when session startup is invoked manually.
         export GDK_BACKEND='wayland,x11,*'
         export QT_QPA_PLATFORM='wayland;xcb'
-        dbus-update-activation-environment --systemd GDK_BACKEND QT_QPA_PLATFORM PATH WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE
+        # The one export of the session environment (hypr/config/session.lua and local.lua set it) to systemd
+        # user units and D-Bus activated services, before the portals and daemons below start.
+        dbus-update-activation-environment --systemd GDK_BACKEND QT_QPA_PLATFORM QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE SDL_VIDEODRIVER CLUTTER_BACKEND HYPRCURSOR_SIZE PATH WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE DESKTOP_AI_LANGUAGE
         # A theme or wallpaper failure must not keep the idle lock, the wallpaper daemon and udiskie down.
         "$HOME/.local/bin/desktop-theme" || echo "Theme not applied." >&2
+        # Electron apps get their Chromium flags through generated desktop entries (electron.py).
+        python3 "$HOME/.local/libexec/desktop/electron.py" apply || echo "Electron flags not applied." >&2
         # X11 clients take DPI and cursor size from X resources matching the monitor scale.
         "$HOME/.local/bin/desktop-xwayland" apply >/dev/null || echo "XWayland profile not applied." >&2
         systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service

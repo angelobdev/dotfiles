@@ -90,7 +90,8 @@ end)
 hl.layer_rule({
     name = "desktop-glass",
     match = {
-        namespace = "^desktop-(bar|dock|overlay|notifications|osd|share-picker|osk)$"
+        -- The same surfaces Hyprglass glasses (plugins.lua), plus the bar.
+        namespace = "^desktop-(bar|dock|overlay|notifications|osd|share-picker|osk|tray-menu|authentication|bluetooth-auth)$"
     },
     blur = true,
     ignore_alpha = 0.2,

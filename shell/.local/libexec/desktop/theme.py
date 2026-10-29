@@ -488,7 +488,10 @@ def render_all(theme, templates=TEMPLATES):
     # Paths a template may need besides the theme itself, and sizes derived from the window rounding
     # (16 is the design size, so the lock screen field keeps its 26 px corners by default).
     scale = max(0, theme.get('hyprland', {}).get('rounding', 16)) / 16
-    theme = dict(theme, paths={'state': str(STATE)}, derived={'lockRounding': round(26 * scale)})
+    # Text the templates show (the lock screen), in the session language.
+    strings = {'lockPassword': tr('lockScreen.password'), 'lockFingerprintReady': tr('lockScreen.fingerprintReady'),
+               'lockFingerprintPresent': tr('lockScreen.fingerprintPresent')}
+    theme = dict(theme, paths={'state': str(STATE)}, derived={'lockRounding': round(26 * scale)}, strings=strings)
     outputs = {}
     for path in sorted(templates.glob('*.tpl')):
         outputs[path.stem] = render(path.read_text(encoding='utf-8'), theme, path.name)

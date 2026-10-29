@@ -79,16 +79,18 @@ References: [Hyprland XWayland scaling](https://wiki.hypr.land/configuring/extra
 
 ## Electron, portals, and screen sharing
 
-Modern applications choose Wayland through `XDG_SESSION_TYPE=wayland`. The session also sets `XDG_CURRENT_DESKTOP=Hyprland` and imports display variables into D-Bus/systemd. For Electron applications requiring an explicit choice:
+Modern applications choose Wayland through `XDG_SESSION_TYPE=wayland`. The session also sets `XDG_CURRENT_DESKTOP=Hyprland`, `SDL_VIDEODRIVER=wayland,x11` (games with an SDL2 that lacks the Wayland driver fall back to XWayland) and `CLUTTER_BACKEND=wayland`; `desktop-session start` imports them, with the display, Qt, cursor and assistant variables, into D-Bus/systemd in one call. For Electron applications requiring an explicit choice:
 
 ```sh
 desktop-electron code                  # --ozone-platform=wayland
 desktop-electron --x11 code            # XWayland fallback
 ```
 
+For everyday launches (launcher, dock, Super + Space), `electron.py apply` (run by `desktop-session start`) writes `~/.local/share/applications/<id>.desktop` for every desktop ID in `~/.config/desktop/electron-apps.conf` (VS Code and ChatGPT): the app's entry with the flags of `~/.config/electron-flags.conf` right after the program on each `Exec` line, older spellings of the same switches replaced. The flags are native Wayland (`--ozone-platform-hint=auto`) and text fields reported to the compositor (`--enable-wayland-ime --wayland-text-input-version=3`), so the on-screen keyboard opens by itself in tablet mode; with them the VS Code command palette activated the input method. A system entry is copied (the copy keeps the ID and shadows it); an entry that exists only in the user directory is updated in place; Flatpak apps are left out. `electron.py status` shows each app's source and whether its entry is current. 1Password is listed but commented out, to keep its quick access and system integration on their defaults.
+
 Close application instances first: an existing process may receive the new-window request while retaining its backend. The wrapper does not modify application launchers or add obsolete Electron variables. The repository separately supplies the desktop overrides described above. VS Code was tested with temporary profiles on both backends; existing VS Code and Zen windows were native Wayland. Electron applications with old or custom Chromium versions may have their own limitations.
 
-`portals/.config/xdg-desktop-portal/hyprland-portals.conf` selects Hyprland for ScreenCast, Screenshot, GlobalShortcuts, and InputCapture, with GTK for FileChooser, Settings, and fallback. PipeWire carries video. `desktop-session start` also imports `~/.local/bin` into the service PATH and starts portals **after** importing the environment; it does not automatically restart them during active sharing.
+`portals/.config/xdg-desktop-portal/hyprland-portals.conf` selects Hyprland for ScreenCast, Screenshot, GlobalShortcuts, and InputCapture, gnome-keyring for Secret (Flatpak apps keep passwords in the keyring), with GTK for FileChooser, Settings, and fallback. PipeWire carries video. `desktop-session start` also imports `~/.local/bin` into the service PATH and starts portals **after** importing the environment; it does not automatically restart them during active sharing.
 
 Sharing requests open the **Quickshell** picker (`share.qml`), with displays, windows, search, and keyboard navigation. Select a source and Share; Esc/Cancel denies the request. Window IDs come from the portal rather than Hyprland addresses. `hypr/.config/hypr/xdph.conf` configures `desktop-portal-picker`, a maximum of 60 fps, and nonpersistent consent by default. The GTK fallback is a system backend with no persistent applet.
 

@@ -16,9 +16,6 @@ case "${1:-apply}" in
         # Renders the current theme and sets its gsettings, which also inform portal-aware
         # applications, including GTK4/libadwaita.
         python3 "$helper" apply
-        if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
-            dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE
-        fi
         ;;
     set)
         [[ -n "${2:-}" ]] || { echo 'Usage: desktop-theme set THEME' >&2; exit 2; }

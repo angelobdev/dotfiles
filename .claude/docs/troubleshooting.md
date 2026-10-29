@@ -410,3 +410,13 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - `check-i18n.py` now finds the keys after every `i18n.py` call in `shell/.local/bin/desktop-*` and `hypr/config/*.lua` (desktop-power, desktop-ai, binds.lua today), and the shared-catalog test uses `network.passwordFor` with a `$&` argument.
 - After the prefix-to-placeholder change, Python helpers call `tr(key, [value])`; Hints still built its 86 binds with the catalog modifier names; `qmltestrunner` 26 passed with `WorkspaceModel.fromHyprland`.
 - Removed the dangling `~/.config/quickshell/desktop/assets/icons/wifi-weak.svg` link (its file left the repo); no other dangling link in the stowed directories.
+
+## Review batch C (system choices), 2026-10-29
+
+- GTK: `gtk-application-prefer-dark-theme=1` removed from both settings.ini; dark themes stay dark through GSettings `gtk-theme` and `color-scheme`.
+- Secret portal: after `systemctl --user restart xdg-desktop-portal`, `org.freedesktop.portal.Secret` is on the portal object (it was missing).
+- Environment: one `dbus-update-activation-environment` in `desktop-session` (the copies in `session.lua` and `desktop-theme` are gone), now with SDL, Clutter, the cursor size and `DESKTOP_AI_LANGUAGE`; an unset name is ignored (exit 0).
+- Hyprglass follows the theme mode; the blur rule and the Hyprglass list now cover the same surfaces. The polkit prompt now blurs the whole screen behind it and the keyboard is glassed like the panels.
+- hyprlock text through i18n: an Italian render gives "Tocca il sensore d’impronta per sbloccare"; the Graphite test renders as en_US.
+- Touch and stylus by device: `hl.device` for the two ELAN devices; `getoption` cannot read device options; the user confirmed touch and stylus alignment after a rotation on the OmniBook.
+- Electron: `electron.py apply` wrote the VS Code override and updated the hand-made ChatGPT entry (backup taken first); both validate; a VS Code started with the flags ran native Wayland, and its command palette activated the input method (purpose `normal`).

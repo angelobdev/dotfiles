@@ -6,6 +6,7 @@ import re
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / 'shell/.local/libexec/desktop'))
@@ -18,7 +19,9 @@ GRAPHITE = json.loads((REPO / 'shell/.local/share/desktop/themes/graphite/theme.
 class GraphiteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.out = theme.render_all(theme.complete(GRAPHITE), TEMPLATES)
+        # The stowed fallbacks hold the English text: render as an en_US session whatever the machine says.
+        with mock.patch('i18n.language', return_value='en_US'):
+            cls.out = theme.render_all(theme.complete(GRAPHITE), TEMPLATES)
 
     def test_hyprlock_matches_the_stowed_fallback(self):
         self.assertEqual(self.out['hyprlock.conf'], (REPO / 'hyprlock/.config/hypr/hyprlock.conf').read_text(encoding='utf-8'))

@@ -8,6 +8,7 @@ local defaults = {
     inactiveBorder = "rgba(44474eff)",
     rounding = 16,
     borderSize = 0,
+    mode = "dark",
 }
 
 local state = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")

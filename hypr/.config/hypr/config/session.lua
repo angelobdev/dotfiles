@@ -13,8 +13,8 @@ hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 -- GTK
 hl.env("GDK_BACKEND", "wayland,x11,*")
 
--- SDL
-hl.env("SDL_VIDEODRIVER", "wayland")
+-- SDL: X11 for builds without the Wayland driver (older bundled SDL2 in games).
+hl.env("SDL_VIDEODRIVER", "wayland,x11")
 
 -- Clutter
 hl.env("CLUTTER_BACKEND", "wayland")
@@ -29,8 +29,7 @@ end
 -- Hyprland Start callback
 hl.on("hyprland.start", function()
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-plugins" reload')
-    hl.exec_cmd(
-        "dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE QT_QPA_PLATFORM GDK_BACKEND")
+    -- desktop-session exports the session environment to systemd and D-Bus activation, once.
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-session" start')
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell" start')
 end)

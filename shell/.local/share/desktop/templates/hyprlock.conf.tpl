@@ -7,8 +7,8 @@ auth {
     pam:enabled = true
     pam:module = hyprlock
     fingerprint:enabled = true
-    fingerprint:ready_message = Touch the fingerprint sensor to unlock
-    fingerprint:present_message = Reading fingerprint…
+    fingerprint:ready_message = {{ strings.lockFingerprintReady }}
+    fingerprint:present_message = {{ strings.lockFingerprintPresent }}
     fingerprint:retry_delay = 250
 }
 background {
@@ -60,7 +60,7 @@ input-field {
     check_color = rgba({{ palette.accent | rgba }})
     fail_color = rgba({{ palette.danger | rgba }})
     font_family = $font
-    placeholder_text = Password
+    placeholder_text = {{ strings.lockPassword }}
     fail_text = $PAMFAIL
     capslock_color = rgba({{ palette.warning | rgba }})
     fade_on_empty = false

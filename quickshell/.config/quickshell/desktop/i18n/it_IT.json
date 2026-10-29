@@ -739,5 +739,15 @@
       "on": "Accesa",
       "auto": "Automatica"
     }
+  },
+  "lockScreen": {
+    "password": "Password",
+    "fingerprintReady": "Tocca il sensore d’impronta per sbloccare",
+    "fingerprintPresent": "Lettura dell’impronta…"
+  },
+  "electron": {
+    "errors": {
+      "usage": "Uso: electron.py apply | status"
+    }
   }
 }

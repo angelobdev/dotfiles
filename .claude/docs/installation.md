@@ -20,7 +20,7 @@ Verified versions: Hyprland 0.56.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | `fastfetch` | Fedora layout with a neutral palette |
 | `udiskie` | Removable-drive automounting, Quickshell notifications, and no external tray icon |
 | `portals` | XDG preferences: Hyprland for capture/sharing, GTK for files and settings |
-| `electron` | `~/.config/electron-flags.conf` with Wayland flags for launchers that read it |
+| `electron` | `~/.config/electron-flags.conf` (Wayland and IME flags) and `~/.config/desktop/electron-apps.conf` (the apps that get them through `electron.py`) |
 
 ## Installation and updates
 

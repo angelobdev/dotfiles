@@ -204,13 +204,13 @@ Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_T
 - [x] The 60 ms keyboard re-map over a new panel fades (`desktop-osk` missing from `no_anim`) and briefly reflows tiled windows.
 
 **C. System choices** (behavior changes awaiting approval)
-- [ ] GTK `gtk-application-prefer-dark-theme=1` hard-coded, wrong under a light dynamic theme (libadwaita warns about it).
-- [ ] Secret portal not routed (`org.freedesktop.impl.portal.Secret=gnome-keyring`), for Flatpak apps.
-- [ ] `SDL_VIDEODRIVER=wayland` without the `x11` fallback.
-- [ ] Hyprglass `default_theme = "dark"` fixed under light themes.
-- [ ] Touch and stylus mapping global (`input.touchdevice`/`tablet`); per device (`hl.device`) would leave an external touch monitor alone.
-- [ ] hyprlock strings ("Password", fingerprint messages) in English only: render them through i18n.
-- [ ] Still open from earlier: environment import in three places; blur coverage differs (layer rule vs Hyprglass: tray menu, OSK, the auth dialogs); `electron-flags.conf` unused.
+- [x] GTK `gtk-application-prefer-dark-theme=1` hard-coded, wrong under a light dynamic theme (libadwaita warns about it).
+- [x] Secret portal not routed (`org.freedesktop.impl.portal.Secret=gnome-keyring`), for Flatpak apps.
+- [x] `SDL_VIDEODRIVER=wayland` without the `x11` fallback.
+- [x] Hyprglass `default_theme = "dark"` fixed under light themes.
+- [x] Touch and stylus mapping global (`input.touchdevice`/`tablet`); per device (`hl.device`) would leave an external touch monitor alone.
+- [x] hyprlock strings ("Password", fingerprint messages) in English only: render them through i18n.
+- [x] Still open from earlier: environment import in three places; blur coverage differs (layer rule vs Hyprglass: tray menu, OSK, the auth dialogs); `electron-flags.conf` unused (now applied to VS Code and ChatGPT through `electron.py`).
 
 **D. Docs out of date**
 - [x] plugins.md gestures (edge swipes, three-finger overview); configuration.md `no_anim` list and "no window borders"; interface.md transparent bar "stays blurred", history/DND "reset on restart"; integrations.md "PAM files are not modified" (after `tablet-auth.sh`); ROADMAP lines on edge swipes and the open gesture test; the qtXct `$HOME` follow-up is obsolete.

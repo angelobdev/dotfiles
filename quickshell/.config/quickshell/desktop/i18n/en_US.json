@@ -739,5 +739,15 @@
       "on": "On",
       "auto": "Automatic"
     }
+  },
+  "lockScreen": {
+    "password": "Password",
+    "fingerprintReady": "Touch the fingerprint sensor to unlock",
+    "fingerprintPresent": "Reading fingerprint…"
+  },
+  "electron": {
+    "errors": {
+      "usage": "Usage: electron.py apply | status"
+    }
   }
 }

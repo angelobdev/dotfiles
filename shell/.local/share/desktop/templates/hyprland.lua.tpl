@@ -6,4 +6,5 @@ return {
     inactiveBorder = "rgba({{ hyprland.inactiveBorder | rgba }})",
     rounding = {{ hyprland.rounding }},
     borderSize = {{ hyprland.borderSize }},
+    mode = "{{ mode }}",
 }

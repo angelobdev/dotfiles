@@ -134,7 +134,8 @@ end
 
 if plugins.hyprglass then
     local glass = plugins.hyprglass
-    glass.config({ default_theme = "dark", default_preset = "desktop", layers = { enabled = true } })
+    -- The glass brightness follows the theme: the dynamic theme can be light.
+    glass.config({ default_theme = theme.mode == "light" and "light" or "dark", default_preset = "desktop", layers = { enabled = true } })
     glass.preset("desktop", {
         inherits = "subtle",
         blur_strength = 1.5,
@@ -146,10 +147,12 @@ if plugins.hyprglass then
         specular_strength = 0.15,
         tint_color = theme.glassTint,
     })
-    -- The bar has no background: exclude it rather than glassing its glyphs.
-    -- 0.2 excludes the almost transparent fullscreen overlay dismissal area.
+    -- Every shell surface with a background, the same list as the desktop-glass blur rule (rules.lua). The bar
+    -- has none: it is left out rather than glassing its glyphs. 0.2 excludes the almost transparent
+    -- fullscreen overlay dismissal area.
     for _, namespace in ipairs({ "desktop-dock", "desktop-overlay", "desktop-notifications", "desktop-osd",
-        "desktop-share-picker", "desktop-tray-menu" }) do
+        "desktop-share-picker", "desktop-tray-menu", "desktop-osk", "desktop-authentication",
+        "desktop-bluetooth-auth" }) do
         glass.layer(namespace, { preset = "desktop", mask_threshold = 0.2 })
     end
 end
