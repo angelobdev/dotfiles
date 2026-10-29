@@ -270,7 +270,8 @@
       "screenCapture": "Cattura schermo",
       "shell": "Shell e pannelli",
       "windows": "Finestre",
-      "workspaces": "Workspace"
+      "workspaces": "Workspace",
+      "gestures": "Gesture touch"
     },
     "empty": "Nessuna scorciatoia trovata",
     "errors": {
@@ -285,7 +286,29 @@
       "other": "%1 scorciatoie dalla sessione attiva"
     },
     "title": "Hints · Scorciatoie tastiera",
-    "tooltip": "Hints · Scorciatoie"
+    "tooltip": "Hints · Scorciatoie",
+    "titleTablet": "Suggerimenti · Gesture e scorciatoie",
+    "gestures": {
+      "threeSideways": "Tre dita ← / →",
+      "workspace": "Workspace successivo / precedente",
+      "threeUp": "Tre dita ↑",
+      "threeDown": "Tre dita ↓",
+      "threeHold": "Pressione lunga a tre dita",
+      "assist": "Pulsante Assist: mostra / nascondi",
+      "fourSideways": "Quattro dita ← / →",
+      "moveWindow": "Sposta la finestra al workspace successivo / precedente",
+      "fourUp": "Quattro dita ↑",
+      "overview": "Panoramica",
+      "fourDown": "Quattro dita ↓",
+      "borderHold": "Pressione lunga sul bordo di una finestra",
+      "resize": "Ridimensiona la finestra",
+      "longPress": "Pressione lunga",
+      "menu": "Menu, come il tasto destro (dock, launcher, tray, titolo della finestra)",
+      "swipeNotice": "Trascina di lato una notifica",
+      "dismiss": "La chiude",
+      "twoHold": "Pressione lunga a due dita, poi trascina",
+      "dragWindow": "Sposta la finestra"
+    }
   },
   "idle": {
     "automatic": "Inattività automatica",
@@ -304,7 +327,8 @@
     "navigationHint": "↑ ↓ seleziona    Invio apri    Ctrl+P o tasto destro: fissa nella dock    Esc chiudi",
     "searchPlaceholder": "Cerca un’applicazione…",
     "terminalSuffix": "  [terminale]",
-    "title": "Applicazioni"
+    "title": "Applicazioni",
+    "touchHint": "Tocco: apri    Pressione lunga: fissa nella dock"
   },
   "media": {
     "choosePlayer": "Scegli lettore",
@@ -641,7 +665,30 @@
       "workspaceNext": "Workspace successivo",
       "keyboard": "Tastiera",
       "assistant": "Assistente AI",
-      "window": "Finestra"
+      "window": "Finestra",
+      "hints": "Scorciatoie e gesture",
+      "windowClose": "Chiudi",
+      "windowFullscreen": "Schermo intero",
+      "windowFloating": "Flottante",
+      "windowLeft": "Sposta a sinistra",
+      "windowRight": "Sposta a destra",
+      "windowToPrevious": "Al workspace precedente",
+      "windowToNext": "Al workspace successivo",
+      "windowSplit": "Direzione split",
+      "screenshotArea": "Screenshot area",
+      "screenshotDisplay": "Screenshot schermo",
+      "recording": "Registra schermo",
+      "clipboard": "Appunti",
+      "theming": "Theming",
+      "wallpaper": "Sfondo",
+      "nextWallpaper": "Sfondo successivo",
+      "lock": "Blocca",
+      "session": "Sessione"
+    },
+    "pages": {
+      "apps": "App",
+      "window": "Finestra",
+      "system": "Sistema"
     }
   },
   "osk": {

@@ -179,9 +179,10 @@ During the overview, the affected monitor's bar is invisible, releases its 38 px
 | Four fingers left / right | Move the active window to the previous / next workspace (it follows) |
 | Four fingers up | Hyprspace overview |
 | Four fingers down | Notifications |
+| Two-finger long press, then drag | Move the window (as `Super` and the mouse) |
 | Long press on window border | Resize |
 
-Three fingers do what they do on the touchpad (`input.lua`); there are no edge swipes, which were not always recognised. Everything else is in the assist button. Sensitivity and actions are in `hypr/config/plugins.lua`.
+Three fingers do what they do on the touchpad (`input.lua`); there are no edge swipes, which were not always recognised. Everything else is in the assist button. In tablet mode, Hints lists these gestures first (title "Gestures and shortcuts"), and the launcher, Session menu and Theming panel drop their keyboard-only hints. Sensitivity and actions are in `hypr/config/plugins.lua`.
 
 **Window menu:** Fullscreen, Floating, Move to the previous / next workspace and Close window for the active window. In tablet mode (and on a bar too narrow for the title) the icon of the active app sits after the workspaces and opens it with a tap; the Window action of the assist button and `desktop-shell window-menu` open it too. With a mouse, a right click or a long press on the title does the same.
 
@@ -199,11 +200,15 @@ Folding the OmniBook screen back into tablet posture turns tablet mode on; unfol
 
 A round floating button on the built-in display, for reaching the shell by touch. It appears with tablet mode and goes away in laptop mode; a three-finger long press (or `desktop-shell assist show|hide|toggle`) shows or hides it at any time, until the posture changes again.
 - **Drag** it with a finger or the mouse: it snaps to the nearer side edge, and the place is remembered for each monitor and orientation. After 3 seconds untouched it fades and slides halfway into the edge.
-- **Tap** opens a menu of large buttons beside it: Keyboard, AI assistant (as `Super + A`), Window (the window menu), Apps, Dock, Control Center, Notifications, Overview, Previous / Next workspace (one step along the bar's workspaces, empty ones included) and Rotation lock (only where there is an accelerometer). A tap outside closes it; `desktop-shell assist menu` opens it from scripts.
+- **Tap** opens a menu of large buttons beside it, in three pages chosen at its top, so that what laptop mode reaches with shortcuts is a tap away:
+  - **Apps:** Keyboard, AI assistant (as `Super + A`), Apps, Dock, Overview, Notifications, Control Center, Previous / Next workspace (one step along the bar's workspaces, empty ones included).
+  - **Window** (the active window): Close, Fullscreen, Floating, Split direction, Move left / right, To previous / next workspace.
+  - **System:** Screenshot of an area or of the display (HyprCapture editor), Record screen, Clipboard, Theming, Wallpaper, Next wallpaper, Shortcuts and gestures, Lock, Session, Rotation lock (only where there is an accelerometer).
+  A tap outside closes it; `desktop-shell assist menu [apps|window|system]` opens it from scripts.
 - **Long press** runs a quick action, the on-screen keyboard by default.
 - It never takes keyboard focus, so the window underneath keeps typing.
 
-`Config.qml` sets `assistActions` (which actions, in order) and `assistLongPress`. Positions live in `~/.local/state/desktop-shell/assist.json`.
+`Config.qml` sets `assistPages` (pages and their actions, in order; the names are in `services/Assist.qml`) and `assistLongPress`. Positions live in `~/.local/state/desktop-shell/assist.json`.
 
 ## On-screen keyboard
 
@@ -213,7 +218,7 @@ Opened from the assist button (Keyboard, or a long press on the button) or with 
 - **Pages:** letters, `?123` (digits and common symbols) and `=\<` (brackets, braces and the rest). Shift applies to the next key; a quick second tap locks it. The small character in a corner is what Shift types.
 - **Accents:** a long press on a, e, i, o or u offers à, è, é, ì, ò, ù in the strip; any other key held types once. Backspace repeats while held.
 - **Space** goes down and up with the finger, like a physical key: held, it repeats, so Claude Code's hold-to-talk works from the on-screen keyboard too.
-- **Over panels:** the keyboard is an Overlay layer like the panels and is mapped again on top of a panel that opens while it is shown, and an open panel takes no input inside the keyboard rectangle, so the launcher search can be typed into and a tap on a key never reaches the list below.
+- **With panels:** a panel opening over a keyboard that a field opened (the terminal behind) closes it, unless the panel focuses a field of its own (the launcher search); a keyboard opened by hand stays. Panels then sit in the area above the docked keyboard (centred dialogs and side panels shrink to fit, the Control Center scrolls), the keyboard is mapped again on top of them, and an open panel takes no input inside its rectangle. In tablet mode Network, Clipboard and Hints do not focus their search field, so they open without the keyboard; a tap on the field brings it.
 - **Dock:** from the assist button in tablet mode the dock comes up for touch: no keyboard surface (Super + D keeps it), it stays while tapped and goes 6 s after the last tap or once an app opens (`desktop-shell dock touch`).
 - **More keys** (the keyboard button on the strip) adds Esc, Tab, Ctrl, Alt and arrows; Ctrl and Alt apply to the next key.
 

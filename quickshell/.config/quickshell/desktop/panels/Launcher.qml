@@ -136,7 +136,8 @@ Overlay {
                 }
             }
             Text {
-                text: I18n.tr("launcher.navigationHint")
+                // Touch has no arrows, Enter or Ctrl+P.
+                text: Tablet.active ? I18n.tr("launcher.touchHint") : I18n.tr("launcher.navigationHint")
                 color: Theme.muted
                 font.pixelSize: 12
             }

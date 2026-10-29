@@ -27,6 +27,19 @@ PanelWindow {
         y: root.dialog || ShellState.navigation !== 0 ? 0 : -10 * (1 - root.reveal)
     }
     signal opened
+    // Panels place their card in this area, which is their parent: the screen above the docked on-screen
+    // keyboard while it is shown, so centred dialogs and side panels stay clear of it.
+    default property alias content: stageItem.data
+    property Item stage: Item {
+        id: stageItem
+        parent: root.contentItem
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: parent.top
+        }
+        height: parent.height - Keyboard.reservedOn(root.screen?.name ?? "")
+    }
     screen: ShellState.activeScreen || Quickshell.screens[0]
     visible: open || reveal > 0
     anchors {

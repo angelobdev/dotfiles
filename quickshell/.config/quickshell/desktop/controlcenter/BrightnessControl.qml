@@ -42,8 +42,8 @@ ControlTile {
                     }
                 }
                 tooltip: I18n.tr("brightness.otherDisplays")
-                implicitHeight: 26
-                implicitWidth: 28
+                implicitHeight: Theme.hit(26)
+                implicitWidth: Theme.hit(28)
                 onClicked: root.expanded = !root.expanded
             }
         }

@@ -94,8 +94,10 @@ sys.exit(0 if running else 1)
         ;;
     assist)
         case "${2:-}" in show|hide|toggle|menu) ;;
-            *) echo 'Usage: desktop-shell assist {show|hide|toggle|menu}' >&2; exit 2 ;;
+            *) echo 'Usage: desktop-shell assist {show|hide|toggle|menu [apps|window|system]}' >&2; exit 2 ;;
         esac
+        # menu PAGE opens the menu on that page.
+        [[ $2 == menu && -n "${3:-}" ]] && exec qs ipc -p "$config" call desktop assistPage -- "$3"
         exec qs ipc -p "$config" call desktop assist -- "$2"
         ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;

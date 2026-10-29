@@ -59,7 +59,7 @@ Overlay {
                             required property var modelData
                             Layout.fillWidth: true
                             alignLeft: true
-                            implicitHeight: 42
+                            implicitHeight: Theme.hit(42)
                             text: modelData.description || modelData.name
                             textElide: Text.ElideMiddle
                             iconName: "volume-high"
@@ -104,7 +104,7 @@ Overlay {
                             required property var modelData
                             Layout.fillWidth: true
                             alignLeft: true
-                            implicitHeight: 42
+                            implicitHeight: Theme.hit(42)
                             text: modelData.description || modelData.name
                             textElide: Text.ElideMiddle
                             iconName: "microphone"

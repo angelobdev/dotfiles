@@ -15,13 +15,6 @@ Scope {
     // keyboard is mapped again on top of it.
     property bool raising: false
     Connections {
-        target: ShellState
-        function onPanelChanged() {
-            if (ShellState.panel !== "")
-                Keyboard.raise();
-        }
-    }
-    Connections {
         target: Keyboard
         function onRaiseRequested() {
             root.raising = true;

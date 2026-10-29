@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import ".."
+import "../services"
 import "../components"
 
 Overlay {
@@ -197,6 +198,8 @@ Overlay {
             Text {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
+                // Keys only; a finger needs no hint to tap a button.
+                visible: !Tablet.active
                 text: I18n.tr("session.navigationHint")
                 font.pixelSize: 11
                 color: Theme.muted

@@ -194,14 +194,14 @@ Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_T
 - [x] Smaller ones: `desktop-theme window-style` not forwarded (documented); `themes(details)` raises KeyError for a theme without `ansi`; `vscode_settings('{}')` writes a trailing comma; `osk.py` dies on `struct.error`; `rotation.py` on `GLib.Error`; no lock between `generate` and panel commands in theme.py; `Tablet.sensed` kept across tablet sessions (double flip on re-entry); a field-opened keyboard stays after unlock; `NetworkInfo.loadProfile` drops a second request; `BarStyle.measure()` drops a change during a run; small state files can be written before their first read (`SessionState`, dock, assist, posture); `dock.json` watches its own writes (kept: hand edits apply live); `PopupMenu` resets its selection whenever entries rebuild; dock long press then drag starts a drag under the menu; workspace pills keep a focus background; IPC `theming(tab)` accepts any tab.
 
 **B. Tablet experience** (behavior changes)
-- [ ] The docked keyboard stays open over panels and covers their bottom (Control Center switches, Hints, wallpaper picker, Theming, Clipboard, Session menu, the launcher list in portrait): close a field-opened keyboard when a panel without a focused field opens, and place dialogs and side panels in the area above it.
-- [ ] Panels that autofocus a search field (Network, Clipboard, Hints) pop the keyboard just to browse; skip the autofocus in tablet mode.
-- [ ] Laptop-only features with no touch path: screenshots (area, display), starting a recording, clipboard history, Theming, wallpaper picker and next wallpaper, Hints. Proposal: assist pages App · Window · System.
-- [ ] Window management by touch: move or swap tiled windows by direction, drag floating windows, split orientation and pseudotiling (window menu entries, or a two-finger long press drag).
-- [ ] Keyboard-only hints shown in tablet mode (launcher, Session menu, Theming, Hints title "Keyboard shortcuts"): touch hints instead, and the gestures listed in Hints.
-- [ ] Fixed sizes that ignore `Theme.hit`: Audio/Brightness expand chevrons and mute buttons, notification Delete, launcher logo, NetworkDetails and Theming inputs, rows in Audio, Calendar, Wallpaper picker; offsets that ignore `Theme.barHeight` (`SidePanelCard`, `NotificationPopups`, `Overlay`).
-- [ ] Number fields without `inputMethodHints` (Bluetooth passkey, IP, gateway, DNS) open on letters.
-- [ ] The 60 ms keyboard re-map over a new panel fades (`desktop-osk` missing from `no_anim`) and briefly reflows tiled windows.
+- [x] The docked keyboard stays open over panels and covers their bottom (Control Center switches, Hints, wallpaper picker, Theming, Clipboard, Session menu, the launcher list in portrait): close a field-opened keyboard when a panel without a focused field opens, and place dialogs and side panels in the area above it.
+- [x] Panels that autofocus a search field (Network, Clipboard, Hints) pop the keyboard just to browse; skip the autofocus in tablet mode.
+- [x] Laptop-only features with no touch path: screenshots (area, display), starting a recording, clipboard history, Theming, wallpaper picker and next wallpaper, Hints. Proposal: assist pages App · Window · System.
+- [x] Window management by touch: the assist Window page (close, fullscreen, floating, split direction, move left / right, to previous / next workspace) and a two-finger long press drag; pseudotiling stays a shortcut.
+- [x] Keyboard-only hints shown in tablet mode (launcher, Session menu, Theming, Hints title "Keyboard shortcuts"): touch hints instead, and the gestures listed in Hints.
+- [x] Fixed sizes that ignore `Theme.hit`: Audio/Brightness expand chevrons and mute buttons, notification Delete, launcher logo, NetworkDetails and Theming inputs, rows in Audio, Calendar, Wallpaper picker; offsets that ignore `Theme.barHeight` (`SidePanelCard`, `NotificationPopups`, `Overlay`).
+- [x] Number fields without `inputMethodHints` (Bluetooth passkey, IP, gateway, DNS) open on letters.
+- [x] The 60 ms keyboard re-map over a new panel fades (`desktop-osk` missing from `no_anim`) and briefly reflows tiled windows.
 
 **C. System choices** (behavior changes awaiting approval)
 - [ ] GTK `gtk-application-prefer-dark-theme=1` hard-coded, wrong under a light dynamic theme (libadwaita warns about it).

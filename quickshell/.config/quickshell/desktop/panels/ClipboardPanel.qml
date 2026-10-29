@@ -14,7 +14,9 @@ Overlay {
         confirmClear = false;
         search.clear();
         Clipboard.refresh();
-        search.forceActiveFocus();
+        // In tablet mode the search field waits for a tap: focused, it would open the keyboard just to browse.
+        if (!Tablet.active)
+            search.forceActiveFocus();
     }
     Card {
         anchors.centerIn: parent

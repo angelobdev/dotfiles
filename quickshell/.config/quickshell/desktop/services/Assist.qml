@@ -14,7 +14,9 @@ Singleton {
     property bool shown: false
     property bool menuOpen: false
     readonly property string stateFile: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-shell/assist.json"
-    // Every action the menu can offer; Config.assistActions picks and orders them.
+    // Every action the menu can offer; Config.assistPages groups and orders them. An action opens a panel,
+    // sends a Hyprland dispatcher (to the active window, which the button never takes the focus from),
+    // runs a command, or runs Lua in Hyprland once the menu has gone (screenshots); the others are below.
     readonly property var catalog: ({
             keyboard: {
                 icon: "keyboard",
@@ -62,11 +64,111 @@ Singleton {
                 label: I18n.tr("tablet.rotationLock"),
                 available: Tablet.available,
                 active: Tablet.locked
+            },
+            hints: {
+                icon: "help",
+                label: I18n.tr("assist.actions.hints"),
+                panel: "hints"
+            },
+            windowClose: {
+                icon: "close",
+                label: I18n.tr("assist.actions.windowClose"),
+                dispatch: "hl.dsp.window.close()"
+            },
+            windowFullscreen: {
+                icon: "fullscreen",
+                label: I18n.tr("assist.actions.windowFullscreen"),
+                dispatch: "hl.dsp.window.fullscreen()"
+            },
+            windowFloating: {
+                icon: "pip",
+                label: I18n.tr("assist.actions.windowFloating"),
+                dispatch: "hl.dsp.window.float({ action = \"toggle\" })"
+            },
+            windowLeft: {
+                icon: "arrow-left",
+                label: I18n.tr("assist.actions.windowLeft"),
+                dispatch: "hl.dsp.window.move({ direction = \"left\" })"
+            },
+            windowRight: {
+                icon: "arrow-right",
+                label: I18n.tr("assist.actions.windowRight"),
+                dispatch: "hl.dsp.window.move({ direction = \"right\" })"
+            },
+            windowToPrevious: {
+                icon: "chevron-left",
+                label: I18n.tr("assist.actions.windowToPrevious"),
+                dispatch: "hl.dsp.window.move({ workspace = \"r-1\" })"
+            },
+            windowToNext: {
+                icon: "chevron-right",
+                label: I18n.tr("assist.actions.windowToNext"),
+                dispatch: "hl.dsp.window.move({ workspace = \"r+1\" })"
+            },
+            windowSplit: {
+                icon: "split",
+                label: I18n.tr("assist.actions.windowSplit"),
+                dispatch: "hl.dsp.layout(\"togglesplit\")"
+            },
+            screenshotArea: {
+                icon: "screenshot",
+                label: I18n.tr("assist.actions.screenshotArea"),
+                lua: "local capture = (hl.plugin or {}).hyprcapture if capture then capture.open_editor(\"region\") end"
+            },
+            screenshotDisplay: {
+                icon: "monitor",
+                label: I18n.tr("assist.actions.screenshotDisplay"),
+                lua: "local capture = (hl.plugin or {}).hyprcapture if capture then capture.open_editor(\"fullscreen\") end"
+            },
+            recording: {
+                icon: "record",
+                label: I18n.tr("assist.actions.recording"),
+                panel: "recording"
+            },
+            clipboard: {
+                icon: "clipboard",
+                label: I18n.tr("assist.actions.clipboard"),
+                panel: "clipboard"
+            },
+            theming: {
+                icon: "palette",
+                label: I18n.tr("assist.actions.theming"),
+                panel: "theming"
+            },
+            wallpaper: {
+                icon: "image",
+                label: I18n.tr("assist.actions.wallpaper"),
+                panel: "wallpaper"
+            },
+            nextWallpaper: {
+                icon: "next",
+                label: I18n.tr("assist.actions.nextWallpaper"),
+                exec: [Quickshell.env("HOME") + "/.local/bin/desktop-wallpaper", "--next"]
+            },
+            lock: {
+                icon: "lock",
+                label: I18n.tr("assist.actions.lock"),
+                exec: [Quickshell.env("HOME") + "/.local/bin/desktop-power", "lock"]
+            },
+            session: {
+                icon: "power",
+                label: I18n.tr("assist.actions.session"),
+                panel: "power"
             }
         })
-    readonly property var actions: Config.assistActions.filter((name, index, all) => catalog[name] && catalog[name].available !== false && all.indexOf(name) === index).map(name => Object.assign({
-                name: name
-            }, catalog[name]))
+    // The pages of the menu, each with its available actions; page is the one shown (the first by default).
+    readonly property var pages: Config.assistPages.map(page => ({
+                name: page.name,
+                actions: page.actions.filter((name, index, all) => catalog[name] && catalog[name].available !== false && all.indexOf(name) === index).map(name => Object.assign({
+                            name: name
+                        }, catalog[name]))
+            })).filter(page => page.actions.length > 0)
+    property string page: ""
+    readonly property var currentPage: pages.find(p => p.name === page) ?? pages[0] ?? {
+        name: "",
+        actions: []
+    }
+    readonly property var actions: currentPage.actions
     function positionFor(key) {
         const saved = places.positions?.[key];
         return saved && ["left", "right"].includes(saved.side) && typeof saved.fraction === "number" ? {
@@ -93,6 +195,24 @@ Singleton {
     }
     function run(name) {
         menuOpen = false;
+        const action = catalog[name];
+        if (action?.panel) {
+            ShellState.toggle(action.panel);
+            return true;
+        }
+        if (action?.dispatch) {
+            Hyprland.dispatch(action.dispatch);
+            return true;
+        }
+        if (action?.exec) {
+            Quickshell.execDetached(action.exec);
+            return true;
+        }
+        if (action?.lua) {
+            deferred.lua = action.lua;
+            deferred.restart();
+            return true;
+        }
         if (name === "keyboard")
             Keyboard.request("toggle");
         else if (name === "window")
@@ -132,6 +252,13 @@ Singleton {
         const next = current + direction;
         if (current >= 0 && next >= 0 && next < slots.length)
             Hyprland.dispatch("hl.dsp.focus({ workspace = " + slots[next].id + " })");
+    }
+    // Lets the menu leave the screen before a screenshot editor captures it.
+    Timer {
+        id: deferred
+        property string lua: ""
+        interval: 250
+        onTriggered: Quickshell.execDetached(["hyprctl", "eval", lua])
     }
     Connections {
         target: Tablet

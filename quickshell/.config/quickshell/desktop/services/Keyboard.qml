@@ -165,6 +165,10 @@ Singleton {
     function focusIn(fieldPurpose) {
         hideTimer.stop();
         purpose = fieldPurpose;
+        // A field of a panel (the launcher search) keeps a keyboard that the panel would have closed, and
+        // brings it back over the panel.
+        if (shown && ShellState.panel !== "")
+            raise();
         if (!Config.oskAutoShow || !Tablet.active)
             return;
         if (!shown) {
@@ -188,6 +192,19 @@ Singleton {
         onTriggered: {
             if (root.autoShown && !root.locked)
                 root.setShown(false);
+        }
+    }
+    // A panel opening over a keyboard that a field opened (the terminal behind it) closes it unless the panel
+    // focuses a field of its own; a keyboard opened by hand stays and comes back on top.
+    Connections {
+        target: ShellState
+        function onPanelChanged() {
+            if (ShellState.panel === "" || !root.shown)
+                return;
+            if (root.autoShown)
+                hideTimer.restart();
+            else
+                root.raise();
         }
     }
     Connections {

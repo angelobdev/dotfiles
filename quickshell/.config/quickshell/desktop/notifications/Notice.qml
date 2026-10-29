@@ -153,7 +153,7 @@ Rectangle {
             ActionButton {
                 visible: !root.popup
                 Layout.alignment: Qt.AlignTop
-                implicitHeight: Math.max(24, summary.font.pixelSize + 8)
+                implicitHeight: Math.max(Theme.hit(24), summary.font.pixelSize + 8)
                 topPadding: 0
                 bottomPadding: 0
                 compact: true

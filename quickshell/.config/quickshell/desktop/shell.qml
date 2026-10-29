@@ -64,6 +64,13 @@ ShellRoot {
         function assist(action: string): bool {
             return Assist.request(action);
         }
+        // The menu open on a page (apps, window, system), for scripts and tests.
+        function assistPage(name: string): bool {
+            if (!Assist.pages.some(p => p.name === name))
+                return false;
+            Assist.page = name;
+            return Assist.request("menu");
+        }
         function windowMenu(): void {
             ShellState.requestWindowMenu();
         }

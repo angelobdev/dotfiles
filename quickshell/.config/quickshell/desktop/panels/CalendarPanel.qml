@@ -144,9 +144,9 @@ Overlay {
                         ActionButton {
                             required property var modelData
                             Layout.fillWidth: true
-                            Layout.preferredWidth: 40
+                            Layout.preferredWidth: Theme.hit(40)
                             implicitWidth: 0
-                            implicitHeight: 40
+                            implicitHeight: Theme.hit(40)
                             text: modelData.getDate()
                             highlighted: root.sameDay(modelData, root.selected)
                             opacity: modelData.getMonth() === root.month ? 1 : 0.4

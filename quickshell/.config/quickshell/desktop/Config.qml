@@ -18,10 +18,22 @@ QtObject {
     readonly property real dockMagnification: 1.4
     readonly property int dockTriggerHeight: 3
     readonly property int dockRevealDelay: 120
-    // Assist button (touch): the menu actions in order, and what a long press on the button runs.
-    // Actions: keyboard, assistant, window (the window menu), launcher, dock, controls, notifications, overview,
-    // workspacePrevious, workspaceNext, rotationLock.
-    readonly property var assistActions: ["keyboard", "assistant", "window", "launcher", "dock", "controls", "notifications", "overview", "workspacePrevious", "workspaceNext", "rotationLock"]
+    // Assist button (touch): the pages of its menu with their actions in order (names in services/Assist.qml:
+    // also window, the window menu), and what a long press on the button runs.
+    readonly property var assistPages: [
+        {
+            name: "apps",
+            actions: ["keyboard", "assistant", "launcher", "dock", "overview", "notifications", "controls", "workspacePrevious", "workspaceNext"]
+        },
+        {
+            name: "window",
+            actions: ["windowClose", "windowFullscreen", "windowFloating", "windowSplit", "windowLeft", "windowRight", "windowToPrevious", "windowToNext"]
+        },
+        {
+            name: "system",
+            actions: ["screenshotArea", "screenshotDisplay", "recording", "clipboard", "theming", "wallpaper", "nextWallpaper", "hints", "lock", "session", "rotationLock"]
+        }
+    ]
     readonly property string assistLongPress: "keyboard"
     // On-screen keyboard layout: osk/layouts/<name>.json, matching the Hyprland kb_layout.
     readonly property string oskLayout: "it"

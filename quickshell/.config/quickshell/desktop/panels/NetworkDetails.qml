@@ -149,8 +149,10 @@ ColumnLayout {
             spacing: 6
             InputField {
                 id: addressField
+                // Addresses: the on-screen keyboard opens on its numbers page (letters for IPv6 one tap away).
+                inputMethodHints: Qt.ImhFormattedNumbersOnly
                 Layout.fillWidth: true
-                implicitHeight: 36
+                implicitHeight: Theme.hit(36)
                 font.pixelSize: 13
                 placeholderText: I18n.tr("network.addressPlaceholder")
                 text: root.profile?.ipv4Address ?? ""
@@ -160,8 +162,10 @@ ColumnLayout {
                 Layout.fillWidth: true
                 InputField {
                     id: gatewayField
+                // Addresses: the on-screen keyboard opens on its numbers page (letters for IPv6 one tap away).
+                inputMethodHints: Qt.ImhFormattedNumbersOnly
                     Layout.fillWidth: true
-                    implicitHeight: 36
+                    implicitHeight: Theme.hit(36)
                     font.pixelSize: 13
                     placeholderText: I18n.tr("network.gatewayPlaceholder")
                     text: root.profile?.ipv4Gateway ?? ""
@@ -229,8 +233,10 @@ ColumnLayout {
             Layout.fillWidth: true
             InputField {
                 id: dnsField
+                // Addresses: the on-screen keyboard opens on its numbers page (letters for IPv6 one tap away).
+                inputMethodHints: Qt.ImhFormattedNumbersOnly
                 Layout.fillWidth: true
-                implicitHeight: 36
+                implicitHeight: Theme.hit(36)
                 font.pixelSize: 13
                 placeholderText: I18n.tr("network.dnsCustomPlaceholder")
                 text: root.dnsChoice === "custom" ? root.profile.dns.join(" ") : ""

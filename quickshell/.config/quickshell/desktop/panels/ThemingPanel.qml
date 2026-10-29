@@ -603,7 +603,7 @@ Overlay {
                                         required property int index
                                         readonly property bool selected: modelData === fontColumn.chosen
                                         width: fontList.width
-                                        implicitHeight: 36
+                                        implicitHeight: Theme.hit(36)
                                         alignLeft: true
                                         text: modelData === "" ? I18n.tr("theming.themeDefaultNamed", [fontColumn.themeFamily]) : modelData
                                         font.family: modelData === "" ? fontColumn.themeFamily : modelData
@@ -833,7 +833,7 @@ Overlay {
                 font.pixelSize: 12
             }
             Text {
-                text: Theming.busy ? I18n.tr("theming.working") : I18n.tr("theming.navigationHint")
+                text: Theming.busy ? I18n.tr("theming.working") : Tablet.active ? "" : I18n.tr("theming.navigationHint")
                 color: Theme.muted
                 font.family: Theme.font
                 font.pixelSize: 12
@@ -852,7 +852,7 @@ Overlay {
             InputField {
                 id: field
                 Layout.fillWidth: true
-                implicitHeight: 34
+                implicitHeight: Theme.hit(34)
                 placeholderText: entry.placeholder
                 font.family: Theme.font
                 font.pixelSize: 12

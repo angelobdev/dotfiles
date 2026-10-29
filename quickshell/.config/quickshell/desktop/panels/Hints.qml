@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell.Io
 import Quickshell.Hyprland
 import ".."
+import "../services"
 import "../components"
 
 Overlay {
@@ -11,6 +12,58 @@ Overlay {
     panelName: "hints"
     dialog: true
     property var bindings: []
+    // The touchscreen gestures (hypr/config/plugins.lua) and touch interactions of the shell: first in
+    // tablet mode, after the shortcuts otherwise.
+    readonly property var gestures: [
+        {
+            keys: I18n.tr("hints.gestures.threeSideways"),
+            name: I18n.tr("hints.gestures.workspace")
+        },
+        {
+            keys: I18n.tr("hints.gestures.threeUp"),
+            name: I18n.tr("launcher.title")
+        },
+        {
+            keys: I18n.tr("hints.gestures.threeDown"),
+            name: I18n.tr("controlCenter.title")
+        },
+        {
+            keys: I18n.tr("hints.gestures.threeHold"),
+            name: I18n.tr("hints.gestures.assist")
+        },
+        {
+            keys: I18n.tr("hints.gestures.fourSideways"),
+            name: I18n.tr("hints.gestures.moveWindow")
+        },
+        {
+            keys: I18n.tr("hints.gestures.fourUp"),
+            name: I18n.tr("hints.gestures.overview")
+        },
+        {
+            keys: I18n.tr("hints.gestures.fourDown"),
+            name: I18n.tr("notifications.title")
+        },
+        {
+            keys: I18n.tr("hints.gestures.twoHold"),
+            name: I18n.tr("hints.gestures.dragWindow")
+        },
+        {
+            keys: I18n.tr("hints.gestures.borderHold"),
+            name: I18n.tr("hints.gestures.resize")
+        },
+        {
+            keys: I18n.tr("hints.gestures.longPress"),
+            name: I18n.tr("hints.gestures.menu")
+        },
+        {
+            keys: I18n.tr("hints.gestures.swipeNotice"),
+            name: I18n.tr("hints.gestures.dismiss")
+        }
+    ].map(g => Object.assign(g, {
+            submap: "",
+            release: false,
+            category: I18n.tr("hints.categories.gestures")
+        }))
     property string error: ""
     readonly property var categories: [I18n.tr("launcher.title"), I18n.tr("hints.categories.shell"), I18n.tr("hints.categories.screenCapture"), I18n.tr("hints.categories.windows"), I18n.tr("hints.categories.workspaces"), I18n.tr("hints.categories.mouse"), I18n.tr("hints.categories.audioBrightness"), I18n.tr("session.title"), I18n.tr("hints.categories.other")]
     function category(bind) {
@@ -82,7 +135,9 @@ Overlay {
     onOpened: {
         search.clear();
         error = "";
-        search.forceActiveFocus();
+        // In tablet mode the search field waits for a tap: focused, it would open the keyboard just to browse.
+        if (!Tablet.active)
+            search.forceActiveFocus();
         refreshBindings();
     }
     Process {
@@ -120,7 +175,7 @@ Overlay {
             }
             spacing: 14
             Heading {
-                text: I18n.tr("hints.title")
+                text: Tablet.active ? I18n.tr("hints.titleTablet") : I18n.tr("hints.title")
             }
             InputField {
                 id: search
@@ -146,7 +201,7 @@ Overlay {
                 Layout.fillHeight: true
                 clip: true
                 spacing: 3
-                model: root.bindings.filter(b => (b.keys + " " + b.name + " " + b.submap + " " + b.category).toLowerCase().includes(search.text.toLowerCase()))
+                model: (Tablet.active ? root.gestures.concat(root.bindings) : root.bindings.concat(root.gestures)).filter(b => (b.keys + " " + b.name + " " + b.submap + " " + b.category).toLowerCase().includes(search.text.toLowerCase()))
                 section.property: "category"
                 section.criteria: ViewSection.FullString
                 section.delegate: Item {

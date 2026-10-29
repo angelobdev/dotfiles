@@ -71,11 +71,14 @@ Overlay {
         scroll.ScrollBar.vertical.position = 0;
         pageEnter.direction = -1;
         pageEnter.restart();
-        search.forceActiveFocus();
+        if (!Tablet.active)
+            search.forceActiveFocus();
     }
     onOpened: {
         search.clear();
-        search.forceActiveFocus();
+        // In tablet mode the search field waits for a tap: focused, it would open the keyboard just to browse.
+        if (!Tablet.active)
+            search.forceActiveFocus();
         NetworkInfo.refreshDetails(activeDevice?.name);
         NetworkInfo.refreshExtras();
     }

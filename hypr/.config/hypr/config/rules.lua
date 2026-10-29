@@ -104,11 +104,12 @@ hl.layer_rule({
     above_lock = 2,
 })
 
--- The dock, panels, the OSD and notification toasts animate themselves in Quickshell; a compositor fade on top would double the motion.
+-- The dock, panels, the OSD, notification toasts and the on-screen keyboard (re-mapped over panels) animate
+-- themselves in Quickshell or not at all; a compositor fade on top would double the motion or flash.
 hl.layer_rule({
     name = "desktop-shell-motion",
     match = {
-        namespace = "^desktop-(dock|overlay|osd|notifications)$"
+        namespace = "^desktop-(dock|overlay|osd|notifications|osk)$"
     },
     no_anim = true,
 })

@@ -114,7 +114,7 @@ PanelWindow {
         BarButton {
             iconSource: Quickshell.iconPath("fedora-logo-icon", "start-here")
             iconSize: 18
-            implicitWidth: 32
+            implicitWidth: Theme.hit(32)
             tooltip: I18n.tr("launcher.title")
             onClicked: ShellState.toggle("launcher", bar.screen)
         }

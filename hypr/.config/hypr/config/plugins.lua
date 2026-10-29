@@ -114,6 +114,16 @@ if plugins.hyprgrass then
         },
         action = hl.dsp.exec_cmd(shell .. " assist toggle"),
     })
+    -- Two fingers held, then moved, drag the window under them like Super and the mouse (a two-finger
+    -- scroll moves at once, so it never becomes a long press).
+    touch.bind({
+        pattern = {
+            kind = "longpress",
+            fingers = 2
+        },
+        action = hl.dsp.window.drag(),
+        mouse = true,
+    })
     -- The window follows to the workspace beside it, empty ones included.
     swipe(4, "left", hl.dsp.window.move({ workspace = "r-1" }))
     swipe(4, "right", hl.dsp.window.move({ workspace = "r+1" }))

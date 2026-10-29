@@ -134,7 +134,7 @@ Overlay {
                         required property bool fileIsDir
                         required property int index
                         width: files.width
-                        implicitHeight: 40
+                        implicitHeight: Theme.hit(40)
                         text: fileName
                         iconName: fileIsDir ? "folder" : "image"
                         alignLeft: true

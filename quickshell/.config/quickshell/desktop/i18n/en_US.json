@@ -270,7 +270,8 @@
       "screenCapture": "Screen capture",
       "shell": "Shell & panels",
       "windows": "Windows",
-      "workspaces": "Workspaces"
+      "workspaces": "Workspaces",
+      "gestures": "Touch gestures"
     },
     "empty": "No shortcuts found",
     "errors": {
@@ -285,7 +286,29 @@
       "other": "%1 keybindings from the current session"
     },
     "title": "Hints · Keyboard shortcuts",
-    "tooltip": "Hints · Shortcuts"
+    "tooltip": "Hints · Shortcuts",
+    "titleTablet": "Hints · Gestures and shortcuts",
+    "gestures": {
+      "threeSideways": "Three fingers ← / →",
+      "workspace": "Next / previous workspace",
+      "threeUp": "Three fingers ↑",
+      "threeDown": "Three fingers ↓",
+      "threeHold": "Three-finger long press",
+      "assist": "Assist button: show / hide",
+      "fourSideways": "Four fingers ← / →",
+      "moveWindow": "Move the window to the next / previous workspace",
+      "fourUp": "Four fingers ↑",
+      "overview": "Overview",
+      "fourDown": "Four fingers ↓",
+      "borderHold": "Long press on a window border",
+      "resize": "Resize the window",
+      "longPress": "Long press",
+      "menu": "Menu, like a right click (dock, launcher, tray, window title)",
+      "swipeNotice": "Swipe a notification sideways",
+      "dismiss": "Dismiss it",
+      "twoHold": "Two-finger long press, then drag",
+      "dragWindow": "Move the window"
+    }
   },
   "idle": {
     "automatic": "Automatic idle",
@@ -304,7 +327,8 @@
     "navigationHint": "↑ ↓ select    Enter open    Ctrl+P or right click: pin to dock    Esc close",
     "searchPlaceholder": "Search applications…",
     "terminalSuffix": "  [terminal]",
-    "title": "Applications"
+    "title": "Applications",
+    "touchHint": "Tap: open    Long press: pin to dock"
   },
   "media": {
     "choosePlayer": "Choose player",
@@ -641,7 +665,30 @@
       "workspaceNext": "Next workspace",
       "keyboard": "Keyboard",
       "assistant": "AI assistant",
-      "window": "Window"
+      "window": "Window",
+      "hints": "Shortcuts and gestures",
+      "windowClose": "Close",
+      "windowFullscreen": "Fullscreen",
+      "windowFloating": "Floating",
+      "windowLeft": "Move left",
+      "windowRight": "Move right",
+      "windowToPrevious": "To previous workspace",
+      "windowToNext": "To next workspace",
+      "windowSplit": "Split direction",
+      "screenshotArea": "Screenshot area",
+      "screenshotDisplay": "Screenshot display",
+      "recording": "Record screen",
+      "clipboard": "Clipboard",
+      "theming": "Theming",
+      "wallpaper": "Wallpaper",
+      "nextWallpaper": "Next wallpaper",
+      "lock": "Lock",
+      "session": "Session"
+    },
+    "pages": {
+      "apps": "Apps",
+      "window": "Window",
+      "system": "System"
     }
   },
   "osk": {

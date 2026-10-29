@@ -94,8 +94,10 @@ PanelWindow {
     Card {
         id: menu
         visible: Assist.menuOpen
-        width: grid.implicitWidth + 24
-        height: grid.implicitHeight + 24
+        // As wide as four buttons whatever the page; as tall as the longest page, so it does not jump.
+        readonly property int rows: Math.max(...Assist.pages.map(p => Math.ceil(p.actions.length / 4)), 1)
+        width: 4 * 100 + 3 * 8 + 24
+        height: pageChips.implicitHeight + 10 + rows * 84 + (rows - 1) * 8 + 24
         onWidthChanged: Qt.callLater(root.placeMenu)
         onHeightChanged: Qt.callLater(root.placeMenu)
         color: Theme.background
@@ -111,9 +113,29 @@ PanelWindow {
                 duration: Theme.motionFast
             }
         }
+        ChoiceChips {
+            id: pageChips
+            anchors {
+                top: parent.top
+                left: parent.left
+                topMargin: 12
+                leftMargin: 12
+            }
+            options: Assist.pages.map(p => ({
+                        name: p.name,
+                        label: p.name === "window" ? I18n.tr("assist.pages.window") : p.name === "system" ? I18n.tr("assist.pages.system") : I18n.tr("assist.pages.apps")
+                    }))
+            current: Assist.currentPage.name
+            onChosen: name => Assist.page = name
+        }
         GridLayout {
             id: grid
-            anchors.centerIn: parent
+            anchors {
+                top: pageChips.bottom
+                left: parent.left
+                topMargin: 10
+                leftMargin: 12
+            }
             columns: 4
             rowSpacing: 8
             columnSpacing: 8

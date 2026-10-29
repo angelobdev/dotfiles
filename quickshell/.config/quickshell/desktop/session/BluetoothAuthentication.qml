@@ -108,6 +108,8 @@ PanelWindow {
                 visible: root.inputRequired
                 Layout.fillWidth: true
                 maximumLength: root.prompt?.kind === "RequestPasskey" ? 6 : 16
+                // A passkey is six digits: the on-screen keyboard opens on its digits page.
+                inputMethodHints: root.prompt?.kind === "RequestPasskey" ? Qt.ImhDigitsOnly : Qt.ImhNone
                 onAccepted: if (root.valid)
                     BluetoothAgent.reply(true, text)
             }
