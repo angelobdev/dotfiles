@@ -420,3 +420,7 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - hyprlock text through i18n: an Italian render gives "Tocca il sensore d’impronta per sbloccare"; the Graphite test renders as en_US.
 - Touch and stylus by device: `hl.device` for the two ELAN devices; `getoption` cannot read device options; the user confirmed touch and stylus alignment after a rotation on the OmniBook.
 - Electron: `electron.py apply` wrote the VS Code override and updated the hand-made ChatGPT entry (backup taken first); both validate; a VS Code started with the flags ran native Wayland, and its command palette activated the input method (purpose `normal`).
+
+## Electron entry fix, 2026-10-29
+
+- Electron: `stow.py dry-run` reported a conflict on `shell` because `electron.py` had replaced the ChatGPT link with a generated copy. `stow.py apply` backed the copy up (`~/.local/state/dotfiles/backups/20261029-191244-205186`) and restored the link; the repo entry now has the three flags, the same Exec line as the copy. `electron.py status` lists VS Code only (current), and `apply` left its entry untouched.

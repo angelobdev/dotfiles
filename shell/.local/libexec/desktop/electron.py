@@ -5,10 +5,11 @@ Fedora launchers of Electron apps read no flags file, so for every desktop ID in
 ~/.config/desktop/electron-apps.conf this writes ~/.local/share/applications/<id>.desktop: the entry of the
 app with the flags of ~/.config/electron-flags.conf after the program on every Exec line. The copy takes
 precedence over the system one and keeps its ID. An entry that exists only in the user directory (made by
-hand) is updated in place. Flags these files used to carry for the same purpose are replaced, not doubled.
+hand) is updated in place. A user entry that is a link (a Stow package of the dotfiles) is left alone: it
+carries its flags itself. Flags these files used to carry for the same purpose are replaced, not doubled.
 
 apply: write the entries (run by desktop-session at login, so package updates are followed).
-status: print, per app, the source entry and whether the generated one is current.
+status: print, per app, the source entry, whether the generated one is current and whether it is a link.
 """
 from i18n import tr
 import json
@@ -103,6 +104,9 @@ def plan():
     for app_id in lines(APPS):
         source = source_for(app_id)
         target = TARGET / (app_id + '.desktop')
+        if target.is_symlink():
+            result.append({'app': app_id, 'source': str(target), 'current': False, 'linked': True})
+            continue
         if source is None:
             result.append({'app': app_id, 'source': None, 'current': False})
             continue
@@ -126,10 +130,10 @@ def main():
     arguments = sys.argv[1:]
     if arguments == ['apply']:
         for entry in plan():
-            if entry['source'] and not entry['current']:
+            if 'text' in entry and not entry['current']:
                 write(entry['target'], entry['text'])
     elif arguments == ['status']:
-        print(json.dumps([{key: value for key, value in entry.items() if key in ('app', 'source', 'current')}
+        print(json.dumps([{key: value for key, value in entry.items() if key in ('app', 'source', 'current', 'linked')}
                           for entry in plan()], indent=2))
     else:
         print(tr('electron.errors.usage'), file=sys.stderr)

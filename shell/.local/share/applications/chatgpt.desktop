@@ -2,7 +2,7 @@
 Name=ChatGPT
 Comment=ChatGPT by OpenAI
 GenericName=AI assistant
-Exec=chatgpt --ozone-platform=wayland %U
+Exec=chatgpt --ozone-platform-hint=auto --enable-wayland-ime --wayland-text-input-version=3 %U
 TryExec=chatgpt
 Icon=chatgpt
 Type=Application
