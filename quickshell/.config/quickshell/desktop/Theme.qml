@@ -35,6 +35,13 @@ Singleton {
     // radii written in the components are kept as they are.
     readonly property real cornerScale: Math.max(0, colors.rounding) / 16
     readonly property int radius: corner(18)
+    // Shell surfaces take the window border chosen in the Theming panel: its width, the active colour for
+    // what has the focus (panels, menus) and the inactive one for the rest (dock, OSD, notifications).
+    // Without a border they keep the thin neutral stroke.
+    readonly property int borderSize: Math.max(0, colors.borderSize)
+    readonly property int frameWidth: borderSize > 0 ? borderSize : 1
+    readonly property color frameActive: borderSize > 0 ? colors.activeBorder : stroke
+    readonly property color frameInactive: borderSize > 0 ? colors.inactiveBorder : stroke
     readonly property int panelPadding: 16
     readonly property int dialogPadding: 22
     // Motion shared with Hyprland's "out" and "accel" curves in appearance.lua.
@@ -79,6 +86,9 @@ Singleton {
             property string iconSource: "desktop"
             property string barStyle: "shade"
             property real rounding: 16
+            property real borderSize: 0
+            property color activeBorder: "#d4d6dc"
+            property color inactiveBorder: "#44474e"
         }
     }
 }

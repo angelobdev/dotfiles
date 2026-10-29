@@ -22,5 +22,8 @@
   "font": "{{ fonts.sans }}",
   "iconSource": "{{ preferences.iconSource }}",
   "barStyle": "{{ preferences.barStyle }}",
-  "rounding": {{ hyprland.rounding }}
+  "rounding": {{ hyprland.rounding }},
+  "borderSize": {{ hyprland.borderSize }},
+  "activeBorder": "{{ hyprland.activeBorder | qt }}",
+  "inactiveBorder": "{{ hyprland.inactiveBorder | qt }}"
 }

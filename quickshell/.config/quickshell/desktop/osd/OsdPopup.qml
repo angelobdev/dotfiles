@@ -33,8 +33,8 @@ PanelWindow {
         height: 96
         radius: Theme.radius
         color: Theme.surface
-        border.width: 1
-        border.color: Theme.stroke
+        border.width: Theme.frameWidth
+        border.color: Theme.frameInactive
         opacity: Osd.visible ? 1 : 0
         transform: Translate {
             y: 8 * (1 - card.opacity)

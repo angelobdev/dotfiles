@@ -191,7 +191,8 @@ PanelWindow {
             height: Config.dockIconSize + 20
             radius: Theme.radius
             color: Theme.surface
-            border.color: Theme.stroke
+            border.width: Theme.frameWidth
+            border.color: Theme.frameInactive
             opacity: root.shown ? 1 : 0
             Behavior on y {
                 NumberAnimation {

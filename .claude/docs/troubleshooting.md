@@ -308,3 +308,9 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - Back to Auto and `desktop-theme set gruvbox`: village-square came back, `prefer-dark`, and no further generation ran (`status` → `dynamicTheme.active` false).
 - Without matugen, the card showed the install command and could not be clicked, and the mode and palette rows were hidden.
 - `test_theme.py` checks the mapping, the hues and contrast of every ANSI colour in both modes, the light bar shade, and a real matugen run when it is installed.
+
+## Shell surface borders verification
+
+- `window-style --border 3` on the dynamic theme rendered `borderSize 3`, `activeBorder #acc7ff` and `inactiveBorder #44474e` into `quickshell.json`, and the shell followed live.
+- The Theming panel had a 3 px accent frame. The dock, a `notify-send` popup and the Keep awake OSD had 3 px frames in the border colour.
+- With None, `Theme.frameWidth` is 1 and the colours are `stroke`, so every surface draws as before. The Graphite test checks the new `quickshell.json` keys against the `Theme.qml` defaults.

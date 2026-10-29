@@ -23,8 +23,8 @@ Menu {
         implicitHeight: 12
         radius: Theme.corner(12)
         color: Theme.background
-        border.width: 1
-        border.color: Theme.stroke
+        border.width: Theme.frameWidth
+        border.color: Theme.frameActive
     }
     QsMenuOpener {
         id: opener

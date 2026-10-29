@@ -34,8 +34,8 @@ Rectangle {
     implicitHeight: list.contentHeight + 12
     radius: Theme.corner(12)
     color: Theme.background
-    border.width: 1
-    border.color: Theme.stroke
+    border.width: Theme.frameWidth
+    border.color: Theme.frameActive
     onEntriesChanged: list.currentIndex = -1
     Keys.onUpPressed: step(-1)
     Keys.onDownPressed: step(1)

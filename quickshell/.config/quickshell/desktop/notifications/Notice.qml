@@ -23,6 +23,9 @@ Rectangle {
     }
     color: Theme.raised
     radius: Theme.corner(10)
+    // Popups are surfaces of their own and take the window border; entries in the center sit in its card.
+    border.width: popup ? Theme.borderSize : 0
+    border.color: Theme.frameInactive
     implicitHeight: column.implicitHeight + 24
     MouseArea {
         anchors.fill: parent
