@@ -191,11 +191,19 @@ Folding the OmniBook screen back into tablet posture turns tablet mode on; unfol
 
 A round floating button on the built-in display, for reaching the shell by touch. It appears with tablet mode and goes away in laptop mode; a three-finger long press (or `desktop-shell assist show|hide|toggle`) shows or hides it at any time, until the posture changes again.
 - **Drag** it with a finger or the mouse: it snaps to the nearer side edge, and the place is remembered for each monitor and orientation. After 3 seconds untouched it fades and slides halfway into the edge.
-- **Tap** opens a menu of large buttons beside it: Apps, Dock, Control Center, Notifications, Overview, Previous / Next workspace (one step along the bar's workspaces, empty ones included) and Rotation lock (only where there is an accelerometer). A tap outside closes it; `desktop-shell assist menu` opens it from scripts.
-- **Long press** runs a quick action, Apps by default.
+- **Tap** opens a menu of large buttons beside it: Keyboard, Apps, Dock, Control Center, Notifications, Overview, Previous / Next workspace (one step along the bar's workspaces, empty ones included) and Rotation lock (only where there is an accelerometer). A tap outside closes it; `desktop-shell assist menu` opens it from scripts.
+- **Long press** runs a quick action, the on-screen keyboard by default.
 - It never takes keyboard focus, so the window underneath keeps typing.
 
 `Config.qml` sets `assistActions` (which actions, in order) and `assistLongPress`. Positions live in `~/.local/state/desktop-shell/assist.json`.
+
+## On-screen keyboard
+
+Opened from the assist button (Keyboard, or a long press on the button) or with `desktop-shell keyboard show|hide|toggle`. It never takes focus: keys go to the window that has it, as from the physical keyboard, with the same Italian layout.
+- **Docked** (the default): full width at the bottom of the built-in display, keys 64 px tall (about 11 mm on the 14" panel) and centred up to 1100 px; windows shrink above it. **Floating**: up to 900 px wide with 56 px keys, over the windows, moved by dragging its top strip. The strip switches between the two (`desktop-shell keyboard float|dock`) and hides the keyboard; the choice is remembered.
+- **Pages:** letters, `?123` (digits and common symbols) and `=\<` (brackets, braces and the rest). Shift applies to the next key; a quick second tap locks it. The small character in a corner is what Shift types.
+- **Accents:** a long press on a, e, i, o or u offers à, è, é, ì, ò, ù in the strip; any other key held types once. Backspace repeats while held.
+- **More keys** (the keyboard button on the strip) adds Esc, Tab, Ctrl, Alt and arrows; Ctrl and Alt apply to the next key.
 
 ## Panel data
 

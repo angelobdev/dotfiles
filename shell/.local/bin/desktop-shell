@@ -78,6 +78,12 @@ sys.exit(0 if running else 1)
         esac
         exec qs ipc -p "$config" call desktop "$target" -- "$2"
         ;;
+    keyboard)
+        case "${2:-}" in show|hide|toggle|float|dock) ;;
+            *) echo 'Usage: desktop-shell keyboard {show|hide|toggle|float|dock}' >&2; exit 2 ;;
+        esac
+        exec qs ipc -p "$config" call desktop keyboard -- "$2"
+        ;;
     assist)
         case "${2:-}" in show|hide|toggle|menu) ;;
             *) echo 'Usage: desktop-shell assist {show|hide|toggle|menu}' >&2; exit 2 ;;
@@ -85,5 +91,5 @@ sys.exit(0 if running else 1)
         exec qs ipc -p "$config" call desktop assist -- "$2"
         ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|restart [theming TAB]|status|toggle PANEL|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|assist ACTION}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|restart [theming TAB]|status|toggle PANEL|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|assist ACTION|keyboard ACTION}' >&2; exit 2 ;;
 esac

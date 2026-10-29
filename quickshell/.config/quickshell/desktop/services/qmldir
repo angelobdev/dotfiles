@@ -18,3 +18,4 @@ singleton SessionState 1.0 SessionState.qml
 singleton DynamicTheme 1.0 DynamicTheme.qml
 singleton Tablet 1.0 Tablet.qml
 singleton Assist 1.0 Assist.qml
+singleton Keyboard 1.0 Keyboard.qml

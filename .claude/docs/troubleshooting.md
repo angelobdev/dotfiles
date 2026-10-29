@@ -334,3 +334,12 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - `geometry tests` (`tst_assist_model.qml`): placing, tucking, snapping, the round trip and the menu origin.
 - The Hyprland plugins were not loaded in this session: Hyprland moved from 0.56.2-17 to -20 on 2026-10-24 and `plugins.py` suspends autoload for an unverified build ("Build differs from the verified version"). The three-finger long press needs them rebuilt (`./scripts/install-hypr-plugins.py`).
 - Rebuild: `build.py` pinned 0.56.2-17 and refused the -20 build. Upstream version and ABI hash were unchanged (the COPR changelog only updates Nix inputs), so the pin moved to -20 with the same plugin revisions. The new digest needs `hyprpm remove dotfiles-desktop` before `install-hypr-plugins.py` ("Packaging has changed"). Afterwards all five plugins loaded, `plugins.py` passed and `plugin:hyprgrass` options were applied.
+
+## On-screen keyboard verification
+
+- Hyprland 0.56 advertises `zwp_virtual_keyboard_manager_v1`, `zwp_input_method_manager_v2`, `zwp_text_input_manager_v3` and `zwp_text_input_manager_v1`.
+- `osk.py check` against the `it` keymap: è/é on code 26, @ # € with AltGr, [ ] { } with AltGr (and Shift), ~ on AltGr+ì; every label of `it.json` is checked by `test_osk.py`. Hyprland reports unset options as `[[EMPTY]]`, which libxkbcommon rejected as a variant until it was mapped to an empty string.
+- Typing into a test Kitty window (focus checked first) gave `ciaoèé@` and Enter. A client that exits right after writing loses its keys; the shell keeps the helper running. The virtual keyboard shows in `hyprctl devices` as `hl-virtual-keyboard-python3.14`.
+- Docked: windows shrank above the keyboard, keys centred at 1100 px on the 1728 px screen. Floating: centred near the bottom once the surface has its size (a position computed on map put it at the top left), framed with the window border.
+- The assist menu has nine actions in a 3×3 grid with Keyboard first.
+- After the first touch test the user asked for larger keys: docked 46 → 64 px (about a third of the landscape height), floating 42 → 56 px and 640 → 900 px wide, with larger labels, icons and strip.

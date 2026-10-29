@@ -12,12 +12,13 @@ import "dock"
 import "panels"
 import "controlcenter"
 import "notifications"
+import "osk"
 import "session"
 import "osd"
 import "services"
 
 ShellRoot {
-    // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher, the tablet posture and the assist button.
+    // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher, the tablet posture, the assist button and the on-screen keyboard.
     property var audio: Audio
     property var notices: Notices
     property var clipboard: Clipboard
@@ -52,6 +53,9 @@ ShellRoot {
         }
         function assist(action: string): bool {
             return Assist.request(action);
+        }
+        function keyboard(action: string): bool {
+            return Keyboard.request(action);
         }
         function close(): void {
             ShellState.close();
@@ -124,6 +128,12 @@ ShellRoot {
                     transform: Tablet.transform,
                     rotationLock: Tablet.locked
                 },
+                keyboard: {
+                    shown: Keyboard.shown,
+                    floating: Keyboard.floating,
+                    ready: Keyboard.ready,
+                    page: Keyboard.page
+                },
                 assist: {
                     shown: Assist.shown,
                     menu: Assist.menuOpen,
@@ -159,6 +169,7 @@ ShellRoot {
     }
     OsdPopup {}
     AssistWindow {}
+    KeyboardWindow {}
     Launcher {}
     Controls {}
     NetworkPanel {}

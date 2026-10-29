@@ -16,6 +16,11 @@ Singleton {
     readonly property string stateFile: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-shell/assist.json"
     // Every action the menu can offer; Config.assistActions picks and orders them.
     readonly property var catalog: ({
+            keyboard: {
+                icon: "keyboard",
+                label: I18n.tr("assist.actions.keyboard"),
+                active: Keyboard.shown
+            },
             launcher: {
                 icon: "apps",
                 label: I18n.tr("assist.actions.apps")
@@ -80,7 +85,9 @@ Singleton {
     }
     function run(name) {
         menuOpen = false;
-        if (name === "launcher" || name === "controls" || name === "notifications")
+        if (name === "keyboard")
+            Keyboard.request("toggle");
+        else if (name === "launcher" || name === "controls" || name === "notifications")
             ShellState.toggle(name);
         else if (name === "dock")
             Dock.request("toggle");

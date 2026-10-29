@@ -67,7 +67,7 @@ end)
 hl.layer_rule({
     name = "desktop-glass",
     match = {
-        namespace = "^desktop-(bar|dock|overlay|notifications|osd|share-picker)$"
+        namespace = "^desktop-(bar|dock|overlay|notifications|osd|share-picker|osk)$"
     },
     blur = true,
     ignore_alpha = 0.2,

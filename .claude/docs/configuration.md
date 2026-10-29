@@ -61,11 +61,17 @@ To add text, add the same path to both files and use `I18n.tr("clipboard.deleteI
 ## Saved shell state
 
 `~/.local/state/desktop-shell/`:
-- **`session.json`** `{"keepAwake", "quiet", "rotationLock"}`: Keep awake, Do Not Disturb and rotation lock (`services/SessionState.qml`). A missing file means all off.
+- **`session.json`** `{"keepAwake", "quiet", "rotationLock", "oskFloating", "oskExtra"}`: Keep awake, Do Not Disturb, rotation lock and the on-screen keyboard form (`services/SessionState.qml`). A missing file means all off.
 - **`notifications.json`** `{"entries": [...]}`: the notification history (app name and icon, summary, body, arrival time). It is rewritten 500 ms after a notification arrives or closes and after Delete or Clear all. Entries are capped at 50 and dropped after 7 days on load. Icons a notification served itself (`image://`) are not kept.
 - **`dock.json`**: dock pins.
 
 Delete a file to reset it. `desktop-shell keep-awake|dnd|rotation-lock toggle|on|off` sets the switches from scripts.
+
+## On-screen keyboard
+
+- **Layout:** `osk/layouts/<Config.oskLayout>.json` (`it`): pages of rows, each key an evdev code with its label, optional modifier mask (Shift 1, Ctrl 4, Alt 8, AltGr 128) and Shift label; rows are 10 units wide. `accents` lists the long-press variants and `extra` the optional row. `test_osk.py` checks every label against what the key types in the XKB keymap.
+- **Typing:** `libexec/desktop/osk.py run`, started the first time the keyboard opens and then kept, creates a `zwp_virtual_keyboard_v1` with the keymap of Hyprland `input:kb_layout`/`kb_variant`/`kb_options` (compiled by libxkbcommon), so keys mean what the physical keyboard would. The shell writes `key CODE MODS` lines to it. It speaks the Wayland wire protocol directly: no packages beyond Python and libxkbcommon. `osk.py check CODE MODS` prints what a key types.
+- **Surfaces:** layer namespace `desktop-osk`, blurred like the panels. Docked it is a Top layer anchored to the bottom with an exclusive zone; floating, a full-screen Overlay layer whose input region is the keyboard. Neither takes keyboard focus.
 
 ## Tablet mode and rotation
 

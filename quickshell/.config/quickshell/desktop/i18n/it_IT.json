@@ -638,7 +638,29 @@
       "notifications": "Notifiche",
       "overview": "Panoramica",
       "workspacePrevious": "Workspace precedente",
-      "workspaceNext": "Workspace successivo"
+      "workspaceNext": "Workspace successivo",
+      "keyboard": "Tastiera"
+    }
+  },
+  "osk": {
+    "title": "Tastiera",
+    "extra": "Altri tasti",
+    "float": "Tastiera flottante",
+    "dock": "Tastiera ancorata",
+    "hide": "Nascondi tastiera",
+    "keys": {
+      "esc": "Esc",
+      "tab": "Tab",
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "letters": "ABC",
+      "symbols": "?123",
+      "more": "=\\<"
+    },
+    "errors": {
+      "usage": "Uso: osk.py run | check CODICE MODIFICATORI",
+      "keymap": "Nessuna keymap XKB per il layout %1",
+      "protocol": "Il compositor non offre %1"
     }
   }
 }

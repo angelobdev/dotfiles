@@ -638,7 +638,29 @@
       "notifications": "Notifications",
       "overview": "Overview",
       "workspacePrevious": "Previous workspace",
-      "workspaceNext": "Next workspace"
+      "workspaceNext": "Next workspace",
+      "keyboard": "Keyboard"
+    }
+  },
+  "osk": {
+    "title": "Keyboard",
+    "extra": "More keys",
+    "float": "Floating keyboard",
+    "dock": "Docked keyboard",
+    "hide": "Hide keyboard",
+    "keys": {
+      "esc": "Esc",
+      "tab": "Tab",
+      "ctrl": "Ctrl",
+      "alt": "Alt",
+      "letters": "ABC",
+      "symbols": "?123",
+      "more": "=\\<"
+    },
+    "errors": {
+      "usage": "Usage: osk.py run | check CODE MODS",
+      "keymap": "No XKB keymap for the layout %1",
+      "protocol": "The compositor does not offer %1"
     }
   }
 }
