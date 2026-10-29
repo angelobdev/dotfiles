@@ -61,7 +61,7 @@ To add text, add the same path to both files and use `I18n.tr("clipboard.deleteI
 ## Saved shell state
 
 `~/.local/state/desktop-shell/`:
-- **`session.json`** `{"keepAwake", "quiet", "rotationLock", "oskFloating", "oskExtra"}`: Keep awake, Do Not Disturb, rotation lock and the on-screen keyboard form (`services/SessionState.qml`). A missing file means all off.
+- **`session.json`** `{"keepAwake", "quiet", "rotationLock", "oskFloating", "oskExtra", "nightShiftMode", "nightShiftTemperature"}`: Keep awake, Do Not Disturb, rotation lock and the on-screen keyboard form (`services/SessionState.qml`). A missing file means all off.
 - **`notifications.json`** `{"entries": [...]}`: the notification history (app name and icon, summary, body, arrival time). It is rewritten 500 ms after a notification arrives or closes and after Delete or Clear all. Entries are capped at 50 and dropped after 7 days on load. Icons a notification served itself (`image://`) are not kept.
 - **`dock.json`**: dock pins.
 
@@ -94,7 +94,7 @@ The first pin change (menu, drag, launcher) writes `~/.local/state/desktop-shell
 Edit `quickshell/.config/quickshell/desktop/Config.qml`. Configuration is declarative, with no UI editor:
 
 ```qml
-readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle", "rotation"]
+readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "switches"]
 readonly property int controlCenterWidth: 400
 readonly property bool expandMonitors: false
 readonly property bool expandAudioDevices: false
@@ -105,7 +105,9 @@ readonly property var brightnessDevices: ({})
 
 `dnsPresets` lists the DNS choices in the network details view (Cloudflare, Quad9, Google, and AdGuard by default); each preset gives IPv4 and IPv6 servers. Applying a preset or custom servers sets `ipv4/ipv6.dns` with `ignore-auto-dns` on the saved NetworkManager profile and reapplies it to an active device without disconnecting; **Automatic** restores the router's DNS.
 
-Removing a name disables its module; reordering the list changes the layout. `rotation` hides itself where there is no accelerometer. Unknown and duplicate names are ignored. Each module has its own file in `controlcenter/`. Network and Bluetooth each occupy half a row; other modules occupy a full row. The panel scrolls when expanded sections exceed the available space. If the primary monitor is disconnected, the first connected display is used.
+Removing a name disables its module; reordering the list changes the layout. `switches` is the 2×2 grid of Do Not Disturb, Keep awake, Rotation lock and Night shift; the full-width rows `doNotDisturb`, `idle` and `rotation` remain available instead. `rotation` and the Rotation lock tile hide themselves where there is no accelerometer.
+
+Night shift (`services/NightShift.qml`) runs `hyprsunset -t <K>` while it is on and stops it to turn it off (the compositor drops the gamma ramp of a client that goes). A temperature change while on goes through `hyprctl hyprsunset temperature`. `Config.qml` sets `nightShiftTemperature` (4000, until changed in the Control Center), `nightShiftStart` and `nightShiftEnd`; `session.json` keeps `nightShiftMode` and `nightShiftTemperature`. It needs `sudo dnf install hyprsunset` (nett00n COPR); without it the tile says so. Unknown and duplicate names are ignored. Each module has its own file in `controlcenter/`. Network and Bluetooth each occupy half a row; other modules occupy a full row. The panel scrolls when expanded sections exceed the available space. If the primary monitor is disconnected, the first connected display is used.
 
 Brightness uses hardware control: a single eDP/LVDS/DSI panel backlight is detected automatically and controlled through `brightnessctl`. Brightness keys retain control of the built-in backlight. For multiple backlights or external monitors, explicitly associate the name returned by `hyprctl monitors` with a device:
 

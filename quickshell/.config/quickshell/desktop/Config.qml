@@ -30,8 +30,13 @@ QtObject {
     // In tablet mode the shell hit targets (bar, buttons, switches, rows, dock icons) grow by this factor.
     readonly property real touchScale: 1.25
     // Order and presence of modules. Unknown names are ignored.
-    readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle", "rotation"]
+    readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "switches"]
     readonly property int controlCenterWidth: 400
+    // Night shift (hyprsunset): its temperature until changed in the Control Center (K), and the automatic
+    // window, which may cross midnight.
+    readonly property int nightShiftTemperature: 4000
+    readonly property string nightShiftStart: "20:00"
+    readonly property string nightShiftEnd: "07:00"
     readonly property bool expandMonitors: false
     readonly property bool expandAudioDevices: false
     // DNS choices in the network details view; each preset lists IPv4 and IPv6 servers.

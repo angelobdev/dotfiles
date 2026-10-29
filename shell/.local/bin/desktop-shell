@@ -66,10 +66,11 @@ sys.exit(0 if running else 1)
         echo 'Usage: desktop-shell dock {show|hide|toggle|touch|launch 1-9}' >&2
         exit 2
         ;;
-    keep-awake|dnd|tablet|rotation-lock)
-        case "${2:-}" in toggle|on|off) ;;
-            *) echo "Usage: desktop-shell $1 {toggle|on|off}" >&2; exit 2 ;;
-        esac
+    keep-awake|dnd|tablet|rotation-lock|night-shift)
+        # Night shift also has its automatic mode.
+        actions='toggle|on|off'
+        [[ $1 == night-shift ]] && actions+='|auto'
+        [[ "|$actions|" == *"|${2:-}|"* ]] || { echo "Usage: desktop-shell $1 {$actions}" >&2; exit 2; }
         # tablet: the tablet mode switch reports through here (config/tablet.lua). Posture changes go to the
         # journal (journalctl -t desktop-shell) with the process that asked, to follow them around the lock.
         if [[ $1 == tablet ]]; then
@@ -79,6 +80,7 @@ sys.exit(0 if running else 1)
             dnd) target=quiet ;;
             tablet) target=tablet ;;
             rotation-lock) target=rotationLock ;;
+            night-shift) target=nightShift ;;
             *) target=keepAwake ;;
         esac
         exec qs ipc -p "$config" call desktop "$target" -- "$2"
@@ -98,5 +100,5 @@ sys.exit(0 if running else 1)
         ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|restart [theming TAB]|status|toggle PANEL|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|restart [theming TAB]|status|toggle PANEL|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
 esac

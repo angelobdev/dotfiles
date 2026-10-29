@@ -672,5 +672,19 @@
     "movePrevious": "Move to previous workspace",
     "moveNext": "Move to next workspace",
     "close": "Close window"
+  },
+  "nightShift": {
+    "title": "Night shift",
+    "missing": "Install hyprsunset",
+    "kelvin": "%1 K",
+    "until": "On until %1",
+    "from": "From %1",
+    "schedule": "Automatic warms the screen from %1 to %2; a tap on the tile switches it until the next of those times.",
+    "temperature": "Colour temperature",
+    "modes": {
+      "off": "Off",
+      "on": "On",
+      "auto": "Automatic"
+    }
   }
 }

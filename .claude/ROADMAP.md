@@ -161,7 +161,7 @@ The assistant lives in a Kitty window on the special workspace `ai` (`Super + A`
 
 ### Control Center switches
 
-- [ ] The final switches in a 2×2 grid: Do Not Disturb, Keep awake, Rotation lock and a new Night shift (hyprsunset, which `hyprctl hyprsunset` already drives), each a compact square tile with icon, name and state.
+- [x] The final switches in a 2×2 grid: Do Not Disturb, Keep awake, Rotation lock and a new Night shift (hyprsunset, which `hyprctl hyprsunset` already drives), each a compact square tile with icon, name and state.
 
 ### Touchscreen support (epic)
 

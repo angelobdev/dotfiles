@@ -42,6 +42,7 @@ var names = {
     "microphone-muted": ["microphone-sensitivity-muted-symbolic", "microphone-disabled-symbolic"],
     "monitor": ["video-display-symbolic"],
     "next": ["media-skip-forward-symbolic"],
+    "night": ["night-light-symbolic", "weather-clear-night-symbolic"],
     "overview": ["view-dual-symbolic", "focus-windows-symbolic"],
     "pause": ["media-playback-pause-symbolic"],
     "performance": ["power-profile-performance-symbolic"],

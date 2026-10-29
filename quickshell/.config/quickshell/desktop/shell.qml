@@ -18,13 +18,14 @@ import "osd"
 import "services"
 
 ShellRoot {
-    // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher, the tablet posture, the assist button and the on-screen keyboard.
+    // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher, the tablet posture, Night shift, the assist button and the on-screen keyboard.
     property var audio: Audio
     property var notices: Notices
     property var clipboard: Clipboard
     property var bluetoothAgent: BluetoothAgent
     property var dynamicTheme: DynamicTheme
     property var tablet: Tablet
+    property var nightShift: NightShift
     IpcHandler {
         target: "desktop"
         function toggle(panel: string): void {
@@ -50,6 +51,9 @@ ShellRoot {
         }
         function rotationLock(action: string): bool {
             return Tablet.requestLock(action);
+        }
+        function nightShift(action: string): bool {
+            return NightShift.request(action);
         }
         function assist(action: string): bool {
             return Assist.request(action);
@@ -131,6 +135,13 @@ ShellRoot {
                     orientation: Tablet.orientation,
                     transform: Tablet.transform,
                     rotationLock: Tablet.locked
+                },
+                nightShift: {
+                    available: NightShift.available,
+                    mode: NightShift.mode,
+                    active: NightShift.active,
+                    temperature: NightShift.temperature,
+                    overridden: NightShift.overridden
                 },
                 keyboard: {
                     shown: Keyboard.shown,

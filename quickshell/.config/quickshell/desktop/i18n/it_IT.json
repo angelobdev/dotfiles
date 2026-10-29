@@ -672,5 +672,19 @@
     "movePrevious": "Sposta al workspace precedente",
     "moveNext": "Sposta al workspace successivo",
     "close": "Chiudi finestra"
+  },
+  "nightShift": {
+    "title": "Luce notturna",
+    "missing": "Installa hyprsunset",
+    "kelvin": "%1 K",
+    "until": "Attiva fino alle %1",
+    "from": "Dalle %1",
+    "schedule": "In automatico scalda i colori dalle %1 alle %2; un tocco sulla tile la inverte fino al prossimo di questi orari.",
+    "temperature": "Temperatura colore",
+    "modes": {
+      "off": "Spenta",
+      "on": "Accesa",
+      "auto": "Automatica"
+    }
   }
 }

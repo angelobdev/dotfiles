@@ -68,6 +68,14 @@ The dynamic theme (the Dynamic card in the Theming panel) needs matugen, from th
 sudo dnf install matugen
 ```
 
+## Night shift
+
+The Night shift switch of the Control Center uses hyprsunset, from the same COPR as Hyprland:
+
+```sh
+sudo dnf install hyprsunset
+```
+
 ## Tablet mode sign-in without the fingerprint reader
 
 Folded into tablet mode, the OmniBook screen covers the fingerprint reader, and `pam_fprintd` (authselect `with-fingerprint`) makes sudo, polkit and the lock screen wait for it. This optional step makes PAM skip the reader while the desktop is in tablet mode and ask for the password at once (typed on the on-screen keyboard); elsewhere nothing changes:

@@ -15,7 +15,8 @@ Overlay {
             media: "MediaControl.qml",
             doNotDisturb: "FocusControl.qml",
             idle: "IdleControl.qml",
-            rotation: "RotationControl.qml"
+            rotation: "RotationControl.qml",
+            switches: "SwitchGrid.qml"
         })
     onOpened: header.closeButton.forceActiveFocus()
     SidePanelCard {
