@@ -24,6 +24,8 @@ QtObject {
     readonly property string assistLongPress: "keyboard"
     // On-screen keyboard layout: osk/layouts/<name>.json, matching the Hyprland kb_layout.
     readonly property string oskLayout: "it"
+    // In tablet mode, open the keyboard when a text field takes the focus (apps with text-input-v3).
+    readonly property bool oskAutoShow: true
     // Order and presence of modules. Unknown names are ignored.
     readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle", "rotation"]
     readonly property int controlCenterWidth: 400

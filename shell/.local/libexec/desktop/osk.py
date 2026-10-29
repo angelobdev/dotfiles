@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """Key events for the on-screen keyboard, through the Wayland virtual keyboard protocol.
 
-run: a persistent virtual keyboard with the same XKB keymap as the physical one (Hyprland input:kb_layout),
-so keys mean what the layout drawn by the shell says. One command per stdin line:
+run [--input-method]: a persistent virtual keyboard with the same XKB keymap as the physical one (Hyprland
+input:kb_layout), so keys mean what the layout drawn by the shell says. One command per stdin line:
     key CODE MODS      press and release evdev CODE with the modifier mask MODS held
     press CODE / release CODE
+With --input-method it also registers as the input method, only to learn when a text field takes or loses
+the focus: it prints {"event": "activate", "purpose": ...} and {"event": "deactivate"}. Text still goes
+through the virtual keyboard, so it works the same in apps without text-input support.
 check CODE MODS: prints {"keysym", "text"} for that key in the current layout.
 The client speaks the Wayland wire protocol itself, so it needs nothing beyond the standard library and
 libxkbcommon.
@@ -13,6 +16,7 @@ from i18n import tr
 import ctypes
 import json
 import os
+import selectors
 import socket
 import struct
 import subprocess
@@ -21,6 +25,9 @@ import time
 
 # Modifier masks of the evdev XKB keymaps: Shift, Lock, Control, Mod1 (Alt), Mod4 (Super), Mod5 (AltGr).
 MASKS = {'shift': 1, 'lock': 2, 'ctrl': 4, 'alt': 8, 'super': 64, 'altgr': 128}
+# zwp_text_input_v3 content purposes, in protocol order.
+PURPOSES = ('normal', 'alpha', 'digits', 'number', 'phone', 'url', 'email', 'name', 'password', 'pin', 'date',
+            'time', 'datetime', 'terminal')
 
 
 class RuleNames(ctypes.Structure):
@@ -157,10 +164,10 @@ class Wayland:
 class VirtualKeyboard:
     def __init__(self, xkb):
         self.wayland = Wayland()
-        seat = self.wayland.bind('wl_seat', 7)
+        self.seat = self.wayland.bind('wl_seat', 7)
         manager = self.wayland.bind('zwp_virtual_keyboard_manager_v1', 1)
         self.keyboard = self.wayland.new_id()
-        self.wayland.send(manager, 0, struct.pack('<II', seat, self.keyboard))
+        self.wayland.send(manager, 0, struct.pack('<II', self.seat, self.keyboard))
         keymap = xkb.text() + b'\0'
         fd = os.memfd_create('desktop-osk-keymap', os.MFD_CLOEXEC)
         os.write(fd, keymap)
@@ -187,24 +194,83 @@ class VirtualKeyboard:
             self.modifiers(0)
 
 
-def run():
+# The input method protocol is double-buffered: activate, deactivate and content_type apply on done.
+class InputMethod:
+    def __init__(self, wayland, seat, emit):
+        manager = wayland.bind('zwp_input_method_manager_v2', 1)
+        self.object = wayland.new_id()
+        wayland.send(manager, 0, struct.pack('<II', seat, self.object))
+        wayland.listeners[self.object] = self.event
+        self.emit = emit
+        self.pending = {}
+        self.active = False
+        self.purpose = 'normal'
+
+    def event(self, opcode, body):
+        if opcode == 0:
+            # Activate resets the state of the text input; its content type follows before done.
+            self.pending = {'active': True, 'purpose': 'normal'}
+        elif opcode == 1:
+            self.pending['active'] = False
+        elif opcode == 4:
+            purpose = struct.unpack('<II', body[:8])[1]
+            self.pending['purpose'] = PURPOSES[purpose] if purpose < len(PURPOSES) else 'normal'
+        elif opcode == 5:
+            active = self.pending.get('active', self.active)
+            purpose = self.pending.get('purpose', self.purpose)
+            if active and (not self.active or purpose != self.purpose):
+                self.emit({'event': 'activate', 'purpose': purpose})
+            elif self.active and not active:
+                self.emit({'event': 'deactivate'})
+            self.active, self.purpose, self.pending = active, purpose, {}
+        elif opcode == 6:
+            # Another input method holds the seat; the keyboard still types, it just cannot open by itself.
+            self.emit({'event': 'unavailable'})
+
+
+def emit(message):
+    print(json.dumps(message), flush=True)
+
+
+def handle(keyboard, line):
+    words = line.split()
+    try:
+        if len(words) == 3 and words[0] == 'key':
+            keyboard.tap(int(words[1]), int(words[2]))
+        elif len(words) == 2 and words[0] in ('press', 'release'):
+            keyboard.key(int(words[1]), words[0] == 'press')
+    except ValueError:
+        pass
+
+
+def run(input_method):
     keyboard = VirtualKeyboard(Xkb(*layout()))
-    print(json.dumps({'status': 'ready'}), flush=True)
-    for line in sys.stdin:
-        words = line.split()
-        try:
-            if len(words) == 3 and words[0] == 'key':
-                keyboard.tap(int(words[1]), int(words[2]))
-            elif len(words) == 2 and words[0] in ('press', 'release'):
-                keyboard.key(int(words[1]), words[0] == 'press')
-        except ValueError:
-            continue
+    if input_method:
+        InputMethod(keyboard.wayland, keyboard.seat, emit)
+        keyboard.wayland.roundtrip()
+    emit({'status': 'ready'})
+    selector = selectors.DefaultSelector()
+    selector.register(sys.stdin.fileno(), selectors.EVENT_READ)
+    selector.register(keyboard.wayland.socket, selectors.EVENT_READ)
+    pending = b''
+    while True:
+        for key, _ in selector.select():
+            if key.fileobj is keyboard.wayland.socket:
+                keyboard.wayland.read()
+                continue
+            data = os.read(sys.stdin.fileno(), 4096)
+            if not data:
+                return
+            pending += data
+            while b'\n' in pending:
+                line, pending = pending.split(b'\n', 1)
+                handle(keyboard, line.decode(errors='replace'))
 
 
 def main():
     arguments = sys.argv[1:]
-    if arguments == ['run']:
-        run()
+    if arguments in (['run'], ['run', '--input-method']):
+        run(arguments == ['run', '--input-method'])
     elif len(arguments) == 3 and arguments[0] == 'check':
         print(json.dumps(Xkb(*layout()).lookup(int(arguments[1]), int(arguments[2])), ensure_ascii=False))
     else:

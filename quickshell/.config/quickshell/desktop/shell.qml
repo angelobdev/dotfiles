@@ -132,7 +132,10 @@ ShellRoot {
                     shown: Keyboard.shown,
                     floating: Keyboard.floating,
                     ready: Keyboard.ready,
-                    page: Keyboard.page
+                    page: Keyboard.page,
+                    inputMethod: Keyboard.inputMethod,
+                    purpose: Keyboard.purpose,
+                    autoShown: Keyboard.autoShown
                 },
                 assist: {
                     shown: Assist.shown,

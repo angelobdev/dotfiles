@@ -195,7 +195,7 @@ Rectangle {
             }
         }
         Row {
-            visible: Keyboard.extra
+            visible: Keyboard.extraShown
             Layout.alignment: Qt.AlignHCenter
             spacing: root.spacing
             Repeater {

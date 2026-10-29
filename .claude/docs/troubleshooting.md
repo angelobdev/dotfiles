@@ -343,3 +343,9 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - Docked: windows shrank above the keyboard, keys centred at 1100 px on the 1728 px screen. Floating: centred near the bottom once the surface has its size (a position computed on map put it at the top left), framed with the window border.
 - The assist menu has nine actions in a 3×3 grid with Keyboard first.
 - After the first touch test the user asked for larger keys: docked 46 → 64 px (about a third of the landscape height), floating 42 → 56 px and 640 → 900 px wide, with larger labels, icons and strip.
+
+## Automatic keyboard verification
+
+- `osk.py run --input-method` alone: Kitty with the focus sent `activate` with purpose `terminal`; a `zenity --entry` field `activate` `normal`, then `deactivate` when it closed, and Kitty `terminal` again.
+- Through the shell, with `desktop-shell tablet on`: the zenity field opened the keyboard by itself (`autoShown`), closing zenity kept it open for Kitty (its extra row shown), and `tablet off` closed it. In laptop mode fields do not open it.
+- Entering tablet mode while a field already has the focus does not open the keyboard; the next tap into a field does.

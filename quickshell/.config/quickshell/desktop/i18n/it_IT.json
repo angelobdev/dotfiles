@@ -658,7 +658,7 @@
       "more": "=\\<"
     },
     "errors": {
-      "usage": "Uso: osk.py run | check CODICE MODIFICATORI",
+      "usage": "Uso: osk.py run [--input-method] | check CODICE MODIFICATORI",
       "keymap": "Nessuna keymap XKB per il layout %1",
       "protocol": "Il compositor non offre %1"
     }
