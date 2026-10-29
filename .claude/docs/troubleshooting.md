@@ -323,3 +323,4 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - `desktop-shell tablet on` started `rotation.py watch` (orientation normal, transform 0); `rotation-lock on` showed the OSD and stopped the watcher; `tablet off` stopped it too. `session.json` holds `rotationLock`, the posture file `tablet`.
 - The Control Center shows the Rotation lock tile on the OmniBook.
 - The user folded the OmniBook into tablet mode and turned it in all four directions: the switch, the sensor mapping, touch and the rotation lock all behaved.
+- The assistant window kept 1036×756 after a rotation and overflowed the portrait screen. `hl.window.resize` takes `{ x, y, window }` and `hl.window.center` `{ window }`; `HL.Monitor.width/height` stay physical after a transform. On `monitor.layout_changed` it now becomes 648×1209 in portrait (60% × 70% of 1080×1728 logical), centred, and 1036×756 again upright.
