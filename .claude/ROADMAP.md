@@ -116,7 +116,7 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 - [x] `SUPER + A` toggles a floating Kitty window (`--class desktop-ai`) running `claude` on the special workspace `ai`; launched on first use, kept alive afterwards.
 - [x] Hold-Space dictation through Claude Code voice: `hold` mode passed with `--settings` to the assistant session only, language from the locale (`assistant.language`) or `DESKTOP_AI_LANGUAGE`; claude.ai login present, no `ANTHROPIC_API_KEY`, `arecord` available as recorder fallback. Confirmed by the user with the built-in microphone.
 - [x] Hints, i18n and docs (interface, integrations, troubleshooting).
-- [ ] Optional: global dictation into any app (whisper.cpp + wtype, Voxtype-style press/release bind).
+- [-] Dropped on 2026-10-29: global dictation into any app (see the console epic below; Claude Code's own voice stays).
 
 ### Dock
 
@@ -246,13 +246,13 @@ Found during the October 27, 2026 repository review. Checked items were approved
 - [x] Battery panel: the level bar now draws the same track/accent fill as `ControlSlider` instead of relying on an ignored palette role.
 - [x] Audio panel uses `ControlSlider` with accessible names; the microphone button shows the muted icon when muted.
 - [x] Spacing: `Theme.panelPadding` (16, side panels) and `Theme.dialogPadding` (22, centred dialogs); Clipboard, Recording and the power menu now follow them, and the Control Center uses the shared `PanelHeader`. Fonts were already uniform at runtime (qt5ct default is Adwaita Sans).
-- [ ] Environment import runs twice concurrently (`session.lua` and `desktop-session`) with different variable lists; consolidate into one call.
-- [ ] Blur coverage differs: the layer rule blurs `desktop-bar` but not `desktop-tray-menu`, Hyprglass the reverse.
-- [ ] `electron-flags.conf` is not read by any Fedora launcher and `UseOzonePlatform` is obsolete; keep or drop the package.
+- [x] Environment import runs twice concurrently (`session.lua` and `desktop-session`) with different variable lists: one call in `desktop-session` since review batch C.
+- [x] Blur coverage differs: since review batch C the blur rule and Hyprglass cover the same surfaces (the rule adds the bar).
+- [x] `electron-flags.conf` is not read by any Fedora launcher and `UseOzonePlatform` is obsolete: kept, `electron.py` applies it through desktop entries (review batch C).
 - [x] Workspace pills use `ScriptModel` keyed by `id`: delegates (button, tooltip window, timer) survive Hyprland updates and the width animation now runs.
 - [ ] Lazy panels: deliberately not done. The shell uses about 200 MB RSS and 0.4% CPU, hidden panels gate their own work, and lazy loading would reset state that persists today (Control Center expanded sections, wallpaper directory) and needs first-open focus handling. Revisit if memory matters.
 - [ ] Each `Icon` carries a `MultiEffect` for recolouring; `pragma ComponentBehavior: Bound` for `Bar`, `TrayMenu`, `WorkspaceStrip` after a runtime smoke test.
-- [ ] Optional (the qtXct `$HOME` item is obsolete: qtct.conf is rendered with an absolute state path): subprocess timeouts in helpers; clearer messages for `StopIteration`/decode errors in the plugin scripts.
+- [ ] Optional: clearer messages for `StopIteration`/decode errors in the plugin scripts (helper timeouts were added in review batches D/E; the qtXct `$HOME` item is obsolete).
 
 ## Possible extensions identified
 
