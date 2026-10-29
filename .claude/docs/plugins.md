@@ -6,7 +6,7 @@ Configuration: [`plugins.lua`](../../hypr/.config/hypr/config/plugins.lua). Scre
 
 ## Installation
 
-Verified build: **Hyprland and hyprland-devel 0.56.2-17.fc44.x86_64**, nett00n COPR. Build dependencies:
+Verified build: **Hyprland and hyprland-devel 0.56.2-20.fc44.x86_64**, nett00n COPR (0.56.2-17 before 2026-10-24; same upstream version and ABI hash, so the plugin revisions below are unchanged). Build dependencies:
 
 ```sh
 sudo dnf install hyprland-devel git gcc-c++ make cmake pkgconf-pkg-config \
