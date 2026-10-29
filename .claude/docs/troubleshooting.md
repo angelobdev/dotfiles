@@ -327,7 +327,8 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 
 ## Assist button verification
 
-- `desktop-shell assist show` mapped one `desktop-assist` overlay layer (1728×1080, eDP-1) with the button on the right edge at 62% of the free height; the input region is the button only, so clicks elsewhere reached the windows.
+- `desktop-shell assist show` mapped one `desktop-assist` overlay layer (1728×1080, eDP-1) with the button on the right edge at 62% of the free height.
+- The input region was meant to be the button only, but the item that catches taps outside the open menu also had `anchors.fill`, which overrides its zero size: while the button was shown (all of tablet mode) the transparent surface took every touch and click, and the user could not reach Zen or Nautilus. The item now has no anchors, only a size while the menu is open.
 - `assist menu` opened the eight actions beside the button, towards the middle. The first version bound the menu origin to its own grid size and Qt reported a binding loop, as the layout polished during the evaluation; the menu is now placed after layout (`Qt.callLater`) from the button's resting place. With the monospace interface font, "Notifications" needs 100 px buttons.
 - `hl.dsp.focus({ workspace = "e+1" })` stays put when no other workspace exists, unlike the bar; the workspace buttons now step along `WorkspaceModel.build` like bar scrolling.
 - `geometry tests` (`tst_assist_model.qml`): placing, tucking, snapping, the round trip and the menu origin.

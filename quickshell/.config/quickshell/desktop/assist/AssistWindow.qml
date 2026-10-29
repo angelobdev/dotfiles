@@ -80,10 +80,10 @@ PanelWindow {
         interval: 3000
         onTriggered: root.idle = !Assist.menuOpen && !root.dragging
     }
-    // While the menu is open the whole screen takes input; a tap outside the menu closes it.
+    // While the menu is open the whole screen takes input; a tap outside the menu closes it. Closed, this
+    // item has no size, so the input region is the button alone (anchors.fill would override the size).
     Item {
         id: outside
-        anchors.fill: parent
         visible: Assist.menuOpen
         width: Assist.menuOpen ? parent.width : 0
         height: Assist.menuOpen ? parent.height : 0
