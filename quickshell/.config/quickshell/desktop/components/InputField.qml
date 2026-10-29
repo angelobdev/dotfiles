@@ -14,7 +14,7 @@ TextField {
     font.family: Theme.font
     font.pixelSize: 14
     background: Rectangle {
-        radius: 8
+        radius: Theme.corner(8)
         color: Theme.background
         border.color: root.activeFocus ? Theme.accent : Theme.raised
     }

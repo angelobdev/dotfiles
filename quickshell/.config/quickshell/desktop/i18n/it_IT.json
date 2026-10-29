@@ -555,6 +555,9 @@
     "title": "Aspetto",
     "unified": "Usa il font monospace ovunque",
     "useCustom": "Usa",
+    "windowBorder": "Bordo",
+    "windowBorderNone": "Nessuno",
+    "windowRounding": "Angoli finestre",
     "working": "Applicazione…"
   },
   "wallpaper": {

@@ -241,7 +241,7 @@ PanelWindow {
             y: body.y + row.y + 2
             width: delegate ? delegate.anchorItem.width : 0
             height: Config.dockIconSize + 16
-            radius: 12
+            radius: Theme.corner(12)
             color: "transparent"
             border.width: 2
             border.color: Theme.accent

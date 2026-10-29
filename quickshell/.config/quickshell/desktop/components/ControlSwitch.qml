@@ -17,7 +17,7 @@ Switch {
         y: (root.height - height) / 2
         width: 40
         height: 24
-        radius: 12
+        radius: Theme.corner(12)
         color: root.checked ? Theme.accent : Theme.track
         border.width: root.activeFocus ? 1 : 0
         border.color: Theme.text
@@ -26,7 +26,7 @@ Switch {
             y: 3
             width: 18
             height: 18
-            radius: 9
+            radius: Theme.corner(9)
             color: root.checked ? Theme.accentText : Theme.text
             Behavior on x {
                 NumberAnimation {

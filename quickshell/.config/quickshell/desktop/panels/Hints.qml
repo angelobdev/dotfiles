@@ -170,7 +170,7 @@ Overlay {
                     required property int index
                     width: list.width
                     height: Math.max(40, description.implicitHeight + 16)
-                    radius: 9
+                    radius: Theme.corner(9)
                     color: index % 2 === 0 ? Theme.raised : "transparent"
                     RowLayout {
                         anchors {

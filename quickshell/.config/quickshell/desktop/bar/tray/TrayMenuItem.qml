@@ -25,7 +25,7 @@ MenuItem {
     onTriggered: if (entry && !subMenu)
         entry.triggered()
     background: Rectangle {
-        radius: 7
+        radius: Theme.corner(7)
         color: root.down ? Theme.track : root.highlighted || root.hovered ? Theme.raised : "transparent"
     }
     indicator: null

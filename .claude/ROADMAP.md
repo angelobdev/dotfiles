@@ -138,6 +138,7 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
   - [x] Shortcut (`SUPER + CTRL + T`), i18n, docs.
   - [x] Round 2 (user feedback): cached JPEG thumbnails (WebP previews), one monospace font everywhere, shell glyphs from the icon pack (`IconNames.js`), custom installed font/icon theme by name with folder and rescan buttons, transparent bar (double-click on the bar or the Theme tab).
   - [x] Round 3: transparent bar text and icons take whichever theme text colour has the higher WCAG contrast over the strip under the bar (cover-cropped at the monitor size), the bar itself staying transparent; font and icon changes show a "Restart shell" banner instead of restarting by themselves.
+  - [x] Window corners (0–24) and border width (0–4 px) in the Theme tab; border colours from the theme (accent active, border inactive); the corners also scale every shell radius (`Theme.corner`) and the lock screen field.
 
 ### Shell state and shortcuts
 
@@ -145,6 +146,18 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 - [x] Persist "Keep awake" (`Idle.keepAwake`) and "Do Not Disturb" (`Notices.quiet`) across shell restarts and logins (state file read at start).
 - [x] Keyboard shortcuts to toggle "Keep awake" (`Super + Ctrl + K`) and "Do Not Disturb" (`Super + Ctrl + N`) with a state OSD, listed in Hints.
 - [ ] Phase 5, dynamic theme: a custom image → matugen (`nett00n/hyprland` COPR) → generated `custom` theme through the same templates; installation docs updated.
+
+### Touchscreen support (epic)
+
+- [ ] On-screen keyboard: pick and package one that works on Hyprland (layer-shell, input-method or virtual-keyboard protocol: e.g. wvkbd, squeekboard), show/hide on demand and, where possible, on text-field focus; layout and theme matched to the desktop.
+- [ ] Touch-friendly shell: larger hit targets and spacing option for bar, dock and panels; long-press for context menus (dock, launcher); swipe to dismiss notifications.
+- [ ] Gestures: review the existing Hyprgrass bindings (edge swipes, three-finger workspace/overview), add edge swipe for the dock and the OSK, and document them.
+- [ ] Rotation and tablet mode where the hardware reports it (sensor-proxy), with input mapped to the rotated output.
+- [ ] Physical testing on the Omnibook touchscreen (the open "physical testing of touchscreen gestures" item).
+
+### Codebase review
+
+- [ ] Full review of the repository once the current work is done: correctness, dead code, consistency of services/helpers, docs accuracy, i18n coverage and tests.
 
 ### Hardware
 

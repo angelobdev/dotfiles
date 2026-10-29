@@ -158,7 +158,7 @@ Overlay {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     color: Theme.background
-                    radius: 14
+                    radius: Theme.corner(14)
                     clip: true
                     Image {
                         id: preview

@@ -30,7 +30,7 @@ Slider {
         y: (root.height - height) / 2
         width: 18
         height: 18
-        radius: 9
+        radius: Theme.corner(9)
         color: root.pressed ? Theme.handlePressed : Theme.text
         border.width: root.activeFocus ? 2 : 0
         border.color: Theme.handleFocus

@@ -31,7 +31,10 @@ Singleton {
     readonly property string iconSource: colors.iconSource
     // "shade" keeps the bar gradient, "transparent" drops it (bar colours then follow BarStyle).
     readonly property string barStyle: colors.barStyle
-    readonly property int radius: 18
+    // Corners follow the window rounding chosen in the Theming panel; 16 is the design size, so the
+    // radii written in the components are kept as they are.
+    readonly property real cornerScale: Math.max(0, colors.rounding) / 16
+    readonly property int radius: corner(18)
     readonly property int panelPadding: 16
     readonly property int dialogPadding: 22
     // Motion shared with Hyprland's "out" and "accel" curves in appearance.lua.
@@ -40,6 +43,9 @@ Singleton {
     readonly property int motionSlow: Config.reduceMotion ? 0 : 320
     readonly property var easeOut: [0.16, 1, 0.3, 1, 1, 1]
     readonly property var easeIn: [0.3, 0, 0.8, 0.15, 1, 1]
+    function corner(size) {
+        return Math.round(size * cornerScale);
+    }
     // desktop-theme renders the current theme here; the defaults are Graphite, so a missing or broken file
     // changes nothing and edits apply live.
     FileView {
@@ -72,6 +78,7 @@ Singleton {
             property string font: "Adwaita Sans"
             property string iconSource: "desktop"
             property string barStyle: "shade"
+            property real rounding: 16
         }
     }
 }

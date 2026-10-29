@@ -4,13 +4,17 @@ hl.config({
     general = {
         gaps_in = 4,
         gaps_out = 4,
-        border_size = 0,
+        border_size = theme.borderSize,
+        col = {
+            active_border = theme.activeBorder,
+            inactive_border = theme.inactiveBorder,
+        },
         layout = "dwindle",
         resize_on_border = true,
         allow_tearing = true,
     },
     decoration = {
-        rounding = 16,
+        rounding = theme.rounding,
         active_opacity = 1.0,
         inactive_opacity = 0.92,
         fullscreen_opacity = 1.0,

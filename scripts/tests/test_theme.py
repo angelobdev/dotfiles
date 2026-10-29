@@ -40,16 +40,16 @@ class GraphiteTests(unittest.TestCase):
 
     def test_quickshell_matches_the_theme_defaults(self):
         source = (REPO / 'quickshell/.config/quickshell/desktop/Theme.qml').read_text(encoding='utf-8')
-        defaults = dict(re.findall(r'^\s+property (?:color|string) (\w+): "([^"]+)"', source, re.M))
+        defaults = dict(re.findall(r'^\s+property (?:color|string|real) (\w+): "?([^"\n]+?)"?$', source, re.M))
         rendered = json.loads(self.out['quickshell.json'])
         self.assertEqual(set(rendered), set(defaults))
         for key, value in rendered.items():
-            self.assertEqual(value.lower(), defaults[key].lower(), key)
+            self.assertEqual(str(value).lower(), defaults[key].lower(), key)
 
     def test_hyprland_matches_the_lua_defaults(self):
         source = (REPO / 'hypr/.config/hypr/config/theme.lua').read_text(encoding='utf-8')
-        defaults = dict(re.findall(r'^\s+(\w+) = (0x[0-9a-f]{8}),', source, re.M))
-        rendered = dict(re.findall(r'^\s+(\w+) = (0x[0-9a-f]{8}),', self.out['hyprland.lua'], re.M))
+        defaults = dict(re.findall(r'^    (\w+) = (\S+),$', source, re.M))
+        rendered = dict(re.findall(r'^    (\w+) = (\S+),$', self.out['hyprland.lua'], re.M))
         self.assertEqual(rendered, defaults)
 
     def test_gtk_defines_every_colour(self):
@@ -189,6 +189,16 @@ class PanelOptionTests(unittest.TestCase):
         chosen = theme.complete(theme.with_preferences(GRAPHITE, {'shellIcons': 'pack', 'barStyle': 'transparent'}))
         rendered = json.loads(theme.render_all(chosen, TEMPLATES)['quickshell.json'])
         self.assertEqual((rendered['iconSource'], rendered['barStyle']), ('pack', 'transparent'))
+
+    def test_window_style_reaches_hyprland_with_theme_colours(self):
+        default = theme.render_all(theme.complete(GRAPHITE), TEMPLATES)['hyprland.lua']
+        self.assertIn('rounding = 16,', default)
+        self.assertIn('borderSize = 0,', default)
+        self.assertIn('activeBorder = "rgba(d4d6dcff)",', default)
+        chosen = theme.complete(theme.with_preferences(GRAPHITE, {'windows': {'rounding': 8, 'borderSize': 2}}))
+        rendered = theme.render_all(chosen, TEMPLATES)['hyprland.lua']
+        self.assertIn('rounding = 8,', rendered)
+        self.assertIn('borderSize = 2,', rendered)
 
     def test_thumbnail_names_change_with_the_file(self):
         with tempfile.TemporaryDirectory() as directory:

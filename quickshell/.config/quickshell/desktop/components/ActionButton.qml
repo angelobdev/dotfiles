@@ -96,7 +96,7 @@ Button {
         }
     }
     background: Rectangle {
-        radius: 11
+        radius: Theme.corner(11)
         color: root.highlighted ? (root.highlightBackground ? Theme.accent : "transparent") : root.down || root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
         Behavior on color {
             ColorAnimation {

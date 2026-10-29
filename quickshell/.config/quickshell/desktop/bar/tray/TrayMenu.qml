@@ -21,7 +21,7 @@ Menu {
     background: Rectangle {
         implicitWidth: 252
         implicitHeight: 12
-        radius: 12
+        radius: Theme.corner(12)
         color: Theme.background
         border.width: 1
         border.color: Theme.stroke

@@ -80,7 +80,7 @@ Overlay {
                 spacing: 4
                 // The selection glides between rows instead of jumping.
                 highlight: Rectangle {
-                    radius: 11
+                    radius: Theme.corner(11)
                     color: Theme.accent
                 }
                 highlightMoveDuration: Theme.motionNormal

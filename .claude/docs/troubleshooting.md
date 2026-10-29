@@ -287,3 +287,13 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - Rewriting `shell.qml` with identical content does not reload Quickshell; a real change (a temporary comment) does.
 - The user confirmed the shortcuts and the archived entries.
 
+## Window borders verification
+
+- `Hyprland --verify-config` accepted `general.col.active_border` as `"rgba(rrggbbaa)"`, `"0xAARRGGBB"` and gradient tables. The theme uses the first form.
+- With the defaults, `hyprctl getoption` still reported rounding 16 and border 0.
+- `window-style --rounding 8 --border 2` gave 8, 2 and the Gruvbox accent (`fffabd2f`) live. `--default` restored 16 and 0.
+- `ChoiceChips` is a `Flow` with no natural width, so it wrapped inside rows that did not stretch it, which the wider monospace font showed. It now sets `Layout.preferredWidth` to the width of its pills; `implicitWidth` is read-only on a `Flow`, and setting it failed the load.
+- Corners across the shell: 31 literal radii of 6 or more in 20 QML files now go through `Theme.corner()`.
+  - With the user's rounding 0, the Theming panel, its chips and cards, the dock, its tooltip and keyboard ring all rendered square. At the default 16 the radii are unchanged.
+  - The lock screen field corners follow too: 26 at 16, and the Graphite render is still byte-identical.
+

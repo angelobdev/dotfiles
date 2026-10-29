@@ -32,7 +32,7 @@ Rectangle {
     }
     implicitWidth: 252
     implicitHeight: list.contentHeight + 12
-    radius: 12
+    radius: Theme.corner(12)
     color: Theme.background
     border.width: 1
     border.color: Theme.stroke
@@ -78,7 +78,7 @@ Rectangle {
             Rectangle {
                 anchors.fill: parent
                 visible: row.kind === "item"
-                radius: 7
+                radius: Theme.corner(7)
                 color: mouse.pressed ? Theme.track : row.current ? Theme.raised : "transparent"
             }
             RowLayout {

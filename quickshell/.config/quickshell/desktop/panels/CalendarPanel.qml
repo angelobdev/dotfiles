@@ -191,7 +191,7 @@ Overlay {
                                 required property var modelData
                                 Layout.fillWidth: true
                                 implicitHeight: eventText.implicitHeight + 20
-                                radius: 8
+                                radius: Theme.corner(8)
                                 color: Theme.raised
                                 Rectangle {
                                     anchors {

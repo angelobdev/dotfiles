@@ -227,6 +227,7 @@ Preferences: `~/.local/state/desktop-theme/preferences.json` holds what is chose
 - `desktop-theme icon-theme NAME|default`.
 - `desktop-theme shell-icons desktop|pack`: the shell glyphs from `assets/icons`, or the icon pack's symbolic icons mapped in `components/IconNames.js`.
 - `desktop-theme bar-style shade|transparent|toggle`.
+- `desktop-theme window-style --rounding N --border N` (`--default` clears them). Hyprland `decoration.rounding` and `general.border_size`, defaulting to 16 and 0. The border colours (`general.col.active_border` / `inactive_border`) are the theme's accent and border colours, rendered into `hyprland.lua` and applied with `hyprctl reload`. The same rounding reaches Quickshell as `rounding` in `quickshell.json`: `Theme.corner(n)` scales each design radius by rounding/16, and `Theme.radius` is `corner(18)`. Radii under 6 (dots, tracks) are not scaled. hyprlock gets `rounding = 26 × rounding/16` for its password field.
 
 The bar style and shell icon source reach Quickshell through `quickshell.json` (`barStyle`, `iconSource`).
 

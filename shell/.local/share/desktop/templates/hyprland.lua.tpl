@@ -2,4 +2,8 @@
 return {
     shadow = {{ hyprland.shadow | hypr }},
     glassTint = {{ hyprland.glassTint | hexrgba }},
+    activeBorder = "rgba({{ hyprland.activeBorder | rgba }})",
+    inactiveBorder = "rgba({{ hyprland.inactiveBorder | rgba }})",
+    rounding = {{ hyprland.rounding }},
+    borderSize = {{ hyprland.borderSize }},
 }

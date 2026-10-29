@@ -21,5 +21,6 @@
   "shareShade": "{{ shell.shareShade | qt }}",
   "font": "{{ fonts.sans }}",
   "iconSource": "{{ preferences.iconSource }}",
-  "barStyle": "{{ preferences.barStyle }}"
+  "barStyle": "{{ preferences.barStyle }}",
+  "rounding": {{ hyprland.rounding }}
 }

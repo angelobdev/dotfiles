@@ -227,7 +227,7 @@ Overlay {
                             tooltip: I18n.tr("network.details")
                             onClicked: root.openDetails(root.activeNetwork)
                             background: Rectangle {
-                                radius: 12
+                                radius: Theme.corner(12)
                                 color: currentConnection.down || currentConnection.hovered || currentConnection.activeFocus ? Theme.raised : Theme.tile
                             }
                             contentItem: RowLayout {

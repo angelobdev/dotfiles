@@ -72,7 +72,7 @@ RowLayout {
                 text: I18n.tr(workspace.modelData.count === 1 ? "workspaces.windowCount.one" : "workspaces.windowCount.other", [workspace.modelData.id, workspace.modelData.count])
             }
             background: Rectangle {
-                radius: 10
+                radius: Theme.corner(10)
                 color: workspace.hovered || workspace.activeFocus ? Theme.raised : "transparent"
             }
             contentItem: Item {

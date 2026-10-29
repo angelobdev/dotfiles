@@ -53,7 +53,7 @@ input-field {
     monitor =
     size = 300, 52
     outline_thickness = 1
-    rounding = 26
+    rounding = {{ derived.lockRounding }}
     outer_color = rgba({{ shell.stroke | rgba }})
     inner_color = rgba({{ shell.tile | rgba }})
     font_color = rgba({{ palette.fg | rgba }})

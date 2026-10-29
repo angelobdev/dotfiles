@@ -149,6 +149,11 @@ def complete(theme):
     hyprland = theme.setdefault('hyprland', {})
     hyprland.setdefault('shadow', alpha(palette['shadow'], '66'))
     hyprland.setdefault('glassTint', alpha(palette['bg'], '22'))
+    # Window borders take the theme colours; their width and the corner rounding are user preferences.
+    hyprland.setdefault('activeBorder', palette['accent'])
+    hyprland.setdefault('inactiveBorder', palette['border'])
+    hyprland.setdefault('rounding', 16)
+    hyprland.setdefault('borderSize', 0)
     theme.setdefault('terminal', {}).setdefault('opacity', 0.94)
     # Shell options the user sets in the Theming panel; these are the defaults.
     preferences = theme.setdefault('preferences', {})
@@ -200,13 +205,18 @@ def with_preferences(theme, chosen):
     for key, value in (('iconSource', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle'))):
         if value:
             theme.setdefault('preferences', {})[key] = value
+    for key in ('rounding', 'borderSize'):
+        if isinstance(chosen.get('windows', {}).get(key), int):
+            theme.setdefault('hyprland', {})[key] = chosen['windows'][key]
     return theme
 
 
 def save_preferences(chosen):
     fonts = {key: value for key, value in chosen.get('fonts', {}).items() if value not in (None, '', False)}
+    windows = {key: value for key, value in chosen.get('windows', {}).items() if isinstance(value, int)}
     cleaned = {key: value for key, value in (('fonts', fonts), ('iconTheme', chosen.get('iconTheme')),
-                                              ('shellIcons', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle')))
+                                              ('shellIcons', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle')),
+                                              ('windows', windows))
                if value}
     write_atomic(STATE / 'preferences.json', json.dumps(cleaned, ensure_ascii=False) + '\n')
 
@@ -465,8 +475,10 @@ def icon_themes(roots=None):
 
 
 def render_all(theme, templates=TEMPLATES):
-    # Paths a template may need besides the theme itself.
-    theme = dict(theme, paths={'state': str(STATE)})
+    # Paths a template may need besides the theme itself, and sizes derived from the window rounding
+    # (16 is the design size, so the lock screen field keeps its 26 px corners by default).
+    scale = max(0, theme.get('hyprland', {}).get('rounding', 16)) / 16
+    theme = dict(theme, paths={'state': str(STATE)}, derived={'lockRounding': round(26 * scale)})
     outputs = {}
     for path in sorted(templates.glob('*.tpl')):
         outputs[path.stem] = render(path.read_text(encoding='utf-8'), theme, path.name)
@@ -749,6 +761,10 @@ def main():
     font.add_argument('--unified', choices=('on', 'off'))
     shell_icons = commands.add_parser('shell-icons')
     shell_icons.add_argument('source', choices=('desktop', 'pack'))
+    windows = commands.add_parser('window-style')
+    windows.add_argument('--rounding', type=int, choices=range(0, 33), metavar='0-32')
+    windows.add_argument('--border', type=int, choices=range(0, 9), metavar='0-8')
+    windows.add_argument('--default', action='store_true')
     bar = commands.add_parser('bar-style')
     bar.add_argument('style', choices=('shade', 'transparent', 'toggle'))
     commands.add_parser('tone')
@@ -804,6 +820,17 @@ def main():
     elif arguments.command == 'check-icons':
         if not icon_theme_exists(arguments.name):
             raise ValueError(tr('theming.errors.iconsMissing', [arguments.name]))
+    elif arguments.command == 'window-style':
+        chosen = preferences()
+        windows = {} if arguments.default else dict(chosen.get('windows', {}))
+        if arguments.rounding is not None:
+            windows['rounding'] = arguments.rounding
+        if arguments.border is not None:
+            windows['borderSize'] = arguments.border
+        chosen['windows'] = windows
+        save_preferences(chosen)
+        apply(current())
+        reload()
     elif arguments.command in ('shell-icons', 'bar-style'):
         chosen = preferences()
         if arguments.command == 'shell-icons':
@@ -829,7 +856,10 @@ def main():
             return 0
         apply_wallpaper(target)
     elif arguments.command == 'list':
-        print(json.dumps({'current': current(), 'themes': themes(arguments.details)}, ensure_ascii=False))
+        effective = with_preferences(load(current()), preferences())['hyprland']
+        print(json.dumps({'current': current(), 'themes': themes(arguments.details),
+                          'windows': {'rounding': effective['rounding'], 'borderSize': effective['borderSize']}},
+                         ensure_ascii=False))
     elif arguments.command == 'fonts':
         print(json.dumps(fonts(), ensure_ascii=False))
     elif arguments.command == 'icons':

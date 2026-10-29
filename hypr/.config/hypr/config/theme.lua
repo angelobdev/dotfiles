@@ -4,6 +4,10 @@
 local defaults = {
     shadow = 0x660d0e10,
     glassTint = 0x191a1d22,
+    activeBorder = "rgba(d4d6dcff)",
+    inactiveBorder = "rgba(44474eff)",
+    rounding = 16,
+    borderSize = 0,
 }
 
 local state = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")

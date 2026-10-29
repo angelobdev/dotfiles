@@ -22,7 +22,7 @@ Rectangle {
         return icon && !icon.includes(":") ? Quickshell.iconPath(icon, true) : "";
     }
     color: Theme.raised
-    radius: 10
+    radius: Theme.corner(10)
     implicitHeight: column.implicitHeight + 24
     MouseArea {
         anchors.fill: parent

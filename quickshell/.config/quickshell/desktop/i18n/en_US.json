@@ -555,6 +555,9 @@
     "title": "Theming",
     "unified": "Use the monospace font everywhere",
     "useCustom": "Use",
+    "windowBorder": "Border",
+    "windowBorderNone": "None",
+    "windowRounding": "Window corners",
     "working": "Applying…"
   },
   "wallpaper": {

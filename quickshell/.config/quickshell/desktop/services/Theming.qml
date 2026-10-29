@@ -9,6 +9,11 @@ Singleton {
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/theme.py"
     readonly property string wallpaperHelper: Quickshell.env("HOME") + "/.local/libexec/desktop/wallpaper.py"
     property var themes: []
+    // Corner rounding and border width of windows, as Hyprland applies them now.
+    property var windows: ({
+            rounding: 16,
+            borderSize: 0
+        })
     property string current: ""
     property var pack: ({
             wallpapers: [],
@@ -114,6 +119,9 @@ Singleton {
         restartTab = "icons";
         run([["python3", helper, "shell-icons", source]]);
     }
+    function setWindowStyle(option, value) {
+        run([["python3", helper, "window-style", option === "rounding" ? "--rounding" : "--border", String(value)]]);
+    }
     function setBarStyle(style) {
         run([["python3", helper, "bar-style", style]]);
     }
@@ -207,6 +215,7 @@ Singleton {
                 if (data) {
                     root.themes = data.themes;
                     root.current = data.current;
+                    root.windows = data.windows ?? root.windows;
                 }
             }
         }

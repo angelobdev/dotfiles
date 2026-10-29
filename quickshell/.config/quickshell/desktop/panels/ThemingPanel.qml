@@ -122,6 +122,43 @@ Overlay {
                             font.pixelSize: 11
                         }
                     }
+                    // Windows: corner rounding and border width; the border colours come from the theme.
+                    RowLayout {
+                        spacing: 10
+                        Text {
+                            text: I18n.tr("theming.windowRounding")
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: 12
+                        }
+                        ChoiceChips {
+                            Layout.fillWidth: false
+                            options: [0, 4, 8, 12, 16, 20, 24].map(value => ({
+                                        name: String(value),
+                                        label: String(value)
+                                    }))
+                            current: String(Theming.windows.rounding)
+                            onChosen: name => Theming.setWindowStyle("rounding", Number(name))
+                        }
+                    }
+                    RowLayout {
+                        spacing: 10
+                        Text {
+                            text: I18n.tr("theming.windowBorder")
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: 12
+                        }
+                        ChoiceChips {
+                            Layout.fillWidth: false
+                            options: [0, 1, 2, 3, 4].map(value => ({
+                                        name: String(value),
+                                        label: value === 0 ? I18n.tr("theming.windowBorderNone") : String(value)
+                                    }))
+                            current: String(Theming.windows.borderSize)
+                            onChosen: name => Theming.setWindowStyle("border", Number(name))
+                        }
+                    }
                     GridView {
                         id: themeGrid
                         Layout.fillWidth: true
@@ -146,7 +183,7 @@ Overlay {
                                     fill: parent
                                     margins: 6
                                 }
-                                radius: 14
+                                radius: Theme.corner(14)
                                 color: themeMouse.containsMouse || themeGrid.currentIndex === themeCell.index && themeGrid.activeFocus ? Theme.raised : Theme.tile
                                 border.width: themeCell.active ? 2 : 1
                                 border.color: themeCell.active ? Theme.accent : Theme.stroke
@@ -159,7 +196,7 @@ Overlay {
                                     Rectangle {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
-                                        radius: 8
+                                        radius: Theme.corner(8)
                                         color: themeCell.preview.bg
                                         Rectangle {
                                             anchors {
@@ -168,7 +205,7 @@ Overlay {
                                                 top: parent.top
                                             }
                                             height: 12
-                                            radius: 8
+                                            radius: Theme.corner(8)
                                             color: themeCell.preview.base
                                         }
                                         Rectangle {
@@ -176,7 +213,7 @@ Overlay {
                                             y: 22
                                             width: parent.width * 0.55
                                             height: parent.height - 34
-                                            radius: 6
+                                            radius: Theme.corner(6)
                                             color: themeCell.preview.raised
                                             border.color: themeCell.preview.border
                                             Text {
@@ -205,7 +242,7 @@ Overlay {
                                             }
                                             width: 46
                                             height: 18
-                                            radius: 9
+                                            radius: Theme.corner(9)
                                             color: themeCell.preview.accent
                                             Text {
                                                 anchors.centerIn: parent
@@ -225,7 +262,7 @@ Overlay {
                                                 required property string modelData
                                                 width: 14
                                                 height: 14
-                                                radius: 7
+                                                radius: Theme.corner(7)
                                                 color: modelData
                                             }
                                         }
@@ -316,7 +353,7 @@ Overlay {
                                     fill: parent
                                     margins: 6
                                 }
-                                radius: 12
+                                radius: Theme.corner(12)
                                 color: Theme.tile
                                 clip: true
                                 Image {
@@ -355,7 +392,7 @@ Overlay {
                             // Outline drawn on top so the thumbnail cannot cover it.
                             Rectangle {
                                 anchors.fill: frame
-                                radius: 12
+                                radius: Theme.corner(12)
                                 color: "transparent"
                                 border.width: wallCell.active || wallpaperGrid.currentIndex === wallCell.index && wallpaperGrid.activeFocus ? 2 : 1
                                 border.color: wallCell.active ? Theme.accent : wallpaperGrid.currentIndex === wallCell.index && wallpaperGrid.activeFocus ? Theme.handleFocus : Theme.stroke
@@ -505,7 +542,7 @@ Overlay {
                     Rectangle {
                         Layout.fillWidth: true
                         implicitHeight: previewColumn.implicitHeight + 20
-                        radius: 12
+                        radius: Theme.corner(12)
                         color: Theme.background
                         ColumnLayout {
                             id: previewColumn
@@ -642,7 +679,7 @@ Overlay {
                 Layout.fillWidth: true
                 visible: Theming.restartTab !== ""
                 implicitHeight: restartRow.implicitHeight + 16
-                radius: 12
+                radius: Theme.corner(12)
                 color: Theme.tile
                 RowLayout {
                     id: restartRow

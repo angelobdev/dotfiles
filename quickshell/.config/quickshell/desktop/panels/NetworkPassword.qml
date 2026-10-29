@@ -78,7 +78,7 @@ ColumnLayout {
         Layout.topMargin: 6
         implicitWidth: 196
         implicitHeight: 196
-        radius: 12
+        radius: Theme.corner(12)
         // Scanners need dark modules on a light background regardless of the theme.
         color: Theme.text
         Canvas {
