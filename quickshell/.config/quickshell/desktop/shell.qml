@@ -70,6 +70,10 @@ ShellRoot {
                 },
                 dock: {
                     items: Dock.items.map(i => i.key + (i.running ? "*" : "")),
+                    pinned: Dock.pinned,
+                    pinsSaved: Dock.pinned !== Config.dockPinned,
+                    menu: Dock.menuScreen,
+                    keyboard: Dock.keyboardScreen,
                     shown: Object.keys(Dock.shown),
                     requested: Dock.requested,
                     peeking: Object.keys(Dock.peeks)

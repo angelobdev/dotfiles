@@ -38,7 +38,8 @@ sys.exit(0 if running else 1)
         ;;
     dock)
         case "${2:-}" in
-            show|hide|toggle) exec qs ipc -p "$config" call desktop dock "$2" ;;
+            # "--" keeps qs from reading "show" as its own subcommand.
+            show|hide|toggle) exec qs ipc -p "$config" call desktop dock -- "$2" ;;
             launch)
                 if [[ "${3:-}" =~ ^[1-9]$ ]]; then
                     exec qs ipc -p "$config" call desktop dockLaunch "$3"

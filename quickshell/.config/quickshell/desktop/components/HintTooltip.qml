@@ -9,9 +9,11 @@ PopupWindow {
     property bool hovered: false
     // Controls at the bottom of the screen (the dock) open their tooltip above.
     property bool above: false
+    // Distance from the control; the dock adds the height its magnified icon rises above the cell.
+    property real gap: 8
     anchor.item: target
     anchor.rect.x: target.width / 2
-    anchor.rect.y: above ? -8 : target.height + 8
+    anchor.rect.y: above ? -gap : target.height + gap
     anchor.rect.width: 1
     anchor.rect.height: 1
     anchor.edges: above ? Edges.Top : Edges.Bottom

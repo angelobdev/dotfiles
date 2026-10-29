@@ -12,8 +12,10 @@ QtObject {
     readonly property string recordingCodec: "libvpx-vp9"
     // Dock: desktop-entry IDs pinned in this order, a reveal strip along the bottom edge (logical px) and its hover delay (ms).
     readonly property bool dockEnabled: true
-    readonly property var dockPinned: ["kitty", "zen-browser", "org.gnome.Nautilus", "com.microsoft.VSCode", "chatgpt", "steam"]
+    readonly property var dockPinned: ["kitty", "zen-browser", "org.gnome.Nautilus", "com.microsoft.VSCode", "chatgpt", "desktop-ai", "steam"]
     readonly property int dockIconSize: 44
+    // Peak scale of the icon under the pointer; 1 turns magnification off.
+    readonly property real dockMagnification: 1.4
     readonly property int dockTriggerHeight: 3
     readonly property int dockRevealDelay: 120
     // Order and presence of modules. Unknown names are ignored.

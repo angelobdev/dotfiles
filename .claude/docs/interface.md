@@ -45,7 +45,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + W` | Choose wallpaper |
 | `Super + Ctrl + C` | Clipboard / history |
 | `Super + Ctrl + R` | Screen recording |
-| `Super + D` | Show / hide the dock |
+| `Super + D` | Show the dock with keyboard navigation / hide it |
 | `Super + Alt + 1`…`9` | Open or focus the Nth dock item |
 | `Super + L` / `XF86Sleep` | Lock / suspend with lock |
 | `Super + Shift + R` | Restart Quickshell |
@@ -91,7 +91,13 @@ In `Config.qml`: `minimumWorkspaces: 2` (minimum 2, maximum 10) and `workspaceSc
 
 A dock sits at the bottom of every monitor, hidden by default and reserving no space. Push the pointer against the bottom edge (a 3 px strip that leaves 64 px free at each corner for the hot corner and gestures) and it slides up after 120 ms; it slides away 400 ms after the pointer leaves. It also shows by itself on an empty workspace, for about a second after `Super + Alt + N`, and for about three seconds when a window asks for attention (its icon pulses and its dot turns red). It never shows over a fullscreen window or during the Hyprspace overview.
 
-Pinned apps come first (`dockPinned` in `Config.qml`), then a separator and the other running apps, grouped by desktop entry (the `zen` window class belongs to `zen-browser`); apps without a desktop entry keep their window class and a generic icon. A dot marks running apps and widens for the focused one. Left click opens a pinned app, focuses a running one (a window on the current workspace first), or, when it is already focused, cycles through its windows; middle click opens a new instance. `Super + D` shows or hides the dock on the focused monitor until the pointer has visited it; hiding also keeps it down on an empty workspace. `Super + Alt + 1`…`9` activate items by position. `desktop-shell dock show|hide|toggle|launch N` does the same from scripts. Pinning from the dock, magnification, reordering and keyboard navigation are planned (Dock phase 2 in the roadmap).
+Pinned apps come first, then a separator and the other running apps, grouped by desktop entry (the `zen` window class belongs to `zen-browser`); apps without a desktop entry keep their window class and a generic icon. A dot marks running apps and widens for the focused one. Icons near the pointer magnify (up to 1.4× under it) and the dock widens around them. Left click opens a pinned app, focuses a running one (a window on the current workspace first), or, when it is already focused, cycles through its windows; middle click opens a new instance.
+
+Right click opens the app menu: its windows (choose one to focus it; the focused one is marked), the actions its desktop entry declares (for example a private window), New window, Pin to dock / Unpin from dock, and Close, or "Close all N windows" with a confirmation. Arrow keys, Enter and Esc work in the menu; an outside click closes it.
+
+Pins can also be changed by dragging: hold a pinned icon and move it at least 6 px, then drop it on another slot to reorder, or lift it more than an icon above the dock until it fades and says "Remove", and release to unpin it. In the launcher (`Super + Space`), pinned apps carry a pin mark on the right; `Ctrl+P` or a right click pins or unpins the selected app.
+
+`Super + D` shows the dock on the focused monitor and gives it the keyboard: Left/Right (or Tab) move a selection ring with the app name, Home/End jump to the ends, Enter opens or focuses the app, Shift+Enter opens a new instance, the Menu key or Shift+F10 opens the app menu (Esc there returns to the dock), and Esc or `Super + D` hides the dock and keeps it down, even on an empty workspace, until the pointer visits it. Activating an app or clicking outside the dock ends keyboard mode. `Super + Alt + 1`…`9` activate items by position without taking the keyboard. `desktop-shell dock show|hide|toggle|launch N` does the same from scripts.
 
 ## Clipboard
 

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=AI assistant
+Comment=Claude Code with voice dictation
+Exec=/home/angelo/.local/bin/desktop-ai
+TryExec=/home/angelo/.local/bin/desktop-ai
+Icon=desktopai
+Terminal=false
+Type=Application
+StartupWMClass=desktop-ai
+Categories=Utility;
+Keywords=claude;assistant;ai;chat;voice;

@@ -23,5 +23,10 @@ if [[ -x $qmllint ]]; then
         xargs -0 "$qmllint" --import disable --unqualified disable --unresolved-type disable \
             --required disable --missing-property disable --incompatible-type disable --unused-imports disable
 fi
+# Pure JS helpers of the shell (dock layout); offscreen, no compositor needed.
+qmltestrunner=/usr/lib64/qt6/bin/qmltestrunner
+if [[ -x $qmltestrunner ]]; then
+    QT_QPA_PLATFORM=offscreen "$qmltestrunner" -silent -input "$repo/scripts/tests"
+fi
 XDG_CONFIG_HOME="$repo/hypr/.config" Hyprland --verify-config -c "$repo/hypr/.config/hypr/hyprland.lua"
 printf '\nTo check QML in the session: qs -p "%s/quickshell/.config/quickshell/desktop"\n' "$repo"

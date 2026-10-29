@@ -242,6 +242,23 @@
     "up": "in alto"
   },
   "dock": {
+    "menu": {
+      "cancel": "Annulla",
+      "close": "Chiudi",
+      "closeAll": {
+        "one": "Chiudi %1 finestra",
+        "other": "Chiudi tutte le %1 finestre"
+      },
+      "confirmClose": {
+        "one": "Chiudere %1 finestra?",
+        "other": "Chiudere %1 finestre?"
+      },
+      "newWindow": "Nuova finestra",
+      "pin": "Fissa nella dock",
+      "unpin": "Rimuovi dalla dock",
+      "windows": "Finestre"
+    },
+    "remove": "Rimuovi",
     "title": "Dock"
   },
   "hints": {
@@ -284,7 +301,7 @@
   },
   "launcher": {
     "empty": "Nessuna applicazione",
-    "navigationHint": "↑ ↓ seleziona    Invio apri    Esc chiudi",
+    "navigationHint": "↑ ↓ seleziona    Invio apri    Ctrl+P o tasto destro: fissa nella dock    Esc chiudi",
     "searchPlaceholder": "Cerca un’applicazione…",
     "terminalSuffix": "  [terminale]",
     "title": "Applicazioni"

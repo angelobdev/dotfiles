@@ -96,3 +96,38 @@ Argument checks covered monitor scale 1/1.667, boolean/integer Hyprland option f
 ## Dock verification
 
 After stowing, the live shell loaded the dock (`Configuration Loaded`). A first attempt named the window file `dock/Dock.qml`, which clashes with the `Dock` singleton ("Composite Singleton Type Dock is not creatable"), so it is `DockWindow.qml`. Quickshell kept the previous instance until the fix. `hyprctl layers -j` showed `desktop-dock` on eDP-1 at 0,1000, 1728×80, next to the unchanged 38 px `desktop-bar`. `desktop-shell status` listed the six pins plus `desktop-ai`, with `zen` grouped under `zen-browser`. The Kitty-based `desktop-ai` window has no desktop entry of its own, so it keeps its class and the generic icon. `dock toggle` twice set `shown` to `eDP-1`, then back to none, with the request `true` then `false`. Invalid actions and `launch 0` exit 2 with the usage text. `dock launch 2` focused Zen, and `dock launch 7` focused the assistant again and reopened `special:ai`. Each launch peeked the dock, and the peek cleared about one second later. `Super + D` and the nine `Super + Alt + N` binds are registered, and `hyprctl configerrors` is empty. The user then confirmed edge reveal, corners, fullscreen, Hyprspace, the empty workspace, urgency and blur. One bug turned up: with the pointer resting on the bottom edge beside the dock, the dock bounced up and down. Reproduced with `hl.dsp.cursor.move` to 300,1079 (`shown` alternated): once shown, the input region shrank to the dock body, the pointer fell outside it, the dock hid, and the strip revealed it again. The input region is now the strip plus, while shown, the dock body. With a hide request active, the same move kept `shown` steady on the edge. A second bug remained: the dock still hid when the pointer moved from the edge onto an icon. Cursor warps did not show it, because a warp does not deliver hover to the icons the way real pointer motion does. An offscreen `qmltestrunner` test with real mouse moves did: a `HoverHandler` on a sibling below a hover-enabled `MouseArea` reports `hovered: false` over it, while one on an ancestor keeps `true`. The dock's handler now sits on the item that contains the strip, the dock body and the icons. The user confirmed that icons can then be reached and clicked.
+
+## Dock phase 2 verification
+
+**Pins**
+- `FileView` with `atomicWrites` created `~/.local/state/desktop-shell/` on first save, so no `mkdir` is needed.
+- After a restart the pins fell back to the defaults, although the file held the new list. A loaded `JsonAdapter` list is not a JS array (`Array.isArray` is false). An isolated `qs` instance showed it and confirmed `Array.from` as the fix.
+- The user then confirmed that pins survive restarts.
+
+**Assistant icon**
+- The `desktop-ai` icon resolved to Papirus `desktop`. Qt applies the dash fallback inside each theme before moving to its parents, so `desktop-ai` became `desktop` in Papirus before `hicolor` was searched.
+- Renders from an isolated instance showed the dashless name `desktopai` resolving from `~/.local/share/icons/hicolor`.
+- New desktop entries and icon names need a shell restart: `DesktopEntries` does not see them live.
+- The icon and the `pin` glyph were drawn in the Desktop Icons Figma file ("App icons" section, `icon/pin`) and exported.
+
+**User-confirmed**
+- The menu entries and close confirmation.
+- Launcher pinning (mark, `Ctrl+P`, right click).
+- Magnification.
+- Drag reorder and drag-off removal. Hyprland keeps delivering motion outside the input region while the button is held.
+
+**Keyboard mode**
+- Giving the dock window itself keyboard focus made Qt replay a stale hover on it. `pointer.hovered` stayed true with the cursor elsewhere, so the dock never hid. Keyboard handling therefore moved to a separate `DockKeyboard` surface.
+- The first version of that surface was 1 px, always mapped, and switched its keyboard interactivity to exclusive when needed. `Window.active` stayed false, so Hyprland never gave it focus, and none of the keys worked. Before that, a Hyprland focus grab requested in the same frame as the surface mapped had been cleared at once.
+- Several later variants were edited with `sed -i`. That replaces the file, and Quickshell stopped watching it: `hyprctl layers` still showed the old 1×1 surface, so those tests measured stale code. Earlier "reload stuck after an error" moments had the same cause.
+- **Final design** (written in place):
+  - The surface is a full-screen Overlay layer, mapped only in keyboard mode, with static exclusive focus, the same as tray menus and the launcher.
+  - Its input region excludes the dock body; a press anywhere else ends keyboard mode. No focus grab is used.
+  - `Window.active` and item focus were true in three of three IPC cycles.
+  - The user confirmed arrows/Tab, Enter, Shift+F10 and Esc.
+- `qs ipc call desktop dock show` printed the function signature instead of calling it: `show` is read as a `qs` subcommand. `desktop-shell` now passes `--` before the argument. This was broken since phase 1; only `toggle`/`hide` had been tested then.
+- `dock show`/`hide`/`toggle` each held their state over five cycles via IPC. Keys need the physical check.
+
+**Tests and side effects**
+- `scripts/tests/tst_dock_model.qml` (9 tests) covers resting offsets, magnification, the drop slot and drag shifts.
+- During testing, `dock launch 1` opened a Kitty window in the session.

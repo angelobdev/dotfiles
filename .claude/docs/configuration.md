@@ -60,7 +60,9 @@ To add text, add the same path to both files and use `I18n.tr("clipboard.deleteI
 
 ## Dock configuration
 
-In `Config.qml`: `dockEnabled: true`; `dockPinned`, the desktop-entry IDs (file names without `.desktop`) pinned in order, by default Kitty, Zen, Files, VS Code, ChatGPT and Steam, with unknown IDs skipped; `dockIconSize: 44` (logical px); `dockTriggerHeight: 3`, the height of the reveal strip (1 px can round away at fractional scales); `dockRevealDelay: 120` ms of hover before it slides up. The layer namespace is `desktop-dock` (blurred like the panels, Hyprglass, no compositor animation).
+In `Config.qml`: `dockEnabled: true`; `dockPinned`, the default pins as desktop-entry IDs (file names without `.desktop`): Kitty, Zen, Files, VS Code, ChatGPT, the AI assistant and Steam, with unknown IDs skipped; `dockIconSize: 44` (logical px); `dockMagnification: 1.4`, the peak scale under the pointer (1 turns it off); `dockTriggerHeight: 3`, the height of the reveal strip (1 px can round away at fractional scales); `dockRevealDelay: 120` ms of hover before it slides up.
+
+The first pin change (menu, drag, launcher) writes `~/.local/state/desktop-shell/dock.json` (`{"pinned": [...]}`, atomic write); from then on it replaces `dockPinned`. Pins of apps that are not installed stay in the file but are not shown. Delete the file to return to `dockPinned`; the shell picks up edits to it live. The layer namespace is `desktop-dock` (blurred like the panels, Hyprglass, no compositor animation); its surface is 190 px tall to draw a pin being dragged off, but input only reaches the reveal strip and the dock body. The context menu uses the `desktop-tray-menu` namespace; keyboard mode maps a transparent full-screen `desktop-dock-keys` surface whose input region excludes the dock, so an outside click ends keyboard mode.
 
 ## Control Center configuration
 

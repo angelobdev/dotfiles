@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import ".."
 
 Singleton {
@@ -11,12 +12,20 @@ Singleton {
     property var peeks: ({})
     property var shown: ({})
     property var previousUrgent: []
-    // Pinned entries in Config order, then running apps that are not pinned, in window creation order.
+    // Monitor whose context menu is open; the dock stays up underneath it.
+    property string menuScreen: ""
+    // Monitor whose dock holds the keyboard after Super+D.
+    property string keyboardScreen: ""
+    // Desktop-entry IDs from the state file; Config.dockPinned until the user first changes them.
+    // A loaded JsonAdapter list is not a JS array (Array.isArray is false), so copy it into one.
+    readonly property var pinned: pinState.pinned ? Array.from(pinState.pinned).filter(id => typeof id === "string") : Config.dockPinned
+    readonly property string stateFile: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-shell/dock.json"
+    // Pinned entries in their saved order, then running apps that are not pinned, in window creation order.
     readonly property var items: {
         const result = [];
         const byKey = {};
         DesktopEntries.applications.values; // Re-resolve once desktop entries finish loading.
-        for (const id of Config.dockPinned) {
+        for (const id of pinned) {
             const entry = DesktopEntries.byId(id);
             if (!entry || byKey[entry.id])
                 continue;
@@ -57,6 +66,31 @@ Singleton {
             }));
     }
     readonly property var urgentKeys: items.filter(item => item.urgent).map(item => item.key)
+    function isPinned(id) {
+        return pinned.includes(id);
+    }
+    function savePins(ids) {
+        pinState.pinned = ids;
+        pinFile.writeAdapter();
+    }
+    function pin(id) {
+        if (id && !isPinned(id))
+            savePins(pinned.concat([id]));
+    }
+    function unpin(id) {
+        if (isPinned(id))
+            savePins(pinned.filter(p => p !== id));
+    }
+    // slot counts the pins shown in the dock; pins whose app is not installed keep their order at the end.
+    function movePin(id, slot) {
+        const shown = items.filter(i => i.pinned).map(i => i.key);
+        const from = shown.indexOf(id);
+        if (from === -1 || from === slot)
+            return;
+        shown.splice(from, 1);
+        shown.splice(Math.max(0, Math.min(slot, shown.length)), 0, id);
+        savePins(shown.concat(pinned.filter(p => !shown.includes(p))));
+    }
     function appIdOf(toplevel) {
         return toplevel.wayland?.appId || toplevel.lastIpcObject?.class || "";
     }
@@ -79,9 +113,16 @@ Singleton {
             return false;
         const visible = action === "show" || action === "toggle" && !shown[name];
         requested = assigned(requested, name, visible);
+        keyboardScreen = visible ? name : "";
         if (!visible)
             peeks = assigned(peeks, name, undefined);
         return true;
+    }
+    // Leaving keyboard mode: Esc keeps the dock down like "hide", an outside click returns it to normal.
+    function endKeyboard(name, hide) {
+        if (keyboardScreen === name)
+            keyboardScreen = "";
+        requested = assigned(requested, name, hide ? false : undefined);
     }
     function release(name) {
         requested = assigned(requested, name, undefined);
@@ -98,6 +139,7 @@ Singleton {
     }
     function activate(item) {
         requested = ({});
+        keyboardScreen = "";
         if (!item.running) {
             Apps.launch(item.entry);
             return;
@@ -137,6 +179,19 @@ Singleton {
             peek(window?.monitor?.name ?? focusedName(), 3000);
         }
         previousUrgent = urgentKeys;
+    }
+    // Missing or unreadable state leaves pinState.pinned null, so the Config default applies.
+    FileView {
+        id: pinFile
+        path: root.stateFile
+        watchChanges: true
+        atomicWrites: true
+        printErrors: false
+        onFileChanged: reload()
+        adapter: JsonAdapter {
+            id: pinState
+            property var pinned: null
+        }
     }
     Timer {
         id: peekClock

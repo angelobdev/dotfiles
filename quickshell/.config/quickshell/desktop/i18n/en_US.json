@@ -242,6 +242,23 @@
     "up": "up"
   },
   "dock": {
+    "menu": {
+      "cancel": "Cancel",
+      "close": "Close",
+      "closeAll": {
+        "one": "Close %1 window",
+        "other": "Close all %1 windows"
+      },
+      "confirmClose": {
+        "one": "Close %1 window?",
+        "other": "Close %1 windows?"
+      },
+      "newWindow": "New window",
+      "pin": "Pin to dock",
+      "unpin": "Unpin from dock",
+      "windows": "Windows"
+    },
+    "remove": "Remove",
     "title": "Dock"
   },
   "hints": {
@@ -284,7 +301,7 @@
   },
   "launcher": {
     "empty": "No applications",
-    "navigationHint": "↑ ↓ select    Enter open    Esc close",
+    "navigationHint": "↑ ↓ select    Enter open    Ctrl+P or right click: pin to dock    Esc close",
     "searchPlaceholder": "Search applications…",
     "terminalSuffix": "  [terminal]",
     "title": "Applications"
