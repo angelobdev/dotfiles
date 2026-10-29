@@ -46,6 +46,8 @@ var names = {
     "qr-code": ["qr-code-symbolic"],
     "reboot": ["system-reboot-symbolic"],
     "record": ["media-record-symbolic"],
+    "rotate": ["rotation-allowed-symbolic", "object-rotate-right-symbolic"],
+    "rotate-lock": ["rotation-locked-symbolic"],
     "stop": ["media-playback-stop-symbolic"],
     "sun": ["display-brightness-symbolic", "weather-clear-symbolic"],
     "suspend": ["system-suspend-symbolic", "weather-clear-night-symbolic"],

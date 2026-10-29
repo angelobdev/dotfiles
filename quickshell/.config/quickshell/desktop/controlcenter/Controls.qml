@@ -14,7 +14,8 @@ Overlay {
             audio: "AudioControl.qml",
             media: "MediaControl.qml",
             doNotDisturb: "FocusControl.qml",
-            idle: "IdleControl.qml"
+            idle: "IdleControl.qml",
+            rotation: "RotationControl.qml"
         })
     onOpened: header.closeButton.forceActiveFocus()
     SidePanelCard {
@@ -49,6 +50,8 @@ Overlay {
                             required property string modelData
                             Layout.fillWidth: true
                             Layout.columnSpan: ["network", "bluetooth"].includes(modelData) ? 1 : 2
+                            // A tile with nothing to control on this machine sets "available" to false.
+                            visible: item?.available ?? true
                             source: root.moduleSources[modelData]
                         }
                     }

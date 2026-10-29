@@ -19,7 +19,7 @@ QtObject {
     readonly property int dockTriggerHeight: 3
     readonly property int dockRevealDelay: 120
     // Order and presence of modules. Unknown names are ignored.
-    readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle"]
+    readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle", "rotation"]
     readonly property int controlCenterWidth: 400
     readonly property bool expandMonitors: false
     readonly property bool expandAudioDevices: false

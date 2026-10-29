@@ -7,7 +7,8 @@ hl.monitor({
 
 -- Custom monitor
 
-hl.monitor({
+-- The internal display rotates in tablet mode (config/tablet.lua).
+require("config.tablet").monitor({
     output = "eDP-1",
     mode = "preferred",
     position = "auto",

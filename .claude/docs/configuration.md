@@ -61,11 +61,17 @@ To add text, add the same path to both files and use `I18n.tr("clipboard.deleteI
 ## Saved shell state
 
 `~/.local/state/desktop-shell/`:
-- **`session.json`** `{"keepAwake", "quiet"}`: Keep awake and Do Not Disturb (`services/SessionState.qml`). A missing file means both off.
+- **`session.json`** `{"keepAwake", "quiet", "rotationLock"}`: Keep awake, Do Not Disturb and rotation lock (`services/SessionState.qml`). A missing file means all off.
 - **`notifications.json`** `{"entries": [...]}`: the notification history (app name and icon, summary, body, arrival time). It is rewritten 500 ms after a notification arrives or closes and after Delete or Clear all. Entries are capped at 50 and dropped after 7 days on load. Icons a notification served itself (`image://`) are not kept.
 - **`dock.json`**: dock pins.
 
-Delete a file to reset it. `desktop-shell keep-awake|dnd toggle|on|off` sets the switches from scripts.
+Delete a file to reset it. `desktop-shell keep-awake|dnd|rotation-lock toggle|on|off` sets the switches from scripts.
+
+## Tablet mode and rotation
+
+- **Posture:** `hypr/config/tablet.lua` binds `switch:on/off` of the tablet mode switch to `desktop-shell tablet on|off`. The switch is named in `local.lua` (`require("config.tablet").switch("Intel HID switches")`, as `hyprctl devices` lists it). `services/Tablet.qml` keeps the posture in `$XDG_RUNTIME_DIR/desktop-shell/tablet.json`, so a shell restart keeps it and a new session starts in laptop mode until the switch reports. The switch binds are left out of Hints.
+- **Sensor:** `libexec/desktop/rotation.py watch` claims the iio-sensor-proxy accelerometer over D-Bus only while tablet mode is on and rotation is unlocked, and prints its orientation as a Hyprland transform (normal 0, left-up 1, bottom-up 2, right-up 3; flat keeps the last one). `rotation.py probe` tells the shell whether there is an accelerometer.
+- **Rotation:** `rotation.py apply N` writes `~/.local/state/desktop-session/rotation.lua` and runs `hyprctl eval 'desktop_rotate(N)'`. `monitors.lua` declares the built-in display through `require("config.tablet").monitor({...})`, which applies the saved transform, so a config reload (a theme change, for one) keeps the rotation. `input.touchdevice` and `input.tablet` get the same transform and are mapped to that output.
 
 ## Dock configuration
 
@@ -78,7 +84,7 @@ The first pin change (menu, drag, launcher) writes `~/.local/state/desktop-shell
 Edit `quickshell/.config/quickshell/desktop/Config.qml`. Configuration is declarative, with no UI editor:
 
 ```qml
-readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle"]
+readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle", "rotation"]
 readonly property int controlCenterWidth: 400
 readonly property bool expandMonitors: false
 readonly property bool expandAudioDevices: false
@@ -89,7 +95,7 @@ readonly property var brightnessDevices: ({})
 
 `dnsPresets` lists the DNS choices in the network details view (Cloudflare, Quad9, Google, and AdGuard by default); each preset gives IPv4 and IPv6 servers. Applying a preset or custom servers sets `ipv4/ipv6.dns` with `ignore-auto-dns` on the saved NetworkManager profile and reapplies it to an active device without disconnecting; **Automatic** restores the router's DNS.
 
-Removing a name disables its module; reordering the list changes the layout. Unknown and duplicate names are ignored. Each module has its own file in `controlcenter/`. Network and Bluetooth each occupy half a row; other modules occupy a full row. The panel scrolls when expanded sections exceed the available space. If the primary monitor is disconnected, the first connected display is used.
+Removing a name disables its module; reordering the list changes the layout. `rotation` hides itself where there is no accelerometer. Unknown and duplicate names are ignored. Each module has its own file in `controlcenter/`. Network and Bluetooth each occupy half a row; other modules occupy a full row. The panel scrolls when expanded sections exceed the available space. If the primary monitor is disconnected, the first connected display is used.
 
 Brightness uses hardware control: a single eDP/LVDS/DSI panel backlight is detected automatically and controlled through `brightnessctl`. Brightness keys retain control of the built-in backlight. For multiple backlights or external monitors, explicitly associate the name returned by `hyprctl monitors` with a device:
 

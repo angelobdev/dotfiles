@@ -16,12 +16,13 @@ import "osd"
 import "services"
 
 ShellRoot {
-    // Eagerly load shared services, including the notification D-Bus owner and the dynamic theme watcher.
+    // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher and the tablet posture.
     property var audio: Audio
     property var notices: Notices
     property var clipboard: Clipboard
     property var bluetoothAgent: BluetoothAgent
     property var dynamicTheme: DynamicTheme
+    property var tablet: Tablet
     IpcHandler {
         target: "desktop"
         function toggle(panel: string): void {
@@ -41,6 +42,12 @@ ShellRoot {
         }
         function quiet(action: string): bool {
             return Notices.request(action);
+        }
+        function tablet(action: string): bool {
+            return Tablet.request(action);
+        }
+        function rotationLock(action: string): bool {
+            return Tablet.requestLock(action);
         }
         function close(): void {
             ShellState.close();
@@ -106,6 +113,13 @@ ShellRoot {
                             active: Hyprland.monitorFor(s)?.activeWorkspace?.id
                         })),
                 quiet: Notices.quiet,
+                tablet: {
+                    active: Tablet.active,
+                    accelerometer: Tablet.available,
+                    orientation: Tablet.orientation,
+                    transform: Tablet.transform,
+                    rotationLock: Tablet.locked
+                },
                 dynamicTheme: {
                     active: DynamicTheme.active,
                     source: DynamicTheme.source,

@@ -6,6 +6,11 @@
 -- The AI assistant (Super+A) dictates and replies in Italian; the UI locale stays en_US.
 hl.env("DESKTOP_AI_LANGUAGE", "italian")
 
+-- TABLET MODE --
+
+-- The OmniBook Ultra Flip reports its 2-in-1 posture (SW_TABLET_MODE) on this switch.
+require("config.tablet").switch("Intel HID switches")
+
 -- BINDS --
 
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'

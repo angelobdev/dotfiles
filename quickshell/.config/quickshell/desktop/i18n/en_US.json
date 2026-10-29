@@ -616,5 +616,17 @@
       "asepriteUsage": "Usage: desktop-aseprite COMMAND (set \"desktop-aseprite %command%\" as Aseprite's Steam launch option)",
       "noMonitor": "No active Hyprland monitor found"
     }
+  },
+  "rotation": {
+    "errors": {
+      "usage": "Usage: rotation.py probe | watch | apply 0-3"
+    }
+  },
+  "tablet": {
+    "mode": "Tablet mode",
+    "rotationLock": "Rotation lock",
+    "rotatesInTablet": "Rotates in tablet mode",
+    "rotatesAutomatically": "Follows the device",
+    "locked": "Locked"
   }
 }

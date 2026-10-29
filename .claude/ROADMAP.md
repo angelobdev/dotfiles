@@ -148,13 +148,20 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 - [x] Persist "Keep awake" (`Idle.keepAwake`) and "Do Not Disturb" (`Notices.quiet`) across shell restarts and logins (state file read at start).
 - [x] Keyboard shortcuts to toggle "Keep awake" (`Super + Ctrl + K`) and "Do Not Disturb" (`Super + Ctrl + N`) with a state OSD, listed in Hints.
 
+### Control Center switches
+
+- [ ] The final switches in a 2×2 grid: Do Not Disturb, Keep awake, Rotation lock and a new Night shift (hyprsunset, which `hyprctl hyprsunset` already drives), each a compact square tile with icon, name and state.
+
 ### Touchscreen support (epic)
 
-- [ ] On-screen keyboard: pick and package one that works on Hyprland (layer-shell, input-method or virtual-keyboard protocol: e.g. wvkbd, squeekboard), show/hide on demand and, where possible, on text-field focus; layout and theme matched to the desktop.
-- [ ] Touch-friendly shell: larger hit targets and spacing option for bar, dock and panels; long-press for context menus (dock, launcher); swipe to dismiss notifications.
-- [ ] Gestures: review the existing Hyprgrass bindings (edge swipes, three-finger workspace/overview), add edge swipe for the dock and the OSK, and document them.
-- [ ] Rotation and tablet mode where the hardware reports it (sensor-proxy), with input mapped to the rotated output.
-- [ ] Physical testing on the Omnibook touchscreen (the open "physical testing of touchscreen gestures" item).
+Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_TABLET_MODE` on "Intel HID switches", accelerometer through iio-sensor-proxy (active). Hyprgrass gestures: `swipe`, `edge`, `longpress`, `pinch`, `tap`; edge swipes from bottom/top and three-finger swipes are taken. Agreed design (review 2026-10-29):
+
+- [x] Phase 1, tablet mode and rotation: Hyprland `switch:on/off` binds on the tablet switch set a shell `tablet` state (IPC, `desktop-shell status`). A rotation helper follows SensorProxy only in tablet mode and rotates the output together with touch and stylus input; rotation lock in the Control Center and in the helper menu, persisted like Keep awake. Verified on the OmniBook in all four orientations by the user.
+- [ ] Phase 2, floating helper ("do everything" button, AssistiveTouch-like): a round button over every app, dragged by finger or mouse, snapping to the nearest side edge, position remembered per monitor and orientation, dimmed and half tucked when idle. Tap opens a grid of large actions (Keyboard, Apps, Dock, Control Center, Notifications, Overview, Workspace ←/→, Rotation lock; configurable like dock pins); long press runs a configurable quick action. Full-screen overlay with an input mask and no keyboard focus. Summoned with a three-finger long press (Hyprgrass) and IPC; shown automatically in tablet mode, hidden back in laptop mode.
+- [ ] Phase 3, on-screen keyboard in Quickshell: Italian layout, accents on long press, numbers/symbols page, Shift/Caps, repeating Backspace, arrows, optional Esc/Tab/Ctrl/Alt row. Docked at the bottom (full width, exclusive zone so windows shrink above it) by default, with a key that makes it floating and draggable. Never takes focus; keys go through a persistent helper on `zwp_virtual_keyboard_v1` with the `it` keymap (python3-pywayland or a small C helper, decided at implementation). Opened from the floating helper.
+- [ ] Phase 4, automatic keyboard: the helper also registers as `zwp_input_method_v2`, used only as a focus signal: activate shows the keyboard, deactivate hides it, and the content purpose picks the layout (digits, email, password, terminal). Keys still go through the virtual keyboard. Works with text-input-v3 clients (GTK, Firefox/Zen, Qt6); Electron/Chromium need `--enable-wayland-ime`; Kitty to be checked. Manual opening stays available everywhere.
+- [ ] Phase 5, touch-friendly shell: a touch scale (larger hit targets and spacing for bar, dock and panels) switched on in tablet mode; long press for context menus (dock, launcher); swipe to dismiss notifications.
+- [ ] Phase 6, physical testing on the OmniBook in both postures (includes the open "physical testing of touchscreen gestures" item), and docs.
 
 ### Codebase review
 

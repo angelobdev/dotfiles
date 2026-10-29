@@ -3,13 +3,14 @@ set -euo pipefail
 repo=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 for script in "$repo"/shell/.local/bin/*; do bash -n "$script"; done
 # compile() also catches errors ast.parse accepts (e.g. return outside a function); it writes no bytecode.
-python3 - "$repo/scripts/stow.py" "$repo/scripts/install-hypr-plugins.py" "$repo/scripts/check-i18n.py" "$repo/scripts/tests/test_theme.py" "$repo/scripts/hyprpm/build.py" "$repo"/shell/.local/libexec/desktop/*.py "$repo/shell/.local/libexec/desktop/steamrt-ui/_v2-entry-point" <<'PY'
+python3 - "$repo/scripts/stow.py" "$repo/scripts/install-hypr-plugins.py" "$repo/scripts/check-i18n.py" "$repo/scripts/tests/test_theme.py" "$repo/scripts/tests/test_rotation.py" "$repo/scripts/hyprpm/build.py" "$repo"/shell/.local/libexec/desktop/*.py "$repo/shell/.local/libexec/desktop/steamrt-ui/_v2-entry-point" <<'PY'
 import pathlib, sys
 for path in sys.argv[1:]:
     compile(pathlib.Path(path).read_text(encoding='utf-8'), path, 'exec')
 PY
 python3 "$repo/scripts/check-i18n.py"
 python3 "$repo/scripts/tests/test_theme.py"
+python3 "$repo/scripts/tests/test_rotation.py"
 # Same flags gaming.py uses when it caches the Steam UI library.
 if command -v cc >/dev/null; then
     cc -Wall -Wextra -Werror -shared -fPIC -O2 -o /dev/null "$repo/shell/.local/libexec/desktop/steam-scale.c" -ldl

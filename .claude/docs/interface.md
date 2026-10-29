@@ -180,6 +180,12 @@ During the overview, the affected monitor's bar is invisible, releases its 38 px
 
 Sensitivity, edge margins, and actions are in `hypr/config/plugins.lua`. Touchpad gestures remain in `input.lua`: three fingers horizontally for workspaces, upward for applications, downward for controls.
 
+## Tablet mode and rotation
+
+Folding the OmniBook screen back into tablet posture turns tablet mode on; unfolding it turns it off. In tablet mode the built-in display follows the accelerometer in quarter turns, with touch and stylus input rotated along with it; back in laptop mode it returns upright. Lying flat keeps the last orientation.
+
+**Rotation lock** in the Control Center (shown only on machines with an accelerometer) keeps the current orientation; `desktop-shell rotation-lock toggle|on|off` sets it with an OSD. It is remembered across restarts and logins. `desktop-shell tablet on|off|toggle` sets the posture by hand, for instance to try it without folding the screen.
+
 ## Panel data
 
 Audio uses PipeWire nodes and changes default devices through Quickshell APIs; WirePlumber decides how to route existing streams. UPower supplies battery power in W, energy in Wh, and estimated times: this is not total wall-socket consumption and may vary over time. Missing estimates are indicated without inventing a runtime. The calendar reads enabled Evolution Data Server sources, including Online Accounts; GNOME still manages synchronization and credentials. Reads may require network access. Events remain in shell memory; EDS keeps its own cache. Do Not Disturb silences popups while retaining notifications in the center; its state resets when the shell restarts.

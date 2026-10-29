@@ -314,3 +314,12 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - `window-style --border 3` on the dynamic theme rendered `borderSize 3`, `activeBorder #acc7ff` and `inactiveBorder #44474e` into `quickshell.json`, and the shell followed live.
 - The Theming panel had a 3 px accent frame. The dock, a `notify-send` popup and the Keep awake OSD had 3 px frames in the border colour.
 - With None, `Theme.frameWidth` is 1 and the colours are `stroke`, so every surface draws as before. The Graphite test checks the new `quickshell.json` keys against the `Theme.qml` defaults.
+
+## Tablet mode and rotation verification
+
+- Hyprland 0.56 runs Lua sent with `hyprctl eval` in the config state: a global defined by one eval is callable from the next, and `hl.monitor` applies at once. `Hyprland --verify-config` accepted the `switch:on:Intel HID switches` binds; `hyprctl binds` lists them as locked `__lua` binds.
+- `/proc/bus/input/devices` reports `SW=2` (SW_TABLET_MODE) on "Intel HID switches"; the lid is a separate device. iio-sensor-proxy 3.8 reports an accelerometer (no light or proximity sensor).
+- `rotation.py apply 1` turned eDP-1 to transform 1 (portrait layout, bar and windows rearranged) with `input:touchdevice:transform` 1; `hyprctl reload` kept it; `apply 0` restored it.
+- `desktop-shell tablet on` started `rotation.py watch` (orientation normal, transform 0); `rotation-lock on` showed the OSD and stopped the watcher; `tablet off` stopped it too. `session.json` holds `rotationLock`, the posture file `tablet`.
+- The Control Center shows the Rotation lock tile on the OmniBook.
+- The user folded the OmniBook into tablet mode and turned it in all four directions: the switch, the sensor mapping, touch and the rotation lock all behaved.

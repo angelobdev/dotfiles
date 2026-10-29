@@ -91,7 +91,8 @@ Overlay {
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    root.bindings = JSON.parse(text).map(b => ({
+                    // Switch binds (the tablet mode switch) are not shortcuts.
+                    root.bindings = JSON.parse(text).filter(b => !(b.key || "").startsWith("switch:")).map(b => ({
                                 keys: root.shortcut(b),
                                 name: I18n.bindDescription(b.description || b.dispatcher),
                                 submap: b.submap || "",
