@@ -88,31 +88,25 @@ if plugins.hyprgrass then
             }
         }
     })
-    touch.gesture({
-        pattern = {
-            kind = "swipe",
-            fingers = 3,
-            direction = "horizontal"
-        },
-        action = "workspace",
-    })
-    touch.bind({
-        pattern = {
-            kind = "edge",
-            origin = "down",
-            direction = "up"
-        },
-        action = hl.dsp.exec_cmd(shell .. " toggle launcher"),
-    })
-    touch.bind({
-        pattern = {
-            kind = "edge",
-            origin = "up",
-            direction = "down"
-        },
-        action = hl.dsp.exec_cmd(shell .. " toggle controls"),
-    })
-    -- The floating assist button, anywhere on the screen.
+    -- No edge swipes: they are not always recognised. Three fingers do what they do on the touchpad
+    -- (input.lua); four act on windows and the overview. Everything else is in the assist button.
+    local function swipe(fingers, direction, action)
+        touch.bind({
+            pattern = {
+                kind = "swipe",
+                fingers = fingers,
+                direction = direction
+            },
+            action = action,
+        })
+    end
+    -- Workspaces switch as soon as the swipe is recognised (about 40 px), not along with the fingers: the
+    -- live workspace gesture commits only past workspace_swipe_cancel_ratio of the screen width, half of it,
+    -- while the app under the fingers scrolls. As on the touchpad, fingers left bring the next workspace.
+    swipe(3, "left", hl.dsp.focus({ workspace = "r+1" }))
+    swipe(3, "right", hl.dsp.focus({ workspace = "r-1" }))
+    swipe(3, "up", hl.dsp.exec_cmd(shell .. " toggle launcher"))
+    swipe(3, "down", hl.dsp.exec_cmd(shell .. " toggle controls"))
     touch.bind({
         pattern = {
             kind = "longpress",
@@ -120,15 +114,12 @@ if plugins.hyprgrass then
         },
         action = hl.dsp.exec_cmd(shell .. " assist toggle"),
     })
+    -- The window follows to the workspace beside it, empty ones included.
+    swipe(4, "left", hl.dsp.window.move({ workspace = "r-1" }))
+    swipe(4, "right", hl.dsp.window.move({ workspace = "r+1" }))
+    swipe(4, "down", hl.dsp.exec_cmd(shell .. " toggle notifications"))
     if plugins.overview then
-        touch.bind({
-            pattern = {
-                kind = "swipe",
-                fingers = 3,
-                direction = "up"
-            },
-            action = function() plugins.overview.open() end,
-        })
+        swipe(4, "up", function() plugins.overview.toggle() end)
     end
 end
 

@@ -16,6 +16,10 @@ Singleton {
     property string menuScreen: ""
     // Monitor whose dock holds the keyboard after Super+D.
     property string keyboardScreen: ""
+    // Monitor whose dock was raised by touch (the assist button in tablet mode): no keyboard surface, which
+    // would cover a dock that the docked on-screen keyboard has pushed up; it stays while it is used and
+    // goes after 6 s untouched or once an app is opened.
+    property string touchScreen: ""
     // Desktop-entry IDs from the state file; Config.dockPinned until the user first changes them.
     // A loaded JsonAdapter list is not a JS array (Array.isArray is false), so copy it into one.
     readonly property var pinned: pinState.pinned ? Array.from(pinState.pinned).filter(id => typeof id === "string") : Config.dockPinned
@@ -109,11 +113,14 @@ Singleton {
     // empty workspace; either lasts until the pointer has visited the dock or an item is activated.
     function request(action) {
         const name = focusedName();
-        if (name === "" || !["show", "hide", "toggle"].includes(action))
+        if (name === "" || !["show", "hide", "toggle", "touch"].includes(action))
             return false;
-        const visible = action === "show" || action === "toggle" && !shown[name];
+        const visible = action === "show" || (action === "toggle" || action === "touch") && !shown[name];
         requested = assigned(requested, name, visible);
-        keyboardScreen = visible ? name : "";
+        keyboardScreen = visible && action !== "touch" ? name : "";
+        touchScreen = visible && action === "touch" ? name : "";
+        if (touchScreen !== "")
+            touchTimer.restart();
         if (!visible)
             peeks = assigned(peeks, name, undefined);
         return true;
@@ -125,7 +132,14 @@ Singleton {
         requested = assigned(requested, name, hide ? false : undefined);
     }
     function release(name) {
+        // A finger leaves the dock after every tap; a touch request ends by itself instead.
+        if (touchScreen === name)
+            return;
         requested = assigned(requested, name, undefined);
+    }
+    function touched() {
+        if (touchScreen !== "")
+            touchTimer.restart();
     }
     function peek(name, duration) {
         if (name === "")
@@ -140,6 +154,7 @@ Singleton {
     function activate(item) {
         requested = ({});
         keyboardScreen = "";
+        touchScreen = "";
         if (!item.running) {
             Apps.launch(item.entry);
             return;
@@ -191,6 +206,16 @@ Singleton {
         adapter: JsonAdapter {
             id: pinState
             property var pinned: null
+        }
+    }
+    Timer {
+        id: touchTimer
+        interval: 6000
+        onTriggered: {
+            if (root.touchScreen === "")
+                return;
+            root.requested = root.assigned(root.requested, root.touchScreen, undefined);
+            root.touchScreen = "";
         }
     }
     Timer {

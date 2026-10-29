@@ -639,7 +639,9 @@
       "overview": "Panoramica",
       "workspacePrevious": "Workspace precedente",
       "workspaceNext": "Workspace successivo",
-      "keyboard": "Tastiera"
+      "keyboard": "Tastiera",
+      "assistant": "Assistente AI",
+      "window": "Finestra"
     }
   },
   "osk": {
@@ -662,5 +664,13 @@
       "keymap": "Nessuna keymap XKB per il layout %1",
       "protocol": "Il compositor non offre %1"
     }
+  },
+  "windowMenu": {
+    "title": "Menu finestra",
+    "fullscreen": "Schermo intero",
+    "floating": "Flottante",
+    "movePrevious": "Sposta al workspace precedente",
+    "moveNext": "Sposta al workspace successivo",
+    "close": "Chiudi finestra"
   }
 }

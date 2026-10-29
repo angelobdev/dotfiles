@@ -55,11 +55,21 @@ PanelWindow {
         id: trayMenu
         screen: bar.screen
     }
+    WindowMenuWindow {
+        id: windowMenu
+        screen: bar.screen
+    }
     Connections {
         target: ShellState
         function onPanelChanged() {
-            if (ShellState.panel !== "")
+            if (ShellState.panel !== "") {
                 trayMenu.dismiss();
+                windowMenu.dismiss();
+            }
+        }
+        function onWindowMenuRequested(screenName) {
+            if (screenName === bar.screen.name)
+                windowMenu.popup(windowButton.visible ? windowButton : windowTitle, 0, bar.height);
         }
     }
     SystemClock {
@@ -115,7 +125,18 @@ PanelWindow {
             scrollEnabled: Config.workspaceScroll
             onActivated: id => bar.focusWorkspace(id)
         }
+        // In tablet mode, and on a narrow bar where the title does not fit, the icon of the active app sits
+        // before the title and opens the same menu with a tap.
+        BarButton {
+            id: windowButton
+            visible: (bar.width <= 1100 || Tablet.active) && Hyprland.activeToplevel !== null
+            iconSource: Quickshell.iconPath(DesktopEntries.heuristicLookup(Hyprland.activeToplevel?.wayland?.appId ?? "")?.icon ?? "", "application-x-executable")
+            tooltip: Hyprland.activeToplevel?.title ?? ""
+            onClicked: windowMenu.popup(this, 0, bar.height)
+            Accessible.name: I18n.tr("windowMenu.title")
+        }
         Text {
+            id: windowTitle
             Layout.fillWidth: true
             Layout.minimumWidth: 0
             Layout.leftMargin: 12
@@ -126,6 +147,20 @@ PanelWindow {
             font.family: Theme.font
             font.pixelSize: 12
             visible: bar.width > 1100
+            // The window menu: right click, or a long press for touch. Only the title itself, so a double
+            // click on the empty bar beside it still switches the bar style.
+            MouseArea {
+                width: Math.min(parent.width, parent.paintedWidth)
+                height: parent.height
+                enabled: Hyprland.activeToplevel !== null
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                pressAndHoldInterval: 500
+                onPressAndHold: windowMenu.popup(windowTitle, 0, bar.height)
+                onClicked: mouse => {
+                    if (mouse.button === Qt.RightButton)
+                        windowMenu.popup(windowTitle, mouse.x, bar.height);
+                }
+            }
         }
         Item {
             Layout.fillWidth: true

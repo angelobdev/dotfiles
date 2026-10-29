@@ -11,10 +11,25 @@ case "${1:-}" in
         pgrep -u "$EUID" -x hyprlock >/dev/null && exit 0
         # The current theme renders a full hyprlock config; without it, hyprlock reads the stowed one.
         themed="${XDG_STATE_HOME:-$HOME/.local/state}/desktop-theme/hyprlock.conf"
-        if [[ -s "$themed" ]]; then
-            exec hyprlock --grace 0 --config "$themed"
+        config=()
+        [[ -s "$themed" ]] && config=(--config "$themed")
+        # In tablet mode the folded screen covers the fingerprint reader: hyprlock reads it itself (not through
+        # PAM), so it gets a copy of its config with fingerprint unlock off and asks only for the password.
+        posture="$XDG_RUNTIME_DIR/desktop-shell/tablet.json"
+        if [[ -s "$themed" ]] && grep -Eq '"tablet"[[:space:]]*:[[:space:]]*true' "$posture" 2>/dev/null; then
+            tablet="$XDG_RUNTIME_DIR/desktop-hyprlock-tablet.conf"
+            sed -E 's/^([[:space:]]*fingerprint:enabled[[:space:]]*=).*/\1 false/' "$themed" >"$tablet"
+            config=(--config "$tablet")
         fi
-        exec hyprlock --grace 0
+        # The shell shows the on-screen keyboard over the lock in tablet mode, where there is no other
+        # keyboard to type the password with; it is told when the lock goes.
+        logger -t desktop-shell "lock start" 2>/dev/null || true
+        "$HOME/.local/bin/desktop-shell" keyboard locked >/dev/null 2>&1 || true
+        status=0
+        hyprlock --grace 0 "${config[@]}" || status=$?
+        "$HOME/.local/bin/desktop-shell" keyboard unlocked >/dev/null 2>&1 || true
+        logger -t desktop-shell "lock end ($status)" 2>/dev/null || true
+        exit "$status"
         ;;
     suspend)
         command -v hyprlock >/dev/null || { message 'session.errors.suspendLockMissing' >&2; exit 1; }

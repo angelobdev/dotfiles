@@ -26,7 +26,8 @@ PanelWindow {
     color: Theme.scrimModal
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "desktop-bluetooth-auth"
-    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    // On demand in tablet mode, so touches reach the on-screen keyboard (see Overlay.qml).
+    WlrLayershell.keyboardFocus: Tablet.active ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
     onPromptChanged: {
         response.clear();
         if (prompt)

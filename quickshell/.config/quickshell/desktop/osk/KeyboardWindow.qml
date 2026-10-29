@@ -10,9 +10,54 @@ import "../services"
 Scope {
     id: root
     readonly property var target: Quickshell.screens.find(s => s.name === Config.primaryMonitor) ?? Quickshell.screens[0]
+    // Both keyboards are Overlay layers, like the panels; a surface mapped later draws above the others of
+    // its layer, so when a panel opens over a shown keyboard (the launcher focuses its search field) the
+    // keyboard is mapped again on top of it.
+    property bool raising: false
+    Connections {
+        target: ShellState
+        function onPanelChanged() {
+            if (Keyboard.shown && ShellState.panel !== "") {
+                root.raising = true;
+                raise.restart();
+            }
+        }
+    }
+    Binding {
+        target: Keyboard
+        property: "screenName"
+        value: root.target?.name ?? ""
+    }
+    Binding {
+        target: Keyboard
+        property: "areaVisible"
+        value: dockedWindow.visible || floatingWindow.visible
+    }
+    Binding {
+        target: Keyboard
+        property: "area"
+        value: floatingWindow.visible ? Qt.rect(floating.x, floating.y, floating.width, floating.height) : Qt.rect(0, dockedWindow.screen ? dockedWindow.screen.height - dockedWindow.height : 0, dockedWindow.width, dockedWindow.height)
+    }
+    // Long enough for the unmap to reach the compositor, so the map that follows is a new one.
+    Timer {
+        id: raise
+        interval: 60
+        onTriggered: root.raising = false
+    }
+    // Floating windows (the assistant of Super+A) do not move for a reserved area by themselves; once
+    // Hyprland has applied the new one, rules.lua fits them into what is left.
+    Timer {
+        id: refit
+        interval: 200
+        onTriggered: Quickshell.execDetached(["hyprctl", "eval", "if desktop_fit_floating then desktop_fit_floating() end"])
+    }
     PanelWindow {
+        id: dockedWindow
         screen: root.target
-        visible: Keyboard.shown && !Keyboard.floating
+        // Over the lock screen the keyboard is always docked (rules.lua lets this namespace above the lock).
+        visible: Keyboard.shown && (!Keyboard.floating || Keyboard.locked) && !root.raising
+        onVisibleChanged: if (!root.raising)
+            refit.restart()
         anchors {
             left: true
             right: true
@@ -20,7 +65,7 @@ Scope {
         }
         implicitHeight: docked.implicitHeight
         color: Theme.background
-        WlrLayershell.layer: WlrLayer.Top
+        WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "desktop-osk"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         KeyboardView {
@@ -36,7 +81,7 @@ Scope {
     PanelWindow {
         id: floatingWindow
         screen: root.target
-        visible: Keyboard.shown && Keyboard.floating
+        visible: Keyboard.shown && Keyboard.floating && !Keyboard.locked && !root.raising
         anchors {
             top: true
             bottom: true

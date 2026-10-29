@@ -148,6 +148,17 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 - [x] Persist "Keep awake" (`Idle.keepAwake`) and "Do Not Disturb" (`Notices.quiet`) across shell restarts and logins (state file read at start).
 - [x] Keyboard shortcuts to toggle "Keep awake" (`Super + Ctrl + K`) and "Do Not Disturb" (`Super + Ctrl + N`) with a state OSD, listed in Hints.
 
+### AI assistant as a Quickshell widget (epic, to design)
+
+The assistant lives in a Kitty window on the special workspace `ai` (`Super + A`); the user does not like how the special workspace behaves, so the interaction is to be redesigned either way. Findings (Claude Code docs, 2026-10-29):
+- `claude -p` uses the claude.ai subscription login (no API key; `ANTHROPIC_API_KEY` must not be in the environment, as it wins in `-p`; `--bare` ignores OAuth).
+- `--input-format stream-json --output-format stream-json --verbose --include-partial-messages`: `system/init` (session id), `stream_event` text deltas, `assistant` / `user` (tool use and results), `result`. The raw stdin message shape is not documented as a contract (the Agent SDK uses `{"type": "user", "message": {...}}`).
+- `--resume <session id>` continues the conversation across widget restarts.
+- Permissions: in `-p` a call needing approval is denied unless a rule (`--allowedTools`), a hook or `--permission-prompt-tool` (an MCP tool, wire format undocumented) approves it.
+- Voice (hold Space) exists only in the interactive TUI; a widget needs its own speech-to-text or keeps the terminal for voice.
+- Policy: third-party products may not offer claude.ai login; a personal, undistributed UI is not addressed.
+- [ ] Design the widget (panel or window, chat with streaming, history, resume, permission approvals, voice) and how it replaces the special workspace.
+
 ### Control Center switches
 
 - [ ] The final switches in a 2×2 grid: Do Not Disturb, Keep awake, Rotation lock and a new Night shift (hyprsunset, which `hyprctl hyprsunset` already drives), each a compact square tile with icon, name and state.
@@ -161,6 +172,7 @@ Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_T
 - [x] Phase 3, on-screen keyboard in Quickshell: Italian layout, accents on long press, numbers/symbols page, Shift/Caps, repeating Backspace, arrows, optional Esc/Tab/Ctrl/Alt row. Docked at the bottom (full width, exclusive zone so windows shrink above it) by default, with a key that makes it floating and draggable. Never takes focus; keys go through a persistent helper on `zwp_virtual_keyboard_v1` with the `it` keymap (`osk.py`: the Wayland wire protocol in plain Python with a libxkbcommon keymap, no new packages). Opened from the floating helper.
 - [x] Phase 4, automatic keyboard: the helper also registers as `zwp_input_method_v2`, used only as a focus signal: activate shows the keyboard, deactivate hides it, and the content purpose picks the layout (digits, email, password, terminal). Keys still go through the virtual keyboard. Works with text-input-v3 clients (GTK, Firefox/Zen, Qt6); Electron/Chromium need `--enable-wayland-ime`; Kitty reports its terminal as a text-input-v3 field (purpose `terminal`). Manual opening stays available everywhere.
 - [x] Phase 5, touch-friendly shell: a touch scale (larger hit targets and spacing for bar, dock and panels) switched on in tablet mode; long press for context menus (dock, launcher); swipe to dismiss notifications.
+- [x] Tablet review after the first physical test: the docked keyboard lifts the assistant (floating windows fit the usable area); gestures without edge swipes (three fingers as on the touchpad, four for windows and the overview); a window menu on the bar title (close, fullscreen, floating, move); the keyboard over the lock screen in tablet mode; `scripts/tablet-auth.sh` makes PAM skip the fingerprint reader in tablet mode.
 - [ ] Phase 6, physical testing on the OmniBook in both postures (includes the open "physical testing of touchscreen gestures" item), and docs.
 
 ### Codebase review

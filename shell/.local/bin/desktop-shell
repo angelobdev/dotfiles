@@ -55,21 +55,26 @@ sys.exit(0 if running else 1)
     dock)
         case "${2:-}" in
             # "--" keeps qs from reading "show" as its own subcommand.
-            show|hide|toggle) exec qs ipc -p "$config" call desktop dock -- "$2" ;;
+            # touch: shown for touch (no keyboard surface), as the assist button does in tablet mode.
+            show|hide|toggle|touch) exec qs ipc -p "$config" call desktop dock -- "$2" ;;
             launch)
                 if [[ "${3:-}" =~ ^[1-9]$ ]]; then
                     exec qs ipc -p "$config" call desktop dockLaunch "$3"
                 fi
                 ;;
         esac
-        echo 'Usage: desktop-shell dock {show|hide|toggle|launch 1-9}' >&2
+        echo 'Usage: desktop-shell dock {show|hide|toggle|touch|launch 1-9}' >&2
         exit 2
         ;;
     keep-awake|dnd|tablet|rotation-lock)
         case "${2:-}" in toggle|on|off) ;;
             *) echo "Usage: desktop-shell $1 {toggle|on|off}" >&2; exit 2 ;;
         esac
-        # tablet: the tablet mode switch reports through here (config/tablet.lua).
+        # tablet: the tablet mode switch reports through here (config/tablet.lua). Posture changes go to the
+        # journal (journalctl -t desktop-shell) with the process that asked, to follow them around the lock.
+        if [[ $1 == tablet ]]; then
+            logger -t desktop-shell "tablet $2 from $(ps -o comm= -p "$PPID" 2>/dev/null || echo unknown)" 2>/dev/null || true
+        fi
         case $1 in
             dnd) target=quiet ;;
             tablet) target=tablet ;;
@@ -79,8 +84,9 @@ sys.exit(0 if running else 1)
         exec qs ipc -p "$config" call desktop "$target" -- "$2"
         ;;
     keyboard)
-        case "${2:-}" in show|hide|toggle|float|dock) ;;
-            *) echo 'Usage: desktop-shell keyboard {show|hide|toggle|float|dock}' >&2; exit 2 ;;
+        # locked / unlocked come from desktop-power around hyprlock.
+        case "${2:-}" in show|hide|toggle|float|dock|locked|unlocked) ;;
+            *) echo 'Usage: desktop-shell keyboard {show|hide|toggle|float|dock|locked|unlocked}' >&2; exit 2 ;;
         esac
         exec qs ipc -p "$config" call desktop keyboard -- "$2"
         ;;
@@ -90,6 +96,7 @@ sys.exit(0 if running else 1)
         esac
         exec qs ipc -p "$config" call desktop assist -- "$2"
         ;;
+    window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|restart [theming TAB]|status|toggle PANEL|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|assist ACTION|keyboard ACTION}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|restart [theming TAB]|status|toggle PANEL|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
 esac

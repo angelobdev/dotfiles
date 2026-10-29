@@ -21,6 +21,15 @@ Singleton {
     // Opened by a text field rather than by hand, so it closes with the field.
     property bool autoShown: false
     property bool inputMethod: false
+    // The session is locked (desktop-power around hyprlock); in tablet mode the docked keyboard shows over
+    // the lock for the password.
+    property bool locked: false
+    property bool lockShown: false
+    // Where the keyboard is, in the coordinates of its screen (set by KeyboardWindow); panels leave this
+    // rectangle out of their input region, so a touch there always reaches the keyboard.
+    property string screenName: ""
+    property bool areaVisible: false
+    property rect area: Qt.rect(0, 0, 0, 0)
     property string page: "letters"
     // 0 off, 1 for the next key, 2 locked (Caps).
     property int shift: 0
@@ -37,6 +46,10 @@ Singleton {
     property bool ready: false
     // IPC and the assist button: "show", "hide", "toggle"; "float" and "dock" also show it in that form.
     function request(action) {
+        if (action === "locked" || action === "unlocked") {
+            setLocked(action === "locked");
+            return true;
+        }
         if (!["show", "hide", "toggle", "float", "dock"].includes(action))
             return false;
         if (action === "float" || action === "dock")
@@ -57,6 +70,22 @@ Singleton {
             process.running = true;
         }
     }
+    // Locking moves the focus from the text field to the lock, which would close a keyboard that the field
+    // opened by itself, right when it is needed for the password: while locked it does not close by itself.
+    function setLocked(value) {
+        locked = value;
+        if (value) {
+            hideTimer.stop();
+            if (Tablet.active && !shown) {
+                setShown(true);
+                lockShown = true;
+            }
+        } else if (lockShown) {
+            setShown(false);
+        }
+        if (!value)
+            lockShown = false;
+    }
     function setFloating(value) {
         SessionState.set("oskFloating", value);
     }
@@ -66,6 +95,18 @@ Singleton {
     function send(code, mods) {
         if (process.running)
             process.write("key " + code + " " + mods + "\n");
+    }
+    // Space goes down with the finger and up with it, like a physical key: held, the app sees it repeat,
+    // which is how Claude Code tells its hold-to-talk Space from a typed one.
+    function hold(key, down) {
+        if (!process.running)
+            return;
+        process.write((down ? "press " : "release ") + key.code + "\n");
+        if (!down) {
+            accents = [];
+            if (shift === 1)
+                shift = 0;
+        }
     }
     // A key of the layout: shift and the one-shot modifiers apply to it, then reset.
     function type(key) {
@@ -119,6 +160,8 @@ Singleton {
     }
     function focusOut() {
         purpose = "";
+        if (locked)
+            return;
         // Moving between fields deactivates one and activates the next: wait before closing.
         if (autoShown)
             hideTimer.restart();
@@ -127,7 +170,7 @@ Singleton {
         id: hideTimer
         interval: 300
         onTriggered: {
-            if (root.autoShown)
+            if (root.autoShown && !root.locked)
                 root.setShown(false);
         }
     }

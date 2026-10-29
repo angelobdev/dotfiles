@@ -21,6 +21,14 @@ Singleton {
                 label: I18n.tr("assist.actions.keyboard"),
                 active: Keyboard.shown
             },
+            assistant: {
+                icon: "assistant",
+                label: I18n.tr("assist.actions.assistant")
+            },
+            window: {
+                icon: "window",
+                label: I18n.tr("assist.actions.window")
+            },
             launcher: {
                 icon: "apps",
                 label: I18n.tr("assist.actions.apps")
@@ -87,10 +95,14 @@ Singleton {
         menuOpen = false;
         if (name === "keyboard")
             Keyboard.request("toggle");
+        else if (name === "window")
+            ShellState.requestWindowMenu();
+        else if (name === "assistant")
+            Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/desktop-ai"]);
         else if (name === "launcher" || name === "controls" || name === "notifications")
             ShellState.toggle(name);
         else if (name === "dock")
-            Dock.request("toggle");
+            Dock.request(Tablet.active ? "touch" : "toggle");
         else if (name === "overview")
             Quickshell.execDetached(["hyprctl", "eval", "local overview = (hl.plugin or {}).overview if overview then overview.toggle() end"]);
         else if (name === "workspacePrevious" || name === "workspaceNext")

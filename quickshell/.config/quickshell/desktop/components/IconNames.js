@@ -5,6 +5,7 @@
 var names = {
     "apps": ["view-app-grid-symbolic", "view-grid-symbolic"],
     "arrow-left": ["go-previous-symbolic", "go-left-symbolic"],
+    "assistant": ["starred-symbolic", "emblem-favorite-symbolic"],
     "backspace": ["edit-clear-symbolic", "edit-undo-symbolic"],
     "balanced": ["power-profile-balanced-symbolic"],
     "battery-0": ["battery-level-0-symbolic", "battery-empty-symbolic"],
@@ -64,6 +65,7 @@ var names = {
     "volume-low": ["audio-volume-low-symbolic"],
     "volume-muted": ["audio-volume-muted-symbolic"],
     "vpn": ["network-vpn-symbolic"],
+    "window": ["focus-windows-symbolic", "window-new-symbolic"],
     "wifi": ["network-wireless-signal-excellent-symbolic"],
     "wifi-1": ["network-wireless-signal-weak-symbolic"],
     "wifi-2": ["network-wireless-signal-good-symbolic"],

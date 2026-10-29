@@ -68,6 +68,16 @@ The dynamic theme (the Dynamic card in the Theming panel) needs matugen, from th
 sudo dnf install matugen
 ```
 
+## Tablet mode sign-in without the fingerprint reader
+
+Folded into tablet mode, the OmniBook screen covers the fingerprint reader, and `pam_fprintd` (authselect `with-fingerprint`) makes sudo, polkit and the lock screen wait for it. This optional step makes PAM skip the reader while the desktop is in tablet mode and ask for the password at once (typed on the on-screen keyboard); elsewhere nothing changes:
+
+```sh
+./scripts/tablet-auth.sh install   # or: status, remove
+```
+
+It installs `/usr/local/libexec/desktop-tablet-mode` (succeeds only while `$XDG_RUNTIME_DIR/desktop-shell/tablet.json` of the user says `"tablet": true`), copies the `local` authselect profile to `custom/desktop-tablet`, inserts `auth [success=1 default=ignore] pam_exec.so quiet …` right before `pam_fprintd.so` in its `system-auth`, and selects it with the same features. `remove` selects `local` again and deletes both. Without it, Ctrl+C at the fingerprint prompt of sudo goes on to the password.
+
 WebP previews in the file picker (`Super + Shift + W`) need Qt's image format plugins; the Theming panel does not, as it shows cached JPEG thumbnails:
 
 ```sh

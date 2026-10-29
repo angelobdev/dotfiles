@@ -89,18 +89,27 @@ Rectangle {
             font.family: Theme.font
             font.pixelSize: 12
         }
-        // A key held without variants still types once; Backspace types on press and then repeats.
+        // A key held without variants still types once; Backspace types on press and then repeats; Space
+        // follows the finger down and up (Keyboard.hold).
         TapHandler {
             id: tap
+            readonly property bool held: button.key.action === "space"
             longPressThreshold: 0.45
-            onTapped: root.activate(button.key)
+            onTapped: if (!held)
+                root.activate(button.key)
             onLongPressed: {
+                if (held)
+                    return;
                 if (Keyboard.layout.accents[button.key.label])
                     Keyboard.longPress(button.key);
                 else if (button.key.action !== "backspace")
                     root.activate(button.key);
             }
             onPressedChanged: {
+                if (held) {
+                    Keyboard.hold(button.key, pressed);
+                    return;
+                }
                 if (button.key.action !== "backspace")
                     return;
                 if (pressed) {

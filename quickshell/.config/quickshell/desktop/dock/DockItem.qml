@@ -85,6 +85,7 @@ Row {
                 pressPoint = Qt.point(event.x, event.y);
                 moved = false;
                 held = false;
+                Dock.touched();
             }
             onPressAndHold: event => {
                 if (moved || event.button !== Qt.LeftButton)
@@ -92,11 +93,13 @@ Row {
                 held = true;
                 root.menuRequested(root.modelData, cell);
             }
-            // Pinned apps start dragging after 6 px; positions go to the window in its own coordinates.
+            // Pinned apps start dragging after 6 px (24 in tablet mode, where a finger always moves a little
+            // while it taps); positions go to the window in its own coordinates.
+            readonly property real dragThreshold: Tablet.active ? 24 : 6
             onPositionChanged: event => {
                 if (!(pressedButtons & Qt.LeftButton) || !root.modelData.pinned)
                     return;
-                if (!moved && Math.hypot(event.x - pressPoint.x, event.y - pressPoint.y) > 6) {
+                if (!moved && Math.hypot(event.x - pressPoint.x, event.y - pressPoint.y) > dragThreshold) {
                     moved = true;
                     root.dragStarted(root.modelData);
                 }

@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import ".."
+import "../services"
 
 PanelWindow {
     id: root
@@ -38,9 +39,11 @@ PanelWindow {
     color: Qt.rgba(Theme.scrim.r, Theme.scrim.g, Theme.scrim.b, Theme.scrim.a * reveal)
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "desktop-overlay"
-    // A closing panel must not keep the keyboard or swallow clicks while it fades out.
-    WlrLayershell.keyboardFocus: open ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    mask: open ? null : passThrough
+    // A closing panel must not keep the keyboard or swallow clicks while it fades out. In tablet mode an open
+    // panel takes the focus on demand: an exclusive layer receives every touch, so keys of the on-screen
+    // keyboard never reached it, while the keyboard itself never takes the focus away from the panel.
+    WlrLayershell.keyboardFocus: !open ? WlrKeyboardFocus.None : Tablet.active ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
+    mask: !open ? passThrough : Keyboard.areaVisible && Keyboard.screenName === screen?.name ? aroundKeyboard : null
     Behavior on reveal {
         NumberAnimation {
             duration: root.open ? Theme.motionNormal : Theme.motionFast
@@ -61,6 +64,19 @@ PanelWindow {
         ShellState.close()
     Region {
         id: passThrough
+    }
+    // The on-screen keyboard keeps its touches: an open panel takes none in its rectangle, whichever of the
+    // two surfaces the compositor puts on top.
+    Region {
+        id: aroundKeyboard
+        item: root.contentItem
+        Region {
+            intersection: Intersection.Subtract
+            x: Keyboard.area.x
+            y: Keyboard.area.y
+            width: Keyboard.area.width
+            height: Keyboard.area.height
+        }
     }
     MouseArea {
         anchors.fill: parent

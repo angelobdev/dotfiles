@@ -114,7 +114,7 @@ PanelWindow {
         GridLayout {
             id: grid
             anchors.centerIn: parent
-            columns: 3
+            columns: 4
             rowSpacing: 8
             columnSpacing: 8
             Repeater {

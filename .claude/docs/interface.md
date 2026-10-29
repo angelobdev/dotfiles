@@ -172,14 +172,18 @@ During the overview, the affected monitor's bar is invisible, releases its 38 px
 
 | Touchscreen gesture (Hyprgrass) | Action |
 | --- | --- |
-| Three-finger horizontal swipe | Workspace |
-| Three-finger upward swipe | Hyprspace |
-| Swipe upward from bottom edge | Applications |
-| Swipe downward from top edge | Control Center |
-| Long press on window border | Resize |
+| Three fingers left / right | Next / previous workspace, as on the touchpad; it switches as soon as the swipe is recognised |
+| Three fingers up | Applications |
+| Three fingers down | Control Center |
 | Three-finger long press | Assist button: show / hide |
+| Four fingers left / right | Move the active window to the previous / next workspace (it follows) |
+| Four fingers up | Hyprspace overview |
+| Four fingers down | Notifications |
+| Long press on window border | Resize |
 
-Sensitivity, edge margins, and actions are in `hypr/config/plugins.lua`. Touchpad gestures remain in `input.lua`: three fingers horizontally for workspaces, upward for applications, downward for controls.
+Three fingers do what they do on the touchpad (`input.lua`); there are no edge swipes, which were not always recognised. Everything else is in the assist button. Sensitivity and actions are in `hypr/config/plugins.lua`.
+
+**Window menu:** Fullscreen, Floating, Move to the previous / next workspace and Close window for the active window. In tablet mode (and on a bar too narrow for the title) the icon of the active app sits after the workspaces and opens it with a tap; the Window action of the assist button and `desktop-shell window-menu` open it too. With a mouse, a right click or a long press on the title does the same.
 
 ## Tablet mode and rotation
 
@@ -195,7 +199,7 @@ Folding the OmniBook screen back into tablet posture turns tablet mode on; unfol
 
 A round floating button on the built-in display, for reaching the shell by touch. It appears with tablet mode and goes away in laptop mode; a three-finger long press (or `desktop-shell assist show|hide|toggle`) shows or hides it at any time, until the posture changes again.
 - **Drag** it with a finger or the mouse: it snaps to the nearer side edge, and the place is remembered for each monitor and orientation. After 3 seconds untouched it fades and slides halfway into the edge.
-- **Tap** opens a menu of large buttons beside it: Keyboard, Apps, Dock, Control Center, Notifications, Overview, Previous / Next workspace (one step along the bar's workspaces, empty ones included) and Rotation lock (only where there is an accelerometer). A tap outside closes it; `desktop-shell assist menu` opens it from scripts.
+- **Tap** opens a menu of large buttons beside it: Keyboard, AI assistant (as `Super + A`), Window (the window menu), Apps, Dock, Control Center, Notifications, Overview, Previous / Next workspace (one step along the bar's workspaces, empty ones included) and Rotation lock (only where there is an accelerometer). A tap outside closes it; `desktop-shell assist menu` opens it from scripts.
 - **Long press** runs a quick action, the on-screen keyboard by default.
 - It never takes keyboard focus, so the window underneath keeps typing.
 
@@ -204,10 +208,13 @@ A round floating button on the built-in display, for reaching the shell by touch
 ## On-screen keyboard
 
 Opened from the assist button (Keyboard, or a long press on the button) or with `desktop-shell keyboard show|hide|toggle`. It never takes focus: keys go to the window that has it, as from the physical keyboard, with the same Italian layout.
-- **Automatic:** in tablet mode, tapping into a text field opens it, on the digits page for number and PIN fields and with the extra row in a terminal; leaving the field closes it again, unless it was opened by hand. Leaving tablet mode closes an automatic keyboard. This works in apps that report text fields (text-input-v3): GTK and libadwaita apps, Zen/Firefox, Qt 6 and Kitty. Electron and Chromium apps (VS Code, ChatGPT) report them only when started with `--enable-wayland-ime --wayland-text-input-version=3`; there the keyboard still opens from the assist button. `Config.oskAutoShow: false` turns it off.
+- **Automatic:** in tablet mode, tapping into a text field opens it, on the digits page for number and PIN fields and with the extra row in a terminal; leaving the field closes it again, unless it was opened by hand. Leaving tablet mode closes an automatic keyboard. **On the lock screen** in tablet mode the docked keyboard shows over hyprlock for the password (`desktop-power lock` tells the shell when the lock starts and ends). This works in apps that report text fields (text-input-v3): GTK and libadwaita apps, Zen/Firefox, Qt 6 and Kitty. Electron and Chromium apps (VS Code, ChatGPT) report them only when started with `--enable-wayland-ime --wayland-text-input-version=3`; there the keyboard still opens from the assist button. `Config.oskAutoShow: false` turns it off.
 - **Docked** (the default): full width at the bottom of the built-in display, keys 64 px tall (about 11 mm on the 14" panel) and centred up to 1100 px; windows shrink above it. **Floating**: up to 900 px wide with 56 px keys, over the windows, moved by dragging its top strip. The strip switches between the two (`desktop-shell keyboard float|dock`) and hides the keyboard; the choice is remembered.
 - **Pages:** letters, `?123` (digits and common symbols) and `=\<` (brackets, braces and the rest). Shift applies to the next key; a quick second tap locks it. The small character in a corner is what Shift types.
 - **Accents:** a long press on a, e, i, o or u offers à, è, é, ì, ò, ù in the strip; any other key held types once. Backspace repeats while held.
+- **Space** goes down and up with the finger, like a physical key: held, it repeats, so Claude Code's hold-to-talk works from the on-screen keyboard too.
+- **Over panels:** the keyboard is an Overlay layer like the panels and is mapped again on top of a panel that opens while it is shown, and an open panel takes no input inside the keyboard rectangle, so the launcher search can be typed into and a tap on a key never reaches the list below.
+- **Dock:** from the assist button in tablet mode the dock comes up for touch: no keyboard surface (Super + D keeps it), it stays while tapped and goes 6 s after the last tap or once an app opens (`desktop-shell dock touch`).
 - **More keys** (the keyboard button on the strip) adds Esc, Tab, Ctrl, Alt and arrows; Ctrl and Alt apply to the next key.
 
 ## Panel data

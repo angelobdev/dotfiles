@@ -6,6 +6,11 @@ import Quickshell.Hyprland
 Singleton {
     id: root
     property string panel: ""
+    // Opens the window menu of the bar on that monitor (assist button, IPC).
+    signal windowMenuRequested(string screenName)
+    function requestWindowMenu() {
+        windowMenuRequested(Hyprland.focusedMonitor?.name ?? "");
+    }
     property var activeScreen: null
     // Direction of the last move between the Control Center and a sub-panel: 1 forward, -1 back, 0 none.
     property int navigation: 0

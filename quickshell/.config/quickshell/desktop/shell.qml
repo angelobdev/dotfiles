@@ -54,6 +54,9 @@ ShellRoot {
         function assist(action: string): bool {
             return Assist.request(action);
         }
+        function windowMenu(): void {
+            ShellState.requestWindowMenu();
+        }
         function keyboard(action: string): bool {
             return Keyboard.request(action);
         }
@@ -104,6 +107,7 @@ ShellRoot {
                     keyboard: Dock.keyboardScreen,
                     shown: Object.keys(Dock.shown),
                     requested: Dock.requested,
+                    touch: Dock.touchScreen,
                     peeking: Object.keys(Dock.peeks)
                 },
                 clipboard: {
@@ -135,7 +139,9 @@ ShellRoot {
                     page: Keyboard.page,
                     inputMethod: Keyboard.inputMethod,
                     purpose: Keyboard.purpose,
-                    autoShown: Keyboard.autoShown
+                    autoShown: Keyboard.autoShown,
+                    locked: Keyboard.locked,
+                    area: Keyboard.areaVisible ? [Keyboard.screenName, Keyboard.area.x, Keyboard.area.y, Keyboard.area.width, Keyboard.area.height] : []
                 },
                 assist: {
                     shown: Assist.shown,

@@ -38,28 +38,53 @@ hl.window_rule({
     center = true,
 })
 
--- Floating windows keep their pixel size when a monitor changes shape (rotation in tablet mode, a new
--- scale): the assistant takes its rule size again, and any other floating window larger than its
--- monitor shrinks to 90% of it. Both are centred.
-hl.on("monitor.layout_changed", function()
+-- Floating windows keep their pixel size and place when the usable area of a monitor changes (rotation in
+-- tablet mode, a new scale, the docked on-screen keyboard reserving the bottom): the assistant takes its
+-- rule size again, limited to the usable area, and any other floating window that no longer fits there
+-- moves in and shrinks to fit. Both stay inside the area left by the bar and the keyboard.
+local function fit(window)
+    local monitor = window.monitor
+    if not (window.floating and window.mapped and monitor and window.fullscreen == 0) then
+        return
+    end
+    local width, height = monitor.width / monitor.scale, monitor.height / monitor.scale
+    if monitor.transform % 2 == 1 then
+        width, height = height, width
+    end
+    local reserved = type(monitor.reserved) == "table" and monitor.reserved or {}
+    local left, top = monitor.x + (reserved.left or 0), monitor.y + (reserved.top or 0)
+    local usableWidth = width - (reserved.left or 0) - (reserved.right or 0)
+    local usableHeight = height - (reserved.top or 0) - (reserved.bottom or 0)
+    local x, y = window.size.x, window.size.y
+    local assistantWindow = window.class == "desktop-ai"
+    if assistantWindow then
+        x, y = width * assistant.width, height * assistant.height
+    end
+    x, y = math.floor(math.min(x, usableWidth * 0.95)), math.floor(math.min(y, usableHeight * 0.95))
+    local at = window.at
+    local inside = at.x >= left and at.y >= top and at.x + x <= left + usableWidth and at.y + y <= top + usableHeight
+    if not assistantWindow and inside and x == window.size.x and y == window.size.y then
+        return
+    end
+    hl.dispatch(hl.dsp.window.resize({ x = x, y = y, window = window }))
+    hl.dispatch(hl.dsp.window.move({
+        x = math.floor(left + (usableWidth - x) / 2),
+        y = math.floor(top + (usableHeight - y) / 2),
+        window = window
+    }))
+end
+
+-- Also called with `hyprctl eval` by the shell when the docked keyboard appears or goes.
+function desktop_fit_floating()
     for _, window in ipairs(hl.get_windows()) do
-        local monitor = window.monitor
-        if window.floating and window.mapped and monitor and window.fullscreen == 0 then
-            local width, height = monitor.width / monitor.scale, monitor.height / monitor.scale
-            if monitor.transform % 2 == 1 then
-                width, height = height, width
-            end
-            local x, y
-            if window.class == "desktop-ai" then
-                x, y = width * assistant.width, height * assistant.height
-            elseif window.size.x > width or window.size.y > height then
-                x, y = math.min(window.size.x, width * 0.9), math.min(window.size.y, height * 0.9)
-            end
-            if x then
-                hl.dispatch(hl.dsp.window.resize({ x = math.floor(x), y = math.floor(y), window = window }))
-                hl.dispatch(hl.dsp.window.center({ window = window }))
-            end
-        end
+        fit(window)
+    end
+end
+
+hl.on("monitor.layout_changed", desktop_fit_floating)
+hl.on("window.open", function(window)
+    if window and window.class == "desktop-ai" then
+        fit(window)
     end
 end)
 
@@ -71,6 +96,14 @@ hl.layer_rule({
     },
     blur = true,
     ignore_alpha = 0.2,
+})
+
+-- The on-screen keyboard draws over the lock screen and takes touches there (2), so the password can be
+-- typed in tablet mode; the shell shows it only while locked in that mode.
+hl.layer_rule({
+    name = "desktop-osk-lock",
+    match = { namespace = "^desktop-osk$" },
+    above_lock = 2,
 })
 
 -- The dock, panels, the OSD and notification toasts animate themselves in Quickshell; a compositor fade on top would double the motion.
