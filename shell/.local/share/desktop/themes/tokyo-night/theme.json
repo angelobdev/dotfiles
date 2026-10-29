@@ -1,0 +1,57 @@
+{
+  "name": "Tokyo Night",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "Adwaita-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "blue"
+  },
+  "palette": {
+    "bg": "#1a1b26",
+    "base": "#16161e",
+    "raised": "#292e42",
+    "border": "#3b4261",
+    "fg": "#c0caf5",
+    "muted": "#a9b1d6",
+    "dim": "#565f89",
+    "accent": "#7aa2f7",
+    "accentFg": "#16161e",
+    "link": "#7dcfff",
+    "danger": "#f7768e",
+    "success": "#9ece6a",
+    "warning": "#e0af68"
+  },
+  "ansi": [
+    "#15161e",
+    "#f7768e",
+    "#9ece6a",
+    "#e0af68",
+    "#7aa2f7",
+    "#bb9af7",
+    "#7dcfff",
+    "#a9b1d6",
+    "#414868",
+    "#ff899d",
+    "#9fe044",
+    "#faba4a",
+    "#8db0ff",
+    "#c7a9ff",
+    "#a4daff",
+    "#c0caf5"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Tokyo Night",
+    "extension": "enkia.tokyo-night"
+  }
+}

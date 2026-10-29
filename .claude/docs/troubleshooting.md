@@ -157,3 +157,36 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 
 **Lock screen:** the user confirmed that `Super + L` (now through the generated config) looks and unlocks as before.
 
+## Theme switching verification (phase 2)
+
+**Palette sources**
+- Kitty ports, fetched as data:
+  - catppuccin/kitty `mocha.conf`;
+  - folke/tokyonight.nvim `tokyonight_night.conf`;
+  - kitty-themes `gruvbox-dark.conf` and `everforest_dark_medium.conf`.
+- The surfaces come from each project's scale, which matches those files.
+- btop's format was checked against catppuccin/btop and the themes shipped in `/usr/share/btop/themes` (an empty `main_bg` as in `adapta`).
+
+**Contrast** (WCAG, shell text composited over the background)
+
+| Theme | fg/bg | muted/bg | accent text/accent | shell text |
+| --- | --- | --- | --- | --- |
+| Catppuccin Mocha | 11.34 | 9.26 | 9.23 | 11.34 |
+| Tokyo Night | 10.59 | 8.10 | 7.14 | 10.59 |
+| Gruvbox | 10.75 | 5.30 | 8.69 | 10.75 |
+| Everforest | 7.38 | 5.12 | 6.23 | 7.38 |
+| Graphite | 15.29 | 9.05 | 11.97 | 15.29 |
+
+`test_theme.py` enforces the minimums: 7, 4.5, 4.5 and 7.
+
+**Live switch**
+- The four VS Code extensions were installed, and their contributed theme ids match the `vscode.theme` values.
+- `desktop-theme set` through every theme and back to Graphite gave, each time:
+  - no `hyprctl configerrors`;
+  - the Quickshell accent, GSettings accent, VS Code `workbench.colorTheme` and btop `color_theme = "desktop"` all following the theme;
+  - Control Center captures showing the theme surfaces and accent.
+- `settings.json` (mode 644) kept its permissions and formatting.
+- `window.autoDetectColorScheme` is on in it, so VS Code reads `workbench.preferredDarkColorTheme` rather than `workbench.colorTheme`; both are now set.
+- Backups of `settings.json` and `btop.conf` from before the first switch are kept outside the repository.
+- The user tried the themes and approved them.
+

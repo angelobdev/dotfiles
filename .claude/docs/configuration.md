@@ -136,12 +136,30 @@ The palette uses graphite gray, neutral primary `#d4d6dc`, light text, Adwaita S
 
 ## Themes
 
-The palette above is the **Graphite** theme. A theme is one `theme.json` with:
+The palette above is the **Graphite** theme. Four more ship with the dotfiles, all dark:
+
+| Theme | Accent | GSettings accent | VS Code |
+| --- | --- | --- | --- |
+| `catppuccin-mocha` | mauve `#cba6f7` | purple | Catppuccin Mocha |
+| `tokyo-night` | blue `#7aa2f7` | blue | Tokyo Night |
+| `gruvbox` | yellow `#fabd2f` | yellow | Gruvbox Dark Medium |
+| `everforest` | green `#a7c080` | green | Everforest Dark |
+
+Graphite uses VS Code's own Default Dark Modern. Their surfaces and terminal colours come from each project's published palette and Kitty port.
+
+A theme is one `theme.json` with:
 - `mode`, `fonts` and `system` (GTK, icon and cursor theme, GSettings accent);
 - `shell` (the `Theme.qml` tokens);
 - `palette` (the semantic colours the application templates use);
 - `ansi` (16 terminal colours), `terminal.opacity`;
 - `hyprland` (shadow, Hyprglass tint).
+
+- `vscode` (`theme`, optional `extension`).
+
+Only `palette` (bg, base, raised, border, fg, muted, dim, accent, accentFg, link, danger, success, warning) and `ansi` are required. `theme.py` derives any missing value from them, and explicit values always win:
+- the `shell` tokens, with Graphite's alphas;
+- the Qt bevel shades;
+- the Hyprland shadow and glass tint.
 
 Colours are `#rrggbb` or `#rrggbbaa`. Shipped themes live in `~/.local/share/desktop/themes/<id>/` (from `shell/.local/share/desktop/themes/`). Themes in `~/.config/desktop/themes/<id>/` take precedence.
 
@@ -158,6 +176,16 @@ The stowed configs only point at those files:
 - `desktop-power lock` passes `--config` to hyprlock when the themed file exists.
 
 Each consumer keeps Graphite as its fallback, so a missing state directory changes nothing. GTK is the exception: it falls back to plain Adwaita-dark until the next `desktop-theme` run.
+
+Other applications:
+- **VS Code:** `desktop-theme set` replaces (or adds) `workbench.colorTheme` and the preferred theme for the mode in `~/.config/Code/User/settings.json`. The preferred key is `workbench.preferredDarkColorTheme` or `workbench.preferredLightColorTheme`; VS Code uses it instead of `colorTheme` while `window.autoDetectColorScheme` is on, as it is here. The edit is targeted and leaves the rest of the file alone, and VS Code applies it live.
+  - It is skipped when the theme's extension is not installed or the file is not valid JSON.
+  - The four extensions are Catppuccin.catppuccin-vsc, enkia.tokyo-night, jdinhlife.gruvbox and sainnhe.everforest.
+  - Before the themes, `workbench.colorTheme` was unset (Default Dark Modern).
+- **btop:** every theme, Graphite included, is written to `~/.config/btop/themes/desktop.theme`. `btop.conf` gets `color_theme = "desktop"`, and a running btop reloads on `SIGUSR2`.
+  - The main background stays empty, so the translucent Kitty background shows through.
+  - btop rewrites `btop.conf` on exit, so it is not stowed. Set `color_theme = "Default"` to go back.
+- **Zen and other portal-aware apps** follow the `color-scheme` that `mode` sets (all shipped themes are dark).
 
 Commands:
 - `desktop-theme set <id>` switches theme. It renders everything before writing anything, reloads Hyprland and Kitty (`SIGUSR1`), and sets GSettings.

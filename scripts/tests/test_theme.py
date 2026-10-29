@@ -57,6 +57,62 @@ class GraphiteTests(unittest.TestCase):
         self.assertNotIn('{{', self.out['gtk.css'])
 
 
+def luminance(colour):
+    channels = [int(colour[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+    linear = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+
+def contrast(first, second):
+    a, b = sorted((luminance(first), luminance(second)), reverse=True)
+    return (a + 0.05) / (b + 0.05)
+
+
+def over(colour, background):
+    """A #rrggbbaa colour composited over an opaque one."""
+    if len(colour) == 7:
+        return colour
+    alpha = int(colour[7:9], 16) / 255
+    return '#' + ''.join('%02x' % round(int(colour[i:i + 2], 16) * alpha + int(background[i:i + 2], 16) * (1 - alpha))
+                         for i in (1, 3, 5))
+
+
+class ShippedThemeTests(unittest.TestCase):
+    def test_every_theme_renders_and_reads_well(self):
+        theme.THEME_DIRS = (REPO / 'shell/.local/share/desktop/themes',)
+        ids = [path.parent.name for path in sorted(theme.THEME_DIRS[0].glob('*/theme.json'))]
+        self.assertGreaterEqual(len(ids), 5)
+        for name in ids:
+            with self.subTest(theme=name):
+                loaded = theme.load(name)
+                out = theme.render_all(loaded, TEMPLATES)
+                self.assertEqual(set(out), {path.stem for path in TEMPLATES.glob('*.tpl')})
+                self.assertEqual(len(loaded['ansi']), 16)
+                palette, shell = loaded['palette'], loaded['shell']
+                self.assertGreaterEqual(contrast(palette['fg'], palette['bg']), 7)
+                self.assertGreaterEqual(contrast(palette['muted'], palette['bg']), 4.5)
+                self.assertGreaterEqual(contrast(palette['accentFg'], palette['accent']), 4.5)
+                self.assertGreaterEqual(contrast(shell['text'], over(shell['background'], palette['bg'])), 7)
+
+    def test_completion_never_overrides_explicit_values(self):
+        completed = theme.complete(GRAPHITE)
+        for section in ('palette', 'shell', 'hyprland'):
+            for key, value in GRAPHITE[section].items():
+                self.assertEqual(completed[section][key], value, section + '.' + key)
+
+
+class VscodeTests(unittest.TestCase):
+    def test_replaces_or_inserts_the_colour_theme(self):
+        existing = '{\n    "a": 1,\n    "workbench.colorTheme": "Old"\n}\n'
+        self.assertEqual(theme.vscode_settings(existing, 'workbench.colorTheme', 'New'), existing.replace('"Old"', '"New"'))
+        inserted = theme.vscode_settings('{\n    "a": 1\n}\n', 'workbench.preferredDarkColorTheme', 'New')
+        self.assertEqual(json.loads(inserted), {'workbench.preferredDarkColorTheme': 'New', 'a': 1})
+
+    def test_invalid_results_raise(self):
+        with self.assertRaises(ValueError):
+            theme.vscode_settings('{"a": 1,}', 'workbench.colorTheme', 'New')
+
+
 class RendererTests(unittest.TestCase):
     def test_filters(self):
         values = {'c': '#11223344', 'o': '#112233'}

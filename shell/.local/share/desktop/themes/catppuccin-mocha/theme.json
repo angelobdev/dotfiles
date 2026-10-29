@@ -1,0 +1,57 @@
+{
+  "name": "Catppuccin Mocha",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "Adwaita-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "purple"
+  },
+  "palette": {
+    "bg": "#1e1e2e",
+    "base": "#181825",
+    "raised": "#313244",
+    "border": "#45475a",
+    "fg": "#cdd6f4",
+    "muted": "#bac2de",
+    "dim": "#6c7086",
+    "accent": "#cba6f7",
+    "accentFg": "#11111b",
+    "link": "#b4befe",
+    "danger": "#f38ba8",
+    "success": "#a6e3a1",
+    "warning": "#f9e2af"
+  },
+  "ansi": [
+    "#45475a",
+    "#f38ba8",
+    "#a6e3a1",
+    "#f9e2af",
+    "#89b4fa",
+    "#f5c2e7",
+    "#94e2d5",
+    "#bac2de",
+    "#585b70",
+    "#f38ba8",
+    "#a6e3a1",
+    "#f9e2af",
+    "#89b4fa",
+    "#f5c2e7",
+    "#94e2d5",
+    "#a6adc8"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Catppuccin Mocha",
+    "extension": "catppuccin.catppuccin-vsc"
+  }
+}

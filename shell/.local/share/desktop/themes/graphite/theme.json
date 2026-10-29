@@ -57,8 +57,22 @@
     "brightText": "#ffffff"
   },
   "ansi": [
-    "#292b30", "#e99595", "#a9c4ac", "#d8c49f", "#a5b8d2", "#c3acc9", "#a4c5c8", "#d4d6dc",
-    "#74777e", "#f0aaaa", "#bfd6c1", "#e8d6b1", "#bdcde3", "#d5bfd9", "#bddbde", "#f0f0f2"
+    "#292b30",
+    "#e99595",
+    "#a9c4ac",
+    "#d8c49f",
+    "#a5b8d2",
+    "#c3acc9",
+    "#a4c5c8",
+    "#d4d6dc",
+    "#74777e",
+    "#f0aaaa",
+    "#bfd6c1",
+    "#e8d6b1",
+    "#bdcde3",
+    "#d5bfd9",
+    "#bddbde",
+    "#f0f0f2"
   ],
   "terminal": {
     "opacity": 0.94
@@ -66,5 +80,8 @@
   "hyprland": {
     "shadow": "#0d0e1066",
     "glassTint": "#191a1d22"
+  },
+  "vscode": {
+    "theme": "Default Dark Modern"
   }
 }
