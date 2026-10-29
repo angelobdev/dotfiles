@@ -93,7 +93,7 @@ Overlay {
                     required property int index
                     width: apps.width
                     rightPadding: 40
-                    implicitHeight: 52
+                    implicitHeight: Theme.hit(52)
                     iconSource: Quickshell.iconPath(modelData.icon, "application-x-executable")
                     iconSize: 30
                     alignLeft: true
@@ -101,6 +101,11 @@ Overlay {
                     highlighted: apps.currentIndex === index
                     highlightBackground: false
                     onClicked: root.launch(modelData)
+                    // A long press (touch) opens the pin menu like a right click; Button then skips the click.
+                    onPressAndHold: {
+                        apps.currentIndex = row.index;
+                        root.openMenu(row.modelData, row, Qt.point(row.width / 2, row.height / 2));
+                    }
                     TapHandler {
                         acceptedButtons: Qt.RightButton
                         onTapped: (point, button) => {

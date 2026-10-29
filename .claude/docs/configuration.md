@@ -76,6 +76,7 @@ Delete a file to reset it. `desktop-shell keep-awake|dnd|rotation-lock toggle|on
 
 ## Tablet mode and rotation
 
+- **Touch scale:** `Theme.hit(n)` is `n × Theme.touchScale`, which is `Config.touchScale` (1.25) in tablet mode and 1 otherwise; `Theme.barHeight` is `hit(38)`. Components size their hit targets through it.
 - **Posture:** `hypr/config/tablet.lua` binds `switch:on/off` of the tablet mode switch to `desktop-shell tablet on|off`. The switch is named in `local.lua` (`require("config.tablet").switch("Intel HID switches")`, as `hyprctl devices` lists it). `services/Tablet.qml` keeps the posture in `$XDG_RUNTIME_DIR/desktop-shell/tablet.json`, so a shell restart keeps it and a new session starts in laptop mode until the switch reports. The switch binds are left out of Hints.
 - **Sensor:** `libexec/desktop/rotation.py watch` claims the iio-sensor-proxy accelerometer over D-Bus only while tablet mode is on and rotation is unlocked, and prints its orientation as a Hyprland transform (normal 0, left-up 1, bottom-up 2, right-up 3; flat keeps the last one). `rotation.py probe` tells the shell whether there is an accelerometer.
 - **Rotation:** `rotation.py apply N` writes `~/.local/state/desktop-session/rotation.lua` and runs `hyprctl eval 'desktop_rotate(N)'`. `monitors.lua` declares the built-in display through `require("config.tablet").monitor({...})`, which applies the saved transform, so a config reload (a theme change, for one) keeps the rotation. `input.touchdevice` and `input.tablet` get the same transform and are mapped to that output.

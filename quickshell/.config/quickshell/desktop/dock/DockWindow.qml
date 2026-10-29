@@ -24,12 +24,14 @@ PanelWindow {
     property string dragKey: ""
     property point dragPoint: Qt.point(0, 0)
     property bool shiftAnimated: true
-    readonly property int cellWidth: Config.dockIconSize + 8
+    // Larger in tablet mode, like every hit target.
+    readonly property int iconSize: Theme.hit(Config.dockIconSize)
+    readonly property int cellWidth: iconSize + 8
     readonly property int separatorIndex: Dock.items.findIndex(i => i.separatorBefore)
     readonly property int dragFrom: dragKey === "" ? -1 : Dock.items.findIndex(i => i.key === dragKey)
     readonly property int dragTarget: dragFrom === -1 ? -1 : DockModel.dropIndex(dragPoint.x - width / 2, Dock.items.filter(i => i.pinned).length, Dock.items.length, separatorIndex, cellWidth, 13)
     // Lifting a pin more than an icon above the shelf removes it on release.
-    readonly property bool dragRemoving: dragFrom !== -1 && dragPoint.y < body.y - Config.dockIconSize
+    readonly property bool dragRemoving: dragFrom !== -1 && dragPoint.y < body.y - root.iconSize
     // Super+D hands the keyboard to this dock until Esc, Super+D, activation or an outside click.
     readonly property bool keyboardMode: Dock.keyboardScreen === screen.name && shown && Dock.menuScreen === ""
     property int selection: 0
@@ -38,10 +40,10 @@ PanelWindow {
     readonly property bool shown: Config.dockEnabled && Dock.items.length > 0 && !compositorHidden && !fullscreen && (hovered || dragKey !== "" || Dock.menuScreen === screen.name || request === true || request !== false && (Dock.peeks[screen.name] !== undefined || emptyWorkspace))
     readonly property int margin: 8
     // Room above the shelf for magnified icons.
-    readonly property real rise: Config.dockIconSize * Math.max(0, Config.dockMagnification - 1)
+    readonly property real rise: root.iconSize * Math.max(0, Config.dockMagnification - 1)
     // The surface keeps enough transparent room above the shelf to draw a pin being dragged off; input
     // stays limited to the mask, so the room never blocks windows underneath.
-    readonly property real dragRoom: Config.dockIconSize * 2.5
+    readonly property real dragRoom: root.iconSize * 2.5
     readonly property real pointerOffset: pointer.hovered ? pointer.point.position.x - width / 2 : NaN
     // Magnification eases in and out on entering and leaving; while moving it follows the pointer directly.
     property real zoomAmount: pointer.hovered && shown && dragKey === "" ? 1 : 0
@@ -188,7 +190,7 @@ PanelWindow {
             anchors.horizontalCenter: parent.horizontalCenter
             y: root.shown ? root.height - height - root.margin : root.height + 2
             width: row.implicitWidth + 16
-            height: Config.dockIconSize + 20
+            height: root.iconSize + 20
             radius: Theme.radius
             color: Theme.surface
             border.width: Theme.frameWidth
@@ -241,7 +243,7 @@ PanelWindow {
             x: delegate ? body.x + row.x + delegate.x + delegate.anchorItem.x : 0
             y: body.y + row.y + 2
             width: delegate ? delegate.anchorItem.width : 0
-            height: Config.dockIconSize + 16
+            height: root.iconSize + 16
             radius: Theme.corner(12)
             color: "transparent"
             border.width: 2
@@ -261,8 +263,8 @@ PanelWindow {
             visible: item !== null
             x: root.dragPoint.x - width / 2
             y: Math.max(0, root.dragPoint.y - height / 2)
-            width: Config.dockIconSize
-            height: Config.dockIconSize
+            width: root.iconSize
+            height: root.iconSize
             source: item ? Quickshell.iconPath(item.entry?.icon || item.appId, "application-x-executable") : ""
             sourceSize: Qt.size(width * 2, height * 2)
             fillMode: Image.PreserveAspectFit

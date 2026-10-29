@@ -27,12 +27,64 @@ Rectangle {
     border.width: popup ? Theme.borderSize : 0
     border.color: Theme.frameInactive
     implicitHeight: column.implicitHeight + 24
+    // Swiped sideways past a third of its width, a popup goes away like a right click (it stays in the
+    // center) and an entry of the center is deleted; a shorter swipe springs back.
+    property real swipe: 0
+    function dismiss() {
+        if (popup)
+            hidePopup();
+        else if (archived)
+            Notices.forget(notification.id);
+        else
+            notification.dismiss();
+    }
+    transform: Translate {
+        x: root.swipe
+    }
+    opacity: 1 - Math.min(0.7, Math.abs(swipe) / Math.max(1, width))
+    NumberAnimation {
+        id: swipeAnimation
+        target: root
+        property: "swipe"
+        duration: Theme.motionFast
+        easing.type: Easing.OutCubic
+        onFinished: {
+            if (Math.abs(root.swipe) >= root.width)
+                root.dismiss();
+        }
+    }
+    // Clicks act only on popups, but the area always holds the swipe handler: a handler of the item sees the
+    // press before the item, so it can take a drag over from it (a handler on the parent would never see it).
     MouseArea {
         anchors.fill: parent
-        enabled: root.popup
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        cursorShape: root.defaultAction ? Qt.PointingHandCursor : Qt.ArrowCursor
+        acceptedButtons: root.popup ? Qt.LeftButton | Qt.RightButton : Qt.NoButton
+        cursorShape: root.popup && root.defaultAction ? Qt.PointingHandCursor : Qt.ArrowCursor
+        DragHandler {
+            target: null
+            yAxis.enabled: false
+            onTranslationChanged: if (active)
+                root.swipe = translation.x
+            onActiveChanged: {
+                if (active) {
+                    swipeAnimation.stop();
+                    return;
+                }
+                const away = Math.abs(root.swipe) > root.width / 3;
+                swipeAnimation.to = away ? (root.swipe < 0 ? -root.width : root.width) : 0;
+                swipeAnimation.start();
+            }
+        }
+        // A long press (touch) hides the popup like a right click.
+        property bool held: false
+        pressAndHoldInterval: 500
+        onPressed: held = false
+        onPressAndHold: {
+            held = true;
+            root.hidePopup();
+        }
         onClicked: mouse => {
+            if (held)
+                return;
             if (mouse.button === Qt.RightButton)
                 root.hidePopup();
             else if (root.defaultAction)
@@ -109,7 +161,7 @@ Rectangle {
                 text: I18n.tr("common.delete")
                 font.pixelSize: summary.font.pixelSize
                 font.bold: summary.font.bold
-                onClicked: root.archived ? Notices.forget(root.notification.id) : root.notification.dismiss()
+                onClicked: root.dismiss()
             }
         }
         Text {

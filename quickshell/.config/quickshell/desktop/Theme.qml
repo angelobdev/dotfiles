@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "services"
 
 Singleton {
     id: root
@@ -35,6 +36,10 @@ Singleton {
     // radii written in the components are kept as they are.
     readonly property real cornerScale: Math.max(0, colors.rounding) / 16
     readonly property int radius: corner(18)
+    // In tablet mode hit targets grow for fingers (Config.touchScale); in laptop mode every size is the
+    // design one. Text sizes do not change.
+    readonly property real touchScale: Tablet.active ? Config.touchScale : 1
+    readonly property int barHeight: hit(38)
     // Shell surfaces take the window border chosen in the Theming panel: its width, the active colour for
     // what has the focus (panels, menus) and the inactive one for the rest (dock, OSD, notifications).
     // Without a border they keep the thin neutral stroke.
@@ -52,6 +57,9 @@ Singleton {
     readonly property var easeIn: [0.3, 0, 0.8, 0.15, 1, 1]
     function corner(size) {
         return Math.round(size * cornerScale);
+    }
+    function hit(size) {
+        return Math.round(size * touchScale);
     }
     // desktop-theme renders the current theme here; the defaults are Graphite, so a missing or broken file
     // changes nothing and edits apply live.

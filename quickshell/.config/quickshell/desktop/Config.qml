@@ -26,6 +26,8 @@ QtObject {
     readonly property string oskLayout: "it"
     // In tablet mode, open the keyboard when a text field takes the focus (apps with text-input-v3).
     readonly property bool oskAutoShow: true
+    // In tablet mode the shell hit targets (bar, buttons, switches, rows, dock icons) grow by this factor.
+    readonly property real touchScale: 1.25
     // Order and presence of modules. Unknown names are ignored.
     readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "doNotDisturb", "idle", "rotation"]
     readonly property int controlCenterWidth: 400

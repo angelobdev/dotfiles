@@ -14,7 +14,7 @@ MenuItem {
     checked: entry?.checkState === Qt.Checked
     icon.source: entry?.icon ?? subMenu?.menuEntry?.icon ?? ""
     implicitWidth: 240
-    implicitHeight: 32
+    implicitHeight: Theme.hit(32)
     leftPadding: 10
     rightPadding: 10
     topPadding: 5

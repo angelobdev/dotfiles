@@ -185,6 +185,10 @@ Sensitivity, edge margins, and actions are in `hypr/config/plugins.lua`. Touchpa
 
 Folding the OmniBook screen back into tablet posture turns tablet mode on; unfolding it turns it off. In tablet mode the built-in display follows the accelerometer in quarter turns, with touch and stylus input rotated along with it; back in laptop mode it returns upright. Lying flat keeps the last orientation.
 
+**Larger for fingers:** in tablet mode the shell hit targets grow by a quarter (`Config.touchScale`): the bar (38 → 48 px), its buttons and workspace pills, buttons, switches, sliders, chips, menu and launcher rows, input fields and dock icons. Text keeps its size, and laptop mode keeps every design size.
+
+**Long press** does what a right click does: the dock menu, the pin menu in the launcher, tray menus, and hiding a notification popup. **Swipe** a notification sideways past a third of its width: a popup goes away (it stays in the center), an entry in the center is deleted; a shorter swipe springs back.
+
 **Rotation lock** in the Control Center (shown only on machines with an accelerometer) keeps the current orientation; `desktop-shell rotation-lock toggle|on|off` sets it with an OSD. It is remembered across restarts and logins. `desktop-shell tablet on|off|toggle` sets the posture by hand, for instance to try it without folding the screen.
 
 ## Assist button

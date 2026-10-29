@@ -1,8 +1,9 @@
 import QtQuick
+import ".."
 
 ActionButton {
-    implicitWidth: 36
-    implicitHeight: 36
+    implicitWidth: Theme.hit(36)
+    implicitHeight: Theme.hit(36)
     iconSize: 22
     leftPadding: 7
     rightPadding: 7

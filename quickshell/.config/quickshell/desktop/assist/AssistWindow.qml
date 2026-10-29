@@ -14,7 +14,7 @@ PanelWindow {
     id: root
     readonly property int size: 56
     readonly property int margin: 16
-    readonly property int top: 38
+    readonly property int top: Theme.barHeight
     readonly property string placeKey: (screen?.name ?? "") + ":" + (width >= height ? "landscape" : "portrait")
     property var position: Assist.positionFor(placeKey)
     property bool idle: false

@@ -27,7 +27,7 @@ Flow {
         ActionButton {
             id: chip
             required property var modelData
-            implicitHeight: 30
+            implicitHeight: Theme.hit(30)
             text: modelData.label
             font.pixelSize: 12
             highlighted: root.current === modelData.name

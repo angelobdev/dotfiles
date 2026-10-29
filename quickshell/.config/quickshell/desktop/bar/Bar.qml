@@ -18,7 +18,7 @@ PanelWindow {
         left: true
         right: true
     }
-    implicitHeight: 38
+    implicitHeight: Theme.barHeight
     color: "transparent"
     WlrLayershell.namespace: "desktop-bar"
     // Keep the surface mapped: Hyprspace restores its alpha when it closes.
@@ -136,26 +136,41 @@ PanelWindow {
             Item {
                 id: trayItem
                 required property var modelData
-                implicitWidth: 28
-                implicitHeight: 28
+                implicitWidth: Theme.hit(28)
+                implicitHeight: Theme.hit(28)
                 Image {
                     anchors.centerIn: parent
-                    width: 16
-                    height: 16
+                    width: Theme.hit(16)
+                    height: Theme.hit(16)
                     source: trayItem.modelData.icon
                 }
                 MouseArea {
+                    // A long press (touch) opens the menu like a right click; the release then does nothing.
+                    property bool held: false
+                    function openMenu() {
+                        if (trayItem.modelData.hasMenu) {
+                            trayMenu.menuEntry = trayItem.modelData.menu;
+                            trayMenu.popup(trayItem, 0, trayItem.height + 8);
+                        }
+                    }
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                    pressAndHoldInterval: 500
+                    onPressed: held = false
+                    onPressAndHold: mouse => {
+                        if (mouse.button !== Qt.LeftButton)
+                            return;
+                        held = true;
+                        openMenu();
+                    }
                     onClicked: mouse => {
+                        if (held)
+                            return;
                         if (mouse.button === Qt.MiddleButton)
                             trayItem.modelData.secondaryActivate();
-                        else if (mouse.button === Qt.RightButton || trayItem.modelData.onlyMenu) {
-                            if (trayItem.modelData.hasMenu) {
-                                trayMenu.menuEntry = trayItem.modelData.menu;
-                                trayMenu.popup(trayItem, 0, trayItem.height + 8);
-                            }
-                        } else
+                        else if (mouse.button === Qt.RightButton || trayItem.modelData.onlyMenu)
+                            openMenu();
+                        else
                             trayItem.modelData.activate();
                     }
                     onWheel: event => trayItem.modelData.scroll(event.angleDelta.y, false)

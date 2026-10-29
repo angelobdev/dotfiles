@@ -5,28 +5,28 @@ import ".."
 
 Switch {
     id: root
-    implicitWidth: 40
-    implicitHeight: 30
-    Layout.minimumWidth: 40
-    Layout.maximumWidth: 40
+    implicitWidth: Theme.hit(40)
+    implicitHeight: Theme.hit(30)
+    Layout.minimumWidth: Theme.hit(40)
+    Layout.maximumWidth: Theme.hit(40)
     Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
     leftPadding: 0
     rightPadding: 0
     indicator: Rectangle {
         x: root.width - width
         y: (root.height - height) / 2
-        width: 40
-        height: 24
-        radius: Theme.corner(12)
+        width: Theme.hit(40)
+        height: Theme.hit(24)
+        radius: Theme.corner(Theme.hit(12))
         color: root.checked ? Theme.accent : Theme.track
         border.width: root.activeFocus ? 1 : 0
         border.color: Theme.text
         Rectangle {
             x: root.checked ? parent.width - width - 3 : 3
-            y: 3
-            width: 18
-            height: 18
-            radius: Theme.corner(9)
+            y: (parent.height - height) / 2
+            width: Theme.hit(18)
+            height: Theme.hit(18)
+            radius: Theme.corner(Theme.hit(9))
             color: root.checked ? Theme.accentText : Theme.text
             Behavior on x {
                 NumberAnimation {

@@ -7,7 +7,7 @@ Slider {
     from: 0
     to: 1
     live: true
-    implicitHeight: 30
+    implicitHeight: Theme.hit(30)
     leftPadding: 8
     rightPadding: 8
     opacity: enabled ? 1 : 0.4
@@ -28,9 +28,9 @@ Slider {
     handle: Rectangle {
         x: root.leftPadding + root.visualPosition * (root.availableWidth - width)
         y: (root.height - height) / 2
-        width: 18
-        height: 18
-        radius: Theme.corner(9)
+        width: Theme.hit(18)
+        height: Theme.hit(18)
+        radius: Theme.corner(Theme.hit(9))
         color: root.pressed ? Theme.handlePressed : Theme.text
         border.width: root.activeFocus ? 2 : 0
         border.color: Theme.handleFocus

@@ -66,7 +66,7 @@ Rectangle {
             readonly property string kind: modelData.kind ?? "item"
             readonly property bool current: list.currentIndex === index
             width: list.width
-            height: kind === "separator" ? 9 : kind === "heading" ? 28 : 32
+            height: kind === "separator" ? 9 : kind === "heading" ? Theme.hit(28) : Theme.hit(32)
             opacity: modelData.enabled === false ? 0.4 : 1
             Rectangle {
                 anchors.centerIn: parent

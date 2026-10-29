@@ -24,7 +24,7 @@ Row {
     property bool selected: false
     // Where the window anchors the selection ring and the context menu.
     readonly property Item anchorItem: cell
-    readonly property int size: Config.dockIconSize
+    readonly property int size: Theme.hit(Config.dockIconSize)
     readonly property int cellWidth: size + 8
     readonly property real zoom: 1 + (DockModel.magnify(pointerOffset - DockModel.baseOffset(index, count, separatorIndex, cellWidth, 13), cellWidth, Config.dockMagnification) - 1) * zoomAmount
     readonly property string label: modelData.entry?.name || modelData.appId
@@ -68,6 +68,8 @@ Row {
             id: mouse
             property point pressPoint: Qt.point(0, 0)
             property bool moved: false
+            // A long press (touch) opens the menu like a right click; the release then does nothing.
+            property bool held: false
             anchors {
                 left: parent.left
                 right: parent.right
@@ -78,9 +80,17 @@ Row {
             // Keep the pointer while a pin is dragged off the dock.
             preventStealing: true
             acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
+            pressAndHoldInterval: 500
             onPressed: event => {
                 pressPoint = Qt.point(event.x, event.y);
                 moved = false;
+                held = false;
+            }
+            onPressAndHold: event => {
+                if (moved || event.button !== Qt.LeftButton)
+                    return;
+                held = true;
+                root.menuRequested(root.modelData, cell);
             }
             // Pinned apps start dragging after 6 px; positions go to the window in its own coordinates.
             onPositionChanged: event => {
@@ -100,7 +110,7 @@ Row {
                 root.dragFinished(true);
             }
             onClicked: event => {
-                if (moved)
+                if (moved || held)
                     return;
                 if (event.button === Qt.RightButton)
                     root.menuRequested(root.modelData, cell);

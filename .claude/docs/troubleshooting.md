@@ -349,3 +349,9 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - `osk.py run --input-method` alone: Kitty with the focus sent `activate` with purpose `terminal`; a `zenity --entry` field `activate` `normal`, then `deactivate` when it closed, and Kitty `terminal` again.
 - Through the shell, with `desktop-shell tablet on`: the zenity field opened the keyboard by itself (`autoShown`), closing zenity kept it open for Kitty (its extra row shown), and `tablet off` closed it. In laptop mode fields do not open it.
 - Entering tablet mode while a field already has the focus does not open the keyboard; the next tap into a field does.
+
+## Touch-friendly shell verification
+
+- `Theme` reads `Tablet.active` through `import "services"` without a singleton cycle. With `desktop-shell tablet on` the bar layer went from 38 to 48 px and the dock surface from 190 to 228 px; the Control Center switches, slider handles and buttons grew, text did not. `tablet off` restored 38 and 190.
+- The notice swipe handler first sat on the notice itself, under the popup MouseArea, which accepts the press first, so a popup could never be swiped. It now lives inside the MouseArea (handlers of an item see the press before the item and can take the drag over); in the center the area accepts no buttons, so events still reach it.
+- Long press and swipe need a touchscreen; they are left to the physical test (Phase 6).

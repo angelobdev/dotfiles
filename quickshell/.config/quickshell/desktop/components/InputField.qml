@@ -4,7 +4,7 @@ import ".."
 
 TextField {
     id: root
-    implicitHeight: 42
+    implicitHeight: Theme.hit(42)
     leftPadding: 12
     rightPadding: 12
     color: Theme.text
