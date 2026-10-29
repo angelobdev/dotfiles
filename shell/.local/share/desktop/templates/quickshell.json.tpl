@@ -19,5 +19,7 @@
   "barShadeTop": "{{ shell.barShadeTop | qt }}",
   "barShadeBottom": "{{ shell.barShadeBottom | qt }}",
   "shareShade": "{{ shell.shareShade | qt }}",
-  "font": "{{ fonts.sans }}"
+  "font": "{{ fonts.sans }}",
+  "iconSource": "{{ preferences.iconSource }}",
+  "barStyle": "{{ preferences.barStyle }}"
 }

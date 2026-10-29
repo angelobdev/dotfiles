@@ -19,8 +19,10 @@ Button {
     property string tooltip: ""
     // Lists with a moving selection (ListView.highlight) draw the highlighted background themselves.
     property bool highlightBackground: true
+    // Text and icon colour when neither destructive nor highlighted; the bar follows BarStyle.
+    property color normalColor: Theme.text
     readonly property bool hasIcon: iconName !== "" || iconSource.toString() !== ""
-    readonly property color foreground: destructive ? Theme.danger : highlighted ? Theme.accentText : Theme.text
+    readonly property color foreground: destructive ? Theme.danger : highlighted ? Theme.accentText : normalColor
     implicitHeight: 36
     implicitWidth: Math.max(36, label.implicitWidth + (hasIcon ? iconSize + (text ? 10 : 0) : 0) + leftPadding + rightPadding)
     leftPadding: compact ? 0 : 12

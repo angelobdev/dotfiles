@@ -27,6 +27,10 @@ Singleton {
     readonly property color barShadeBottom: colors.barShadeBottom
     readonly property color shareShade: colors.shareShade
     readonly property string font: colors.font
+    // "desktop" draws the shell glyphs from assets/icons, "pack" from the icon theme where it has them.
+    readonly property string iconSource: colors.iconSource
+    // "shade" keeps the bar gradient, "transparent" drops it (bar colours then follow BarStyle).
+    readonly property string barStyle: colors.barStyle
     readonly property int radius: 18
     readonly property int panelPadding: 16
     readonly property int dialogPadding: 22
@@ -66,6 +70,8 @@ Singleton {
             property color barShadeBottom: "#44000000"
             property color shareShade: "#28000000"
             property string font: "Adwaita Sans"
+            property string iconSource: "desktop"
+            property string barStyle: "shade"
         }
     }
 }

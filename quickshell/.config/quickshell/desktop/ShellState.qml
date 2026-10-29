@@ -20,7 +20,7 @@ Singleton {
         show("controls", activeScreen, -1);
     }
     function show(name, screen, direction) {
-        if (!["launcher", "controls", "network", "bluetooth", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "clipboard", "recording", "power"].includes(name))
+        if (!["launcher", "controls", "network", "bluetooth", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "theming", "clipboard", "recording", "power"].includes(name))
             return;
         // Set before the panel changes so both the closing and the opening panel read the same direction.
         navigation = direction;

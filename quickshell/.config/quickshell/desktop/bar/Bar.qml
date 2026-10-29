@@ -66,8 +66,23 @@ PanelWindow {
         id: clock
         precision: SystemClock.Minutes
     }
+    // Double-click on an empty part of the bar switches between the shaded and the transparent bar.
+    Item {
+        anchors.fill: parent
+        TapHandler {
+            onDoubleTapped: BarStyle.toggle()
+        }
+    }
     Rectangle {
         anchors.fill: parent
+        opacity: BarStyle.transparent ? 0 : 1
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.motionNormal
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Theme.easeOut
+            }
+        }
         gradient: Gradient {
             GradientStop {
                 position: 0
@@ -107,7 +122,7 @@ PanelWindow {
             text: Hyprland.activeToplevel?.title ?? I18n.tr("bar.desktop")
             elide: Text.ElideRight
             textFormat: Text.PlainText
-            color: Theme.muted
+            color: BarStyle.muted
             font.family: Theme.font
             font.pixelSize: 12
             visible: bar.width > 1100

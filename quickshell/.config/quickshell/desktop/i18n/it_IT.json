@@ -514,6 +514,48 @@
       "title": "Sfondi"
     }
   },
+  "theming": {
+    "bar": "Barra",
+    "barHint": "Doppio clic su una parte vuota della barra per cambiare",
+    "barShaded": "Ombreggiata",
+    "barTransparent": "Trasparente",
+    "current": "Attuale",
+    "custom": "Personalizzato…",
+    "download": "Scarica gli sfondi",
+    "downloading": "Scaricamento degli sfondi…",
+    "errors": {
+      "fontMissing": "Nessuna famiglia di font installata si chiama “%1”.",
+      "iconsMissing": "Nessun tema di icone installato si chiama “%1”."
+    },
+    "interfaceFont": "INTERFACCIA",
+    "monospaceFont": "MONOSPACE",
+    "navigationHint": "Ctrl+Tab scheda successiva · Frecce seleziona · Invio applica · Esc chiudi",
+    "notDownloaded": "Non ancora scaricato",
+    "openFonts": "Apri la cartella dei font",
+    "openIcons": "Apri la cartella delle icone",
+    "otherFont": "Altra famiglia installata…",
+    "otherIcons": "Altro tema di icone installato (nome della cartella)…",
+    "preparing": "Preparazione anteprima…",
+    "previewSans": "Quel vituperabile xenofobo zelante assaggia il whisky ed esclama: alleluja!",
+    "rescan": "Riscansiona",
+    "restart": "Riavvia la shell",
+    "restartHint": "La shell mostra il nuovo font o le nuove icone dopo un riavvio; le altre app li hanno già. Il riavvio cancella lo storico delle notifiche.",
+    "shellIcons": "Icone della shell",
+    "shellIconsDesktop": "Desktop",
+    "shellIconsPack": "Icon pack",
+    "size": "Dimensione",
+    "tabs": {
+      "font": "Font",
+      "icons": "Icone",
+      "theme": "Tema",
+      "wallpaper": "Sfondo"
+    },
+    "themeDefaultNamed": "Predefinito del tema · %1",
+    "title": "Aspetto",
+    "unified": "Usa il font monospace ovunque",
+    "useCustom": "Usa",
+    "working": "Applicazione…"
+  },
   "wallpaper": {
     "appliedPrefix": "Sfondo applicato: ",
     "apply": "Imposta sfondo",

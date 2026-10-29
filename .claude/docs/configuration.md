@@ -198,7 +198,7 @@ The stowed configs only point at those files:
 - `config/theme.lua` loads `hyprland.lua` on every Hyprland reload.
 - `kitty.conf` ends with an `include`.
 - `gtk.css` is a single relative `@import`.
-- qt5ct/qt6ct `color_scheme_path` points at `qt-colors.conf`.
+- qt5ct/qt6ct: `qtct.conf.tpl` is rendered to `~/.config/qt5ct/qt5ct.conf` and `~/.config/qt6ct/qt6ct.conf`; they are no longer stowed. The rendered file sets the fonts, icon pack, Fusion style and `color_scheme_path` to `qt-colors.conf`. Settings saved from the qt5ct/qt6ct GUI land in that file and are replaced on the next theme change; set fonts and icons in the Theming panel instead.
 - `desktop-power lock` passes `--config` to hyprlock when the themed file exists.
 
 Each consumer keeps Graphite as its fallback, so a missing state directory changes nothing. GTK is the exception: it falls back to plain Adwaita-dark until the next `desktop-theme` run.
@@ -212,6 +212,22 @@ Other applications:
   - The main background stays empty, so the translucent Kitty background shows through.
   - btop rewrites `btop.conf` on exit, so it is not stowed. Set `color_theme = "Default"` to go back.
 - **Zen and other portal-aware apps** follow the `color-scheme` that `mode` sets (all shipped themes are dark).
+
+Preferences: `~/.local/state/desktop-theme/preferences.json` holds what is chosen in the Theming panel, or with these commands:
+- `desktop-theme font --sans F --mono F --size N --unified on|off` (`--default` clears them). `--unified on` makes the interface use the monospace family.
+- `desktop-theme icon-theme NAME|default`.
+- `desktop-theme shell-icons desktop|pack`: the shell glyphs from `assets/icons`, or the icon pack's symbolic icons mapped in `components/IconNames.js`.
+- `desktop-theme bar-style shade|transparent|toggle`.
+
+The bar style and shell icon source reach Quickshell through `quickshell.json` (`barStyle`, `iconSource`).
+
+`theme.py tone` measures the strip under the bar on the current wallpaper. It crops the wallpaper to the focused monitor's logical size as hyprpaper does (cover), takes the mean grey of the top 4%, and caches it in `tone.json`.
+
+Text and icons then use whichever of the current theme's two text colours (`shell.text`, `shell.accentText`) has the higher WCAG contrast with that strip. The bar background stays transparent. `services/BarStyle.qml` runs it whenever the wallpaper or the bar style changes.
+
+They are merged over every theme before rendering, and an unset key keeps the theme's value. `theme.py fonts` and `theme.py icons` print the choices the panel offers:
+- fonts from `fc-list :lang=en`, with script-specific, symbol, serif and URW families left out;
+- icon themes with at least two sample icons of their own, resolved through `Inherits`. This list is cached in `icons-cache.json` until an icon directory changes.
 
 Commands:
 - `desktop-theme set <id>` switches theme. It renders everything before writing anything, reloads Hyprland and Kitty (`SIGUSR1`), and sets GSettings.

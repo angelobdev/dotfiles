@@ -31,6 +31,7 @@ var bindKeys = {
     "Hints · Keyboard shortcuts": "hints.title",
     "Choose wallpaper": "wallpaper.title",
     "Next wallpaper": "wallpaper.next",
+    "Theming": "theming.title",
     "Session menu": "session.menuTitle",
     "Dock": "dock.title",
     "Clipboard · History": "clipboard.historyTitle",

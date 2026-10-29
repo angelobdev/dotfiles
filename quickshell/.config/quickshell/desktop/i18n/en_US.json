@@ -514,6 +514,48 @@
       "title": "Wallpapers"
     }
   },
+  "theming": {
+    "bar": "Bar",
+    "barHint": "Double-click an empty part of the bar to switch",
+    "barShaded": "Shaded",
+    "barTransparent": "Transparent",
+    "current": "Current",
+    "custom": "Custom…",
+    "download": "Download wallpapers",
+    "downloading": "Downloading wallpapers…",
+    "errors": {
+      "fontMissing": "No installed font family is called “%1”.",
+      "iconsMissing": "No installed icon theme is called “%1”."
+    },
+    "interfaceFont": "INTERFACE",
+    "monospaceFont": "MONOSPACE",
+    "navigationHint": "Ctrl+Tab next tab · Arrows select · Enter apply · Esc close",
+    "notDownloaded": "Not downloaded yet",
+    "openFonts": "Open fonts folder",
+    "openIcons": "Open icons folder",
+    "otherFont": "Other installed family…",
+    "otherIcons": "Other installed icon theme (folder name)…",
+    "preparing": "Preparing preview…",
+    "previewSans": "The quick brown fox jumps over the lazy dog",
+    "rescan": "Rescan",
+    "restart": "Restart shell",
+    "restartHint": "The shell shows the new font or icons after a restart; other apps already have them. Restarting clears the notification history.",
+    "shellIcons": "Shell icons",
+    "shellIconsDesktop": "Desktop",
+    "shellIconsPack": "Icon pack",
+    "size": "Size",
+    "tabs": {
+      "font": "Font",
+      "icons": "Icons",
+      "theme": "Theme",
+      "wallpaper": "Wallpaper"
+    },
+    "themeDefaultNamed": "Theme default · %1",
+    "title": "Theming",
+    "unified": "Use the monospace font everywhere",
+    "useCustom": "Use",
+    "working": "Applying…"
+  },
   "wallpaper": {
     "appliedPrefix": "Wallpaper applied: ",
     "apply": "Set wallpaper",

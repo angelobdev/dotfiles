@@ -66,4 +66,6 @@ Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha
 
 A palette change in one place therefore fails the check until the fallback or the theme follows.
 
+The Theming panel (`panels/ThemingPanel.qml`) reads and changes all of this only through `services/Theming.qml`, which runs `theme.py` JSON commands (`list --details`, `wallpapers`, `fonts`, `icons`) and actions while the panel is open, and watches `selection.json` for the current wallpaper.
+
 Wallpapers: `theme.py` holds the per-theme sets (download with sha256 checks, memory in `~/.local/state/desktop-theme/wallpapers.json`, the next image) and applies images only through `wallpaper.py`, which stays the single place that converts and hands them to hyprpaper.

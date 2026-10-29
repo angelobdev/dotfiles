@@ -208,3 +208,69 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - With the Everforest set moved away, `set everforest` returned in 0.4 s. `01-tree-tops` was on screen after 1.6 s, and the full set of 8 followed in the background.
 - The user reviewed the final contact sheet and kept all 32.
 
+## Theming panel verification
+
+**Qt configuration**
+- `qtct.conf.tpl` renders Graphite identically to the old stowed `qt5ct.conf`, apart from its header line.
+- `apply` replaced the two Stow links with real files, and the repository copies stayed untouched (an installed output never writes through a link). The stowed copies were then removed from the `qt` package.
+
+**Live reload**
+- With the icon pack switched to Breeze, a dock capture was pixel-identical to the one taken with Papirus. Quickshell reads the Qt icon theme only at start, hence the Restart shell button.
+- GSettings and the qtXct files changed at once. The preference was then reset to the theme default.
+
+**Listings**
+- `fonts`: 10 interface and 6 monospace families before the optional fonts.
+- `icons`: 26 packs, about 2.4 s uncached and 0.1 s cached.
+- Fedora's Adwaita sets `Hidden=true`, so `Hidden` is ignored.
+- A first version of the cache kept serving a stale list after the rules changed; the signature now carries a version.
+
+**Panel**
+- Each tab was opened through a temporary default tab and captured. The theme cards, the Graphite wallpaper folders with Custom…, both font lists each rendered in its own family, and the icon packs with their own samples all showed, with no QML warnings.
+- `test_theme.py` covers preference merging, the qtct render, link replacement, font filtering and icon discovery through `Inherits` (21 tests).
+
+## Theming panel, round 2
+
+**Previews**
+- Twelve theme wallpapers had no preview: the log showed `Unsupported image format` for `.webp`, since `qt6-qtimageformats` is not installed.
+- The gallery now shows JPEG thumbnails made by `theme.py thumbs` (about 0.45 s each, cached by path, mtime and size). After that every Gruvbox image, the WebP one included, previewed.
+
+**Bar**
+- `bar-style transparent` dropped the gradient. Over a dark wallpaper top (luminance 0.28) the bar text stayed light, and `toggle` returned to shaded.
+
+**Shell icons**
+- With Yaru as the Qt icon theme, all 55 bundled glyphs resolved to a pack icon through `IconNames.js`.
+- `tst_icon_names.qml` checks that the map covers exactly the files in `assets/icons` and lists symbolic names only.
+
+**Custom fonts and icons**
+- `check-font` rejected a family that is not installed and accepted Adwaita Sans.
+- `check-icons` accepted `breeze` and rejected `../etc`.
+
+**Restart and reopen**
+- `desktop-shell restart theming TAB` validates the tab, waits for the new instance to answer `status`, then calls the new `theming(tab)` IPC.
+
+**Capture pitfall**
+- A capture taken right after an in-place QML edit can catch the shell mid-reload: the overlay is there but its card is not. Wait a few seconds after an edit before capturing.
+
+## Transparent bar contrast
+
+**The problem**
+- Over Gruvbox `03-village-square` the transparent bar was unreadable.
+- The strip mean was 0.58, just under the old fixed 0.6 threshold, so the bar got light text at about 2.7:1.
+- The strip was also measured on the uncropped image, which is not what hyprpaper shows.
+
+**Measurements** (mean / deviation)
+- All 32 theme wallpapers and the local ones were measured on the cover-cropped strip.
+- Flat dark strips: Catppuccin minimal 0.10/0. Flat light: Everforest fog and sea 0.81–0.86/<0.03. Mid-tone paintings: village 0.58/0.10, procession 0.33/0.17. The Apple wallpaper is dark with bright streaks: 0.12/0.14.
+
+**Fix**
+- The rule now picks the text with the higher WCAG contrast.
+- A translucent backing added at first made the bar look shaded again, so it was removed at the user's request: the bar stays transparent and only text and icons change colour.
+- The contrast uses the current theme's own two text colours.
+- Over the village strip, Gruvbox's dark text gives 4.9:1.
+- `test_theme.py` checks every shipped theme at strip greys from 0 to 1: the chosen colour never falls below 3:1.
+- Over busy parts of a painting (branches behind the window title) a colour change alone cannot reach that everywhere.
+- The user confirmed the result.
+
+**Restart**
+- The automatic restart after font and icon changes was removed at the user's request. The panel shows the restart banner instead, and its button still reopens the panel on the same tab.
+

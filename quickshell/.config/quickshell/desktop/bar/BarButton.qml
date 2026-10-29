@@ -1,8 +1,10 @@
 import QtQuick
 import "../components"
+import "../services"
 
 ActionButton {
     keyboardFocusOnly: true
+    normalColor: BarStyle.foreground
     implicitHeight: 30
     iconSize: 16
     topPadding: 0

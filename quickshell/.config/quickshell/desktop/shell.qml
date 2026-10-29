@@ -38,6 +38,12 @@ ShellRoot {
         function close(): void {
             ShellState.close();
         }
+        // Opens the Theming panel on a tab; desktop-shell uses it to come back after a restart.
+        function theming(tab: string): void {
+            themingPanel.tab = tab;
+            if (ShellState.panel !== "theming")
+                ShellState.toggle("theming");
+        }
         function status(): string {
             return JSON.stringify({
                 panel: ShellState.panel,
@@ -130,6 +136,9 @@ ShellRoot {
     RecordingPanel {}
     ClipboardPanel {}
     WallpaperPicker {}
+    ThemingPanel {
+        id: themingPanel
+    }
     NotificationCenter {}
     NotificationPopups {
         id: popupWindow

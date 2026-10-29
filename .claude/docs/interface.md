@@ -44,6 +44,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + Q` | Session menu |
 | `Super + Shift + W` | Choose wallpaper |
 | `Super + Ctrl + W` | Next wallpaper of the current theme |
+| `Super + Ctrl + T` | Theming: theme, wallpaper, font, icons |
 | `Super + Ctrl + C` | Clipboard / history |
 | `Super + Ctrl + R` | Screen recording |
 | `Super + D` | Show the dock with keyboard navigation / hide it |
@@ -99,6 +100,29 @@ Right click opens the app menu: its windows (choose one to focus it; the focused
 Pins can also be changed by dragging: hold a pinned icon and move it at least 6 px, then drop it on another slot to reorder, or lift it more than an icon above the dock until it fades and says "Remove", and release to unpin it. In the launcher (`Super + Space`), pinned apps carry a pin mark on the right; `Ctrl+P` or a right click pins or unpins the selected app.
 
 `Super + D` shows the dock on the focused monitor and gives it the keyboard: Left/Right (or Tab) move a selection ring with the app name, Home/End jump to the ends, Enter opens or focuses the app, Shift+Enter opens a new instance, the Menu key or Shift+F10 opens the app menu (Esc there returns to the dock), and Esc or `Super + D` hides the dock and keeps it down, even on an empty workspace, until the pointer visits it. Activating an app or clicking outside the dock ends keyboard mode. `Super + Alt + 1`…`9` activate items by position without taking the keyboard. `desktop-shell dock show|hide|toggle|launch N` does the same from scripts.
+
+## Theming
+
+`Super + Ctrl + T` opens the Theming panel. `Ctrl+Tab` / `Ctrl+Shift+Tab` (or `Ctrl+PgDown` / `Ctrl+PgUp`) switch tabs, arrows move within a tab, Enter applies, and Esc closes.
+
+**Tabs**
+- **Theme:** a card per theme with a small mock-up of its surfaces, text and accent, plus its terminal colours; the current one is marked. Choosing one switches colours at once, and the theme's wallpaper follows.
+  - **Bar: Shaded · Transparent** sets the bar style. Transparent drops the dark gradient, and the bar stays transparent. Only its text and icons change colour, taking whichever of the theme's light and dark text contrasts more with the wallpaper under the bar. The layer stays blurred.
+  - A double-click on an empty part of the bar switches the style too.
+- **Wallpaper:** thumbnails of the current theme's set, with the current one outlined. For Graphite these are the images in the local wallpaper folders.
+  - Thumbnails are cached JPEGs (`~/.cache/desktop-theme/thumbs/`), so WebP and very large images preview too.
+  - Images that are not downloaded yet show a placeholder; "Download wallpapers" fetches them, and thumbnails appear as they arrive.
+  - **Custom…** opens the file picker (`Super + Shift + W`).
+  - A pick from either is remembered for the theme.
+- **Font:** the installed interface and monospace families, each written in itself, plus a size from 9 to 13 and a preview. "Theme default" goes back to the theme's font.
+  - **Use the monospace font everywhere** gives the interface the monospace family as well (shell, GTK, Qt, hyprlock, Kitty).
+  - **Other installed family…** takes any installed family by name, even one the lists leave out; the name is checked with fontconfig first.
+  - **Open fonts folder** opens `~/.local/share/fonts`; after adding fonts there, **Rescan** refreshes the font cache and the lists.
+- **Icons:** the installed icon packs with five sample icons each, drawn from that pack. "Theme default" goes back to the theme's pack.
+  - **Shell icons: Desktop · Icon pack** sets where the glyphs of the bar, Control Center, OSD and panels come from. Desktop uses the bundled set. Icon pack uses the pack's symbolic icons, tinted like the bundled ones, and keeps a bundled glyph wherever the pack has none.
+  - **Other installed icon theme** takes a theme by its folder name, and **Open icons folder** opens `~/.local/share/icons` for packs installed by hand.
+
+Font, size, icon pack, shell icons and bar style are your preferences: they apply to every theme. GTK applications follow them at once, and Kitty reloads. Qt applications follow them when reopened. The shell reads fonts and icons only at start, so after a font or icon change the panel shows a **Restart shell** banner. The restart reopens the panel on the same tab and clears the notification history.
 
 ## Clipboard
 

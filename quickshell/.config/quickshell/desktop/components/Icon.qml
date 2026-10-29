@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Effects
+import Quickshell
 import ".."
+import "IconNames.js" as IconNames
 
 Item {
     id: root
@@ -21,6 +23,17 @@ Item {
         shown = name;
     }
     Component.onCompleted: shown = name
+    // The icon pack's symbolic glyph when the shell icons come from it, else the bundled drawing.
+    function sourceFor(glyph) {
+        if (!glyph)
+            return "";
+        if (Theme.iconSource === "pack") {
+            const pack = IconNames.packSource(glyph, candidate => Quickshell.iconPath(candidate, true));
+            if (pack)
+                return pack;
+        }
+        return "../assets/icons/" + glyph + ".svg";
+    }
     NumberAnimation {
         id: crossFade
         target: root
@@ -39,7 +52,7 @@ Item {
             Image {
                 id: oldGlyph
                 anchors.fill: parent
-                source: "../assets/icons/" + root.previous + ".svg"
+                source: root.sourceFor(root.previous)
                 sourceSize: Qt.size(width * 2, height * 2)
                 fillMode: Image.PreserveAspectFit
                 visible: false
@@ -55,7 +68,7 @@ Item {
     Image {
         id: glyph
         anchors.fill: parent
-        source: root.name ? "../assets/icons/" + root.name + ".svg" : ""
+        source: root.sourceFor(root.name)
         sourceSize: Qt.size(width * 2, height * 2)
         fillMode: Image.PreserveAspectFit
         visible: false

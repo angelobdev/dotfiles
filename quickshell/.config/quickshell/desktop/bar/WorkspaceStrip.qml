@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import ".."
+import "../services"
 
 RowLayout {
     id: root
@@ -80,7 +81,7 @@ RowLayout {
                     width: workspace.active ? 28 : 8
                     height: 8
                     radius: 4
-                    color: workspace.active ? Theme.accent : workspace.modelData.urgent ? Theme.danger : Theme.muted
+                    color: workspace.active ? BarStyle.accent : workspace.modelData.urgent ? Theme.danger : BarStyle.muted
                     Behavior on width {
                         NumberAnimation {
                             duration: 160

@@ -5,6 +5,12 @@ case "${1:-start}" in
     start) exec qs -p "$config" --no-duplicate --daemonize ;;
     stop) exec qs kill -p "$config" ;;
     restart)
+        # "restart theming TAB" reopens the Theming panel on TAB once the new instance answers.
+        case "${2:-}" in
+            '') ;;
+            theming) [[ "${3:-}" =~ ^(theme|wallpaper|font|icons)$ ]] || { echo 'Usage: desktop-shell restart [theming theme|wallpaper|font|icons]' >&2; exit 2; } ;;
+            *) echo 'Usage: desktop-shell restart [theming theme|wallpaper|font|icons]' >&2; exit 2 ;;
+        esac
         qs kill -p "$config" 2>/dev/null || true
         # kill requests shutdown; --no-duplicate can still see the exiting process.
         # Wait for Quickshell's instance lock to disappear before starting again.
@@ -17,7 +23,17 @@ except ValueError:
     running = False
 sys.exit(0 if running else 1)
 '; then
-                exec qs -p "$config" --no-duplicate --daemonize
+                if [[ -z "${2:-}" ]]; then
+                    exec qs -p "$config" --no-duplicate --daemonize
+                fi
+                qs -p "$config" --no-duplicate --daemonize
+                for ready in {1..100}; do
+                    if qs ipc -p "$config" call desktop status >/dev/null 2>&1; then
+                        exec qs ipc -p "$config" call desktop theming "$3"
+                    fi
+                    sleep 0.1
+                done
+                exit 0
             fi
             sleep 0.1
         done
@@ -25,8 +41,8 @@ sys.exit(0 if running else 1)
         exit 1
         ;;
     toggle)
-        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|clipboard|recording|power) ;;
-            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|clipboard|recording|power}' >&2; exit 2 ;;
+        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power) ;;
+            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power}' >&2; exit 2 ;;
         esac
         exec qs ipc -p "$config" call desktop toggle "$2"
         ;;
@@ -50,5 +66,5 @@ sys.exit(0 if running else 1)
         exit 2
         ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|restart|status|toggle PANEL|media ACTION|dock ACTION}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|restart [theming TAB]|status|toggle PANEL|media ACTION|dock ACTION}' >&2; exit 2 ;;
 esac

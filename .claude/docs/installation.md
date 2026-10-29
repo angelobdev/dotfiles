@@ -15,7 +15,7 @@ Verified versions: Hyprland 0.56.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | `hyprlock` | Wayland lock screen with PAM and fprintd fingerprints |
 | `hyprpaper` | Fedora 44 night wallpaper on every monitor |
 | `gtk` | Palette, fonts, icons, and dark preference for GTK 3/4 |
-| `qt` | Fusion palette and icons for Qt 5/6 via qt5ct/qt6ct |
+| `qt` | Graphite colour scheme for Qt 5/6 (qt5ct/qt6ct); `qt5ct.conf`/`qt6ct.conf` themselves are rendered by `desktop-theme` |
 | `kitty` | Graphite terminal with translucent background and shared ANSI palette |
 | `fastfetch` | Fedora layout with a neutral palette |
 | `udiskie` | Removable-drive automounting, Quickshell notifications, and no external tray icon |
@@ -53,6 +53,20 @@ Multilingual support uses the existing Qt and Python installations, with no addi
 Packages use standard XDG paths under `$HOME`. The two Qt `color_scheme_path` settings and the Steam desktop launcher contain `/home/angelo`: update them when installing for another user. The Fedora 44 wallpaper is included as JPEG in `hyprpaper/.local/share/wallpapers`, converted from the installed JPEG XL image because this hyprpaper build cannot decode it. It comes from `f44-backgrounds-base`; the original CC BY-SA 4.0 license and Fedora attribution are included in the package files.
 
 Removable drives use udiskie; iPhone access uses GVfs/AFC and usbmuxd. See [Removable drives and iPhone](integrations.md#removable-drives-and-iphone). The usbmuxd system service is activated by device discovery; no manual service enablement is required.
+
+## Optional fonts
+
+The Theming panel lists the installed fonts. These add common interface and coding families from the Fedora repositories:
+
+```sh
+sudo dnf install rsms-inter-fonts ibm-plex-sans-fonts ibm-plex-mono-fonts jetbrains-mono-fonts fira-code-fonts
+```
+
+WebP previews in the file picker (`Super + Shift + W`) need Qt's image format plugins; the Theming panel does not, as it shows cached JPEG thumbnails:
+
+```sh
+sudo dnf install qt6-qtimageformats
+```
 
 ## Optional gaming packages
 

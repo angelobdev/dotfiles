@@ -18,7 +18,7 @@ GRAPHITE = json.loads((REPO / 'shell/.local/share/desktop/themes/graphite/theme.
 class GraphiteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.out = theme.render_all(GRAPHITE, TEMPLATES)
+        cls.out = theme.render_all(theme.complete(GRAPHITE), TEMPLATES)
 
     def test_hyprlock_matches_the_stowed_fallback(self):
         self.assertEqual(self.out['hyprlock.conf'], (REPO / 'hyprlock/.config/hypr/hyprlock.conf').read_text(encoding='utf-8'))
@@ -143,6 +143,106 @@ class WallpaperTests(unittest.TestCase):
                 self.assertEqual(theme.wallpaper_for('pack', pack), root / 'walls/pack/02-two.jpg')
             finally:
                 theme.STATE, theme.WALLPAPERS = saved
+
+
+class PreferenceTests(unittest.TestCase):
+    def test_preferences_override_and_default_restores(self):
+        merged = theme.with_preferences(GRAPHITE, {'fonts': {'sans': 'Inter', 'size': 11}, 'iconTheme': 'breeze'})
+        self.assertEqual(merged['fonts']['sans'], 'Inter')
+        self.assertEqual(merged['fonts']['size'], 11)
+        self.assertEqual(merged['fonts']['mono'], GRAPHITE['fonts']['mono'])
+        self.assertEqual(merged['system']['iconTheme'], 'breeze')
+        self.assertEqual(theme.with_preferences(GRAPHITE, {'fonts': {'sans': ''}}), GRAPHITE)
+
+    def test_qtct_follows_fonts_and_icons(self):
+        default = theme.render_all(theme.complete(GRAPHITE), TEMPLATES)['qtct.conf']
+        self.assertIn('icon_theme=Papirus-Dark\n', default)
+        self.assertIn('general="Adwaita Sans,10,-1,5,50,0,0,0,0,0"\n', default)
+        self.assertIn('fixed="Adwaita Mono,10,-1,5,50,0,0,0,0,0"\n', default)
+        self.assertIn('color_scheme_path=' + str(theme.STATE) + '/qt-colors.conf\n', default)
+        chosen = theme.render_all(theme.complete(theme.with_preferences(GRAPHITE, {'fonts': {'sans': 'Inter'}, 'iconTheme': 'breeze'})), TEMPLATES)['qtct.conf']
+        self.assertIn('icon_theme=breeze\n', chosen)
+        self.assertIn('general="Inter,10,', chosen)
+
+    def test_install_replaces_a_link_instead_of_writing_through(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'repo.conf').write_text('stowed')
+            (root / 'link.conf').symlink_to(root / 'repo.conf')
+            theme.install(root / 'link.conf', 'generated')
+            self.assertEqual((root / 'repo.conf').read_text(), 'stowed')
+            self.assertFalse((root / 'link.conf').is_symlink())
+            self.assertEqual((root / 'link.conf').read_text(), 'generated')
+
+
+class PanelOptionTests(unittest.TestCase):
+    def test_unified_font_uses_the_monospace_family(self):
+        merged = theme.with_preferences(GRAPHITE, {'fonts': {'mono': 'JetBrains Mono', 'unified': True}})
+        self.assertEqual(merged['fonts']['sans'], 'JetBrains Mono')
+        self.assertNotIn('unified', merged['fonts'])
+        merged = theme.with_preferences(GRAPHITE, {'fonts': {'unified': True}})
+        self.assertEqual(merged['fonts']['sans'], GRAPHITE['fonts']['mono'])
+
+    def test_shell_options_reach_the_render_with_defaults(self):
+        default = json.loads(theme.render_all(theme.complete(GRAPHITE), TEMPLATES)['quickshell.json'])
+        self.assertEqual((default['iconSource'], default['barStyle']), ('desktop', 'shade'))
+        chosen = theme.complete(theme.with_preferences(GRAPHITE, {'shellIcons': 'pack', 'barStyle': 'transparent'}))
+        rendered = json.loads(theme.render_all(chosen, TEMPLATES)['quickshell.json'])
+        self.assertEqual((rendered['iconSource'], rendered['barStyle']), ('pack', 'transparent'))
+
+    def test_thumbnail_names_change_with_the_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / 'a.jpg'
+            image.write_bytes(b'one')
+            first = theme.thumb_path(image)
+            self.assertEqual(first, theme.thumb_path(image))
+            self.assertEqual(first.suffix, '.jpg')
+            image.write_bytes(b'longer content')
+            self.assertNotEqual(first, theme.thumb_path(image))
+
+    def test_bar_text_picks_the_higher_contrast_for_every_theme(self):
+        # A mid-tone painted sky (Gruvbox 03-village-square) needs dark text; dark and light strips the obvious one.
+        self.assertEqual(theme.bar_text(0.58)['text'], 'dark')
+        self.assertEqual(theme.bar_text(0.82)['text'], 'dark')
+        self.assertEqual(theme.bar_text(0.098)['text'], 'light')
+        theme.THEME_DIRS = (REPO / 'shell/.local/share/desktop/themes',)
+        for path in sorted(theme.THEME_DIRS[0].glob('*/theme.json')):
+            shell = theme.load(path.parent.name)['shell']
+            for mean in (0.0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0):
+                with self.subTest(theme=path.parent.name, mean=mean):
+                    choice = theme.bar_text(mean, shell['text'], shell['accentText'])
+                    # The better of the two colours never drops below the 3:1 large-text minimum,
+                    # and is always at least as good as the other one.
+                    self.assertGreaterEqual(choice['contrast'], 3)
+
+
+class FontAndIconTests(unittest.TestCase):
+    def test_font_families_are_filtered_and_split(self):
+        sample = ['Inter\t0', 'Inter\t', 'JetBrains Mono\t100', 'Noto Sans Mono\t0', 'Noto Sans Bengali\t0',
+                  'Noto Serif\t0', 'Noto Color Emoji\t0', 'C059\t0', 'Source Code Pro\t100', 'Cantarell\t0']
+        self.assertEqual(theme.font_families(sample), {'sans': ['Cantarell', 'Inter'],
+                                                      'mono': ['JetBrains Mono', 'Noto Sans Mono', 'Source Code Pro']})
+
+    def test_icon_themes_follow_inherits_and_skip_cursor_themes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            def theme_dir(name, index, icons=()):
+                (root / name).mkdir()
+                (root / name / 'index.theme').write_text(index)
+                for icon in icons:
+                    (root / name / 'scalable/apps').mkdir(parents=True, exist_ok=True)
+                    (root / name / 'scalable/apps' / (icon + '.svg')).write_text('<svg/>')
+            directories = '[Icon Theme]\nName={}\nInherits={}\nDirectories=scalable/apps\n[scalable/apps]\nSize=48\nType=Scalable\n'
+            theme_dir('Base', directories.format('Base', 'hicolor'), ('folder', 'utilities-terminal', 'web-browser'))
+            theme_dir('Child', directories.format('Child Pack', 'Base'), ('folder', 'preferences-system'))
+            theme_dir('Pointers', '[Icon Theme]\nName=Pointers\n')
+            theme_dir('hicolor', directories.format('Hicolor', ''), ('text-x-generic',))
+            listed = theme.icon_themes([root])
+            self.assertEqual([entry['id'] for entry in listed], ['Base', 'Child'])
+            child = next(entry for entry in listed if entry['id'] == 'Child')
+            self.assertEqual(child['name'], 'Child Pack')
+            self.assertEqual([Path(path).parts[-4] if path else '' for path in child['samples']],
+                             ['Child', 'Base', 'Base', 'Child', 'hicolor'])
 
 
 class VscodeTests(unittest.TestCase):
