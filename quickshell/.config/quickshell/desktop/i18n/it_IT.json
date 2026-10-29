@@ -793,5 +793,46 @@
     "errors": {
       "usage": "Uso: electron.py apply | status"
     }
+  },
+  "updates": {
+    "title": "Aggiornamenti",
+    "tooltip": "Aggiornamenti disponibili",
+    "upToDate": "Il sistema è aggiornato",
+    "summary": {
+      "packages": {
+        "one": "%1 pacchetto di sistema",
+        "other": "%1 pacchetti di sistema"
+      },
+      "flatpaks": {
+        "one": "%1 app Flatpak",
+        "other": "%1 app Flatpak"
+      }
+    },
+    "notice": {
+      "one": "%1 aggiornamento disponibile",
+      "other": "%1 aggiornamenti disponibili"
+    },
+    "noticeBody": "Apri il pannello dalla barra per installarli.",
+    "compositor": "Tra questi c’è Hyprland: dopo l’aggiornamento esci e rientra, poi ricompila i plugin.",
+    "checkedAt": "Controllato alle %1",
+    "checkedOn": "Controllato %1",
+    "never": "Non ancora controllato",
+    "checking": "Controllo in corso…",
+    "checkNow": "Controlla ora",
+    "install": "Aggiorna",
+    "packagesHeading": "Sistema",
+    "flatpaksHeading": "Flatpak",
+    "terminal": {
+      "dnf": "Pacchetti di sistema (dnf):",
+      "flatpak": "App Flatpak:",
+      "plugins": "Hyprland è stato aggiornato: esci e rientra, poi lancia %1 per ricompilare i plugin.",
+      "done": "Fatto. Premi Invio per chiudere.",
+      "failed": "Qualcosa non è andato (vedi sopra). Premi Invio per chiudere."
+    },
+    "errors": {
+      "dnf": "dnf non è riuscito a cercare aggiornamenti: %1",
+      "flatpak": "Flatpak non è riuscito a cercare aggiornamenti: %1",
+      "usage": "Uso: updates.py check|status"
+    }
   }
 }

@@ -18,6 +18,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 | `hypr/` | `hyprland.lua` + `config/*.lua` modules (`local.lua` = machine overrides, loaded last), `xdph.conf` |
 | `quickshell/.config/quickshell/desktop/` | Shell: `shell.qml` (entry), `share.qml` (screen-share picker), singletons `Config`/`Theme`/`ShellState`/`I18n`, `services/`, `bar/`, `panels/`, `controlcenter/`, `components/`, `notifications/`, `session/`, `osd/`, `i18n/` |
 | `shell/.local/bin/desktop-*` | Bash entry points (session, shell IPC, power, theme, wallpaper, steam, gamescope, …) |
+| `shell/.config/systemd/user/` | User units started by `desktop-session` (`desktop-updates.timer`) |
 | `shell/.local/libexec/desktop/*.py` | Python helpers spawned by QML services and wrappers; `i18n.py` shares the QML catalogs |
 | `hypridle/ hyprlock/ hyprpaper/ gtk/ kitty/ fastfetch/ portals/ udiskie/ electron/` | Plain config packages |
 | `scripts/` | `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, hyprpm plugin packaging |

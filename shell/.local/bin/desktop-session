@@ -23,6 +23,8 @@ case "${1:-start}" in
         systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service
         # Apple devices expose AFC volumes, not UDisks block devices.
         systemctl --user start gvfs-afc-volume-monitor.service
+        # Update checks for the bar icon: 5 minutes from now, then every 6 hours (desktop-updates.timer).
+        systemctl --user start desktop-updates.timer || echo "Update checks not started." >&2
         "$HOME/.local/bin/desktop-wallpaper" --ensure || echo "Wallpaper not ensured." >&2
         for daemon in hyprpaper hypridle udiskie; do
             command -v "$daemon" >/dev/null || { echo "Missing required daemon: $daemon." >&2; exit 1; }

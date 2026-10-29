@@ -1,0 +1,10 @@
+[Unit]
+Description=Check for system updates 5 minutes after login and every 6 hours
+
+[Timer]
+OnActiveSec=5min
+OnUnitActiveSec=6h
+RandomizedDelaySec=2min
+
+[Install]
+WantedBy=timers.target

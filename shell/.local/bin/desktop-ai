@@ -38,8 +38,13 @@ print(json.dumps({"voice": {"enabled": True, "mode": "hold"}, "language": langua
                   "statusLine": {"type": "command", "command": command + " statusline", "padding": 0},
                   "disableAllHooks": False, "hooks": hooks}))
 ' "$language" "$HOME/.local/libexec/desktop/agent.py")"
+        # The session starts in the dotfiles repository (this script is a Stow link into it), so Claude
+        # reads its .claude/CLAUDE.md; DESKTOP_AI_DIRECTORY names another folder, $HOME is the fallback.
+        repo="$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)"
+        directory="${DESKTOP_AI_DIRECTORY:-$repo}"
+        [[ -d $directory ]] || directory="$HOME"
         # The desktop-ai window rule places the window on the special workspace "ai".
-        setsid -f kitty --class desktop-ai --directory "$HOME" -e claude --settings "$settings" >/dev/null 2>&1
+        setsid -f kitty --class desktop-ai --directory "$directory" -e claude --settings "$settings" >/dev/null 2>&1
         ;;
     *) echo 'Usage: desktop-ai [toggle]' >&2; exit 2 ;;
 esac

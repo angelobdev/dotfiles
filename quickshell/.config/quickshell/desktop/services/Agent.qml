@@ -105,7 +105,7 @@ Singleton {
         id: notifier
         property string title
         property string body
-        command: ["notify-send", "--wait", "--app-name=" + I18n.tr("assistant.claude"), "--icon=desktopai", "--hint=string:desktop-entry:desktop-ai", "--action=default=" + I18n.tr("assistant.openConsole"), "--action=open=" + I18n.tr("assistant.openConsole"), title, body]
+        command: ["notify-send", "--wait", "--app-name=" + I18n.tr("assistant.claude"), "--app-icon=desktopai", "--hint=string:desktop-entry:desktop-ai", "--action=default=" + I18n.tr("assistant.openConsole"), "--action=open=" + I18n.tr("assistant.openConsole"), title, body]
         stdout: StdioCollector {
             onStreamFinished: {
                 if (["default", "open"].includes(text.trim()))

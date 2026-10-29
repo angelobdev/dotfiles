@@ -138,6 +138,15 @@ ShellRoot {
                     seconds: Recording.seconds,
                     error: Recording.error
                 },
+                updates: {
+                    count: Updates.count,
+                    packages: Updates.packages.length,
+                    flatpaks: Updates.flatpaks.length,
+                    compositor: Updates.compositor,
+                    checked: Updates.checked,
+                    checking: Updates.checking,
+                    errors: Updates.errors
+                },
                 agent: {
                     available: Agent.available,
                     running: Agent.running,
@@ -230,6 +239,7 @@ ShellRoot {
     }
     RecordingPanel {}
     AgentPanel {}
+    UpdatesPanel {}
     ClipboardPanel {}
     WallpaperPicker {}
     ThemingPanel {

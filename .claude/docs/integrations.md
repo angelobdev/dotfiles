@@ -55,7 +55,7 @@ Both the Steam library and the app-menu entry (which goes through Steam) then us
 - **Moving windows:** `Super + Shift + A` puts the active window into the console without showing it, or takes it back out to the normal workspace (`desktop_console_move`). When Claude itself was moved out, `Super + A` brings it back in and shows the console (`desktop_console_show`).
 - **Tablet mode:** the on-screen keyboard opens with the console and closes with it. Kitty keeps its text field active while the console is hidden over an empty workspace (no window takes the focus), so no activate or deactivate arrives; `services/Keyboard.qml` follows `Agent.consoleOpen` for that.
 
-Later presses toggle the console, so the same session stays alive while hidden; closing the window ends the session and the next press starts a new one. The window opens in `$HOME`. If `claude` is missing, a notification points here.
+Later presses toggle the console, so the same session stays alive while hidden; closing the window ends the session and the next press starts a new one. The session starts in the dotfiles repository (found from the Stow link of `desktop-ai`), so Claude Code reads its `.claude/CLAUDE.md`; `DESKTOP_AI_DIRECTORY` names another folder, and `$HOME` is the fallback. If `claude` is missing, a notification points here.
 
 The session gets `--settings` for this window only, so the global `~/.claude/settings.json` is untouched: voice dictation in hold mode and `language`, which Claude Code uses both for dictation and for its replies. The language comes from the system locale (`assistant.language` in the catalogs: `english`, `italian`); set `DESKTOP_AI_LANGUAGE` (e.g. `hl.env("DESKTOP_AI_LANGUAGE", "italian")` in `local.lua`, then close the assistant window) for another one.
 
@@ -118,6 +118,12 @@ journalctl --user -b -u xdg-desktop-portal-hyprland -u xdg-desktop-portal
 ```
 
 The isolated test completed CreateSession/SelectSources/Start and received five real PipeWire frames from a test window through the QML picker. End-to-end testing in the specific calling web app in Zen remains manual: start sharing, verify the display/window, and stop sharing from the application.
+
+## System updates
+
+`desktop-updates.timer` (a systemd user timer from the `shell` package, started by `desktop-session start`) runs `desktop-updates check` 5 minutes after login and every 6 hours, at low priority: `updates.py` asks `dnf repoquery --refresh --upgrades` and `flatpak remote-ls --updates` and writes `~/.local/state/desktop-shell/updates.json` (`checked`, `packages`, `flatpaks`, `compositor`, `errors`). A source that fails is reported as an error, not as "no updates". `journalctl --user -u desktop-updates` has the runs; `systemctl --user list-timers` the next one.
+
+While there are updates, an icon with their number shows in the bar; a notification announces updates that the previous check did not have (a click opens the panel). The panel (`desktop-shell toggle updates`) lists the packages and Flatpak apps with their versions, when the last check ran and any errors, with **Check now** and **Update**. Update opens a floating Kitty window (`desktop-updates upgrade`) that runs `sudo dnf upgrade --refresh`, then `flatpak update`, so the progress and the password prompt are visible (in tablet mode the terminal opens the on-screen keyboard), and checks again at the end. When Hyprland is among the updates the panel says so, and after the upgrade the terminal reminds you to log out and back in and run `scripts/install-hypr-plugins.py`, because the plugins are built for one Hyprland version.
 
 ## Removable drives and iPhone
 

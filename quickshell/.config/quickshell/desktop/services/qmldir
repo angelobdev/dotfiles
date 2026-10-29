@@ -21,3 +21,4 @@ singleton Assist 1.0 Assist.qml
 singleton Keyboard 1.0 Keyboard.qml
 singleton NightShift 1.0 NightShift.qml
 singleton Agent 1.0 Agent.qml
+singleton Updates 1.0 Updates.qml

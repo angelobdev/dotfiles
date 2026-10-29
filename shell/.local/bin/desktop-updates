@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# System updates for the shell's update icon: check (desktop-updates.timer, the panel), status, and
+# upgrade, which opens a terminal running dnf and Flatpak so the progress and the sudo password prompt are
+# visible (in tablet mode the terminal opens the on-screen keyboard).
+helper="$HOME/.local/libexec/desktop/updates.py"
+message() { python3 "$HOME/.local/libexec/desktop/i18n.py" "$@"; }
+case "${1:-status}" in
+    check|status) exec python3 "$helper" "$1" ;;
+    upgrade)
+        # The desktop-updates window rule floats it in the middle of the screen.
+        setsid -f kitty --class desktop-updates --title "$(message 'updates.title')" -e "$0" run >/dev/null 2>&1
+        ;;
+    run)
+        before="$(rpm -q hyprland 2>/dev/null || true)"
+        failed=0
+        printf '\n%s\n\n' "$(message 'updates.terminal.dnf')"
+        sudo dnf upgrade --refresh || failed=1
+        if command -v flatpak >/dev/null; then
+            printf '\n%s\n\n' "$(message 'updates.terminal.flatpak')"
+            flatpak update || failed=1
+        fi
+        # A new Hyprland needs the plugins rebuilt for it, after a new login into the new binary.
+        if [[ $(rpm -q hyprland 2>/dev/null || true) != "$before" ]]; then
+            repo="$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)"
+            printf '\n%s\n' "$(message 'updates.terminal.plugins' "$repo/scripts/install-hypr-plugins.py")"
+        fi
+        python3 "$helper" check || true
+        if [[ $failed == 0 ]]; then
+            printf '\n%s' "$(message 'updates.terminal.done')"
+        else
+            printf '\n%s' "$(message 'updates.terminal.failed')"
+        fi
+        read -r _ || true
+        ;;
+    *) echo 'Usage: desktop-updates {check|status|upgrade}' >&2; exit 2 ;;
+esac

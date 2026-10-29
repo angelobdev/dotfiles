@@ -68,6 +68,7 @@ var names = {
     "sun": ["display-brightness-symbolic", "weather-clear-symbolic"],
     "suspend": ["system-suspend-symbolic", "weather-clear-night-symbolic"],
     "trash": ["user-trash-symbolic"],
+    "update": ["software-update-available-symbolic", "system-software-update-symbolic"],
     "volume-high": ["audio-volume-high-symbolic"],
     "volume-low": ["audio-volume-low-symbolic"],
     "volume-muted": ["audio-volume-muted-symbolic"],

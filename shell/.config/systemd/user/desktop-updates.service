@@ -1,0 +1,8 @@
+[Unit]
+Description=Check for system updates (dnf and Flatpak) for the desktop shell
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/desktop-updates check
+Nice=10
+IOSchedulingClass=idle

@@ -18,18 +18,32 @@ sys.path.insert(0, str(PACKAGING))
 from build import PLUGINS, fingerprint, rpm_version, run
 
 
+# JSON from hyprctl or Hyprland, with the command and the start of its output when it is not JSON.
+def json_of(*command):
+    output = subprocess.check_output(command, text=True)
+    try:
+        return json.loads(output)
+    except ValueError:
+        sys.exit(f'{" ".join(command)} did not return JSON: {output.strip()[:200] or "(no output)"}')
+
+
 def main():
     if os.geteuid() == 0:
         sys.exit('Run as a regular user: the script requests sudo only for the hyprpm cache.')
+    signature = os.environ.get('HYPRLAND_INSTANCE_SIGNATURE')
+    if not signature:
+        sys.exit('Run this from inside the Hyprland session: HYPRLAND_INSTANCE_SIGNATURE is not set.')
     fingerprint()  # Refuse unreviewed compositor builds and mismatched headers.
-    running = json.loads(subprocess.check_output(['hyprctl', '-j', 'version'], text=True))
-    installed = json.loads(subprocess.check_output(['Hyprland', '--version-json'], text=True))
+    running = json_of('hyprctl', '-j', 'version')
+    installed = json_of('Hyprland', '--version-json')
     for key in ('version', 'commit', 'abiHash'):
         if running.get(key) != installed.get(key):
             sys.exit('The session does not match the installed package: log out and back in first.')
     # COPR reports commit "unknown"; also detect an RPM upgrade during this session.
-    instances = json.loads(subprocess.check_output(['hyprctl', '-j', 'instances'], text=True))
-    instance = next(x for x in instances if x['instance'] == os.environ['HYPRLAND_INSTANCE_SIGNATURE'])
+    instances = json_of('hyprctl', '-j', 'instances')
+    instance = next((x for x in instances if x.get('instance') == signature), None)
+    if instance is None:
+        sys.exit('hyprctl does not list the running Hyprland instance: log out and back in, then retry.')
     if not os.path.samefile('/proc/' + str(instance['pid']) + '/exe', shutil.which('Hyprland')):
         sys.exit('The running compositor uses the old binary: log in again.')
     cache = Path('/var/cache/hyprpm') / getpass.getuser()
@@ -87,7 +101,7 @@ def main():
     run(str(REPO / 'scripts/stow.py'), 'apply')
     run(str(REPO / 'shell/.local/bin/desktop-plugins'), 'reload')
     run('hyprctl', 'reload')
-    loaded = json.loads(subprocess.check_output(['hyprctl', '-j', 'plugin', 'list'], text=True))
+    loaded = json_of('hyprctl', '-j', 'plugin', 'list')
     missing = set(PLUGINS) - {plugin['name'] for plugin in loaded}
     if missing:
         sys.exit('Plugins not loaded: ' + ', '.join(sorted(missing)))
@@ -101,5 +115,7 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except (subprocess.CalledProcessError, RuntimeError, OSError, KeyError, StopIteration) as error:
+    except (subprocess.CalledProcessError, RuntimeError, OSError) as error:
         sys.exit(str(error))
+    except KeyError as error:
+        sys.exit(f'Unexpected reply from Hyprland or hyprpm: no {error} field.')

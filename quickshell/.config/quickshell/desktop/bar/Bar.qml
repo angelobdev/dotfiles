@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -251,6 +252,15 @@ PanelWindow {
                 }
             }
             onClicked: ShellState.toggle("battery", bar.screen)
+        }
+        // Only while updates are available (desktop-updates.timer); the panel lists them.
+        BarButton {
+            visible: Updates.count > 0
+            iconName: "update"
+            text: Updates.count
+            tooltip: I18n.tr("updates.tooltip")
+            Accessible.name: I18n.tr("updates.title")
+            onClicked: ShellState.toggle("updates", bar.screen)
         }
         // Claude: a dot while it works (accent), asks (danger) or finished unseen; the panel on click.
         BarButton {

@@ -12,11 +12,12 @@ Rectangle {
     signal hidePopup
     property bool popup: false
     // Restored from before a shell restart: readable and removable, with no actions left.
-    readonly property bool archived: notification.archived === true
-    readonly property var defaultAction: notification.actions.find(a => a.identifier === "default") ?? null
-    readonly property var buttons: notification.actions.filter(a => !popup || a.identifier !== "default")
+    // The notification goes null for a moment when it closes, before this delegate does.
+    readonly property bool archived: notification?.archived === true
+    readonly property var defaultAction: notification?.actions.find(a => a.identifier === "default") ?? null
+    readonly property var buttons: notification?.actions.filter(a => !popup || a.identifier !== "default") ?? []
     readonly property string appIcon: {
-        const icon = notification.appIcon || notification.desktopEntry || "";
+        const icon = notification?.appIcon || notification?.desktopEntry || "";
         if (icon.startsWith("/") || icon.startsWith("file:") || icon.startsWith("image:"))
             return icon;
         return icon && !icon.includes(":") ? Quickshell.iconPath(icon, true) : "";
@@ -120,7 +121,7 @@ Rectangle {
                 }
             }
             Text {
-                text: root.notification.appName || I18n.tr("notifications.fallbackTitle")
+                text: root.notification?.appName || I18n.tr("notifications.fallbackTitle")
                 color: Theme.muted
                 font.pixelSize: 11
                 textFormat: Text.PlainText
@@ -140,7 +141,7 @@ Rectangle {
             spacing: 8
             Text {
                 id: summary
-                text: root.notification.summary
+                text: root.notification?.summary ?? ""
                 color: Theme.text
                 font.bold: true
                 font.pixelSize: 13
@@ -165,7 +166,7 @@ Rectangle {
             }
         }
         Text {
-            text: NotificationText.styled(root.notification.body)
+            text: NotificationText.styled(root.notification?.body ?? "")
             color: Theme.text
             visible: text !== ""
             Layout.fillWidth: true

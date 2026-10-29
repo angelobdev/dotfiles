@@ -35,6 +35,15 @@ hl.window_rule({
     workspace = "special:ai",
 })
 
+-- desktop-updates upgrade: the terminal for dnf and Flatpak, over the desktop in the middle.
+hl.window_rule({
+    name = "desktop-updates",
+    match = { class = "^desktop-updates$" },
+    float = true,
+    size = { "monitor_w*0.6", "monitor_h*0.6" },
+    center = true,
+})
+
 -- Floating windows keep their pixel size and place when the usable area of a monitor changes (rotation in
 -- tablet mode, a new scale, the docked on-screen keyboard reserving the bottom): a floating window that no
 -- longer fits there moves in and shrinks to fit, inside the area left by the bar and the keyboard.

@@ -251,9 +251,10 @@ Found during the October 27, 2026 repository review. Checked items were approved
 - [x] `electron-flags.conf` is not read by any Fedora launcher and `UseOzonePlatform` is obsolete: kept, `electron.py` applies it through desktop entries (review batch C).
 - [x] Workspace pills use `ScriptModel` keyed by `id`: delegates (button, tooltip window, timer) survive Hyprland updates and the width animation now runs.
 - [ ] Lazy panels: deliberately not done. The shell uses about 200 MB RSS and 0.4% CPU, hidden panels gate their own work, and lazy loading would reset state that persists today (Control Center expanded sections, wallpaper directory) and needs first-open focus handling. Revisit if memory matters.
-- [ ] Each `Icon` carries a `MultiEffect` for recolouring; `pragma ComponentBehavior: Bound` for `Bar`, `TrayMenu`, `WorkspaceStrip` after a runtime smoke test.
-- [ ] Optional: clearer messages for `StopIteration`/decode errors in the plugin scripts (helper timeouts were added in review batches D/E; the qtXct `$HOME` item is obsolete).
+- [x] Each `Icon` carries a `MultiEffect` for recolouring: kept (2026-10-29). Colorization alone samples the `Image` texture directly (no extra render pass), it is one shader node per visible icon, hidden panel windows draw nothing, and it is the only way to recolour the icon pack's symbolic glyphs too. `pragma ComponentBehavior: Bound` added to `Bar`, `TrayMenu` and `WorkspaceStrip` (their delegates already used required properties); the shell reloaded cleanly and the bar, tray and workspaces drew as before.
+- [x] Clearer messages in `install-hypr-plugins.py`: outside the session, a missing Hyprland instance and non-JSON replies from hyprctl now say what happened instead of an empty exit or a traceback (`build.py` untouched, so the bundle digest stays). Helper timeouts were added in review batches D/E; the qtXct `$HOME` item is obsolete.
 
 ## Possible extensions identified
 
+- [x] System updates in the bar (2026-10-29): a systemd user timer checks dnf and Flatpak 5 minutes after login and every 6 hours; an icon with the count, a notification for new ones, and a panel with Check now and Update (a terminal running dnf and Flatpak, with a reminder to rebuild the plugins after a Hyprland update).
 - [ ] Multi-distro installation support (add Debian and Arch).

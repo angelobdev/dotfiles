@@ -201,6 +201,10 @@ Folding the OmniBook screen back into tablet posture turns tablet mode on; unfol
 
 `Super + A` drops the Claude Code console down from the bar (integrations.md has the details); a click or tap outside, a workspace change or `Super + A` again hides it, and Claude keeps running. `Super + Shift + A` moves the active window into the console or back out. It is not in the dock: the Claude icon in the bar opens a panel with what Claude is doing, the 5-hour and 7-day usage of the subscription with their reset times, and Open / Hide console. Its dot shows Claude working (pulsing), waiting for a permission (red) or finished while the console was hidden; in those cases a notification with **Open console** arrives too.
 
+## System updates
+
+When updates are available, an icon with their number appears in the bar (checked 5 minutes after login and every 6 hours) and a notification announces new ones. Its panel lists them with **Check now** and **Update**, which opens a terminal for dnf and Flatpak; a Hyprland update is flagged, since the plugins need rebuilding after it.
+
 ## Assist button
 
 A round floating button on the built-in display, for reaching the shell by touch. It appears with tablet mode and goes away in laptop mode; a three-finger long press (or `desktop-shell assist show|hide|toggle`) shows or hides it at any time, until the posture changes again.

@@ -10,7 +10,7 @@ Verified versions: Hyprland 0.56.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | --- | --- |
 | `hypr` | `~/.config/hypr/hyprland.lua` and Lua modules |
 | `quickshell` | Bar, launcher, controls, notifications, power menu, Polkit agent, and `i18n/it_IT.json` / `i18n/en_US.json` catalogs |
-| `shell` | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper,electron,portal-picker,steam,gamescope}` and Python helpers for wallpapers, brightness, clipboard, recording, Bluetooth, EDS calendars, and shared translations (`i18n.py`) |
+| `shell` | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper,electron,portal-picker,steam,gamescope,ai,updates}`, the `desktop-updates` systemd user timer, and Python helpers for wallpapers, brightness, clipboard, recording, Bluetooth, EDS calendars, and shared translations (`i18n.py`) |
 | `hypridle` | Timers and lock/suspend coordination |
 | `hyprlock` | Wayland lock screen with PAM and fprintd fingerprints |
 | `hyprpaper` | Fedora 44 night wallpaper on every monitor |

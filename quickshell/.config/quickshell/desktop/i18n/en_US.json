@@ -793,5 +793,46 @@
     "errors": {
       "usage": "Usage: electron.py apply | status"
     }
+  },
+  "updates": {
+    "title": "Updates",
+    "tooltip": "Updates available",
+    "upToDate": "The system is up to date",
+    "summary": {
+      "packages": {
+        "one": "%1 system package",
+        "other": "%1 system packages"
+      },
+      "flatpaks": {
+        "one": "%1 Flatpak app",
+        "other": "%1 Flatpak apps"
+      }
+    },
+    "notice": {
+      "one": "%1 update available",
+      "other": "%1 updates available"
+    },
+    "noticeBody": "Open the panel from the bar to install them.",
+    "compositor": "Hyprland is among them: after updating, log out and back in, then rebuild the plugins.",
+    "checkedAt": "Checked at %1",
+    "checkedOn": "Checked %1",
+    "never": "Not checked yet",
+    "checking": "Checking…",
+    "checkNow": "Check now",
+    "install": "Update",
+    "packagesHeading": "System",
+    "flatpaksHeading": "Flatpak",
+    "terminal": {
+      "dnf": "System packages (dnf):",
+      "flatpak": "Flatpak apps:",
+      "plugins": "Hyprland was updated: log out and back in, then run %1 to rebuild the plugins.",
+      "done": "Done. Press Enter to close.",
+      "failed": "Something went wrong (see above). Press Enter to close."
+    },
+    "errors": {
+      "dnf": "dnf could not check for updates: %1",
+      "flatpak": "Flatpak could not check for updates: %1",
+      "usage": "Usage: updates.py check|status"
+    }
   }
 }
