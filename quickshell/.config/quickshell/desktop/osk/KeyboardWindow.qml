@@ -17,10 +17,15 @@ Scope {
     Connections {
         target: ShellState
         function onPanelChanged() {
-            if (Keyboard.shown && ShellState.panel !== "") {
-                root.raising = true;
-                raise.restart();
-            }
+            if (ShellState.panel !== "")
+                Keyboard.raise();
+        }
+    }
+    Connections {
+        target: Keyboard
+        function onRaiseRequested() {
+            root.raising = true;
+            raise.restart();
         }
     }
     Binding {
@@ -32,6 +37,11 @@ Scope {
         target: Keyboard
         property: "areaVisible"
         value: dockedWindow.visible || floatingWindow.visible
+    }
+    Binding {
+        target: Keyboard
+        property: "reserved"
+        value: dockedWindow.visible ? dockedWindow.height : 0
     }
     Binding {
         target: Keyboard

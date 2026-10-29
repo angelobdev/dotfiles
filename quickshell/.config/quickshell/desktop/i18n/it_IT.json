@@ -543,7 +543,7 @@
     "previewSans": "Quel vituperabile xenofobo zelante assaggia il whisky ed esclama: alleluja!",
     "rescan": "Riscansiona",
     "restart": "Riavvia la shell",
-    "restartHint": "La shell mostra il nuovo font o le nuove icone dopo un riavvio; le altre app li hanno già. Il riavvio cancella lo storico delle notifiche.",
+    "restartHint": "La shell mostra il nuovo font o le nuove icone dopo un riavvio; le altre app li hanno già. Le notifiche aperte restano nella cronologia, senza le loro azioni.",
     "shellIcons": "Icone della shell",
     "shellIconsDesktop": "Desktop",
     "shellIconsPack": "Icon pack",

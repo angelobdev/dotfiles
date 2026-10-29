@@ -177,7 +177,51 @@ Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_T
 
 ### Codebase review
 
-- [ ] Full review of the repository once the current work is done: correctness, dead code, consistency of services/helpers, docs accuracy, i18n coverage and tests.
+- [x] Full review of the repository (2026-10-29): four read-only reviews (helpers and scripts, Hyprland and config packages, Quickshell services and IPC, Quickshell UI) plus a live UI and touch pass with screenshots of every panel in laptop, tablet and portrait. Findings below, by batch.
+
+**A. Bugs** (no visible change unless noted)
+- [x] `desktop-power lock` calls the shell (`keyboard locked`, `status`) and hyprctl with no timeout before hyprlock: a hung shell means no lock, and the held flock makes later requests exit silently. The tablet config Python under `set -e` also aborts the lock on a parse error. Add `timeout 2` and fall back to the themed config.
+- [x] Notification history: ids restart at 1 in each Quickshell process, and archived entries whose `source` equals a live id are dropped on load, so the next reload after a restart empties the archive (confirmed in `notifications.json`: sources 21…1 twice). `arrived` also resets on reload.
+- [x] Long-lived helpers are not restarted: `osk.py run`, `rotation.py watch`, `hyprsunset` (a dead keyboard helper drops every key, including on the lock screen). `NightShift.overrideUntil` is lost on reload.
+- [x] `ToggleTile`: a tap on the Night shift chevron also toggles it (TapHandler passive grab over the MouseArea); a long press released late opens and closes the details.
+- [x] Polkit and Bluetooth prompts map over an already shown on-screen keyboard and take every touch in tablet mode; re-raise the keyboard and subtract its area as `Overlay` does.
+- [x] `share.qml`: exclusive focus and an autofocused field in tablet mode; through `Theme` it also creates `Tablet`, so a second `rotation.py watch` can run (racing `rotation.lua.tmp`).
+- [x] `desktop-session`: a failing `desktop-theme` (for example a `current.json` naming a removed theme) stops hyprpaper, hypridle and udiskie from starting; `theme.py current()` should fall back to the default theme.
+- [x] `Super + Ctrl + W` stays on Graphite's default wallpaper: `selection.json` holds the resolved path, `wallpaper_files()` the link (confirmed).
+- [x] Window menu: "Floating" reads `lastIpcObject.floating`, stale without `Hyprland.refreshToplevels()`.
+- [x] Dock menu origin and the `Super + D` keyboard hole assume the dock at the screen bottom; with the docked keyboard it sits higher.
+- [x] `desktop_fit_floating()` shrinks floating windows larger than 95% even when they still fit.
+- [x] Smaller ones: `desktop-theme window-style` not forwarded (documented); `themes(details)` raises KeyError for a theme without `ansi`; `vscode_settings('{}')` writes a trailing comma; `osk.py` dies on `struct.error`; `rotation.py` on `GLib.Error`; no lock between `generate` and panel commands in theme.py; `Tablet.sensed` kept across tablet sessions (double flip on re-entry); a field-opened keyboard stays after unlock; `NetworkInfo.loadProfile` drops a second request; `BarStyle.measure()` drops a change during a run; small state files can be written before their first read (`SessionState`, dock, assist, posture); `dock.json` watches its own writes (kept: hand edits apply live); `PopupMenu` resets its selection whenever entries rebuild; dock long press then drag starts a drag under the menu; workspace pills keep a focus background; IPC `theming(tab)` accepts any tab.
+
+**B. Tablet experience** (behavior changes)
+- [ ] The docked keyboard stays open over panels and covers their bottom (Control Center switches, Hints, wallpaper picker, Theming, Clipboard, Session menu, the launcher list in portrait): close a field-opened keyboard when a panel without a focused field opens, and place dialogs and side panels in the area above it.
+- [ ] Panels that autofocus a search field (Network, Clipboard, Hints) pop the keyboard just to browse; skip the autofocus in tablet mode.
+- [ ] Laptop-only features with no touch path: screenshots (area, display), starting a recording, clipboard history, Theming, wallpaper picker and next wallpaper, Hints. Proposal: assist pages App · Window · System.
+- [ ] Window management by touch: move or swap tiled windows by direction, drag floating windows, split orientation and pseudotiling (window menu entries, or a two-finger long press drag).
+- [ ] Keyboard-only hints shown in tablet mode (launcher, Session menu, Theming, Hints title "Keyboard shortcuts"): touch hints instead, and the gestures listed in Hints.
+- [ ] Fixed sizes that ignore `Theme.hit`: Audio/Brightness expand chevrons and mute buttons, notification Delete, launcher logo, NetworkDetails and Theming inputs, rows in Audio, Calendar, Wallpaper picker; offsets that ignore `Theme.barHeight` (`SidePanelCard`, `NotificationPopups`, `Overlay`).
+- [ ] Number fields without `inputMethodHints` (Bluetooth passkey, IP, gateway, DNS) open on letters.
+- [ ] The 60 ms keyboard re-map over a new panel fades (`desktop-osk` missing from `no_anim`) and briefly reflows tiled windows.
+
+**C. System choices** (behavior changes awaiting approval)
+- [ ] GTK `gtk-application-prefer-dark-theme=1` hard-coded, wrong under a light dynamic theme (libadwaita warns about it).
+- [ ] Secret portal not routed (`org.freedesktop.impl.portal.Secret=gnome-keyring`), for Flatpak apps.
+- [ ] `SDL_VIDEODRIVER=wayland` without the `x11` fallback.
+- [ ] Hyprglass `default_theme = "dark"` fixed under light themes.
+- [ ] Touch and stylus mapping global (`input.touchdevice`/`tablet`); per device (`hl.device`) would leave an external touch monitor alone.
+- [ ] hyprlock strings ("Password", fingerprint messages) in English only: render them through i18n.
+- [ ] Still open from earlier: environment import in three places; blur coverage differs (layer rule vs Hyprglass: tray menu, OSK, the auth dialogs); `electron-flags.conf` unused.
+
+**D. Docs out of date**
+- [ ] plugins.md gestures (edge swipes, three-finger overview); configuration.md `no_anim` list and "no window borders"; interface.md transparent bar "stays blurred", history/DND "reset on restart"; integrations.md "PAM files are not modified" (after `tablet-auth.sh`); ROADMAP lines on edge swipes and the open gesture test; the qtXct `$HOME` follow-up is obsolete.
+
+**E. Cleanup and i18n**
+- [ ] Shared code: workspace slots built in Bar and Assist; three watchers of `selection.json`; image extensions, magick calls, atomic writes and XDG fallbacks repeated across helpers; menu layer boilerplate in tray, window and dock menus; `Theming.refresh()` repeating `next()`; legacy Control Center rows duplicating `SwitchGrid`.
+- [ ] Dead or stale: `qt*ct/colors/desktop.conf` (only the test uses it), hyprgrass `edge_margin`, `osk.MASKS` (tests only), unused keys `tablet.mode` and `osk.title`, a dangling `wifi-weak.svg` link in `$HOME`.
+- [ ] i18n: prefix strings instead of `%1` (battery, OSD, recording, network, Bluetooth), hard-coded units and modifier names in Hints, `WorkspaceStrip` plural by ternary, "Workspace N" bind description untranslated, `check-i18n.py` not scanning `desktop-ai` and other wrappers.
+- [ ] Accessibility: tray items, assist tiles, the share picker "Remember" switch and the wallpaper parent button lack names; `ToggleTile` shows no focus.
+- [ ] Missing timeouts in one-shot helper calls (recording, portal picker, osk layout, clipboard); `check.sh` lists tests by hand; fastfetch "thread" key; animation literals ignoring `reduceMotion`.
+- [ ] To verify: the bar double-tap handler may also fire on a double click of a bar button.
 
 ### Hardware
 

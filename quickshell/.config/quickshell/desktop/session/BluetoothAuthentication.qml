@@ -28,10 +28,18 @@ PanelWindow {
     WlrLayershell.namespace: "desktop-bluetooth-auth"
     // On demand in tablet mode, so touches reach the on-screen keyboard (see Overlay.qml).
     WlrLayershell.keyboardFocus: Tablet.active ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
+    // Over a keyboard that is already shown, the keyboard comes back on top and keeps its touches.
+    mask: Keyboard.areaVisible && Keyboard.screenName === screen?.name ? aroundKeyboard : null
+    KeyboardHole {
+        id: aroundKeyboard
+        content: root.contentItem
+    }
     onPromptChanged: {
         response.clear();
-        if (prompt)
+        if (prompt) {
             Qt.callLater(() => inputRequired ? response.forceActiveFocus() : reject.forceActiveFocus());
+            Keyboard.raise();
+        }
     }
     contentItem.Keys.onEscapePressed: BluetoothAgent.reply(false)
     Card {

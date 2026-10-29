@@ -67,16 +67,9 @@ PanelWindow {
     }
     // The on-screen keyboard keeps its touches: an open panel takes none in its rectangle, whichever of the
     // two surfaces the compositor puts on top.
-    Region {
+    KeyboardHole {
         id: aroundKeyboard
-        item: root.contentItem
-        Region {
-            intersection: Intersection.Subtract
-            x: Keyboard.area.x
-            y: Keyboard.area.y
-            width: Keyboard.area.width
-            height: Keyboard.area.height
-        }
+        content: root.contentItem
     }
     MouseArea {
         anchors.fill: parent

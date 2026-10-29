@@ -15,8 +15,10 @@ case "${1:-}" in
         [[ -s "$themed" ]] && config=(--config "$themed")
         # The shell shows the on-screen keyboard over the lock in tablet mode, where there is no other
         # keyboard to type the password with; it is told when the lock goes.
+        # Every call to the shell or the compositor is bounded: a hung shell must never keep the session
+        # unlocked (and the flock above held, so that later requests exit silently).
         logger -t desktop-shell "lock start" 2>/dev/null || true
-        "$HOME/.local/bin/desktop-shell" keyboard locked >/dev/null 2>&1 || true
+        timeout 2 "$HOME/.local/bin/desktop-shell" keyboard locked >/dev/null 2>&1 || true
         # In tablet mode hyprlock gets a copy of its config: fingerprint unlock off, as the folded screen
         # covers the reader (hyprlock reads it itself, not through PAM), and the widgets anchored to the
         # bottom (user, password field, messages) lifted so the field sits above the keyboard with the same
@@ -25,15 +27,16 @@ case "${1:-}" in
         posture="$XDG_RUNTIME_DIR/desktop-shell/tablet.json"
         if [[ -s "$themed" ]] && grep -Eq '"tablet"[[:space:]]*:[[:space:]]*true' "$posture" 2>/dev/null; then
             tablet="$XDG_RUNTIME_DIR/desktop-hyprlock-tablet.conf"
-            keyboard=$("$HOME/.local/bin/desktop-shell" status 2>/dev/null | python3 -c '
+            keyboard=$(timeout 2 "$HOME/.local/bin/desktop-shell" status 2>/dev/null | python3 -c '
 import json, sys
 area = json.load(sys.stdin).get("keyboard", {}).get("area") or []
 print(area[0] + " " + str(area[4]) if len(area) == 5 else "")' 2>/dev/null || true)
-            scale=$(hyprctl -j monitors 2>/dev/null | python3 -c '
+            scale=$(timeout 2 hyprctl -j monitors 2>/dev/null | python3 -c '
 import json, sys
 name = sys.argv[1]
 print(next((m["scale"] for m in json.load(sys.stdin) if m["name"] == name), 1))' "${keyboard%% *}" 2>/dev/null || echo 1)
-            python3 - "$themed" "$tablet" "${keyboard#* }" "${scale:-1}" <<'PY'
+            # A failure here keeps the themed config rather than aborting the lock.
+            if python3 - "$themed" "$tablet" "${keyboard#* }" "${scale:-1}" <<'PY'
 import re
 import sys
 source, target = sys.argv[1], sys.argv[2]
@@ -70,11 +73,13 @@ for b in blocks:
     out += b
 open(target, 'w', encoding='utf-8').write(''.join(out))
 PY
-            config=(--config "$tablet")
+            then
+                config=(--config "$tablet")
+            fi
         fi
         status=0
         hyprlock --grace 0 "${config[@]}" || status=$?
-        "$HOME/.local/bin/desktop-shell" keyboard unlocked >/dev/null 2>&1 || true
+        timeout 2 "$HOME/.local/bin/desktop-shell" keyboard unlocked >/dev/null 2>&1 || true
         logger -t desktop-shell "lock end ($status)" 2>/dev/null || true
         exit "$status"
         ;;

@@ -62,7 +62,7 @@ To add text, add the same path to both files and use `I18n.tr("clipboard.deleteI
 
 `~/.local/state/desktop-shell/`:
 - **`session.json`** `{"keepAwake", "quiet", "rotationLock", "oskFloating", "oskExtra", "nightShiftMode", "nightShiftTemperature"}`: Keep awake, Do Not Disturb, rotation lock and the on-screen keyboard form (`services/SessionState.qml`). A missing file means all off.
-- **`notifications.json`** `{"entries": [...]}`: the notification history (app name and icon, summary, body, arrival time). It is rewritten 500 ms after a notification arrives or closes and after Delete or Clear all. Entries are capped at 50 and dropped after 7 days on load. Icons a notification served itself (`image://`) are not kept.
+- **`notifications.json`** `{"entries": [...]}`: the notification history (app name and icon, summary, body, arrival time, and `live` for copies of notifications that were open). On load, live copies wait 1.5 s for the server to restore its notifications after a config reload: a copy that matches one (id, app, summary and body, as ids restart at 1 in every Quickshell process) is dropped and gives back its arrival time; one that does not was open in a process that has gone and joins the archive. Duplicates are dropped. It is rewritten 500 ms after a notification arrives or closes and after Delete or Clear all. Entries are capped at 50 and dropped after 7 days on load. Icons a notification served itself (`image://`) are not kept.
 - **`dock.json`**: dock pins.
 
 Delete a file to reset it. `desktop-shell keep-awake|dnd|rotation-lock toggle|on|off` sets the switches from scripts.

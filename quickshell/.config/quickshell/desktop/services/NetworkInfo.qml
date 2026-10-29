@@ -15,6 +15,7 @@ Singleton {
     property bool copied: false
     property string error: ""
     property string pendingDevice: ""
+    property string pendingProfile: ""
     property var vpns: []
     property var hotspot: ({})
     property var tailscale: ({})
@@ -42,6 +43,11 @@ Singleton {
     }
     // Callers match profile.uuid, so a stale profile is never shown and need not be cleared here.
     function loadProfile(uuid) {
+        // A request during a run waits for it, as a running process keeps its old command.
+        if (profileLoader.running) {
+            pendingProfile = uuid;
+            return;
+        }
         profileLoader.command = ["python3", helper, "profile", uuid];
         profileLoader.running = true;
     }
@@ -109,6 +115,11 @@ Singleton {
             }
             if (code !== 0)
                 root.error = profileErrors.text.trim();
+            if (root.pendingProfile !== "") {
+                const uuid = root.pendingProfile;
+                root.pendingProfile = "";
+                root.loadProfile(uuid);
+            }
         }
     }
     Process {

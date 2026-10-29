@@ -394,5 +394,46 @@ class DynamicThemeTests(unittest.TestCase):
                 self.assertGreaterEqual(contrast(generated['palette']['fg'], generated['palette']['bg']), 7)
 
 
+class ReviewRegressionTests(unittest.TestCase):
+    def test_empty_vscode_settings_get_valid_json(self):
+        self.assertEqual(json.loads(theme.vscode_settings('{}', 'workbench.colorTheme', 'X')), {'workbench.colorTheme': 'X'})
+
+    def test_next_wallpaper_compares_resolved_paths(self):
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            target = folder / 'real.jpg'
+            target.write_bytes(b'')
+            (folder / 'b.jpg').write_bytes(b'')
+            link = folder / 'a.jpg'
+            link.symlink_to(target)
+            files = [link, folder / 'b.jpg']
+            self.assertEqual(theme.next_wallpaper(files, str(target)), folder / 'b.jpg')
+
+    def test_a_removed_saved_theme_falls_back_to_the_default(self):
+        with tempfile.TemporaryDirectory() as directory:
+            original = theme.STATE
+            theme.STATE = Path(directory)
+            try:
+                (theme.STATE / 'current.json').write_text('{"theme": "gone"}', encoding='utf-8')
+                self.assertEqual(theme.current(), theme.DEFAULT)
+            finally:
+                theme.STATE = original
+
+    def test_a_theme_without_ansi_is_invalid(self):
+        broken = dict(GRAPHITE)
+        broken.pop('ansi')
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory) / 'broken'
+            folder.mkdir()
+            (folder / 'theme.json').write_text(json.dumps(broken), encoding='utf-8')
+            original = theme.THEME_DIRS
+            theme.THEME_DIRS = (Path(directory),)
+            try:
+                with self.assertRaises(ValueError):
+                    theme.load('broken')
+            finally:
+                theme.THEME_DIRS = original
+
+
 if __name__ == '__main__':
     unittest.main()

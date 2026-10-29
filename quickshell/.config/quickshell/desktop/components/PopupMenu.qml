@@ -36,7 +36,12 @@ Rectangle {
     color: Theme.background
     border.width: Theme.frameWidth
     border.color: Theme.frameActive
-    onEntriesChanged: list.currentIndex = -1
+    // Entries rebuild whenever a window retitles; the selection stays unless it no longer exists, and is
+    // cleared each time the menu opens.
+    onEntriesChanged: if (list.currentIndex >= entries.length)
+        list.currentIndex = -1
+    onVisibleChanged: if (visible)
+        list.currentIndex = -1
     Keys.onUpPressed: step(-1)
     Keys.onDownPressed: step(1)
     Keys.onTabPressed: step(1)

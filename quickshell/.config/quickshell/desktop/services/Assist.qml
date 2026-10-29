@@ -144,6 +144,8 @@ Singleton {
     FileView {
         id: placesFile
         path: root.stateFile
+        // Read at once: a write before the first read would save the defaults over the saved values.
+        blockLoading: true
         atomicWrites: true
         printErrors: false
         adapter: JsonAdapter {

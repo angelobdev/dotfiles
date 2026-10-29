@@ -97,7 +97,8 @@ Row {
             // while it taps); positions go to the window in its own coordinates.
             readonly property real dragThreshold: Tablet.active ? 24 : 6
             onPositionChanged: event => {
-                if (!(pressedButtons & Qt.LeftButton) || !root.modelData.pinned)
+                // After a long press the menu is open: the finger may move without dragging the pin.
+                if (!(pressedButtons & Qt.LeftButton) || !root.modelData.pinned || held)
                     return;
                 if (!moved && Math.hypot(event.x - pressPoint.x, event.y - pressPoint.y) > dragThreshold) {
                     moved = true;

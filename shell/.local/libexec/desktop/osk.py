@@ -232,6 +232,7 @@ def emit(message):
     print(json.dumps(message), flush=True)
 
 
+# A malformed or out of range line is ignored; it must not end the helper and silence the keyboard.
 def handle(keyboard, line):
     words = line.split()
     try:
@@ -239,7 +240,7 @@ def handle(keyboard, line):
             keyboard.tap(int(words[1]), int(words[2]))
         elif len(words) == 2 and words[0] in ('press', 'release'):
             keyboard.key(int(words[1]), words[0] == 'press')
-    except ValueError:
+    except (ValueError, struct.error):
         pass
 
 

@@ -543,7 +543,7 @@
     "previewSans": "The quick brown fox jumps over the lazy dog",
     "rescan": "Rescan",
     "restart": "Restart shell",
-    "restartHint": "The shell shows the new font or icons after a restart; other apps already have them. Restarting clears the notification history.",
+    "restartHint": "The shell shows the new font or icons after a restart; other apps already have them. Open notifications stay in the history, without their actions.",
     "shellIcons": "Shell icons",
     "shellIconsDesktop": "Desktop",
     "shellIconsPack": "Icon pack",

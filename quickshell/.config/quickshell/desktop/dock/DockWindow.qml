@@ -131,7 +131,8 @@ PanelWindow {
     DockKeyboard {
         screen: root.screen
         active: root.keyboardMode
-        hole: Qt.rect(bodyArea.x, root.screen.height - root.height + bodyArea.y, bodyArea.width, bodyArea.height)
+        // The dock sits above the docked on-screen keyboard when it is shown.
+        hole: Qt.rect(bodyArea.x, root.screen.height - Keyboard.reservedOn(root.screen.name) - root.height + bodyArea.y, bodyArea.width, bodyArea.height)
         onStepRequested: direction => root.moveSelection(direction)
         onFirstRequested: root.selection = 0
         onLastRequested: root.selection = Math.max(0, Dock.items.length - 1)

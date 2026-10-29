@@ -199,6 +199,8 @@ Singleton {
     FileView {
         id: pinFile
         path: root.stateFile
+        // Read at once: a write before the first read would save the defaults over the saved values.
+        blockLoading: true
         watchChanges: true
         atomicWrites: true
         printErrors: false

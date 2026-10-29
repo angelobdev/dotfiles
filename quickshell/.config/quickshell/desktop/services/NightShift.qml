@@ -16,9 +16,10 @@ Singleton {
     readonly property int minimum: 2500
     readonly property int maximum: 5500
     property bool available: false
-    // A tap in automatic mode: the opposite of the schedule until the time stored here (ms since epoch).
-    property real overrideUntil: 0
-    property bool overrideValue: false
+    // A tap in automatic mode: the opposite of the schedule until this time (ms since epoch), saved so a
+    // reload keeps it.
+    readonly property real overrideUntil: SessionState.nightShiftOverrideUntil
+    readonly property bool overrideValue: SessionState.nightShiftOverrideValue
     readonly property bool scheduled: inWindow(clock.date)
     readonly property bool overridden: mode === "auto" && overrideUntil > clock.date.getTime()
     readonly property bool active: available && (mode === "on" || mode === "auto" && (overridden ? overrideValue : scheduled))
@@ -29,7 +30,7 @@ Singleton {
         return NightShiftSchedule.nextBoundary(date, Config.nightShiftStart, Config.nightShiftEnd);
     }
     function setMode(value) {
-        overrideUntil = 0;
+        SessionState.set("nightShiftOverrideUntil", 0);
         SessionState.set("nightShiftMode", value);
     }
     function setTemperature(value) {
@@ -41,8 +42,8 @@ Singleton {
             setMode(mode === "on" ? "off" : "on");
             return;
         }
-        overrideValue = !active;
-        overrideUntil = nextBoundary(clock.date);
+        SessionState.set("nightShiftOverrideValue", !active);
+        SessionState.set("nightShiftOverrideUntil", nextBoundary(clock.date));
     }
     // IPC: "toggle", "on", "off" or "auto", with an OSD of the new state.
     function request(action) {
@@ -73,9 +74,16 @@ Singleton {
                 probe.running = true;
         }
     }
+    // Started and stopped with active, and restarted if it exits while still on.
+    onActiveChanged: sunset.running = active
+    Timer {
+        interval: 3000
+        repeat: true
+        running: root.active && !sunset.running
+        onTriggered: sunset.running = true
+    }
     Process {
         id: sunset
-        running: root.active
         command: ["hyprsunset", "-t", String(root.temperature)]
         stderr: StdioCollector {
             onStreamFinished: {

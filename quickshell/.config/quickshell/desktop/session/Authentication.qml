@@ -21,6 +21,7 @@ Scope {
         onAuthenticationRequestStarted: ShellState.close()
     }
     PanelWindow {
+        id: prompt
         visible: agent.isActive
         screen: ShellState.activeScreen || Quickshell.screens[0]
         anchors {
@@ -35,10 +36,18 @@ Scope {
         WlrLayershell.namespace: "desktop-authentication"
         // On demand in tablet mode, so touches reach the on-screen keyboard (see Overlay.qml).
         WlrLayershell.keyboardFocus: Tablet.active ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
+        // Over a keyboard that is already shown, the keyboard comes back on top and keeps its touches.
+        mask: Keyboard.areaVisible && Keyboard.screenName === screen?.name ? aroundKeyboard : null
+        KeyboardHole {
+            id: aroundKeyboard
+            content: prompt.contentItem
+        }
         onVisibleChanged: {
             response.clear();
-            if (visible)
+            if (visible) {
                 response.forceActiveFocus();
+                Keyboard.raise();
+            }
         }
         contentItem.Keys.onEscapePressed: agent.flow?.cancelAuthenticationRequest()
         Connections {

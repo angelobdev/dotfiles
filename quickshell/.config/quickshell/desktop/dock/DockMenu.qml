@@ -21,8 +21,9 @@ PanelWindow {
         confirming = false;
         const window = anchor.QsWindow.window;
         const point = anchor.mapToItem(window.contentItem, anchor.width / 2, 0);
-        // The dock is anchored to the bottom of the same screen as this full-screen layer.
-        origin = Qt.point(point.x, point.y + (screen.height - window.height));
+        // The dock is anchored to the bottom of the same screen as this full-screen layer, above the docked
+        // on-screen keyboard when it is shown.
+        origin = Qt.point(point.x, point.y + (screen.height - Keyboard.reservedOn(screen.name) - window.height));
         // Set first: the keyboard grab of the dock steps aside before this menu takes the keyboard.
         Dock.menuScreen = screen.name;
         visible = true;

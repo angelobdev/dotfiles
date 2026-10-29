@@ -30,6 +30,12 @@ Singleton {
     property string screenName: ""
     property bool areaVisible: false
     property rect area: Qt.rect(0, 0, 0, 0)
+    // Height the docked keyboard reserves at the bottom of its screen (0 when hidden or floating): layers
+    // anchored to the bottom, like the dock, sit that much higher.
+    property real reserved: 0
+    function reservedOn(name) {
+        return name === screenName ? reserved : 0;
+    }
     property string page: "letters"
     // 0 off, 1 for the next key, 2 locked (Caps).
     property int shift: 0
@@ -44,6 +50,13 @@ Singleton {
         })
     readonly property var rows: layout.pages[page] ?? []
     property bool ready: false
+    // A full-screen layer that maps over a shown keyboard (a panel, a password prompt) asks for it to be
+    // mapped again on top (KeyboardWindow).
+    signal raiseRequested
+    function raise() {
+        if (shown)
+            raiseRequested();
+    }
     // IPC and the assist button: "show", "hide", "toggle"; "float" and "dock" also show it in that form.
     function request(action) {
         if (action === "locked" || action === "unlocked") {
@@ -82,6 +95,9 @@ Singleton {
             }
         } else if (lockShown) {
             setShown(false);
+        } else if (autoShown && purpose === "") {
+            // Opened by a field that did not get the focus back after the unlock.
+            hideTimer.restart();
         }
         if (!value)
             lockShown = false;
@@ -188,6 +204,14 @@ Singleton {
     Timer {
         id: shiftTimer
         interval: 400
+    }
+    // The helper restarts if it exits while needed (always with automatic opening, else while shown): a dead
+    // helper would drop every key, the password on the lock screen included.
+    Timer {
+        interval: 3000
+        repeat: true
+        running: (Config.oskAutoShow || root.shown) && !process.running
+        onTriggered: process.running = true
     }
     Process {
         id: process

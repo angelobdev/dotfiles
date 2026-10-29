@@ -47,6 +47,56 @@ Singleton {
         archived = [];
         saveHistory.restart();
     }
+    // Saved copies of live notifications, held until reconcile().
+    property var pendingCopies: []
+    // Older files (and the reloads before this check) hold the same notification more than once.
+    function unique(entries) {
+        const seen = {};
+        return entries.filter(entry => {
+            const key = [entry.time, entry.appName, entry.summary, entry.body].join("\u0001");
+            if (seen[key])
+                return false;
+            seen[key] = true;
+            return true;
+        });
+    }
+    // A copy still live after a config reload is dropped and gives back its arrival time; one that is not
+    // was live in a Quickshell process that has gone (a restart) and joins the archive. Ids restart at 1
+    // in every process, so a copy matches on content as well. Saving waits for this, or it would drop the
+    // copies still held.
+    function reconcile() {
+        const live = server.trackedNotifications.values;
+        const arrivedTimes = Object.assign({}, arrived);
+        const gone = [];
+        const kept = {};
+        const key = entry => [entry.time, entry.appName, entry.summary, entry.body].join("\u0001");
+        for (const copy of pendingCopies) {
+            const n = live.find(item => item.id === copy.source && (item.appName ?? "") === copy.appName && (item.summary ?? "") === copy.summary && (item.body ?? "") === copy.body);
+            if (n) {
+                if (arrivedTimes[n.id] === undefined)
+                    arrivedTimes[n.id] = copy.time;
+                kept[key(copy)] = true;
+            } else {
+                gone.push(Object.assign({}, copy, {
+                    id: "archived-" + copy.time + "-" + copy.source,
+                    live: false,
+                    archived: true,
+                    actions: []
+                }));
+            }
+        }
+        arrived = arrivedTimes;
+        // Earlier reloads archived copies of notifications that are still live; those go too.
+        archived = unique(gone.concat(archived)).filter(entry => !kept[key(entry)]).sort((a, b) => b.time - a.time).slice(0, historyLimit);
+        pendingCopies = [];
+        historyLoaded = true;
+        saveHistory.restart();
+    }
+    Timer {
+        id: reconcileTimer
+        interval: 1500
+        onTriggered: root.reconcile()
+    }
     function archive(n) {
         const time = arrived[n.id] ?? Date.now();
         // Icons served by the notification itself (image://) do not survive the server.
@@ -72,8 +122,11 @@ Singleton {
             // Until the file has been read, saving would replace the history with an empty one.
             if (!root.historyLoaded)
                 return;
-            const live = server.trackedNotifications.values.slice().reverse().map(n => root.archive(n));
+            const live = server.trackedNotifications.values.slice().reverse().map(n => Object.assign(root.archive(n), {
+                        live: true
+                    }));
             history.entries = live.concat(root.archived).slice(0, root.historyLimit).map(entry => ({
+                        live: entry.live === true,
                         source: entry.source,
                         appName: entry.appName,
                         appIcon: entry.appIcon,
@@ -96,16 +149,22 @@ Singleton {
         }
         onLoaded: {
             const now = Date.now();
-            // A config reload keeps the live notifications; their saved copies are not archived again.
-            const live = server.trackedNotifications.values.map(n => n.id);
-            root.archived = Array.from(history.entries ?? []).filter(entry => entry && typeof entry.time === "number" && now - entry.time < root.historyAge && !live.includes(entry.source)).slice(0, root.historyLimit).map((entry, index) => Object.assign({}, entry, {
+            const entries = Array.from(history.entries ?? []).filter(entry => entry && typeof entry.time === "number" && now - entry.time < root.historyAge);
+            // Saved copies of live notifications wait until the server has restored those (a config reload
+            // keeps them, but they arrive after this file): see reconcile().
+            root.pendingCopies = entries.filter(entry => entry.live === true);
+            root.archived = root.unique(entries.filter(entry => entry.live !== true)).map((entry, index) => Object.assign({}, entry, {
                     id: "archived-" + entry.time + "-" + index,
+                    live: false,
                     archived: true,
                     actions: []
                 }));
-            root.historyLoaded = true;
+            reconcileTimer.start();
         }
-        onLoadFailed: root.historyLoaded = true
+        onLoadFailed: {
+            root.pendingCopies = [];
+            root.reconcile();
+        }
     }
     NotificationServer {
         id: server

@@ -101,8 +101,11 @@ Rectangle {
             width: 16
             height: 16
         }
-        TapHandler {
-            onTapped: root.detailsRequested()
+        // A MouseArea takes the press, so the tile below neither toggles nor sees a long press (a TapHandler
+        // only grabs passively and let both happen).
+        MouseArea {
+            anchors.fill: parent
+            onClicked: root.detailsRequested()
         }
     }
 }

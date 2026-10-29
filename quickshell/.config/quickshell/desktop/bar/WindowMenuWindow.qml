@@ -25,6 +25,8 @@ PanelWindow {
     function popup(item, x, y) {
         if (!Hyprland.activeToplevel)
             return;
+        // lastIpcObject (floating) is only filled by a refresh; the entries follow when it arrives.
+        Hyprland.refreshToplevels();
         origin = item.mapToItem(item.QsWindow.window.contentItem, x, y);
         visible = true;
         Qt.callLater(() => menu.forceActiveFocus());

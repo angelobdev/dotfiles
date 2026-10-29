@@ -12,6 +12,10 @@ Singleton {
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/rotation.py"
     readonly property string runtimeDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/desktop-shell"
     readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-session"
+    // Only the desktop shell (shell.qml) enables it; another Quickshell config that loads Theme, like the
+    // share picker, just reads the posture and runs no sensor or rotation.
+    property bool enabled: false
+    onEnabledChanged: rotate()
     readonly property bool active: posture.tablet === true
     readonly property bool locked: SessionState.rotationLock
     // Whether there is an accelerometer at all; the Control Center tile shows only then.
@@ -25,9 +29,13 @@ Singleton {
     readonly property bool ready: postureLoaded && rotationLoaded
     onReadyChanged: rotate()
     readonly property int wanted: !active ? 0 : locked ? transform : sensed
+    // A new tablet session starts upright until the sensor reports, not in the last orientation of the
+    // previous one (which flipped twice on entry).
+    onActiveChanged: if (!active)
+        sensed = 0
     onWantedChanged: rotate()
     function rotate() {
-        if (!ready || wanted === transform)
+        if (!enabled || !ready || wanted === transform)
             return;
         transform = wanted;
         if (!applier.running) {
@@ -36,7 +44,7 @@ Singleton {
         }
     }
     function setActive(value) {
-        if (posture.tablet === value)
+        if (!enabled || posture.tablet === value)
             return;
         posture.tablet = value;
         postureFile.writeAdapter();
@@ -75,7 +83,7 @@ Singleton {
         }
     }
     Process {
-        running: true
+        running: root.enabled
         command: ["python3", root.helper, "probe"]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -87,9 +95,18 @@ Singleton {
             }
         }
     }
-    // Claims the accelerometer only while its reading can rotate the display.
+    // Claims the accelerometer only while its reading can rotate the display; restarted if it exits while
+    // still needed (a binding on running would not run it again once the process has set it false).
+    readonly property bool watching: enabled && ready && active && !locked && available
+    onWatchingChanged: watcher.running = watching
+    Timer {
+        interval: 3000
+        repeat: true
+        running: root.watching && !watcher.running
+        onTriggered: watcher.running = true
+    }
     Process {
-        running: root.ready && root.active && !root.locked && root.available
+        id: watcher
         command: ["python3", root.helper, "watch"]
         stdout: SplitParser {
             onRead: data => {
@@ -108,6 +125,8 @@ Singleton {
     FileView {
         id: postureFile
         path: root.runtimeDir + "/tablet.json"
+        // Read at once: a write before the first read would save the defaults over the saved values.
+        blockLoading: true
         atomicWrites: true
         printErrors: false
         adapter: JsonAdapter {

@@ -12,13 +12,14 @@ case "${1:-start}" in
         export GDK_BACKEND='wayland,x11,*'
         export QT_QPA_PLATFORM='wayland;xcb'
         dbus-update-activation-environment --systemd GDK_BACKEND QT_QPA_PLATFORM PATH WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE HYPRLAND_INSTANCE_SIGNATURE
-        "$HOME/.local/bin/desktop-theme"
+        # A theme or wallpaper failure must not keep the idle lock, the wallpaper daemon and udiskie down.
+        "$HOME/.local/bin/desktop-theme" || echo "Theme not applied." >&2
         # X11 clients take DPI and cursor size from X resources matching the monitor scale.
         "$HOME/.local/bin/desktop-xwayland" apply >/dev/null || echo "XWayland profile not applied." >&2
         systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service
         # Apple devices expose AFC volumes, not UDisks block devices.
         systemctl --user start gvfs-afc-volume-monitor.service
-        "$HOME/.local/bin/desktop-wallpaper" --ensure
+        "$HOME/.local/bin/desktop-wallpaper" --ensure || echo "Wallpaper not ensured." >&2
         for daemon in hyprpaper hypridle udiskie; do
             command -v "$daemon" >/dev/null || { echo "Missing required daemon: $daemon." >&2; exit 1; }
             if ! pgrep -u "$EUID" -x "$daemon" >/dev/null; then

@@ -3,6 +3,7 @@
 from i18n import tr
 import argparse
 import colorsys
+import fcntl
 import hashlib
 import json
 import os
@@ -114,6 +115,9 @@ def load(name):
     missing = [key for key in REQUIRED if key not in theme['palette']]
     if missing:
         raise ValueError(tr('theme.errors.invalid', [name, 'palette.' + ', palette.'.join(missing)]))
+    # The terminal and the previews read 16 colours; a theme without them is invalid, not a crash later.
+    if not isinstance(theme.get('ansi'), list) or len(theme['ansi']) != 16:
+        raise ValueError(tr('theme.errors.invalid', [name, 'ansi']))
     return complete(theme)
 
 
@@ -648,12 +652,20 @@ def write_atomic(path, text):
         raise
 
 
+# A saved theme that no longer exists (removed by hand, a deleted dynamic theme) falls back to the default,
+# so the session still renders and the panel can still list themes.
 def current():
     try:
         name = json.loads((STATE / 'current.json').read_text(encoding='utf-8')).get('theme')
     except (OSError, ValueError, AttributeError):
         name = None
-    return name if isinstance(name, str) and name else DEFAULT
+    if isinstance(name, str) and name:
+        try:
+            theme_path(name)
+            return name
+        except ValueError:
+            pass
+    return DEFAULT
 
 
 # Everything is rendered before anything is written, so a template error leaves the old theme intact.
@@ -700,7 +712,9 @@ def vscode_settings(text, key, colour_theme):
         updated = pattern.sub(lambda match: match[1] + value, text, count=1)
     else:
         opening = text.index('{') + 1
-        updated = text[:opening] + '\n    ' + json.dumps(key) + ': ' + value + ',' + text[opening:]
+        # An empty object takes the key alone; a trailing comma would not be JSON.
+        separator = '' if text[opening:].lstrip().startswith('}') else ','
+        updated = text[:opening] + '\n    ' + json.dumps(key) + ': ' + value + separator + text[opening:]
     json.loads(updated)
     return updated
 
@@ -770,12 +784,15 @@ def wallpaper_files(name, theme):
     return files
 
 
+# wallpaper.py records the resolved path, while the listed files may be links (the stowed default), so
+# both sides are compared resolved.
 def next_wallpaper(files, current):
     if not files:
         return None
-    current = Path(current) if current else None
-    if current in files:
-        return files[(files.index(current) + 1) % len(files)]
+    resolved = [path.resolve() for path in files]
+    current = Path(current).resolve() if current else None
+    if current in resolved:
+        return files[(resolved.index(current) + 1) % len(files)]
     return files[0]
 
 
@@ -931,6 +948,13 @@ def main():
     preview.add_argument('--theme', required=True)
     preview.add_argument('--out', required=True, type=Path)
     arguments = parser.parse_args()
+    # Commands that change the theme state run one at a time: the panel queue and DynamicTheme.qml can
+    # overlap, and each rewrites current.json, preferences.json and the rendered files.
+    if arguments.command in ('apply', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme',
+                             'shell-icons', 'bar-style'):
+        STATE.mkdir(parents=True, exist_ok=True)
+        lock = open(STATE / '.lock', 'a')
+        fcntl.flock(lock, fcntl.LOCK_EX)
     if arguments.command == 'apply':
         apply(current())
     elif arguments.command == 'set':

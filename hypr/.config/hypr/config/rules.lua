@@ -55,17 +55,15 @@ local function fit(window)
     local left, top = monitor.x + (reserved.left or 0), monitor.y + (reserved.top or 0)
     local usableWidth = width - (reserved.left or 0) - (reserved.right or 0)
     local usableHeight = height - (reserved.top or 0) - (reserved.bottom or 0)
-    local x, y = window.size.x, window.size.y
+    local at, x, y = window.at, window.size.x, window.size.y
     local assistantWindow = window.class == "desktop-ai"
     if assistantWindow then
         x, y = width * assistant.width, height * assistant.height
-    end
-    x, y = math.floor(math.min(x, usableWidth * 0.95)), math.floor(math.min(y, usableHeight * 0.95))
-    local at = window.at
-    local inside = at.x >= left and at.y >= top and at.x + x <= left + usableWidth and at.y + y <= top + usableHeight
-    if not assistantWindow and inside and x == window.size.x and y == window.size.y then
+    elseif at.x >= left and at.y >= top and at.x + x <= left + usableWidth and at.y + y <= top + usableHeight then
+        -- Still inside the usable area: left as it is, however large.
         return
     end
+    x, y = math.floor(math.min(x, usableWidth * 0.95)), math.floor(math.min(y, usableHeight * 0.95))
     hl.dispatch(hl.dsp.window.resize({ x = x, y = y, window = window }))
     hl.dispatch(hl.dsp.window.move({
         x = math.floor(left + (usableWidth - x) / 2),

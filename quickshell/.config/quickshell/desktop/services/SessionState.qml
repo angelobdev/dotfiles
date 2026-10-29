@@ -15,6 +15,8 @@ Singleton {
     readonly property bool oskExtra: state.oskExtra === true
     readonly property string nightShiftMode: state.nightShiftMode
     readonly property int nightShiftTemperature: state.nightShiftTemperature
+    readonly property real nightShiftOverrideUntil: state.nightShiftOverrideUntil
+    readonly property bool nightShiftOverrideValue: state.nightShiftOverrideValue === true
     function set(key, value) {
         if (state[key] === value)
             return;
@@ -24,6 +26,8 @@ Singleton {
     FileView {
         id: file
         path: root.stateDir + "/session.json"
+        // Read at once: a write before the first read would save the defaults over the saved values.
+        blockLoading: true
         // Only the shell writes this file: watching it made the echo of one write undo the next.
         atomicWrites: true
         printErrors: false
@@ -36,6 +40,8 @@ Singleton {
             property bool oskExtra: false
             property string nightShiftMode: "off"
             property int nightShiftTemperature: 0
+            property real nightShiftOverrideUntil: 0
+            property bool nightShiftOverrideValue: false
         }
     }
 }

@@ -18,7 +18,7 @@ import "osd"
 import "services"
 
 ShellRoot {
-    // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher, the tablet posture, Night shift, the assist button and the on-screen keyboard.
+    // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher, the tablet posture, Night shift, the assist button and the on-screen keyboard (raised over panels).
     property var audio: Audio
     property var notices: Notices
     property var clipboard: Clipboard
@@ -26,6 +26,12 @@ ShellRoot {
     property var dynamicTheme: DynamicTheme
     property var tablet: Tablet
     property var nightShift: NightShift
+    // The rotation sensor and helper run for this shell only, not for other configs that load Theme.
+    Binding {
+        target: Tablet
+        property: "enabled"
+        value: true
+    }
     IpcHandler {
         target: "desktop"
         function toggle(panel: string): void {
@@ -69,7 +75,7 @@ ShellRoot {
         }
         // Opens the Theming panel on a tab; desktop-shell uses it to come back after a restart.
         function theming(tab: string): void {
-            themingPanel.tab = tab;
+            themingPanel.tab = ["theme", "wallpaper", "font", "icons"].includes(tab) ? tab : "theme";
             if (ShellState.panel !== "theming")
                 ShellState.toggle("theming");
         }

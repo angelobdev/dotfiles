@@ -63,6 +63,8 @@ RowLayout {
             id: workspace
             required property var modelData
             readonly property bool active: root.activeId === modelData.id
+            // A click would leave keyboard focus behind, and with it the focus background.
+            focusPolicy: Qt.NoFocus
             implicitWidth: active ? Theme.hit(46) : Theme.hit(28)
             implicitHeight: Theme.hit(28)
             Accessible.name: I18n.tr("workspaces.accessibleName", [modelData.id])

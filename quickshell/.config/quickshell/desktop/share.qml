@@ -8,6 +8,7 @@ import Quickshell.Wayland
 import Quickshell.Hyprland
 import "."
 import "components"
+import "services"
 
 ShellRoot {
     id: root
@@ -48,8 +49,10 @@ ShellRoot {
         color: Theme.shareShade
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "desktop-share-picker"
-        WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-        onVisibleChanged: if (visible)
+        // In tablet mode: focus on demand, so touches reach the on-screen keyboard, and no focused search
+        // field, which would open the keyboard over the picker just to choose a window.
+        WlrLayershell.keyboardFocus: Tablet.active ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.Exclusive
+        onVisibleChanged: if (visible && !Tablet.active)
             search.forceActiveFocus()
         contentItem.Keys.onEscapePressed: Qt.quit()
         Card {

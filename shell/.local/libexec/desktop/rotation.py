@@ -56,7 +56,12 @@ def watch():
             emit(True, values['AccelerometerOrientation'])
 
     proxy.connect('g-properties-changed', changed)
-    proxy.call_sync('ClaimAccelerometer', None, Gio.DBusCallFlags.NONE, -1, None)
+    try:
+        proxy.call_sync('ClaimAccelerometer', None, Gio.DBusCallFlags.NONE, -1, None)
+    except GLib.Error as error:
+        # The shell restarts the watcher; without a claim there are no readings to report.
+        emit(False)
+        raise ValueError(error.message) from error
     current = proxy.get_cached_property('AccelerometerOrientation')
     emit(True, current.unpack() if current else '')
     # The shell stops this process when tablet mode ends; the claim is released before exiting.
