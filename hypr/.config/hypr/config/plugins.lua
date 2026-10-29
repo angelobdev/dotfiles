@@ -1,6 +1,7 @@
 -- Loaded plugins expose these APIs after hyprpm reload; guards also allow recovery
 -- and --verify-config without loading native code.
 local plugins = hl.plugin or {}
+local theme = require("config.theme")
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
 
 if plugins.overview then
@@ -135,7 +136,7 @@ if plugins.hyprglass then
         lens_distortion = 0.0,
         fresnel_strength = 0.12,
         specular_strength = 0.15,
-        tint_color = 0x191a1d22,
+        tint_color = theme.glassTint,
     })
     -- The bar has no background: exclude it rather than glassing its glyphs.
     -- 0.2 excludes the almost transparent fullscreen overlay dismissal area.

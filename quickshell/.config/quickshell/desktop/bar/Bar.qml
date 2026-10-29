@@ -71,11 +71,11 @@ PanelWindow {
         gradient: Gradient {
             GradientStop {
                 position: 0
-                color: "#55000000"
+                color: Theme.barShadeTop
             }
             GradientStop {
                 position: 1
-                color: "#44000000"
+                color: Theme.barShadeBottom
             }
         }
     }

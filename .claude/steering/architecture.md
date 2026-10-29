@@ -42,7 +42,7 @@ Services spawn `python3 ~/.local/libexec/desktop/<helper>.py …` through Quicks
 | --- | --- | --- |
 | Long-lived watcher | `bar_visibility.py`, `brightness.py watch`, `clipboard.py watch-*`, `recording.py` | One compact JSON document per line on stdout (`flush=True`), parsed by `SplitParser` |
 | Two-way agent | `bluetooth_agent.py` | JSON lines on stdin (`pair`/`cancel`/`reply`) and stdout (`status`/`prompt`/`error`/`operation`) |
-| One-shot | `calendar.py`, `brightness.py read/set`, `clipboard.py list/…`, `wallpaper.py`, `xwayland.py` (apply/status, `aseprite` launcher), `network.py` (details, profile, set, set-dns, set-ipv4, set-mac, add-hidden with the password on stdin, vpn/vpn-up/vpn-down, hotspot/hotspot-on/hotspot-off, tailscale/tailscale-up/tailscale-down, extras (one poll for VPN, hotspot and Tailscale), secret, copy-secret, qr) | One JSON document collected by `StdioCollector`; errors as `{"error": …}` or translated stderr |
+| One-shot | `theme.py` (apply/set/list/render; see Themes below), `calendar.py`, `brightness.py read/set`, `clipboard.py list/…`, `wallpaper.py`, `xwayland.py` (apply/status, `aseprite` launcher), `network.py` (details, profile, set, set-dns, set-ipv4, set-mac, add-hidden with the password on stdin, vpn/vpn-up/vpn-down, hotspot/hotspot-on/hotspot-off, tailscale/tailscale-up/tailscale-down, extras (one poll for VPN, hotspot and Tailscale), secret, copy-secret, qr) | One JSON document collected by `StdioCollector`; errors as `{"error": …}` or translated stderr |
 
 Crashed watchers restart through a `Timer` whose `running` is `<enabled> && !process.running`. Treat argv and stdout formats as a byte-exact contract between QML and Python.
 
@@ -55,3 +55,13 @@ Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha
 ## Stow packages
 
 `scripts/stow.py` stows an explicit `PACKAGES` tuple with `--no-folding`: directories in `$HOME` are real, files are symlinks. A new file therefore does not exist in `$HOME` until `stow.py apply` runs. `.claude/`, `scripts/` and top-level files are never stowed.
+
+## Themes
+
+`theme.py` turns `themes/<id>/theme.json` plus `templates/*.tpl` (both under `~/.local/share/desktop/`, stowed from `shell/`) into `~/.local/state/desktop-theme/`. The stowed application configs only reference those generated files and keep Graphite fallbacks (details in [configuration](../docs/configuration.md#themes)).
+
+`scripts/tests/test_theme.py` (run by `check.sh`) renders Graphite and compares it with those fallbacks:
+- `hyprlock.conf` and the qtXct `colors/desktop.conf`, byte for byte;
+- the Kitty values, the `Theme.qml` JsonAdapter defaults and the `theme.lua` defaults.
+
+A palette change in one place therefore fails the check until the fallback or the theme follows.

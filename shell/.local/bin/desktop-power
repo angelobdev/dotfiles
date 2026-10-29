@@ -9,6 +9,11 @@ case "${1:-}" in
         exec 9>"$XDG_RUNTIME_DIR/desktop-lock.lock"
         flock -n 9 || exit 0
         pgrep -u "$EUID" -x hyprlock >/dev/null && exit 0
+        # The current theme renders a full hyprlock config; without it, hyprlock reads the stowed one.
+        themed="${XDG_STATE_HOME:-$HOME/.local/state}/desktop-theme/hyprlock.conf"
+        if [[ -s "$themed" ]]; then
+            exec hyprlock --grace 0 --config "$themed"
+        fi
         exec hyprlock --grace 0
         ;;
     suspend)

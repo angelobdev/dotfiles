@@ -131,3 +131,29 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 **Tests and side effects**
 - `scripts/tests/tst_dock_model.qml` (9 tests) covers resting offsets, magnification, the drop slot and drag shifts.
 - During testing, `dock launch 1` opened a Kitty window in the session.
+
+## Theme pipeline verification
+
+**Equivalence with today's files**
+- Templates for hyprlock, GTK and Qt were derived from the existing files and rendered back byte-identically: hyprlock 101 lines, GTK 37 colours, Qt 3×21 roles.
+- The Kitty, Quickshell and Hyprland values match their current settings.
+- `test_theme.py` keeps checking this.
+
+**Consumers**
+- **Quickshell:** an isolated `qs` showed `Theme` taking a probe colour from the JSON, and keeping Graphite with the file missing or broken.
+- **Hyprland:** `--verify-config` passed with and without the state file. A probe value in it reached the config, and a value of the wrong type was ignored.
+- **Kitty:** `kitty +runpy load_config` expanded `~` in `include`, and skipped a missing file with a notice.
+- **GTK:** PyGObject `CssProvider` loaded the relative `@import` through the stowed symlink for GTK 3 and GTK 4: 37 rules, no errors.
+- **gsettings:** the first `apply` left everything unchanged except `cursor-theme`, which went from `'default'` back to `'Adwaita'`. That is what `desktop-theme` already set at every login, and Fedora's `default` cursor theme inherits Adwaita.
+
+**Screenshots**
+- Before and after the switch, the bar and the open launcher were captured at the same pointer position.
+- The left of the bar was pixel-identical, and the opaque launcher row was identical at 1% fuzz.
+- The remaining differences sit under translucent surfaces (the windows behind had changed) and next to the clock.
+
+**Probe theme**
+- A theme with every colour inverted and different fonts, rendered with `render --out` into a scratch directory, changed every generated file: GTK 37/37 lines, Hyprland 2/2, hyprlock 14, Kitty 31 (opacity unchanged), Qt 3/3, Quickshell 21/21.
+- It never touched the session state.
+
+**Lock screen:** the user confirmed that `Super + L` (now through the generated config) looks and unlocks as before.
+

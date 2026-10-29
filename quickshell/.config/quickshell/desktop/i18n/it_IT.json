@@ -500,6 +500,15 @@
     "share": "Condividi",
     "title": "Condividi lo schermo"
   },
+  "theme": {
+    "errors": {
+      "color": "Il valore %1 del tema non è un colore #rrggbb o #rrggbbaa: %2",
+      "filter": "Filtro di template del tema sconosciuto: %1",
+      "invalid": "Impossibile leggere il tema %1: %2",
+      "template": "Il template %1 usa un valore che il tema non definisce: %2",
+      "unknown": "Tema sconosciuto: %1"
+    }
+  },
   "wallpaper": {
     "appliedPrefix": "Sfondo applicato: ",
     "apply": "Imposta sfondo",

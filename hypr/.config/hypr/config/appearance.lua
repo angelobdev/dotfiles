@@ -1,3 +1,5 @@
+local theme = require("config.theme")
+
 hl.config({
     general = {
         gaps_in = 4,
@@ -16,7 +18,7 @@ hl.config({
             enabled = true,
             range = 12,
             render_power = 3,
-            color = 0x660d0e10
+            color = theme.shadow
         },
         blur = {
             enabled = true,

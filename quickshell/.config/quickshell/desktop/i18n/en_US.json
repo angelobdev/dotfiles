@@ -500,6 +500,15 @@
     "share": "Share",
     "title": "Share your screen"
   },
+  "theme": {
+    "errors": {
+      "color": "Theme value %1 is not a #rrggbb or #rrggbbaa colour: %2",
+      "filter": "Unknown theme template filter: %1",
+      "invalid": "The theme %1 cannot be read: %2",
+      "template": "Template %1 uses a value the theme does not define: %2",
+      "unknown": "Unknown theme: %1"
+    }
+  },
   "wallpaper": {
     "appliedPrefix": "Wallpaper applied: ",
     "apply": "Set wallpaper",

@@ -2,29 +2,28 @@
 set -euo pipefail
 export QT_QPA_PLATFORMTHEME=qt5ct
 export QT_QUICK_CONTROLS_STYLE=Basic
-# Also informs portal-aware applications, including GTK4/libadwaita.
-if command -v gsettings >/dev/null; then
-    schema=org.gnome.desktop.interface
-    state="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
-    mkdir -p "$state"
-    if [[ ! -e "$state/interface-before-theme.ini" ]]; then
-        gsettings list-recursively "$schema" >"$state/interface-before-theme.ini"
-    fi
-    keys=$(gsettings list-keys "$schema") || keys=
-    set_key() {
-        if rg -qx -- "$1" <<<"$keys"; then
-            gsettings set "$schema" "$1" "$2"
+helper="$HOME/.local/libexec/desktop/theme.py"
+case "${1:-apply}" in
+    apply)
+        # Keep the settings found before the first themed session, so they can be restored by hand.
+        if command -v gsettings >/dev/null; then
+            state="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+            mkdir -p "$state"
+            if [[ ! -e "$state/interface-before-theme.ini" ]]; then
+                gsettings list-recursively org.gnome.desktop.interface >"$state/interface-before-theme.ini"
+            fi
         fi
-    }
-    set_key color-scheme prefer-dark
-    set_key gtk-theme Adwaita-dark
-    set_key icon-theme Papirus-Dark
-    set_key font-name 'Adwaita Sans 10'
-    set_key monospace-font-name 'Adwaita Mono 10'
-    set_key cursor-theme Adwaita
-    set_key cursor-size 24
-    set_key accent-color slate
-fi
-if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
-    dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE
-fi
+        # Renders the current theme and sets its gsettings, which also inform portal-aware
+        # applications, including GTK4/libadwaita.
+        python3 "$helper" apply
+        if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
+            dbus-update-activation-environment --systemd QT_QPA_PLATFORMTHEME QT_QUICK_CONTROLS_STYLE
+        fi
+        ;;
+    set)
+        [[ -n "${2:-}" ]] || { echo 'Usage: desktop-theme set THEME' >&2; exit 2; }
+        exec python3 "$helper" set "$2"
+        ;;
+    list) exec python3 "$helper" list ;;
+    *) echo 'Usage: desktop-theme [apply | set THEME | list]' >&2; exit 2 ;;
+esac

@@ -1,0 +1,70 @@
+{
+  "name": "Graphite",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "Adwaita-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "slate"
+  },
+  "shell": {
+    "background": "#191a1df2",
+    "surface": "#191a1dd9",
+    "raised": "#202226e6",
+    "tile": "#292b30e6",
+    "accentText": "#191a1d",
+    "track": "#5c606880",
+    "stroke": "#ffffff28",
+    "text": "#f0f0f2",
+    "muted": "#b8bbc1",
+    "accent": "#d4d6dc",
+    "danger": "#e99595",
+    "scrim": "#00000014",
+    "scrimModal": "#00000099",
+    "scrimStrong": "#000000bb",
+    "tooltip": "#2b2d32f0",
+    "handlePressed": "#ffffff",
+    "handleFocus": "#888c94",
+    "barShadeTop": "#00000055",
+    "barShadeBottom": "#00000044",
+    "shareShade": "#00000028"
+  },
+  "palette": {
+    "bg": "#191a1d",
+    "base": "#202226",
+    "raised": "#292b30",
+    "border": "#44474e",
+    "fg": "#f0f0f2",
+    "muted": "#b8bbc1",
+    "dim": "#74777e",
+    "accent": "#d4d6dc",
+    "accentFg": "#191a1d",
+    "link": "#bfc2c9",
+    "danger": "#e99595",
+    "success": "#a9c4ac",
+    "warning": "#d8c49f",
+    "light": "#646870",
+    "mid": "#393c42",
+    "dark": "#111215",
+    "shadow": "#0d0e10",
+    "brightText": "#ffffff"
+  },
+  "ansi": [
+    "#292b30", "#e99595", "#a9c4ac", "#d8c49f", "#a5b8d2", "#c3acc9", "#a4c5c8", "#d4d6dc",
+    "#74777e", "#f0aaaa", "#bfd6c1", "#e8d6b1", "#bdcde3", "#d5bfd9", "#bddbde", "#f0f0f2"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "hyprland": {
+    "shadow": "#0d0e1066",
+    "glassTint": "#191a1d22"
+  }
+}

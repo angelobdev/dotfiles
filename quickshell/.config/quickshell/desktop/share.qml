@@ -45,7 +45,7 @@ ShellRoot {
             right: true
         }
         exclusionMode: ExclusionMode.Ignore
-        color: "#28000000"
+        color: Theme.shareShade
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "desktop-share-picker"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive

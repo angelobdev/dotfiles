@@ -1,0 +1,23 @@
+{
+  "background": "{{ shell.background | qt }}",
+  "surface": "{{ shell.surface | qt }}",
+  "raised": "{{ shell.raised | qt }}",
+  "tile": "{{ shell.tile | qt }}",
+  "accentText": "{{ shell.accentText | qt }}",
+  "track": "{{ shell.track | qt }}",
+  "stroke": "{{ shell.stroke | qt }}",
+  "text": "{{ shell.text | qt }}",
+  "muted": "{{ shell.muted | qt }}",
+  "accent": "{{ shell.accent | qt }}",
+  "danger": "{{ shell.danger | qt }}",
+  "scrim": "{{ shell.scrim | qt }}",
+  "scrimModal": "{{ shell.scrimModal | qt }}",
+  "scrimStrong": "{{ shell.scrimStrong | qt }}",
+  "tooltip": "{{ shell.tooltip | qt }}",
+  "handlePressed": "{{ shell.handlePressed | qt }}",
+  "handleFocus": "{{ shell.handleFocus | qt }}",
+  "barShadeTop": "{{ shell.barShadeTop | qt }}",
+  "barShadeBottom": "{{ shell.barShadeBottom | qt }}",
+  "shareShade": "{{ shell.shareShade | qt }}",
+  "font": "{{ fonts.sans }}"
+}

@@ -134,6 +134,39 @@ The palette uses graphite gray, neutral primary `#d4d6dc`, light text, Adwaita S
 
 `desktop-theme` applies GSettings and imports Qt variables into D-Bus/systemd; on its first run it saves previous values to `~/.local/state/dotfiles/interface-before-theme.ini`. Restart open applications to adopt the theme; the next login also applies the full environment. Flatpak applications depend on sandbox runtimes/themes and may not follow every CSS override.
 
+## Themes
+
+The palette above is the **Graphite** theme. A theme is one `theme.json` with:
+- `mode`, `fonts` and `system` (GTK, icon and cursor theme, GSettings accent);
+- `shell` (the `Theme.qml` tokens);
+- `palette` (the semantic colours the application templates use);
+- `ansi` (16 terminal colours), `terminal.opacity`;
+- `hyprland` (shadow, Hyprglass tint).
+
+Colours are `#rrggbb` or `#rrggbbaa`. Shipped themes live in `~/.local/share/desktop/themes/<id>/` (from `shell/.local/share/desktop/themes/`). Themes in `~/.config/desktop/themes/<id>/` take precedence.
+
+`desktop-theme` (run at every login) renders the current theme with the templates in `~/.local/share/desktop/templates/` into `~/.local/state/desktop-theme/`. It writes:
+- `quickshell.json`, `hyprland.lua`, `kitty.conf`, `gtk.css`, `qt-colors.conf` and `hyprlock.conf`;
+- the GSettings values, and `current.json` (`{"theme": "<id>"}`).
+
+The stowed configs only point at those files:
+- `Theme.qml` watches `quickshell.json`, so the shell changes live.
+- `config/theme.lua` loads `hyprland.lua` on every Hyprland reload.
+- `kitty.conf` ends with an `include`.
+- `gtk.css` is a single relative `@import`.
+- qt5ct/qt6ct `color_scheme_path` points at `qt-colors.conf`.
+- `desktop-power lock` passes `--config` to hyprlock when the themed file exists.
+
+Each consumer keeps Graphite as its fallback, so a missing state directory changes nothing. GTK is the exception: it falls back to plain Adwaita-dark until the next `desktop-theme` run.
+
+Commands:
+- `desktop-theme set <id>` switches theme. It renders everything before writing anything, reloads Hyprland and Kitty (`SIGUSR1`), and sets GSettings.
+- GTK and Qt applications adopt the new palette when restarted.
+- `desktop-theme list` prints the themes as JSON.
+- `python3 ~/.local/libexec/desktop/theme.py render --theme <id> --out <dir>` previews the output without applying it.
+
+Templates use `{{ path }}` or `{{ path | filter }}`, with the filters `hex`, `rgba[:aa]`, `qt[:aa]`, `hypr` and `hexrgba`. A key the theme lacks is an error, never an empty value.
+
 The shell uses dark translucent surfaces with blur and thin neutral borders. Hyprland draws no window borders: active/fullscreen opacity 1, inactive opacity 0.92, and blur enabled. These values are in `hypr/.config/hypr/config/appearance.lua`. Active windows retain full readability.
 
 ## Motion
