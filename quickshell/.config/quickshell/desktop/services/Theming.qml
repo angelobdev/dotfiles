@@ -49,7 +49,8 @@ Singleton {
             theme: "",
             chosen: null
         })
-    property string wallpaper: ""
+    // The current wallpaper source, from the one watcher of selection.json (DynamicTheme).
+    readonly property string wallpaper: DynamicTheme.wallpaper
     // Fonts and icons reach the shell through the Qt platform theme, read at startup. After such a change
     // the panel offers a restart, which reopens it on this tab; the user decides when.
     property string restartTab: ""
@@ -86,6 +87,9 @@ Singleton {
     readonly property bool missingWallpapers: pack.wallpapers.some(e => !e.downloaded)
     function refresh() {
         error = "";
+        query();
+    }
+    function query() {
         listing.running = true;
         packQuery.running = true;
         fontQuery.running = true;
@@ -99,10 +103,7 @@ Singleton {
     }
     function next() {
         if (queue.length === 0) {
-            listing.running = true;
-            packQuery.running = true;
-            fontQuery.running = true;
-            iconQuery.running = true;
+            query();
             return;
         }
         action.command = queue[0];
@@ -281,13 +282,5 @@ Singleton {
             }
         }
         onExited: packQuery.running = true
-    }
-    // wallpaper.py records every applied wallpaper here, whoever applied it.
-    FileView {
-        path: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-session/wallpaper/selection.json"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: reload()
-        onLoaded: root.wallpaper = root.parse(text(), {}).source ?? ""
     }
 }

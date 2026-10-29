@@ -1,5 +1,22 @@
 .pragma library
 
+// The slots of every monitor from Quickshell's Hyprland objects (the bar, the assist workspace buttons).
+function fromHyprland(hyprland, minimum) {
+  return build(
+    hyprland.workspaces.values.map((w) => ({
+      id: w.id,
+      monitor: w.monitor?.name,
+      count: w.toplevels.values.length,
+      urgent: w.urgent,
+    })),
+    hyprland.monitors.values.map((m) => ({
+      name: m.name,
+      activeId: m.activeWorkspace?.id,
+    })),
+    minimum,
+  );
+}
+
 function build(workspaces, monitors, minimum) {
   const result = {};
   const used = new Set(workspaces.filter((w) => w.id > 0).map((w) => w.id));

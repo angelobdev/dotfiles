@@ -85,6 +85,7 @@ Overlay {
                 ActionButton {
                     text: "↑"
                     tooltip: I18n.tr("wallpaper.parentFolder")
+                    Accessible.name: I18n.tr("wallpaper.parentFolder")
                     enabled: !operation.running
                     onClicked: root.navigate(folder.parentFolder)
                 }

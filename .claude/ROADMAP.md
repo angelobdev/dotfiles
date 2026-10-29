@@ -62,7 +62,7 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] Native HyprCapture editor on all four screenshot shortcuts; Hints groups them under “Screen capture”, displays “Print”, and updates bindings on Hyprland reload while open.
 - [x] HyprCapture overlay moves across monitors; virtual outputs at scales 1.667 and 1 verified with native 2880×1800/1920×1080 PNGs and an editor toolbar on the fractional-scale display.
 - [x] Installation into hyprpm's protected cache and loading in the main session: all five enabled and loaded; autoload verified with `desktop-plugins reload`, configuration has no errors.
-- [ ] Physical testing of touchscreen gestures, hot corners on both monitors, and glass appearance during daily use.
+- [ ] Physical testing of hot corners on both monitors and glass appearance during daily use (touchscreen gestures: done with the touchscreen epic).
 
 ### Panels and Control Center
 
@@ -165,7 +165,7 @@ The assistant lives in a Kitty window on the special workspace `ai` (`Super + A`
 
 ### Touchscreen support (epic)
 
-Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_TABLET_MODE` on "Intel HID switches", accelerometer through iio-sensor-proxy (active). Hyprgrass gestures: `swipe`, `edge`, `longpress`, `pinch`, `tap`; edge swipes from bottom/top and three-finger swipes are taken. Agreed design (review 2026-10-29):
+Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_TABLET_MODE` on "Intel HID switches", accelerometer through iio-sensor-proxy (active). Hyprgrass gestures: `swipe`, `edge`, `longpress`, `pinch`, `tap`; edge swipes were later dropped (not always recognised) for three- and four-finger swipes. Agreed design (review 2026-10-29):
 
 - [x] Phase 1, tablet mode and rotation: Hyprland `switch:on/off` binds on the tablet switch set a shell `tablet` state (IPC, `desktop-shell status`). A rotation helper follows SensorProxy only in tablet mode and rotates the output together with touch and stylus input; rotation lock in the Control Center and in the helper menu, persisted like Keep awake. Verified on the OmniBook in all four orientations by the user. Floating windows refit on `monitor.layout_changed` (the assistant takes its 60% × 70% again, oversized ones shrink to 90%).
 - [x] Phase 2, floating helper ("do everything" button, AssistiveTouch-like): a round button over every app, dragged by finger or mouse, snapping to the nearest side edge, position remembered per monitor and orientation, dimmed and half tucked when idle. Tap opens a grid of large actions (Keyboard, Apps, Dock, Control Center, Notifications, Overview, Workspace ←/→, Rotation lock; configurable like dock pins); long press runs a configurable quick action. Full-screen overlay with an input mask and no keyboard focus. Summoned with a three-finger long press (Hyprgrass) and IPC; shown automatically in tablet mode, hidden back in laptop mode.
@@ -213,14 +213,15 @@ Target: HP OmniBook Ultra Flip (2-in-1). ELAN 2513 touchscreen and stylus, `SW_T
 - [ ] Still open from earlier: environment import in three places; blur coverage differs (layer rule vs Hyprglass: tray menu, OSK, the auth dialogs); `electron-flags.conf` unused.
 
 **D. Docs out of date**
-- [ ] plugins.md gestures (edge swipes, three-finger overview); configuration.md `no_anim` list and "no window borders"; interface.md transparent bar "stays blurred", history/DND "reset on restart"; integrations.md "PAM files are not modified" (after `tablet-auth.sh`); ROADMAP lines on edge swipes and the open gesture test; the qtXct `$HOME` follow-up is obsolete.
+- [x] plugins.md gestures (edge swipes, three-finger overview); configuration.md `no_anim` list and "no window borders"; interface.md transparent bar "stays blurred", history/DND "reset on restart"; integrations.md "PAM files are not modified" (after `tablet-auth.sh`); ROADMAP lines on edge swipes and the open gesture test; the qtXct `$HOME` follow-up is obsolete.
 
 **E. Cleanup and i18n**
-- [ ] Shared code: workspace slots built in Bar and Assist; three watchers of `selection.json`; image extensions, magick calls, atomic writes and XDG fallbacks repeated across helpers; menu layer boilerplate in tray, window and dock menus; `Theming.refresh()` repeating `next()`; legacy Control Center rows duplicating `SwitchGrid`.
-- [ ] Dead or stale: `qt*ct/colors/desktop.conf` (only the test uses it), hyprgrass `edge_margin`, `osk.MASKS` (tests only), unused keys `tablet.mode` and `osk.title`, a dangling `wifi-weak.svg` link in `$HOME`.
-- [ ] i18n: prefix strings instead of `%1` (battery, OSD, recording, network, Bluetooth), hard-coded units and modifier names in Hints, `WorkspaceStrip` plural by ternary, "Workspace N" bind description untranslated, `check-i18n.py` not scanning `desktop-ai` and other wrappers.
-- [ ] Accessibility: tray items, assist tiles, the share picker "Remember" switch and the wallpaper parent button lack names; `ToggleTile` shows no focus.
-- [ ] Missing timeouts in one-shot helper calls (recording, portal picker, osk layout, clipboard); `check.sh` lists tests by hand; fastfetch "thread" key; animation literals ignoring `reduceMotion`.
+- [x] Shared code: the workspace slots (`WorkspaceModel.fromHyprland`, used by the bar and the assist button); one watcher of `selection.json` (`DynamicTheme.wallpaper`, read by Theming and BarStyle); `Theming.query()` for `refresh()` and the queue; consistent XDG fallbacks (`get(var) or default`) in the helpers.
+- [ ] Deferred (no visible change, more files than they are worth now): one menu layer component for the tray, window and dock menus; a shared helper module for atomic writes, image extensions and the magick calls; the legacy Control Center rows that duplicate `SwitchGrid` (kept as documented alternatives); `qt*ct/colors/desktop.conf`, which only the Graphite test reads.
+- [x] Dead or stale: hyprgrass `edge_margin`, `osk.MASKS`, the keys `tablet.mode` and `osk.title`, the dangling `wifi-weak.svg` link in `$HOME`.
+- [x] i18n: prefix strings now take `%1` (battery, OSD, recording, network, Bluetooth, sharing, wallpaper); modifier names in Hints come from the catalog (Maiusc in Italian); the workspace tooltip uses `I18n.plural`; "Workspace N" binds are translated; `check-i18n.py` scans every `i18n.py` call in the wrappers and the Hyprland config. Units (%, W, Wh) stay as symbols.
+- [x] Accessibility: names for tray items, assist buttons, the share picker "Remember" switch and the wallpaper parent button; `ToggleTile` shows keyboard focus.
+- [x] Timeouts on the one-shot calls of recording, portal picker, osk layout and clipboard; `check.sh` globs `scripts/tests/test_*.py`; fastfetch "threads"; the two animation literals follow `reduceMotion`.
 - [ ] To verify: the bar double-tap handler may also fire on a double click of a bar button.
 
 ### Hardware
@@ -243,7 +244,7 @@ Found during the October 27, 2026 repository review. Checked items were approved
 - [x] Workspace pills use `ScriptModel` keyed by `id`: delegates (button, tooltip window, timer) survive Hyprland updates and the width animation now runs.
 - [ ] Lazy panels: deliberately not done. The shell uses about 200 MB RSS and 0.4% CPU, hidden panels gate their own work, and lazy loading would reset state that persists today (Control Center expanded sections, wallpaper directory) and needs first-open focus handling. Revisit if memory matters.
 - [ ] Each `Icon` carries a `MultiEffect` for recolouring; `pragma ComponentBehavior: Bound` for `Bar`, `TrayMenu`, `WorkspaceStrip` after a runtime smoke test.
-- [ ] Optional: `$HOME` in the qt5ct/qt6ct `color_scheme_path` (supported by qtXct, but the GUI rewrites it as absolute); subprocess timeouts in helpers; clearer messages for `StopIteration`/decode errors in the plugin scripts.
+- [ ] Optional (the qtXct `$HOME` item is obsolete: qtct.conf is rendered with an absolute state path): subprocess timeouts in helpers; clearer messages for `StopIteration`/decode errors in the plugin scripts.
 
 ## Possible extensions identified
 

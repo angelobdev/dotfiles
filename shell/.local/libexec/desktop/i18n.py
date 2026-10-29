@@ -45,7 +45,7 @@ def read_catalog(path, mtime_ns):
 
 
 def catalog(lang):
-    path = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'quickshell/desktop/i18n' / (lang + '.json')
+    path = Path(os.environ.get('XDG_CONFIG_HOME') or str(Path.home() / '.config')) / 'quickshell/desktop/i18n' / (lang + '.json')
     try:
         return read_catalog(str(path), path.stat().st_mtime_ns)
     except OSError:

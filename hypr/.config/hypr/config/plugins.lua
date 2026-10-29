@@ -84,7 +84,6 @@ if plugins.hyprgrass then
                 sensitivity = 4.0,
                 long_press_delay = 400,
                 resize_on_border_long_press = true,
-                edge_margin = 10,
             }
         }
     })

@@ -23,8 +23,8 @@ import subprocess
 import sys
 import time
 
-# Modifier masks of the evdev XKB keymaps: Shift, Lock, Control, Mod1 (Alt), Mod4 (Super), Mod5 (AltGr).
-MASKS = {'shift': 1, 'lock': 2, 'ctrl': 4, 'alt': 8, 'super': 64, 'altgr': 128}
+# Modifier masks of the evdev XKB keymaps, as the layout and the shell write them: Shift 1, Lock 2,
+# Control 4, Mod1 (Alt) 8, Mod4 (Super) 64, Mod5 (AltGr) 128.
 # zwp_text_input_v3 content purposes, in protocol order.
 PURPOSES = ('normal', 'alpha', 'digits', 'number', 'phone', 'url', 'email', 'name', 'password', 'pin', 'date',
             'time', 'datetime', 'terminal')
@@ -79,8 +79,8 @@ def layout():
     values = []
     for option in ('input:kb_layout', 'input:kb_variant', 'input:kb_options'):
         try:
-            value = json.loads(subprocess.check_output(['hyprctl', '-j', 'getoption', option], text=True)).get('str', '')
-        except (OSError, ValueError, subprocess.CalledProcessError):
+            value = json.loads(subprocess.check_output(['hyprctl', '-j', 'getoption', option], text=True, timeout=5)).get('str', '')
+        except (OSError, ValueError, subprocess.SubprocessError):
             value = ''
         # Hyprland reports an unset option as [[EMPTY]].
         values.append('' if value == '[[EMPTY]]' else value)

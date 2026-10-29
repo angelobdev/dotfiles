@@ -142,6 +142,7 @@ ShellRoot {
                     }
                     ControlSwitch {
                         id: remember
+                        Accessible.name: I18n.tr("sharing.rememberChoice")
                     }
                 }
                 RowLayout {

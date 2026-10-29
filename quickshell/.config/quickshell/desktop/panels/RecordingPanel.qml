@@ -23,7 +23,7 @@ Overlay {
                 Layout.fillWidth: true
             }
             Text {
-                text: Recording.running ? (Recording.stopping ? I18n.tr("recording.saving") : I18n.tr("recording.elapsedPrefix") + Recording.elapsed) : I18n.tr("recording.chooseSource")
+                text: Recording.running ? (Recording.stopping ? I18n.tr("recording.saving") : I18n.tr("recording.elapsed", [Recording.elapsed])) : I18n.tr("recording.chooseSource")
                 color: Theme.text
                 font.pixelSize: 15
             }

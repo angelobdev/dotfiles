@@ -403,3 +403,10 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - **Number fields:** Bluetooth passkey (`ImhDigitsOnly`), IP address, gateway and DNS (`ImhFormattedNumbersOnly`) open the keyboard on its numbers page.
 - **Gesture:** a two-finger long press then drag moves the window (`hl.dsp.window.drag()` with `mouse = true`, from the Hyprgrass docs); to be tried on the screen.
 - The keyboard is in the `no_anim` layer rule, so its re-map over a panel does not fade.
+
+## Review batches D and E (docs, cleanup, i18n), 2026-10-29
+
+- Docs: gestures in plugins.md, the transparent bar blur, history across restarts, `no_anim` coverage, window borders, PAM and `tablet-auth.sh` in integrations.md, roadmap lines.
+- `check-i18n.py` now finds the keys after every `i18n.py` call in `shell/.local/bin/desktop-*` and `hypr/config/*.lua` (desktop-power, desktop-ai, binds.lua today), and the shared-catalog test uses `network.passwordFor` with a `$&` argument.
+- After the prefix-to-placeholder change, Python helpers call `tr(key, [value])`; Hints still built its 86 binds with the catalog modifier names; `qmltestrunner` 26 passed with `WorkspaceModel.fromHyprland`.
+- Removed the dangling `~/.config/quickshell/desktop/assets/icons/wifi-weak.svg` link (its file left the repo); no other dangling link in the stowed directories.

@@ -15,8 +15,8 @@ EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp', '.jxl', '.avif', '.bmp', '.tif',
 
 def main():
     home = Path.home()
-    state = Path(os.environ.get('XDG_STATE_HOME', home / '.local/state')) / 'desktop-session/wallpaper'
-    default = Path(os.environ.get('XDG_DATA_HOME', home / '.local/share')) / 'wallpapers/desktop-night.jpg'
+    state = Path(os.environ.get('XDG_STATE_HOME') or home / '.local/state') / 'desktop-session/wallpaper'
+    default = Path(os.environ.get('XDG_DATA_HOME') or home / '.local/share') / 'wallpapers/desktop-night.jpg'
     state.mkdir(parents=True, exist_ok=True)
     current = state / 'current.jpg'
     # hyprpaper's stowed config uses the standard XDG path, matching the rest of this repo.
@@ -46,7 +46,7 @@ def main():
                     str(original) + '[0]', '-auto-orient', '-quality', '92', temporary],
                     capture_output=True, text=True, timeout=45)
                 if result.returncode != 0 or Path(temporary).stat().st_size == 0:
-                    raise ValueError(tr('wallpaper.errors.decodePrefix') + result.stderr.strip()[:400])
+                    raise ValueError(tr('wallpaper.errors.decode', [result.stderr.strip()[:400]]))
                 os.replace(temporary, rendered)
             finally:
                 Path(temporary).unlink(missing_ok=True)
@@ -54,8 +54,7 @@ def main():
         applied = subprocess.run(['hyprctl', 'hyprpaper', 'wallpaper', ',' + str(rendered) + ',cover'],
             capture_output=True, text=True, timeout=10)
         if applied.returncode != 0 or 'error' in (applied.stdout + applied.stderr).lower():
-            raise ValueError(tr('wallpaper.errors.applyFailedPrefix') +
-                (applied.stderr or applied.stdout).strip()[:300])
+            raise ValueError(tr('wallpaper.errors.applyFailed', [(applied.stderr or applied.stdout).strip()[:300]]))
         replace_link(current, rendered)
         fd, temporary = tempfile.mkstemp(prefix='.selection-', dir=state)
         with os.fdopen(fd, 'w') as output:
@@ -66,7 +65,7 @@ def main():
         for cached in state.glob('*.jpg'):
             if cached != current and cached != rendered and not cached.is_symlink():
                 cached.unlink()
-        print(tr('wallpaper.appliedPrefix') + original.name)
+        print(tr('wallpaper.applied', [original.name]))
 
 
 def replace_link(destination, target):

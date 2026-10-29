@@ -71,7 +71,7 @@ RowLayout {
             HintTooltip {
                 target: workspace
                 hovered: workspace.hovered
-                text: I18n.tr(workspace.modelData.count === 1 ? "workspaces.windowCount.one" : "workspaces.windowCount.other", [workspace.modelData.id, workspace.modelData.count])
+                text: I18n.plural("workspaces.windowCount.one", "workspaces.windowCount.other", workspace.modelData.count, [workspace.modelData.id])
             }
             background: Rectangle {
                 radius: Theme.corner(10)
@@ -86,7 +86,7 @@ RowLayout {
                     color: workspace.active ? BarStyle.accent : workspace.modelData.urgent ? Theme.danger : BarStyle.muted
                     Behavior on width {
                         NumberAnimation {
-                            duration: 160
+                            duration: Config.reduceMotion ? 0 : 160
                         }
                     }
                 }

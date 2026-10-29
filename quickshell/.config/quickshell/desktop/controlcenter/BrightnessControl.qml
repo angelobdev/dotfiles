@@ -104,7 +104,7 @@ ControlTile {
                         stepSize: 1
                         enabled: monitorRow.monitor?.available ?? false
                         onMoved: Brightness.setBrightness(monitorRow.monitor, value)
-                        Accessible.name: I18n.tr("osd.brightnessPrefix") + monitorRow.modelData
+                        Accessible.name: I18n.tr("osd.brightness", [monitorRow.modelData])
                         Binding on value {
                             when: !otherSlider.pressed
                             value: Brightness.displayPercent(monitorRow.monitor)

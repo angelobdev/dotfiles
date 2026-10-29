@@ -239,15 +239,7 @@ Singleton {
         const monitor = Hyprland.focusedMonitor;
         if (!monitor)
             return;
-        const slots = WorkspaceModel.build(Hyprland.workspaces.values.map(w => ({
-                    id: w.id,
-                    monitor: w.monitor?.name,
-                    count: w.toplevels.values.length,
-                    urgent: w.urgent
-                })), Hyprland.monitors.values.map(m => ({
-                    name: m.name,
-                    activeId: m.activeWorkspace?.id
-                })), Config.minimumWorkspaces)[monitor.name] || [];
+        const slots = WorkspaceModel.fromHyprland(Hyprland, Config.minimumWorkspaces)[monitor.name] || [];
         const current = slots.findIndex(w => w.id === monitor.activeWorkspace?.id);
         const next = current + direction;
         if (current >= 0 && next >= 0 && next < slots.length)

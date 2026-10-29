@@ -49,13 +49,10 @@ Singleton {
             }
         }
     }
-    // wallpaper.py rewrites this after every change, so the tone is measured again.
-    FileView {
-        path: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-session/wallpaper/selection.json"
-        watchChanges: true
-        printErrors: false
-        onFileChanged: {
-            reload();
+    // A new wallpaper is measured again (DynamicTheme watches selection.json for the whole shell).
+    Connections {
+        target: DynamicTheme
+        function onWallpaperChanged() {
             root.measure();
         }
     }

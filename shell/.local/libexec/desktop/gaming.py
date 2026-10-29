@@ -45,7 +45,7 @@ def scale_value(value):
 
 @functools.cache
 def steam_settings():
-    config = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home() / '.config'))) / 'desktop/steam.json'
+    config = Path(os.environ.get('XDG_CONFIG_HOME') or str(Path.home() / '.config')) / 'desktop/steam.json'
     try:
         settings = json.loads(config.read_text())
     except FileNotFoundError:
@@ -67,7 +67,7 @@ def prepare_steam_renderer(scale):
     helpers = Path(__file__).resolve().parent
     source = helpers / 'steam-scale.c'
     digest = hashlib.sha256(source.read_bytes()).hexdigest()[:16]
-    cache = Path(os.environ.get('XDG_CACHE_HOME', str(Path.home() / '.cache'))) / 'desktop/steam-ui'
+    cache = Path(os.environ.get('XDG_CACHE_HOME') or str(Path.home() / '.cache')) / 'desktop/steam-ui'
     library = cache / f'scale-{digest}.so'
     cache.mkdir(parents=True, exist_ok=True)
     if not library.is_file():

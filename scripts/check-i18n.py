@@ -79,7 +79,7 @@ class TranslationTests(unittest.TestCase):
             expected = self.flattened_catalog(lang)
             with patch.dict(os.environ, {'XDG_CONFIG_HOME': str(config)}), patch.object(i18n, 'language', return_value=lang):
                 self.assertEqual(i18n.tr('launcher.title'), expected['launcher.title'])
-                self.assertEqual(i18n.tr('network.passwordPrefix') + 'a$&b', expected['network.passwordPrefix'] + 'a$&b')
+                self.assertEqual(i18n.tr('network.passwordFor', ['a$&b']), expected['network.passwordFor'].replace('%1', 'a$&b'))
                 self.assertEqual(i18n.tr('bindings.moveToWorkspace', [4]), expected['bindings.moveToWorkspace'].replace('%1', '4'))
                 self.assertEqual(i18n.tr('missing.key'), 'missing.key')
                 self.assertEqual(i18n.tr('bindings.moveToWorkspace'), expected['bindings.moveToWorkspace'])
@@ -129,13 +129,19 @@ class TranslationTests(unittest.TestCase):
                 if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'tr' and node.args and isinstance(node.args[0], ast.Constant):
                     with self.subTest(file=str(path), key=node.args[0].value):
                         self.assert_translation_key(node.args[0].value, catalog)
-        power = (ROOT / 'shell/.local/bin/desktop-power').read_text()
-        for key in re.findall(r"message '([^']+)'", power):
-            self.assert_translation_key(key, catalog)
-        binds = (ROOT / 'hypr/.config/hypr/config/binds.lua').read_text()
-        for match in re.finditer(r'--notify "([^"]+)" "([^"]+)"', binds):
-            for key in match.groups():
-                self.assert_translation_key(key, catalog)
+        # Wrappers and the Hyprland config call i18n.py directly (or desktop-power's message()): every key
+        # after it must exist.
+        sources = list((ROOT / 'shell/.local/bin').glob('desktop-*')) + list((ROOT / 'hypr/.config/hypr/config').glob('*.lua'))
+        for path in sources:
+            text = path.read_text()
+            keys = re.findall(r"message '([^']+)'", text)
+            for line in text.splitlines():
+                if 'i18n.py' in line and 'message()' not in line:
+                    after = line.split('i18n.py', 1)[1]
+                    keys += re.findall(r'(?<![\w$/-])([a-z][A-Za-z0-9]*(?:\.[A-Za-z0-9]+)+)(?![\w/])', after)
+            for key in keys:
+                with self.subTest(file=str(path), key=key):
+                    self.assert_translation_key(key, catalog)
 
 
 if __name__ == '__main__':

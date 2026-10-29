@@ -30,7 +30,7 @@ def selection(value, outputs, entries, allow_token=False):
 def main():
     allow_token = '--allow-token' in sys.argv
     entries = windows(os.environ.get('XDPH_WINDOW_SHARING_LIST', ''))
-    monitors = json.loads(subprocess.run(['hyprctl', '-j', 'monitors'], capture_output=True, text=True, check=True).stdout)
+    monitors = json.loads(subprocess.run(['hyprctl', '-j', 'monitors'], capture_output=True, text=True, check=True, timeout=10).stdout)
     outputs = [m['name'] for m in monitors]
     runtime = os.environ.get('XDG_RUNTIME_DIR')
     if not runtime:
@@ -41,7 +41,7 @@ def main():
         result.chmod(0o600)
         env = dict(os.environ, DESKTOP_SHARE_WINDOWS=json.dumps(entries), DESKTOP_SHARE_RESULT=str(result),
                    DESKTOP_SHARE_ALLOW_TOKEN='1' if allow_token else '0')
-        config = Path(os.environ.get('XDG_CONFIG_HOME', str(Path.home()/'.config')))/'quickshell/desktop/share.qml'
+        config = Path(os.environ.get('XDG_CONFIG_HOME') or str(Path.home()/'.config'))/'quickshell/desktop/share.qml'
         # Only our validated selection goes to stdout. Quickshell diagnostics use stderr.
         child = subprocess.run(['qs', '-p', str(config)], env=env, stdout=sys.stderr)
         text = result.read_text()
@@ -55,5 +55,5 @@ if __name__ == '__main__':
     try:
         sys.exit(main())
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
-        print(tr('sharing.errors.selectionFailedPrefix')+str(error), file=sys.stderr)
+        print(tr('sharing.errors.selectionFailed', [error]), file=sys.stderr)
         sys.exit(1)

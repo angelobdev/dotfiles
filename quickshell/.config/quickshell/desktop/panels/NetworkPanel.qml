@@ -332,7 +332,7 @@ Overlay {
                                     Connections {
                                         target: networkRow.modelData
                                         function onConnectionFailed(reason) {
-                                            root.error = I18n.tr("network.connectionFailedPrefix") + I18n.networkDescription(ConnectionFailReason.toString(reason));
+                                            root.error = I18n.tr("network.connectionFailed", [I18n.networkDescription(ConnectionFailReason.toString(reason))]);
                                             if (root.personal(networkRow.modelData) && reason === ConnectionFailReason.NoSecrets)
                                                 root.askPassword(networkRow.modelData);
                                         }
@@ -518,7 +518,7 @@ Overlay {
                         visible: root.detailsNetwork === null && root.passwordNetwork !== null
                         Layout.fillWidth: true
                         Text {
-                            text: I18n.tr("network.passwordPrefix") + (root.passwordNetwork?.name ?? "")
+                            text: I18n.tr("network.passwordFor", [root.passwordNetwork?.name ?? ""])
                             color: Theme.text
                             textFormat: Text.PlainText
                         }

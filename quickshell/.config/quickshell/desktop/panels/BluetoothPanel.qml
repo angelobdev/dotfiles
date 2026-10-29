@@ -55,7 +55,7 @@ Overlay {
                                     checked: adapterGroup.modelData.enabled
                                     enabled: ![BluetoothAdapterState.Blocked, BluetoothAdapterState.Enabling, BluetoothAdapterState.Disabling].includes(adapterGroup.modelData.state)
                                     onToggled: adapterGroup.modelData.enabled = checked
-                                    Accessible.name: I18n.tr("osd.bluetoothPrefix") + adapterGroup.modelData.name
+                                    Accessible.name: I18n.tr("osd.bluetooth", [adapterGroup.modelData.name])
                                 }
                             }
                             ActionButton {

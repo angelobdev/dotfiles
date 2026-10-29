@@ -71,7 +71,7 @@
     {
       "type": "cpu",
       "key": "CPU",
-      "format": "{name} · {cores-logical} thread"
+      "format": "{name} · {cores-logical} threads"
     },
     {
       "type": "gpu",

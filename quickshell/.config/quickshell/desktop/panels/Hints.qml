@@ -88,7 +88,7 @@ Overlay {
     }
     function shortcut(bind) {
         const parts = [];
-        for (const [mask, label] of [[64, "Super"], [4, "Ctrl"], [1, "Shift"], [8, "Alt"], [128, "Mod5"]])
+        for (const [mask, label] of [[64, I18n.tr("hints.keys.super")], [4, I18n.tr("hints.keys.ctrl")], [1, I18n.tr("hints.keys.shift")], [8, I18n.tr("hints.keys.alt")], [128, I18n.tr("hints.keys.altgr")]])
             if ((bind.modmask & mask) !== 0)
                 parts.push(label);
         const names = {

@@ -18,7 +18,9 @@ Rectangle {
     implicitHeight: Theme.hit(84)
     radius: Theme.corner(14)
     color: checked ? Qt.alpha(Theme.accent, 0.22) : Theme.tile
-    border.color: checked ? Theme.accent : Theme.stroke
+    // Keyboard focus shows as a thicker outline.
+    border.color: activeFocus ? Theme.handleFocus : checked ? Theme.accent : Theme.stroke
+    border.width: activeFocus ? 2 : 1
     opacity: available ? 1 : 0.55
     activeFocusOnTab: true
     Keys.onSpacePressed: if (available)

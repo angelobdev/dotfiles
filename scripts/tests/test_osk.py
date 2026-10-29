@@ -111,8 +111,10 @@ class WireTests(unittest.TestCase):
         self.assertEqual(len(encoded) % 4, 0)
         self.assertEqual(len(osk.Wayland.string('abc')), 8)
 
-    def test_modifier_masks(self):
-        self.assertEqual((osk.MASKS['shift'], osk.MASKS['ctrl'], osk.MASKS['alt'], osk.MASKS['altgr']), (1, 4, 8, 128))
+    def test_modifier_masks_type_what_the_layout_says(self):
+        xkb = osk.Xkb('it')
+        self.assertEqual(xkb.lookup(16, 1)['text'], 'Q')
+        self.assertEqual(xkb.lookup(39, 128)['text'], '@')
 
 
 if __name__ == '__main__':

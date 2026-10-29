@@ -32,15 +32,7 @@ PanelWindow {
         height: 0
     }
     readonly property var monitor: Hyprland.monitorFor(screen)
-    readonly property var workspaces: WorkspaceModel.build(Hyprland.workspaces.values.map(w => ({
-                id: w.id,
-                monitor: w.monitor?.name,
-                count: w.toplevels.values.length,
-                urgent: w.urgent
-            })), Hyprland.monitors.values.map(m => ({
-                name: m.name,
-                activeId: m.activeWorkspace?.id
-            })), Config.minimumWorkspaces)[screen.name] || []
+    readonly property var workspaces: WorkspaceModel.fromHyprland(Hyprland, Config.minimumWorkspaces)[screen.name] || []
     function focusWorkspace(id) {
         Hyprland.dispatch("hl.dsp.focus({ monitor = " + JSON.stringify(screen.name) + " })");
         Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })");
@@ -173,6 +165,8 @@ PanelWindow {
                 required property var modelData
                 implicitWidth: Theme.hit(28)
                 implicitHeight: Theme.hit(28)
+                Accessible.role: Accessible.Button
+                Accessible.name: modelData.tooltipTitle || modelData.title || modelData.id
                 Image {
                     anchors.centerIn: parent
                     width: Theme.hit(16)
@@ -229,7 +223,7 @@ PanelWindow {
             text: bar.battery + "%"
             implicitWidth: batteryContent.implicitWidth + leftPadding + rightPadding
             tooltip: (UPower.onBattery ? I18n.tr("battery.onBattery") : I18n.tr("battery.pluggedIn")) + " · " + profileLabel
-            Accessible.name: I18n.tr("battery.accessiblePrefix") + text + " · " + profileLabel
+            Accessible.name: I18n.tr("battery.accessible", [text, profileLabel])
             contentItem: RowLayout {
                 id: batteryContent
                 spacing: 6

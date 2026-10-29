@@ -25,7 +25,7 @@ def main():
     os.umask(0o077)
     if a.geometry and not re.fullmatch(r'-?\d+,-?\d+ [1-9]\d*x[1-9]\d*', a.geometry):
         p.error(tr('recording.errors.invalidArea'))
-    monitors = json.loads(subprocess.run(['hyprctl', '-j', 'monitors'], capture_output=True, text=True, check=True).stdout)
+    monitors = json.loads(subprocess.run(['hyprctl', '-j', 'monitors'], capture_output=True, text=True, check=True, timeout=10).stdout)
     output = next((m for m in monitors if m['name'] == a.output), None)
     if output is None:
         p.error(tr('recording.errors.displayUnavailable'))
@@ -37,7 +37,7 @@ def main():
         width, height = round(width/output['scale']), round(height/output['scale'])
         if x < output['x'] or y < output['y'] or x+w > output['x']+width or y+h > output['y']+height:
             p.error(tr('recording.errors.areaOutsideDisplay'))
-    folder = subprocess.run(['xdg-user-dir', 'VIDEOS'], capture_output=True, text=True, check=True).stdout.strip()
+    folder = subprocess.run(['xdg-user-dir', 'VIDEOS'], capture_output=True, text=True, check=True, timeout=10).stdout.strip()
     directory = Path(folder or Path.home()/'Videos')/'Recordings'
     directory.mkdir(parents=True, exist_ok=True)
     destination = directory/(datetime.now().strftime('%Y-%m-%d_%H-%M-%S_')+uuid.uuid4().hex[:6]+'.mkv')
@@ -50,7 +50,7 @@ def main():
         command += ['--geometry', a.geometry]
     if a.audio != 'none':
         kind = 'sink' if a.audio == 'output' else 'source'
-        device = subprocess.run(['pactl', 'get-default-'+kind], capture_output=True, text=True, check=True).stdout.strip()
+        device = subprocess.run(['pactl', 'get-default-'+kind], capture_output=True, text=True, check=True, timeout=10).stdout.strip()
         command += ['--audio='+device+('.monitor' if a.audio == 'output' else ''), '--audio-codec', 'libopus']
     destination.touch(exist_ok=False, mode=0o600)
     child = None
@@ -71,9 +71,9 @@ def main():
         code = child.wait()
         if destination.stat().st_size == 0:
             destination.unlink()
-            print(json.dumps({'recording': False, 'error': tr('recording.errors.startFailedPrefix')+''.join(tail)[-1200:]}), flush=True)
+            print(json.dumps({'recording': False, 'error': tr('recording.errors.startFailed', [''.join(tail)[-1200:]])}), flush=True)
             return 1
-        print(json.dumps({'recording': False, 'path': str(destination), 'error': '' if stopped or code == 0 else tr('recording.errors.interruptedPrefix')+''.join(tail)[-1200:]}), flush=True)
+        print(json.dumps({'recording': False, 'path': str(destination), 'error': '' if stopped or code == 0 else tr('recording.errors.interruptedWith', [''.join(tail)[-1200:]])}), flush=True)
         return 0 if stopped or code == 0 else 1
     finally:
         if child and child.poll() is None:
@@ -89,5 +89,5 @@ if __name__ == '__main__':
     try:
         sys.exit(main())
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
-        print(json.dumps({'recording': False, 'error': tr('recording.errors.failedPrefix')+str(error)}), flush=True)
+        print(json.dumps({'recording': False, 'error': tr('recording.errors.failed', [error])}), flush=True)
         sys.exit(1)

@@ -43,6 +43,9 @@ Singleton {
         match = description.match(/^Move to workspace (\d+)$/);
         if (match)
             return tr("bindings.moveToWorkspace", [match[1]]);
+        match = description.match(/^Workspace (\d+)$/);
+        if (match)
+            return tr("bindings.workspace", [match[1]]);
         match = description.match(/^Dock item (\d+)$/);
         if (match)
             return tr("bindings.dockItem", [match[1]]);

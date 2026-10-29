@@ -47,7 +47,6 @@
     "desktop": "Desktop"
   },
   "battery": {
-    "accessiblePrefix": "Battery ",
     "availableEnergy": "Available energy",
     "charging": "Charging",
     "chargingPower": "Charging power",
@@ -74,7 +73,8 @@
     "timeRemaining": "Time remaining",
     "timeUntilFull": "Time until full",
     "title": "Battery & power",
-    "unavailable": "No battery"
+    "unavailable": "No battery",
+    "accessible": "Battery %1 · %2"
   },
   "bindings": {
     "brightnessDown": "Brightness down",
@@ -93,7 +93,8 @@
     "togglePseudotiling": "Toggle pseudotiling",
     "toggleSplit": "Toggle split orientation",
     "volumeDown": "Volume down",
-    "volumeUp": "Volume up"
+    "volumeUp": "Volume up",
+    "workspace": "Workspace %1"
   },
   "bluetooth": {
     "authorizeService": "Allow the device to use the requested service?",
@@ -114,7 +115,6 @@
     "enterPasskeyOnDevice": "Enter this passkey on the other device and press Enter.",
     "enterPin": "Enter the device PIN.",
     "enterPinOnDevice": "Enter this PIN on the other device.",
-    "enteredDigitsPrefix": "Digits entered: ",
     "errors": {
       "agentNotReady": "Bluetooth agent not ready",
       "agentReleased": "Bluetooth agent released.",
@@ -138,10 +138,11 @@
     "pairingSuffix": " · Pairing…",
     "pairingTitle": "Bluetooth pairing",
     "scan": "Scan for devices",
-    "servicePrefix": "Service: ",
     "stopScan": "Stop scanning",
     "submit": "Send",
-    "title": "Bluetooth"
+    "title": "Bluetooth",
+    "enteredDigits": "Digits entered: %1",
+    "service": "Service: %1"
   },
   "brightness": {
     "errors": {
@@ -308,6 +309,13 @@
       "dismiss": "Dismiss it",
       "twoHold": "Two-finger long press, then drag",
       "dragWindow": "Move the window"
+    },
+    "keys": {
+      "super": "Super",
+      "ctrl": "Ctrl",
+      "shift": "Shift",
+      "alt": "Alt",
+      "altgr": "AltGr"
     }
   },
   "idle": {
@@ -350,7 +358,6 @@
     "band": "%1 GHz · channel %2",
     "cableUnplugged": "Cable unplugged",
     "connect": "Connect",
-    "connectionFailedPrefix": "Connection failed: ",
     "connectivity": {
       "captivePortal": "Connection intercepted by a captive portal",
       "full": "Full internet connectivity",
@@ -419,7 +426,6 @@
     "otherNetwork": "Other network…",
     "password": "Password",
     "passwordPlaceholder": "Wi-Fi password",
-    "passwordPrefix": "Password for ",
     "qrHint": "Scan with a phone camera to join %1",
     "searchPlaceholder": "Search Wi-Fi networks…",
     "securityNone": "Open",
@@ -446,7 +452,9 @@
     "tooltip": "Networks & Wi-Fi",
     "vpn": "VPN",
     "wifiOff": "Wi-Fi off",
-    "wifiOn": "Wi-Fi on"
+    "wifiOn": "Wi-Fi on",
+    "connectionFailed": "Connection failed: %1",
+    "passwordFor": "Password for %1"
   },
   "notifications": {
     "archived": "Archived",
@@ -460,8 +468,8 @@
     "title": "Notifications"
   },
   "osd": {
-    "bluetoothPrefix": "Bluetooth ",
-    "brightnessPrefix": "Brightness "
+    "bluetooth": "Bluetooth %1",
+    "brightness": "Brightness %1"
   },
   "plugins": {
     "errors": {
@@ -476,23 +484,23 @@
     "barTooltip": "Recording in progress · Click to stop and save",
     "chooseSource": "Choose what to record",
     "display": "Display",
-    "elapsedPrefix": "Recording · ",
     "errors": {
       "areaOutsideDisplay": "The area must be contained within a single display",
       "displayUnavailable": "Display unavailable",
-      "failedPrefix": "Recording failed: ",
       "interrupted": "Recording interrupted.",
-      "interruptedPrefix": "Recording interrupted: ",
       "invalidArea": "Invalid area",
       "invalidResponse": "Invalid recorder response.",
-      "startFailedPrefix": "Recording did not start: "
+      "failed": "Recording failed: %1",
+      "interruptedWith": "Recording interrupted: %1",
+      "startFailed": "Recording did not start: %1"
     },
     "noAudio": "None",
     "saveLocationHint": "Videos are saved in Videos/Recordings (Matroska).",
     "saving": "Saving…",
     "start": "Start recording",
     "stopAndSave": "Stop and save",
-    "title": "Screen recording"
+    "title": "Screen recording",
+    "elapsed": "Recording · %1"
   },
   "session": {
     "confirmAction": "Confirm this action?",
@@ -518,7 +526,7 @@
     "chooseSourceHint": "Choose the display or window to share with the application.",
     "errors": {
       "invalidSelection": "Invalid selection",
-      "selectionFailedPrefix": "Screen-sharing selection failed: "
+      "selectionFailed": "Screen-sharing selection failed: %1"
     },
     "noSources": "No sources available",
     "rememberChoice": "Remember this choice for this application",
@@ -605,18 +613,17 @@
     }
   },
   "wallpaper": {
-    "appliedPrefix": "Wallpaper applied: ",
     "apply": "Set wallpaper",
     "applying": "Applying…",
     "collection": "Wallpapers",
     "empty": "No images in this folder",
     "errors": {
-      "applyFailedPrefix": "hyprpaper did not apply the wallpaper. Check desktop-session status. ",
-      "decodePrefix": "Could not decode the image: ",
       "defaultMissing": "Default wallpaper missing: run scripts/stow.py apply.",
       "invalidImage": "Select a readable PNG, JPEG, WebP, JXL, AVIF, BMP, or TIFF image.",
       "setFailed": "Could not set the wallpaper.",
-      "usage": "Usage: desktop-wallpaper [IMAGE | --reset | --ensure]"
+      "usage": "Usage: desktop-wallpaper [IMAGE | --reset | --ensure]",
+      "applyFailed": "hyprpaper did not apply the wallpaper. Check desktop-session status. %1",
+      "decode": "Could not decode the image: %1"
     },
     "folderPlaceholder": "Folder path",
     "home": "Home",
@@ -625,13 +632,14 @@
     "previewHint": "Select an image to preview",
     "previewUnavailable": "Preview unavailable. The file will be converted when applied.",
     "restoreDefault": "Restore Fedora wallpaper",
-    "title": "Choose wallpaper"
+    "title": "Choose wallpaper",
+    "applied": "Wallpaper applied: %1"
   },
   "workspaces": {
     "accessibleName": "Workspace %1",
     "windowCount": {
-      "one": "Workspace %1 · %2 window",
-      "other": "Workspace %1 · %2 windows"
+      "one": "Workspace %2 · %1 window",
+      "other": "Workspace %2 · %1 windows"
     }
   },
   "xwayland": {
@@ -647,7 +655,6 @@
     }
   },
   "tablet": {
-    "mode": "Tablet mode",
     "rotationLock": "Rotation lock",
     "rotatesInTablet": "Rotates in tablet mode",
     "rotatesAutomatically": "Follows the device",
@@ -692,7 +699,6 @@
     }
   },
   "osk": {
-    "title": "Keyboard",
     "extra": "More keys",
     "float": "Floating keyboard",
     "dock": "Docked keyboard",

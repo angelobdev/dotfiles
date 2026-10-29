@@ -92,12 +92,12 @@ PanelWindow {
             }
             Text {
                 visible: root.prompt?.kind === "DisplayPasskey"
-                text: I18n.tr("bluetooth.enteredDigitsPrefix") + (root.prompt?.entered ?? 0)
+                text: I18n.tr("bluetooth.enteredDigits", [root.prompt?.entered ?? 0])
                 color: Theme.muted
             }
             Text {
                 visible: root.prompt?.kind === "AuthorizeService"
-                text: I18n.tr("bluetooth.servicePrefix") + (root.prompt?.value ?? "")
+                text: I18n.tr("bluetooth.service", [root.prompt?.value ?? ""])
                 Layout.fillWidth: true
                 wrapMode: Text.WrapAnywhere
                 textFormat: Text.PlainText

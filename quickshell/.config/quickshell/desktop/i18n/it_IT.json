@@ -47,7 +47,6 @@
     "desktop": "Desktop"
   },
   "battery": {
-    "accessiblePrefix": "Batteria ",
     "availableEnergy": "Energia disponibile",
     "charging": "In carica",
     "chargingPower": "Potenza di ricarica",
@@ -74,7 +73,8 @@
     "timeRemaining": "Autonomia residua",
     "timeUntilFull": "Alla carica completa",
     "title": "Batteria ed energia",
-    "unavailable": "Nessuna batteria"
+    "unavailable": "Nessuna batteria",
+    "accessible": "Batteria %1 · %2"
   },
   "bindings": {
     "brightnessDown": "Luminosità -",
@@ -93,7 +93,8 @@
     "togglePseudotiling": "Pseudo tiling",
     "toggleSplit": "Cambia orientamento split",
     "volumeDown": "Volume -",
-    "volumeUp": "Volume +"
+    "volumeUp": "Volume +",
+    "workspace": "Workspace %1"
   },
   "bluetooth": {
     "authorizeService": "Consentire al dispositivo di utilizzare il servizio richiesto?",
@@ -114,7 +115,6 @@
     "enterPasskeyOnDevice": "Digita questo codice sull’altro dispositivo e premi Invio.",
     "enterPin": "Inserisci il PIN del dispositivo.",
     "enterPinOnDevice": "Digita questo PIN sull’altro dispositivo.",
-    "enteredDigitsPrefix": "Cifre inserite: ",
     "errors": {
       "agentNotReady": "Agente Bluetooth non pronto",
       "agentReleased": "Agente Bluetooth rilasciato.",
@@ -138,10 +138,11 @@
     "pairingSuffix": " · Associazione…",
     "pairingTitle": "Associazione Bluetooth",
     "scan": "Cerca dispositivi",
-    "servicePrefix": "Servizio: ",
     "stopScan": "Interrompi ricerca",
     "submit": "Invia",
-    "title": "Bluetooth"
+    "title": "Bluetooth",
+    "enteredDigits": "Cifre inserite: %1",
+    "service": "Servizio: %1"
   },
   "brightness": {
     "errors": {
@@ -308,6 +309,13 @@
       "dismiss": "La chiude",
       "twoHold": "Pressione lunga a due dita, poi trascina",
       "dragWindow": "Sposta la finestra"
+    },
+    "keys": {
+      "super": "Super",
+      "ctrl": "Ctrl",
+      "shift": "Maiusc",
+      "alt": "Alt",
+      "altgr": "AltGr"
     }
   },
   "idle": {
@@ -350,7 +358,6 @@
     "band": "%1 GHz · canale %2",
     "cableUnplugged": "Cavo scollegato",
     "connect": "Connetti",
-    "connectionFailedPrefix": "Connessione fallita: ",
     "connectivity": {
       "captivePortal": "Connessione intercettata da un captive portal",
       "full": "Connessione Internet disponibile",
@@ -419,7 +426,6 @@
     "otherNetwork": "Altra rete…",
     "password": "Password",
     "passwordPlaceholder": "Password Wi-Fi",
-    "passwordPrefix": "Password per ",
     "qrHint": "Inquadra con la fotocamera del telefono per collegarti a %1",
     "searchPlaceholder": "Cerca una rete Wi-Fi…",
     "securityNone": "Aperta",
@@ -446,7 +452,9 @@
     "tooltip": "Reti e Wi-Fi",
     "vpn": "VPN",
     "wifiOff": "Wi-Fi spento",
-    "wifiOn": "Wi-Fi acceso"
+    "wifiOn": "Wi-Fi acceso",
+    "connectionFailed": "Connessione fallita: %1",
+    "passwordFor": "Password per %1"
   },
   "notifications": {
     "archived": "Archiviata",
@@ -460,8 +468,8 @@
     "title": "Notifiche"
   },
   "osd": {
-    "bluetoothPrefix": "Bluetooth ",
-    "brightnessPrefix": "Luminosità "
+    "bluetooth": "Bluetooth %1",
+    "brightness": "Luminosità %1"
   },
   "plugins": {
     "errors": {
@@ -476,23 +484,23 @@
     "barTooltip": "Registrazione in corso · Clic per fermare e salvare",
     "chooseSource": "Scegli cosa registrare",
     "display": "Monitor",
-    "elapsedPrefix": "Registrazione · ",
     "errors": {
       "areaOutsideDisplay": "L’area deve essere contenuta in un solo monitor",
       "displayUnavailable": "Monitor non disponibile",
-      "failedPrefix": "Registrazione non riuscita: ",
       "interrupted": "Registrazione interrotta.",
-      "interruptedPrefix": "Registrazione interrotta: ",
       "invalidArea": "Area non valida",
       "invalidResponse": "Risposta del registratore non valida.",
-      "startFailedPrefix": "Registrazione non avviata: "
+      "failed": "Registrazione non riuscita: %1",
+      "interruptedWith": "Registrazione interrotta: %1",
+      "startFailed": "Registrazione non avviata: %1"
     },
     "noAudio": "Nessuno",
     "saveLocationHint": "I video vengono salvati in Video/Recordings (Matroska).",
     "saving": "Salvataggio…",
     "start": "Avvia registrazione",
     "stopAndSave": "Ferma e salva",
-    "title": "Registrazione schermo"
+    "title": "Registrazione schermo",
+    "elapsed": "Registrazione · %1"
   },
   "session": {
     "confirmAction": "Confermi l’operazione?",
@@ -518,7 +526,7 @@
     "chooseSourceHint": "Scegli il monitor o la finestra da rendere visibile all’applicazione.",
     "errors": {
       "invalidSelection": "Selezione non valida",
-      "selectionFailedPrefix": "Selezione condivisione non riuscita: "
+      "selectionFailed": "Selezione condivisione non riuscita: %1"
     },
     "noSources": "Nessuna sorgente disponibile",
     "rememberChoice": "Ricorda la scelta per questa applicazione",
@@ -605,18 +613,17 @@
     }
   },
   "wallpaper": {
-    "appliedPrefix": "Sfondo applicato: ",
     "apply": "Imposta sfondo",
     "applying": "Applicazione…",
     "collection": "Sfondi",
     "empty": "Nessuna immagine in questa cartella",
     "errors": {
-      "applyFailedPrefix": "hyprpaper non ha applicato lo sfondo. Controlla desktop-session status. ",
-      "decodePrefix": "Impossibile decodificare l’immagine: ",
       "defaultMissing": "Sfondo predefinito mancante: esegui scripts/stow.py apply.",
       "invalidImage": "Seleziona un’immagine PNG, JPEG, WebP, JXL, AVIF, BMP o TIFF leggibile.",
       "setFailed": "Impossibile impostare lo sfondo.",
-      "usage": "Uso: desktop-wallpaper [IMMAGINE | --reset | --ensure]"
+      "usage": "Uso: desktop-wallpaper [IMMAGINE | --reset | --ensure]",
+      "applyFailed": "hyprpaper non ha applicato lo sfondo. Controlla desktop-session status. %1",
+      "decode": "Impossibile decodificare l’immagine: %1"
     },
     "folderPlaceholder": "Percorso di una cartella",
     "home": "Home",
@@ -625,13 +632,14 @@
     "previewHint": "Seleziona un’immagine per l’anteprima",
     "previewUnavailable": "Anteprima non disponibile. Il file verrà convertito all’applicazione.",
     "restoreDefault": "Ripristina Fedora",
-    "title": "Scegli sfondo"
+    "title": "Scegli sfondo",
+    "applied": "Sfondo applicato: %1"
   },
   "workspaces": {
     "accessibleName": "Workspace %1",
     "windowCount": {
-      "one": "Workspace %1 · %2 finestra",
-      "other": "Workspace %1 · %2 finestre"
+      "one": "Workspace %2 · %1 finestra",
+      "other": "Workspace %2 · %1 finestre"
     }
   },
   "xwayland": {
@@ -647,7 +655,6 @@
     }
   },
   "tablet": {
-    "mode": "Modalità tablet",
     "rotationLock": "Blocco rotazione",
     "rotatesInTablet": "Ruota in modalità tablet",
     "rotatesAutomatically": "Segue il dispositivo",
@@ -692,7 +699,6 @@
     }
   },
   "osk": {
-    "title": "Tastiera",
     "extra": "Altri tasti",
     "float": "Tastiera flottante",
     "dock": "Tastiera ancorata",

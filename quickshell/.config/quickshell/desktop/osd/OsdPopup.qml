@@ -90,7 +90,7 @@ PanelWindow {
                         color: Theme.accent
                         Behavior on width {
                             NumberAnimation {
-                                duration: 80
+                                duration: Config.reduceMotion ? 0 : 80
                             }
                         }
                     }

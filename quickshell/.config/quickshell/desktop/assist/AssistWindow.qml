@@ -144,6 +144,8 @@ PanelWindow {
                 Rectangle {
                     id: action
                     required property var modelData
+                    Accessible.role: Accessible.Button
+                    Accessible.name: modelData.label
                     implicitWidth: 100
                     implicitHeight: 84
                     radius: Theme.corner(16)

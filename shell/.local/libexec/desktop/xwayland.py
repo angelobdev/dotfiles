@@ -14,7 +14,7 @@ from gaming import focused_monitor
 CURSOR_SIZE = 24
 # Aseprite's usual 200% on an unscaled monitor; DESKTOP_ASEPRITE_SCALE overrides it.
 ASEPRITE_BASE = 2
-ASEPRITE_INI = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'aseprite' / 'aseprite.ini'
+ASEPRITE_INI = Path(os.environ.get('XDG_CONFIG_HOME') or Path.home() / '.config') / 'aseprite' / 'aseprite.ini'
 
 
 def target():
