@@ -508,7 +508,10 @@
       "filter": "Filtro di template del tema sconosciuto: %1",
       "invalid": "Impossibile leggere il tema %1: %2",
       "template": "Il template %1 usa un valore che il tema non definisce: %2",
-      "unknown": "Tema sconosciuto: %1"
+      "unknown": "Tema sconosciuto: %1",
+      "matugenMissing": "matugen non è installato; installalo con: sudo dnf install matugen",
+      "matugenFailed": "matugen non è riuscito a leggere l’immagine: %1",
+      "noWallpaper": "Non c’è un’immagine di sfondo da cui generare il tema."
     },
     "wallpapers": {
       "downloading": "Scarico gli sfondi di %1; il primo compare appena arriva.",
@@ -558,7 +561,24 @@
     "windowBorder": "Bordo",
     "windowBorderNone": "Nessuno",
     "windowRounding": "Angoli finestre",
-    "working": "Applicazione…"
+    "working": "Applicazione…",
+    "dynamic": "Dinamico",
+    "dynamicHint": "Colori dallo sfondo",
+    "dynamicInstall": "Installa matugen: sudo dnf install matugen",
+    "dynamicMode": "Modalità dinamica",
+    "dynamicStyle": "Palette",
+    "dynamicModes": {
+      "auto": "Auto",
+      "dark": "Scuro",
+      "light": "Chiaro"
+    },
+    "dynamicSchemes": {
+      "tonalSpot": "Tonale",
+      "vibrant": "Vivace",
+      "expressive": "Espressiva",
+      "fidelity": "Fedele",
+      "neutral": "Neutra"
+    }
   },
   "wallpaper": {
     "appliedPrefix": "Sfondo applicato: ",

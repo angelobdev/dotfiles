@@ -62,6 +62,12 @@ The Theming panel lists the installed fonts. These add common interface and codi
 sudo dnf install rsms-inter-fonts ibm-plex-sans-fonts ibm-plex-mono-fonts jetbrains-mono-fonts fira-code-fonts
 ```
 
+The dynamic theme (the Dynamic card in the Theming panel) needs matugen, from the `nett00n/hyprland` COPR that also provides Hyprland:
+
+```sh
+sudo dnf install matugen
+```
+
 WebP previews in the file picker (`Super + Shift + W`) need Qt's image format plugins; the Theming panel does not, as it shows cached JPEG thumbnails:
 
 ```sh

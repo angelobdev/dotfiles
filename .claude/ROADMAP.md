@@ -139,13 +139,13 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
   - [x] Round 2 (user feedback): cached JPEG thumbnails (WebP previews), one monospace font everywhere, shell glyphs from the icon pack (`IconNames.js`), custom installed font/icon theme by name with folder and rescan buttons, transparent bar (double-click on the bar or the Theme tab).
   - [x] Round 3: transparent bar text and icons take whichever theme text colour has the higher WCAG contrast over the strip under the bar (cover-cropped at the monitor size), the bar itself staying transparent; font and icon changes show a "Restart shell" banner instead of restarting by themselves.
   - [x] Window corners (0–24) and border width (0–4 px) in the Theme tab; border colours from the theme (accent active, border inactive); the corners also scale every shell radius (`Theme.corner`) and the lock screen field.
+- [x] Phase 5, dynamic theme: `theme.py generate` turns matugen's JSON for the wallpaper into `~/.config/desktop/themes/dynamic/theme.json` (Material roles → palette, standard terminal hues harmonized toward the primary with a contrast floor, nearest GSettings accent) and applies it through the same templates; Dynamic card plus mode (Auto · Dark · Light) and palette style chips in the Theme tab; `DynamicTheme.qml` regenerates on every wallpaper change while it is current; light themes shade the bar with their background; installation docs updated.
 
 ### Shell state and shortcuts
 
 - [x] Persistent notification history (`Notices` → state file), so shell restarts keep it.
 - [x] Persist "Keep awake" (`Idle.keepAwake`) and "Do Not Disturb" (`Notices.quiet`) across shell restarts and logins (state file read at start).
 - [x] Keyboard shortcuts to toggle "Keep awake" (`Super + Ctrl + K`) and "Do Not Disturb" (`Super + Ctrl + N`) with a state OSD, listed in Hints.
-- [ ] Phase 5, dynamic theme: a custom image → matugen (`nett00n/hyprland` COPR) → generated `custom` theme through the same templates; installation docs updated.
 
 ### Touchscreen support (epic)
 

@@ -288,5 +288,111 @@ class RendererTests(unittest.TestCase):
             theme.theme_path('../etc')
 
 
+def matugen_output(mode):
+    """The shape of matugen image --json hex output, with the Material roles of a blue seed."""
+    roles = {
+        'dark': {'surface': '#111318', 'surface_container_lowest': '#0c0e13', 'surface_container_low': '#191c20',
+                 'surface_container_high': '#282a2f', 'outline_variant': '#44474e', 'on_surface': '#e2e2e9',
+                 'on_surface_variant': '#c4c6d0', 'outline': '#8e9099', 'primary': '#aac7ff', 'on_primary': '#0a305f',
+                 'tertiary': '#dcbce0', 'error': '#ffb4ab'},
+        'light': {'surface': '#f9f9ff', 'surface_container_lowest': '#ffffff', 'surface_container_low': '#f3f3fa',
+                  'surface_container_high': '#e7e8ee', 'outline_variant': '#c4c6d0', 'on_surface': '#191c20',
+                  'on_surface_variant': '#44474e', 'outline': '#74777f', 'primary': '#415f91', 'on_primary': '#ffffff',
+                  'tertiary': '#705575', 'error': '#ba1a1a'},
+    }[mode]
+    # Image colours in no hue order, as matugen reports them for a brown painting; the theme ignores them.
+    tones = {'base08': '#bdbaa4', 'base0a': '#c5c0aa', 'base0b': '#beb79c', 'base0d': '#bcb295'}
+    wrap = lambda value: {'dark': {'color': value}, 'light': {'color': value}, 'default': {'color': value.upper()}}
+    return {'mode': mode, 'is_dark_mode': mode == 'dark', 'colors': {k: wrap(v) for k, v in roles.items()},
+            'base16': {k: wrap(v) for k, v in tones.items()}}
+
+
+class DynamicThemeTests(unittest.TestCase):
+    def test_material_roles_map_to_the_palette(self):
+        generated = theme.dynamic_theme(matugen_output('dark'), '/pictures/sea.jpg')
+        palette = generated['palette']
+        self.assertEqual((palette['bg'], palette['base'], palette['raised']), ('#111318', '#0c0e13', '#282a2f'))
+        self.assertEqual((palette['fg'], palette['accent'], palette['accentFg']), ('#e2e2e9', '#aac7ff', '#0a305f'))
+        self.assertEqual(generated['mode'], 'dark')
+        self.assertEqual(generated['source'], '/pictures/sea.jpg')
+        self.assertEqual(generated['wallpaperDirectories'], ['/pictures'])
+        self.assertEqual(generated['system']['gtkTheme'], 'Adwaita-dark')
+        light = theme.dynamic_theme(matugen_output('light'), '/pictures/snow.jpg')
+        self.assertEqual((light['mode'], light['palette']['base']), ('light', '#f3f3fa'))
+        self.assertEqual(light['system']['iconTheme'], 'Papirus-Light')
+        self.assertEqual(light['vscode']['theme'], 'Default Light Modern')
+
+    def test_ansi_keeps_its_hues_and_stays_readable(self):
+        for mode in ('dark', 'light'):
+            with self.subTest(mode=mode):
+                generated = theme.dynamic_theme(matugen_output(mode), '/pictures/a.jpg')
+                ansi, background = generated['ansi'], generated['palette']['bg']
+                self.assertEqual(len(ansi), 16)
+                for index in (1, 2, 3, 4, 5, 6):
+                    self.assertGreaterEqual(contrast(ansi[index], background), 3, index)
+                for index in (9, 10, 11, 12, 13, 14):
+                    self.assertGreaterEqual(contrast(ansi[index], background), 4.5, index)
+                self.assertGreaterEqual(contrast(ansi[15 if mode == 'dark' else 0], background), 4.5)
+                # Red, green, yellow and blue stay themselves, whatever the image colours are.
+                for index, accent in ((1, 'red'), (2, 'green'), (3, 'yellow'), (4, 'blue'), (9, 'red'), (10, 'green')):
+                    self.assertEqual(theme.nearest_accent(ansi[index]), accent, index)
+
+    def test_harmonizing_turns_at_most_fifteen_degrees(self):
+        hue = lambda colour: theme.colorsys.rgb_to_hls(*theme.to_rgb(colour))[0] * 360
+        self.assertAlmostEqual(hue(theme.harmonized(130, '#ff0000', 0.6, 0.5)), 115, delta=1.5)
+        self.assertAlmostEqual(hue(theme.harmonized(130, '#20e040', 0.6, 0.5)), 129.5, delta=1.5)
+
+    def test_accent_colour_is_the_nearest_hue(self):
+        self.assertEqual(theme.nearest_accent('#aac7ff'), 'blue')
+        self.assertEqual(theme.nearest_accent('#f0c040'), 'yellow')
+        self.assertEqual(theme.nearest_accent('#40c070'), 'green')
+        self.assertEqual(theme.nearest_accent('#e05090'), 'pink')
+        self.assertEqual(theme.nearest_accent('#8a8d93'), 'slate')
+
+    def test_generated_themes_read_like_the_shipped_ones(self):
+        for mode in ('dark', 'light'):
+            with self.subTest(mode=mode):
+                loaded = theme.complete(theme.dynamic_theme(matugen_output(mode), '/pictures/a.jpg'))
+                out = theme.render_all(loaded, TEMPLATES)
+                self.assertEqual(set(out), {path.stem for path in TEMPLATES.glob('*.tpl')})
+                palette, shell = loaded['palette'], loaded['shell']
+                self.assertGreaterEqual(contrast(palette['fg'], palette['bg']), 7)
+                self.assertGreaterEqual(contrast(palette['muted'], palette['bg']), 4.5)
+                self.assertGreaterEqual(contrast(palette['accentFg'], palette['accent']), 4.5)
+                self.assertGreaterEqual(contrast(palette['success'], palette['bg']), 4.5)
+                self.assertGreaterEqual(contrast(palette['warning'], palette['bg']), 4.5)
+
+    def test_light_themes_shade_the_bar_with_their_background(self):
+        light = theme.complete(theme.dynamic_theme(matugen_output('light'), '/pictures/a.jpg'))
+        self.assertEqual(light['shell']['barShadeTop'], '#f9f9ff99')
+        self.assertEqual(theme.complete(GRAPHITE)['shell']['barShadeTop'], GRAPHITE['shell'].get('barShadeTop', '#00000055'))
+        dark = theme.complete(theme.dynamic_theme(matugen_output('dark'), '/pictures/a.jpg'))
+        self.assertEqual(dark['shell']['barShadeTop'], '#00000055')
+
+    def test_dynamic_preferences_are_kept_and_cleaned(self):
+        chosen = {'dynamic': {'mode': 'light', 'scheme': ''}}
+        with tempfile.TemporaryDirectory() as directory:
+            original = theme.STATE
+            theme.STATE = Path(directory)
+            try:
+                theme.save_preferences(chosen)
+                self.assertEqual(theme.preferences().get('dynamic'), {'mode': 'light'})
+            finally:
+                theme.STATE = original
+
+    @unittest.skipUnless(theme.shutil.which('matugen'), 'matugen is not installed')
+    def test_real_matugen_output_converts(self):
+        image = REPO / 'shell/.local/share/icons/hicolor/scalable/apps/desktopai.svg'
+        wallpapers = sorted((Path.home() / '.local/share/desktop/wallpapers').glob('*/*.jp*g'))
+        if wallpapers:
+            image = wallpapers[0]
+        for mode in ('dark', 'light'):
+            with self.subTest(mode=mode):
+                data = theme.run_matugen(image, {'dynamic': {'mode': mode}})
+                generated = theme.complete(theme.dynamic_theme(data, image))
+                self.assertEqual(generated['mode'], mode)
+                self.assertGreaterEqual(contrast(generated['palette']['fg'], generated['palette']['bg']), 7)
+
+
 if __name__ == '__main__':
     unittest.main()

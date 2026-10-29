@@ -26,6 +26,6 @@ case "${1:-apply}" in
         ;;
     list) exec python3 "$helper" list ;;
     # Preferences that apply across themes (the Theming panel uses the same commands).
-    font|icon-theme|shell-icons|bar-style) exec python3 "$helper" "$@" ;;
-    *) echo 'Usage: desktop-theme [apply | set THEME | list | font ... | icon-theme NAME | shell-icons desktop|pack | bar-style shade|transparent|toggle]' >&2; exit 2 ;;
+    font|icon-theme|shell-icons|bar-style|generate|dynamic) exec python3 "$helper" "$@" ;;
+    *) echo 'Usage: desktop-theme [apply | set THEME | list | font ... | icon-theme NAME | shell-icons desktop|pack | bar-style shade|transparent|toggle | generate [--image PATH] | dynamic [--mode M] [--scheme S]]' >&2; exit 2 ;;
 esac

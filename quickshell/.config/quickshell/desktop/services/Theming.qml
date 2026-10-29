@@ -15,6 +15,24 @@ Singleton {
             borderSize: 0
         })
     property string current: ""
+    // The theme generated from the wallpaper: whether matugen is installed, its mode and palette style.
+    property var dynamic: ({
+            available: false,
+            mode: "auto",
+            scheme: "tonal-spot",
+            source: null
+        })
+    // Shipped and user themes, then the dynamic one, with the colours it was generated with last, if any.
+    readonly property var themeItems: themes.filter(t => t.id !== "dynamic").concat([
+        {
+            id: "dynamic",
+            dynamic: true,
+            name: "",
+            preview: themes.find(t => t.id === "dynamic")?.preview ?? null
+        }
+    ])
+    // Thumbnail of the current wallpaper when the gallery has one; else the image itself.
+    readonly property string wallpaperThumb: wallpaperItems.find(e => e.path === wallpaper && e.thumb !== "")?.thumb ?? wallpaper
     property var pack: ({
             wallpapers: [],
             files: []
@@ -94,6 +112,13 @@ Singleton {
     function setTheme(id) {
         if (id !== current)
             run([["python3", helper, "set", id]]);
+    }
+    function generate() {
+        if (dynamic.available)
+            run([["python3", helper, "generate"]]);
+    }
+    function setDynamic(option, value) {
+        run([["python3", helper, "dynamic", "--" + option, value]]);
     }
     function setWallpaper(path) {
         run([["python3", wallpaperHelper, path], ["python3", helper, "remember-wallpaper", path]]);
@@ -216,6 +241,7 @@ Singleton {
                     root.themes = data.themes;
                     root.current = data.current;
                     root.windows = data.windows ?? root.windows;
+                    root.dynamic = data.dynamic ?? root.dynamic;
                 }
             }
         }

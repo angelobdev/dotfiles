@@ -159,6 +159,69 @@ Overlay {
                             onChosen: name => Theming.setWindowStyle("border", Number(name))
                         }
                     }
+                    // Dynamic theme: light or dark (Auto lets the image decide) and the palette style.
+                    RowLayout {
+                        visible: Theming.dynamic.available
+                        spacing: 10
+                        Text {
+                            text: I18n.tr("theming.dynamicMode")
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: 12
+                        }
+                        ChoiceChips {
+                            Layout.fillWidth: false
+                            options: [
+                                {
+                                    name: "auto",
+                                    label: I18n.tr("theming.dynamicModes.auto")
+                                },
+                                {
+                                    name: "dark",
+                                    label: I18n.tr("theming.dynamicModes.dark")
+                                },
+                                {
+                                    name: "light",
+                                    label: I18n.tr("theming.dynamicModes.light")
+                                }
+                            ]
+                            current: Theming.dynamic.mode
+                            onChosen: name => Theming.setDynamic("mode", name)
+                        }
+                        Text {
+                            text: I18n.tr("theming.dynamicStyle")
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: 12
+                        }
+                        ChoiceChips {
+                            Layout.fillWidth: false
+                            options: [
+                                {
+                                    name: "tonal-spot",
+                                    label: I18n.tr("theming.dynamicSchemes.tonalSpot")
+                                },
+                                {
+                                    name: "vibrant",
+                                    label: I18n.tr("theming.dynamicSchemes.vibrant")
+                                },
+                                {
+                                    name: "expressive",
+                                    label: I18n.tr("theming.dynamicSchemes.expressive")
+                                },
+                                {
+                                    name: "fidelity",
+                                    label: I18n.tr("theming.dynamicSchemes.fidelity")
+                                },
+                                {
+                                    name: "neutral",
+                                    label: I18n.tr("theming.dynamicSchemes.neutral")
+                                }
+                            ]
+                            current: Theming.dynamic.scheme
+                            onChosen: name => Theming.setDynamic("scheme", name)
+                        }
+                    }
                     GridView {
                         id: themeGrid
                         Layout.fillWidth: true
@@ -166,15 +229,35 @@ Overlay {
                         clip: true
                         cellWidth: Math.floor(width / Math.max(1, Math.floor(width / 230)))
                         cellHeight: 190
-                        model: Theming.themes
+                        model: Theming.themeItems
                         keyNavigationEnabled: true
-                        Keys.onReturnPressed: Theming.setTheme(Theming.themes[currentIndex]?.id ?? "")
-                        Keys.onEnterPressed: Theming.setTheme(Theming.themes[currentIndex]?.id ?? "")
+                        // The dynamic card generates from the current wallpaper, also when already active.
+                        function choose(item) {
+                            if (item?.dynamic)
+                                Theming.generate();
+                            else if (item)
+                                Theming.setTheme(item.id);
+                        }
+                        Keys.onReturnPressed: choose(Theming.themeItems[currentIndex])
+                        Keys.onEnterPressed: choose(Theming.themeItems[currentIndex])
                         delegate: Item {
                             id: themeCell
                             required property var modelData
                             required property int index
-                            readonly property var preview: modelData.preview
+                            readonly property bool dynamicCard: modelData.dynamic === true
+                            readonly property bool unavailable: dynamicCard && !Theming.dynamic.available
+                            // Before its first generation the dynamic card draws its mock-up in the current colours.
+                            readonly property var preview: modelData.preview ?? {
+                                bg: Theme.background,
+                                base: Theme.raised,
+                                raised: Theme.tile,
+                                border: Theme.stroke,
+                                fg: Theme.text,
+                                muted: Theme.muted,
+                                accent: Theme.accent,
+                                accentFg: Theme.accentText,
+                                ansi: []
+                            }
                             readonly property bool active: modelData.id === Theming.current
                             width: themeGrid.cellWidth
                             height: themeGrid.cellHeight
@@ -198,7 +281,19 @@ Overlay {
                                         Layout.fillHeight: true
                                         radius: Theme.corner(8)
                                         color: themeCell.preview.bg
+                                        clip: themeCell.dynamicCard
+                                        // The dynamic mock-up sits on the wallpaper it takes its colours from.
+                                        Image {
+                                            anchors.fill: parent
+                                            visible: themeCell.dynamicCard && Theming.wallpaperThumb !== ""
+                                            source: visible ? root.fileUrl(Theming.wallpaperThumb) : ""
+                                            sourceSize: Qt.size(480, 300)
+                                            fillMode: Image.PreserveAspectCrop
+                                            asynchronous: true
+                                            opacity: themeCell.unavailable ? 0.35 : 1
+                                        }
                                         Rectangle {
+                                            visible: !themeCell.unavailable
                                             anchors {
                                                 left: parent.left
                                                 right: parent.right
@@ -209,6 +304,7 @@ Overlay {
                                             color: themeCell.preview.base
                                         }
                                         Rectangle {
+                                            visible: !themeCell.unavailable
                                             x: 12
                                             y: 22
                                             width: parent.width * 0.55
@@ -234,7 +330,22 @@ Overlay {
                                                 font.pixelSize: 10
                                             }
                                         }
+                                        Text {
+                                            anchors {
+                                                fill: parent
+                                                margins: 12
+                                            }
+                                            visible: themeCell.unavailable
+                                            text: I18n.tr("theming.dynamicInstall")
+                                            wrapMode: Text.WordWrap
+                                            horizontalAlignment: Text.AlignHCenter
+                                            verticalAlignment: Text.AlignVCenter
+                                            color: Theme.text
+                                            font.family: Theme.font
+                                            font.pixelSize: 12
+                                        }
                                         Rectangle {
+                                            visible: !themeCell.unavailable
                                             anchors {
                                                 right: parent.right
                                                 bottom: parent.bottom
@@ -256,6 +367,8 @@ Overlay {
                                     }
                                     Row {
                                         spacing: 3
+                                        // Keeps the card height when the dynamic theme has no colours yet.
+                                        Layout.preferredHeight: 14
                                         Repeater {
                                             model: themeCell.preview.ansi.slice(1, 7).concat(themeCell.preview.ansi.slice(9, 11))
                                             Rectangle {
@@ -271,13 +384,20 @@ Overlay {
                                         Layout.fillWidth: true
                                         Text {
                                             Layout.fillWidth: true
-                                            text: themeCell.modelData.name
+                                            text: themeCell.dynamicCard ? I18n.tr("theming.dynamic") : themeCell.modelData.name
                                             textFormat: Text.PlainText
                                             elide: Text.ElideRight
                                             color: Theme.text
                                             font.family: Theme.font
                                             font.pixelSize: 13
                                             font.bold: themeCell.active
+                                        }
+                                        Text {
+                                            visible: themeCell.dynamicCard && !themeCell.active && !themeCell.unavailable
+                                            text: I18n.tr("theming.dynamicHint")
+                                            color: Theme.muted
+                                            font.family: Theme.font
+                                            font.pixelSize: 11
                                         }
                                         Text {
                                             visible: themeCell.active
@@ -293,9 +413,10 @@ Overlay {
                                 id: themeMouse
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                enabled: !themeCell.unavailable
                                 onClicked: {
                                     themeGrid.currentIndex = themeCell.index;
-                                    Theming.setTheme(themeCell.modelData.id);
+                                    themeGrid.choose(themeCell.modelData);
                                 }
                             }
                         }

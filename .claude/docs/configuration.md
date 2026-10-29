@@ -220,7 +220,7 @@ Other applications:
 - **btop:** every theme, Graphite included, is written to `~/.config/btop/themes/desktop.theme`. `btop.conf` gets `color_theme = "desktop"`, and a running btop reloads on `SIGUSR2`.
   - The main background stays empty, so the translucent Kitty background shows through.
   - btop rewrites `btop.conf` on exit, so it is not stowed. Set `color_theme = "Default"` to go back.
-- **Zen and other portal-aware apps** follow the `color-scheme` that `mode` sets (all shipped themes are dark).
+- **Zen and other portal-aware apps** follow the `color-scheme` that `mode` sets (all shipped themes are dark; the dynamic one can be light).
 
 Preferences: `~/.local/state/desktop-theme/preferences.json` holds what is chosen in the Theming panel, or with these commands:
 - `desktop-theme font --sans F --mono F --size N --unified on|off` (`--default` clears them). `--unified on` makes the interface use the monospace family.
@@ -244,6 +244,17 @@ Commands:
 - GTK and Qt applications adopt the new palette when restarted.
 - `desktop-theme list` prints the themes as JSON.
 - `python3 ~/.local/libexec/desktop/theme.py render --theme <id> --out <dir>` previews the output without applying it.
+
+### Dynamic theme
+
+`desktop-theme generate [--image PATH]` (the Dynamic card in the Theming panel) runs `matugen image PATH --json hex --dry-run --source-color-index 0` on the current wallpaper by default, and writes `~/.config/desktop/themes/dynamic/theme.json`. It then applies it like `desktop-theme set dynamic` and remembers the image as the theme's wallpaper.
+- **Palette** from the Material roles: bg = `surface`; base = `surface_container_lowest` (dark) or `surface_container_low` (light); raised = `surface_container_high`; border = `outline_variant`; fg = `on_surface`; muted = `on_surface_variant`; dim = `outline`; accent = `primary`; accentFg = `on_primary`; link = `tertiary`; danger = `error`.
+- **ANSI, success and warning** use the standard terminal hues (red, green, yellow, blue, magenta, cyan), each turned at most 15° toward the primary, as Material harmonizes custom colours. matugen's base16 is not used, because it holds the image's own colours in no hue order. Their HSL lightness is then moved away from bg until they reach 3:1 (normal colours) or 4.5:1 (bright colours, which are also success and warning). Black and white come from the surfaces.
+- **System:** Adwaita or Adwaita-dark, Papirus-Dark or Papirus-Light, the GSettings accent nearest to the primary hue (slate when it is grey), VS Code Default Dark Modern or Default Light Modern.
+- **Light mode:** the bar shade uses bg at 60%/53% instead of black, so its dark text stays readable. This applies to any theme with `"mode": "light"` that does not set `barShadeTop`/`barShadeBottom`.
+- `wallpaperDirectories` is the image's folder, so `Super + Ctrl + W` cycles it.
+
+`desktop-theme dynamic --mode auto|dark|light --scheme tonal-spot|vibrant|expressive|fidelity|neutral` stores `dynamic` in `preferences.json` (matugen `-m smart|dark|light` and `-t scheme-…`) and regenerates when the dynamic theme is current. `services/DynamicTheme.qml` watches `current.json`, the wallpaper selection and the generated theme: while the theme is `dynamic` and the wallpaper is not its `source`, it runs `theme.py generate`, one run at a time.
 
 Templates use `{{ path }}` or `{{ path | filter }}`, with the filters `hex`, `rgba[:aa]`, `qt[:aa]`, `hypr` and `hexrgba`. A key the theme lacks is an error, never an empty value.
 

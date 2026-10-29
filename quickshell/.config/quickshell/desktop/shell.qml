@@ -16,11 +16,12 @@ import "osd"
 import "services"
 
 ShellRoot {
-    // Eagerly load shared services, including the notification D-Bus owner.
+    // Eagerly load shared services, including the notification D-Bus owner and the dynamic theme watcher.
     property var audio: Audio
     property var notices: Notices
     property var clipboard: Clipboard
     property var bluetoothAgent: BluetoothAgent
+    property var dynamicTheme: DynamicTheme
     IpcHandler {
         target: "desktop"
         function toggle(panel: string): void {
@@ -105,6 +106,11 @@ ShellRoot {
                             active: Hyprland.monitorFor(s)?.activeWorkspace?.id
                         })),
                 quiet: Notices.quiet,
+                dynamicTheme: {
+                    active: DynamicTheme.active,
+                    source: DynamicTheme.source,
+                    running: DynamicTheme.running
+                },
                 networkDevices: Networking.devices.values.length,
                 notifications: Notices.notifications.values.length,
                 archivedNotifications: Notices.archived.length,

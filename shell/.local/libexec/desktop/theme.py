@@ -2,11 +2,13 @@
 """Render the desktop theme into the files the shell and applications read."""
 from i18n import tr
 import argparse
+import colorsys
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -137,6 +139,9 @@ def complete(theme):
                        ('brightText', '#ffffff')):
         palette.setdefault(key, value)
     shell = theme.setdefault('shell', {})
+    # A light theme shades the bar with its own background, so its dark bar text stays readable.
+    shade = palette['bg'] if theme.get('mode') == 'light' else '#000000'
+    shade_top, shade_bottom = ('99', '88') if theme.get('mode') == 'light' else ('55', '44')
     for key, value in (('background', alpha(palette['bg'], 'f2')), ('surface', alpha(palette['bg'], 'd9')),
                        ('raised', alpha(palette['base'], 'e6')), ('tile', alpha(palette['raised'], 'e6')),
                        ('accentText', palette['accentFg']), ('track', alpha(mix(palette['dim'], palette['bg'], 0.3), '80')),
@@ -144,7 +149,7 @@ def complete(theme):
                        ('accent', palette['accent']), ('danger', palette['danger']), ('scrim', '#00000014'),
                        ('scrimModal', '#00000099'), ('scrimStrong', '#000000bb'), ('tooltip', alpha(palette['raised'], 'f0')),
                        ('handlePressed', palette['brightText']), ('handleFocus', mix(palette['muted'], palette['dim'], 0.5)),
-                       ('barShadeTop', '#00000055'), ('barShadeBottom', '#00000044'), ('shareShade', '#00000028')):
+                       ('barShadeTop', alpha(shade, shade_top)), ('barShadeBottom', alpha(shade, shade_bottom)), ('shareShade', '#00000028')):
         shell.setdefault(key, value)
     hyprland = theme.setdefault('hyprland', {})
     hyprland.setdefault('shadow', alpha(palette['shadow'], '66'))
@@ -214,9 +219,10 @@ def with_preferences(theme, chosen):
 def save_preferences(chosen):
     fonts = {key: value for key, value in chosen.get('fonts', {}).items() if value not in (None, '', False)}
     windows = {key: value for key, value in chosen.get('windows', {}).items() if isinstance(value, int)}
+    dynamic = {key: value for key, value in chosen.get('dynamic', {}).items() if value}
     cleaned = {key: value for key, value in (('fonts', fonts), ('iconTheme', chosen.get('iconTheme')),
                                               ('shellIcons', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle')),
-                                              ('windows', windows))
+                                              ('windows', windows), ('dynamic', dynamic))
                if value}
     write_atomic(STATE / 'preferences.json', json.dumps(cleaned, ensure_ascii=False) + '\n')
 
@@ -483,6 +489,140 @@ def render_all(theme, templates=TEMPLATES):
     for path in sorted(templates.glob('*.tpl')):
         outputs[path.stem] = render(path.read_text(encoding='utf-8'), theme, path.name)
     return outputs
+
+
+DYNAMIC = 'dynamic'
+SCHEMES = ('tonal-spot', 'vibrant', 'expressive', 'fidelity', 'neutral')
+MODES = {'auto': 'smart', 'dark': 'dark', 'light': 'light'}
+# GNOME accent colours by hue, for the GSettings accent of a generated theme.
+GNOME_ACCENTS = (('red', 0), ('orange', 30), ('yellow', 55), ('green', 120), ('teal', 180), ('blue', 215),
+                 ('purple', 275), ('pink', 330), ('red', 360))
+# Terminal hues in ANSI order (red, green, yellow, blue, magenta, cyan). matugen's base16 colours are the
+# image's own, in no hue order, so a brown painting would give a brown red and a brown green.
+ANSI_HUES = (4, 130, 45, 215, 300, 185)
+
+
+def to_rgb(colour):
+    rgb = split_color(colour, 'colour')[0]
+    return tuple(int(rgb[i:i + 2], 16) / 255 for i in (0, 2, 4))
+
+
+def to_hex(rgb):
+    return '#' + ''.join('%02x' % round(max(0, min(1, channel)) * 255) for channel in rgb)
+
+
+# Moves a colour's lightness away from the background until it reaches the contrast.
+def readable(colour, background, minimum):
+    hue, lightness, saturation = colorsys.rgb_to_hls(*to_rgb(colour))
+    step = 0.02 if relative_luminance(background) < 0.18 else -0.02
+    for _ in range(50):
+        candidate = to_hex(colorsys.hls_to_rgb(hue, lightness, saturation))
+        if contrast_ratio(relative_luminance(candidate), relative_luminance(background)) >= minimum:
+            return candidate
+        lightness = max(0.0, min(1.0, lightness + step))
+    return candidate
+
+
+# A standard hue turned up to 15 degrees toward the primary, as Material harmonizes custom colours, so the
+# terminal colours stay recognisable and still belong to the image.
+def harmonized(hue, primary, saturation, lightness):
+    target = colorsys.rgb_to_hls(*to_rgb(primary))[0] * 360
+    difference = (target - hue + 180) % 360 - 180
+    rotation = max(-15, min(15, difference * 0.5))
+    return to_hex(colorsys.hls_to_rgb(((hue + rotation) % 360) / 360, lightness, saturation))
+
+
+def nearest_accent(colour):
+    hue, lightness, saturation = colorsys.rgb_to_hls(*to_rgb(colour))
+    if saturation < 0.18:
+        return 'slate'
+    degrees = hue * 360
+    return min(GNOME_ACCENTS, key=lambda accent: abs(accent[1] - degrees))[0]
+
+
+# matugen JSON (4.x: colors/base16 -> {dark, light, default: {color}}) -> a theme.json for this desktop.
+def dynamic_theme(data, source):
+    dark = (data.get('mode') or ('dark' if data.get('is_dark_mode', True) else 'light')) == 'dark'
+    def role(name):
+        return data['colors'][name]['default']['color'].lower()
+    palette = {
+        'bg': role('surface'),
+        'base': role('surface_container_lowest' if dark else 'surface_container_low'),
+        'raised': role('surface_container_high'),
+        'border': role('outline_variant'),
+        'fg': role('on_surface'),
+        'muted': role('on_surface_variant'),
+        'dim': role('outline'),
+        'accent': role('primary'),
+        'accentFg': role('on_primary'),
+        'link': role('tertiary'),
+        'danger': role('error'),
+    }
+    background, primary = palette['bg'], palette['accent']
+    normal = [readable(harmonized(hue, primary, 0.55, 0.62 if dark else 0.42), background, 3) for hue in ANSI_HUES]
+    bright = [readable(harmonized(hue, primary, 0.65, 0.72 if dark else 0.34), background, 4.5) for hue in ANSI_HUES]
+    palette['success'], palette['warning'] = bright[1], bright[2]
+    # Black and white ends follow the surfaces: dark themes keep the usual order, light ones invert it.
+    if dark:
+        ansi = [palette['raised']] + normal + [palette['muted'], palette['dim']] + bright + [palette['fg']]
+    else:
+        ansi = [palette['muted']] + normal + [palette['border'], palette['dim']] + bright + [palette['raised']]
+    return {
+        'name': 'Dynamic',
+        'mode': 'dark' if dark else 'light',
+        'source': str(source),
+        'fonts': {'sans': 'Adwaita Sans', 'mono': 'Adwaita Mono', 'size': 10, 'terminalSize': 11},
+        'system': {'gtkTheme': 'Adwaita-dark' if dark else 'Adwaita', 'iconTheme': 'Papirus-Dark' if dark else 'Papirus-Light',
+                   'cursorTheme': 'Adwaita', 'cursorSize': 24, 'accentColor': nearest_accent(palette['accent'])},
+        'palette': palette,
+        'ansi': ansi,
+        'terminal': {'opacity': 0.94},
+        'wallpaperDirectories': [str(Path(source).parent)],
+        'vscode': {'theme': 'Default Dark Modern' if dark else 'Default Light Modern'},
+    }
+
+
+def run_matugen(image, chosen):
+    if shutil.which('matugen') is None:
+        raise ValueError(tr('theme.errors.matugenMissing'))
+    settings = chosen.get('dynamic', {})
+    mode = MODES.get(settings.get('mode', 'auto'), 'smart')
+    scheme = settings.get('scheme') if settings.get('scheme') in SCHEMES else 'tonal-spot'
+    result = subprocess.run(['matugen', 'image', str(image), '--json', 'hex', '--dry-run', '-m', mode, '-t',
+                             'scheme-' + scheme, '--source-color-index', '0'], capture_output=True, text=True,
+                            timeout=60)
+    if result.returncode != 0:
+        raise ValueError(tr('theme.errors.matugenFailed', [result.stderr.strip()[:300]]))
+    # The JSON document is the whole output; anything before its first brace is a log line.
+    return json.loads(result.stdout[result.stdout.index('{'):])
+
+
+# Generates the dynamic theme from an image (the current wallpaper by default) and switches to it.
+def generate(image=None):
+    image = Path(image or current_wallpaper() or '')
+    if not image.is_file():
+        raise ValueError(tr('theme.errors.noWallpaper'))
+    theme = dynamic_theme(run_matugen(image, preferences()), image)
+    write_atomic(CONFIG / 'themes' / DYNAMIC / 'theme.json', json.dumps(theme, indent=2, ensure_ascii=False) + '\n')
+    previous = current()
+    applied = apply(DYNAMIC)
+    apply_vscode(applied)
+    reload()
+    if previous != DYNAMIC:
+        remember(previous, current_wallpaper())
+    remember(DYNAMIC, image)
+    if Path(current_wallpaper() or '') != image:
+        apply_wallpaper(image)
+
+
+def dynamic_info():
+    try:
+        source = json.loads((CONFIG / 'themes' / DYNAMIC / 'theme.json').read_text(encoding='utf-8')).get('source')
+    except (OSError, ValueError, AttributeError):
+        source = None
+    settings = preferences().get('dynamic', {})
+    return {'available': shutil.which('matugen') is not None, 'mode': settings.get('mode', 'auto'),
+            'scheme': settings.get('scheme', 'tonal-spot'), 'source': source}
 
 
 # A destination that is still an old Stow link is replaced, never written through into the repository.
@@ -761,6 +901,11 @@ def main():
     font.add_argument('--unified', choices=('on', 'off'))
     shell_icons = commands.add_parser('shell-icons')
     shell_icons.add_argument('source', choices=('desktop', 'pack'))
+    generator = commands.add_parser('generate')
+    generator.add_argument('--image', type=Path)
+    dynamic = commands.add_parser('dynamic')
+    dynamic.add_argument('--mode', choices=tuple(MODES))
+    dynamic.add_argument('--scheme', choices=SCHEMES)
     windows = commands.add_parser('window-style')
     windows.add_argument('--rounding', type=int, choices=range(0, 33), metavar='0-32')
     windows.add_argument('--border', type=int, choices=range(0, 9), metavar='0-8')
@@ -820,6 +965,20 @@ def main():
     elif arguments.command == 'check-icons':
         if not icon_theme_exists(arguments.name):
             raise ValueError(tr('theming.errors.iconsMissing', [arguments.name]))
+    elif arguments.command == 'generate':
+        generate(arguments.image)
+    elif arguments.command == 'dynamic':
+        chosen = preferences()
+        settings = dict(chosen.get('dynamic', {}))
+        if arguments.mode:
+            settings['mode'] = arguments.mode
+        if arguments.scheme:
+            settings['scheme'] = arguments.scheme
+        chosen['dynamic'] = settings
+        save_preferences(chosen)
+        # The new mode or style shows at once when the dynamic theme is the current one.
+        if current() == DYNAMIC:
+            generate(dynamic_info()['source'])
     elif arguments.command == 'window-style':
         chosen = preferences()
         windows = {} if arguments.default else dict(chosen.get('windows', {}))
@@ -858,7 +1017,8 @@ def main():
     elif arguments.command == 'list':
         effective = with_preferences(load(current()), preferences())['hyprland']
         print(json.dumps({'current': current(), 'themes': themes(arguments.details),
-                          'windows': {'rounding': effective['rounding'], 'borderSize': effective['borderSize']}},
+                          'windows': {'rounding': effective['rounding'], 'borderSize': effective['borderSize']},
+                          'dynamic': dynamic_info()},
                          ensure_ascii=False))
     elif arguments.command == 'fonts':
         print(json.dumps(fonts(), ensure_ascii=False))
