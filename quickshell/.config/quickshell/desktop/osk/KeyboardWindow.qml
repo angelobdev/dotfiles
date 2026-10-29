@@ -47,8 +47,8 @@ Scope {
         interval: 60
         onTriggered: root.raising = false
     }
-    // Floating windows (the assistant of Super+A) do not move for a reserved area by themselves; once
-    // Hyprland has applied the new one, rules.lua fits them into what is left.
+    // Floating windows do not move for a reserved area by themselves; once Hyprland has applied the new
+    // one, rules.lua fits them into what is left (the assistant console is tiled and follows by itself).
     Timer {
         id: refit
         interval: 200

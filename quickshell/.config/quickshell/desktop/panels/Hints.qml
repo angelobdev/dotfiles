@@ -74,6 +74,8 @@ Overlay {
             return I18n.tr("hints.categories.mouse");
         if (/screenshot|recording/.test(name))
             return I18n.tr("hints.categories.screenCapture");
+        if (/^ai assistant/.test(name))
+            return I18n.tr("hints.categories.other");
         if (/workspace|scratchpad/.test(name))
             return I18n.tr("hints.categories.workspaces");
         if (/lock|suspend|logout|reboot|shut down|session/.test(name))

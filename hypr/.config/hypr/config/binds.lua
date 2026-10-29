@@ -25,6 +25,8 @@ end
 bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminal")
 bind("XF86Calculator", hl.dsp.exec_cmd("gnome-calculator"), "Calculator")
 bind("SUPER + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-ai"'), "AI assistant")
+-- console.lua: into the drop-down console without showing it, or back out of it.
+bind("SUPER + SHIFT + A", function() desktop_console_move() end, "AI assistant · move window in or out")
 
 -- System (Hyprland)
 bind("SUPER + Q", hl.dsp.window.close(), "Close window")

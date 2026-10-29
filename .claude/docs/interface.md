@@ -31,7 +31,8 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + B` | Browser (`zen-browser`) |
 | `Super + Shift + Space` | 1Password quick access (local override) |
 | `Super + Enter` | Kitty |
-| `Super + A` | AI assistant (Claude Code; hold `Space` to dictate) |
+| `Super + A` | AI assistant: the drop-down console with Claude Code (hold `Space` to dictate); a click or tap outside closes it |
+| `Super + Shift + A` | Move the active window into the assistant console, or back out |
 | `Super + Q` | Close window |
 | `Super + Space` | Applications |
 | `Super + Shift + C` | Control Center |
@@ -195,6 +196,10 @@ Folding the OmniBook screen back into tablet posture turns tablet mode on; unfol
 **Long press** does what a right click does: the dock menu, the pin menu in the launcher, tray menus, and hiding a notification popup. **Swipe** a notification sideways past a third of its width: a popup goes away (it stays in the center), an entry in the center is deleted; a shorter swipe springs back.
 
 **Rotation lock** in the Control Center (shown only on machines with an accelerometer) keeps the current orientation; `desktop-shell rotation-lock toggle|on|off` sets it with an OSD. It is remembered across restarts and logins. `desktop-shell tablet on|off|toggle` sets the posture by hand, for instance to try it without folding the screen.
+
+## AI assistant
+
+`Super + A` drops the Claude Code console down from the bar (integrations.md has the details); a click or tap outside, a workspace change or `Super + A` again hides it, and Claude keeps running. `Super + Shift + A` moves the active window into the console or back out. It is not in the dock: the Claude icon in the bar opens a panel with what Claude is doing, the 5-hour and 7-day usage of the subscription with their reset times, and Open / Hide console. Its dot shows Claude working (pulsing), waiting for a permission (red) or finished while the console was hidden; in those cases a notification with **Open console** arrives too.
 
 ## Assist button
 

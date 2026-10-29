@@ -8,6 +8,7 @@ require("config.input")
 require("config.plugins")
 require("config.binds")
 require("config.rules")
+require("config.console")
 require("config.xwayland")
 require("config.session")
 

@@ -184,3 +184,20 @@ hl.animation({
     bezier = "out",
     style = "slidefadevert 20%"
 })
+
+-- The assistant console (console.lua) drops down from the bar and goes back up.
+hl.animation({
+    leaf = "specialWorkspaceIn",
+    enabled = true,
+    speed = 3,
+    bezier = "out",
+    style = "slidefadevert -20%"
+})
+
+hl.animation({
+    leaf = "specialWorkspaceOut",
+    enabled = true,
+    speed = 2.5,
+    bezier = "out",
+    style = "slidefadevert -20%"
+})

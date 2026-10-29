@@ -41,8 +41,8 @@ sys.exit(0 if running else 1)
         exit 1
         ;;
     toggle)
-        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power) ;;
-            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power}' >&2; exit 2 ;;
+        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent) ;;
+            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent}' >&2; exit 2 ;;
         esac
         exec qs ipc -p "$config" call desktop toggle "$2"
         ;;

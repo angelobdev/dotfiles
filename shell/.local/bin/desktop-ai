@@ -4,22 +4,40 @@ set -euo pipefail
 export PATH="$HOME/.local/bin:$PATH"
 case "${1:-toggle}" in
     toggle)
-        if hyprctl clients -j | python3 -c '
+        # Where Claude runs: in the console (toggle it), moved out of it (bring it back), or not yet.
+        place="$(hyprctl clients -j | python3 -c '
 import json, sys
-sys.exit(0 if any(client.get("class") == "desktop-ai" for client in json.load(sys.stdin)) else 1)
-'; then
+names = [c.get("workspace", {}).get("name", "") for c in json.load(sys.stdin) if c.get("class") == "desktop-ai"]
+print("" if not names else "inside" if "special:ai" in names else "outside")
+')"
+        if [[ $place == inside ]]; then
             exec hyprctl dispatch 'hl.dsp.workspace.toggle_special("ai")'
+        elif [[ $place == outside ]]; then
+            exec hyprctl eval 'desktop_console_show()'
         fi
         if ! command -v claude >/dev/null; then
             exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify assistant.title assistant.errors.claudeMissing
         fi
         # Session-only settings: hold-Space dictation, and one language for dictation and replies
-        # (the system locale unless DESKTOP_AI_LANGUAGE names another, e.g. "italian").
+        # (the system locale unless DESKTOP_AI_LANGUAGE names another, e.g. "italian"). agent.py gets the
+        # status line (usage for the shell panel) and the hooks that tell the shell what Claude is doing;
+        # they run async, so they never hold Claude up, except SessionEnd, which must finish before exit.
         language="${DESKTOP_AI_LANGUAGE:-$(python3 "$HOME/.local/libexec/desktop/i18n.py" assistant.language)}"
         settings="$(python3 -c '
 import json, sys
-print(json.dumps({"voice": {"enabled": True, "mode": "hold"}, "language": sys.argv[1]}))
-' "$language")"
+language, helper = sys.argv[1:]
+command = "python3 " + json.dumps(helper)
+def hook(asynchronous=True, matcher=None):
+    entry = {"hooks": [dict({"type": "command", "command": command + " hook", "timeout": 5},
+                            **({"async": True} if asynchronous else {}))]}
+    return [dict(entry, matcher=matcher) if matcher else entry]
+hooks = {name: hook() for name in ("SessionStart", "UserPromptSubmit", "PermissionRequest", "PostToolUse",
+                                   "PostToolUseFailure", "PermissionDenied", "Stop", "StopFailure")}
+hooks.update(Notification=hook(matcher="permission_prompt"), SessionEnd=hook(asynchronous=False))
+print(json.dumps({"voice": {"enabled": True, "mode": "hold"}, "language": language,
+                  "statusLine": {"type": "command", "command": command + " statusline", "padding": 0},
+                  "disableAllHooks": False, "hooks": hooks}))
+' "$language" "$HOME/.local/libexec/desktop/agent.py")"
         # The desktop-ai window rule places the window on the special workspace "ai".
         setsid -f kitty --class desktop-ai --directory "$HOME" -e claude --settings "$settings" >/dev/null 2>&1
         ;;

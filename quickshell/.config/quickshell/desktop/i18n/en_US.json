@@ -7,10 +7,54 @@
   },
   "assistant": {
     "errors": {
-      "claudeMissing": "Claude Code is not installed: see .claude/docs/integrations.md"
+      "claudeMissing": "Claude Code is not installed: see .claude/docs/integrations.md",
+      "usage": "Usage: agent.py hook|statusline (JSON on stdin, from Claude Code)"
     },
     "language": "english",
-    "title": "AI assistant"
+    "title": "AI assistant",
+    "moveWindow": "AI assistant · move window in or out",
+    "statusLine": {
+      "context": "context %1%"
+    },
+    "claude": "Claude",
+    "openConsole": "Open console",
+    "hideConsole": "Hide console",
+    "notices": {
+      "permission": "Claude is asking for permission",
+      "finished": "Claude has finished",
+      "error": "Claude stopped with an error"
+    },
+    "plans": {
+      "max": "Max %1x",
+      "maxPlain": "Max",
+      "pro": "Pro"
+    },
+    "states": {
+      "missing": "Claude Code is not installed",
+      "off": "Not running: open the console to start Claude",
+      "ready": "Ready",
+      "working": "Working…",
+      "permission": "Waiting for your permission",
+      "finished": "Finished",
+      "error": "Stopped with an error"
+    },
+    "timeFormat": "HH:mm",
+    "dayTimeFormat": "ddd HH:mm",
+    "since": "Since %1",
+    "panelTooltip": "Claude",
+    "usage": {
+      "title": "Usage",
+      "titlePlan": "Usage · %1",
+      "session": "Session (5 hours)",
+      "week": "Week (7 days)",
+      "unknown": "No data for this window",
+      "empty": "Open the console and send a message to read the limits",
+      "modelContext": "%1 · context %2%",
+      "resetsAt": "Resets at %1",
+      "resetsOn": "Resets %1",
+      "updatedAt": "Updated at %1",
+      "updatedOn": "Updated %1"
+    }
   },
   "audio": {
     "devices": "Inputs & outputs",

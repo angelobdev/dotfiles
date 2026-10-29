@@ -8,6 +8,7 @@ import Quickshell.Networking
 import Quickshell.Bluetooth
 import "bar"
 import "assist"
+import "components"
 import "dock"
 import "panels"
 import "controlcenter"
@@ -137,6 +138,15 @@ ShellRoot {
                     seconds: Recording.seconds,
                     error: Recording.error
                 },
+                agent: {
+                    available: Agent.available,
+                    running: Agent.running,
+                    console: Agent.consoleScreen,
+                    state: Agent.state,
+                    unseen: Agent.unseen,
+                    plan: Agent.plan,
+                    usage: Agent.usage
+                },
                 workspaces: Quickshell.screens.map(s => ({
                             monitor: s.name,
                             active: Hyprland.monitorFor(s)?.activeWorkspace?.id
@@ -198,6 +208,10 @@ ShellRoot {
             DockWindow {
                 screen: scope.modelData
             }
+            ConsoleCatcher {
+                screen: scope.modelData
+                screenName: scope.modelData.name
+            }
         }
     }
     OsdPopup {}
@@ -215,6 +229,7 @@ ShellRoot {
         id: hints
     }
     RecordingPanel {}
+    AgentPanel {}
     ClipboardPanel {}
     WallpaperPicker {}
     ThemingPanel {

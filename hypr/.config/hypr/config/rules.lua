@@ -27,21 +27,17 @@ hl.window_rule({
     move = { "monitor_w-window_w-20", "monitor_h-window_h-20" },
 })
 
--- desktop-ai launches Claude Code in Kitty; Super+A toggles this special workspace.
-local assistant = { width = 0.6, height = 0.7 }
+-- desktop-ai launches Claude Code in Kitty; Super+A toggles this special workspace, the drop-down console
+-- of console.lua.
 hl.window_rule({
     name = "desktop-ai",
     match = { class = "^desktop-ai$" },
     workspace = "special:ai",
-    float = true,
-    size = { "monitor_w*" .. assistant.width, "monitor_h*" .. assistant.height },
-    center = true,
 })
 
 -- Floating windows keep their pixel size and place when the usable area of a monitor changes (rotation in
--- tablet mode, a new scale, the docked on-screen keyboard reserving the bottom): the assistant takes its
--- rule size again, limited to the usable area, and any other floating window that no longer fits there
--- moves in and shrinks to fit. Both stay inside the area left by the bar and the keyboard.
+-- tablet mode, a new scale, the docked on-screen keyboard reserving the bottom): a floating window that no
+-- longer fits there moves in and shrinks to fit, inside the area left by the bar and the keyboard.
 local function fit(window)
     local monitor = window.monitor
     if not (window.floating and window.mapped and monitor and window.fullscreen == 0) then
@@ -56,10 +52,7 @@ local function fit(window)
     local usableWidth = width - (reserved.left or 0) - (reserved.right or 0)
     local usableHeight = height - (reserved.top or 0) - (reserved.bottom or 0)
     local at, x, y = window.at, window.size.x, window.size.y
-    local assistantWindow = window.class == "desktop-ai"
-    if assistantWindow then
-        x, y = width * assistant.width, height * assistant.height
-    elseif at.x >= left and at.y >= top and at.x + x <= left + usableWidth and at.y + y <= top + usableHeight then
+    if at.x >= left and at.y >= top and at.x + x <= left + usableWidth and at.y + y <= top + usableHeight then
         -- Still inside the usable area: left as it is, however large.
         return
     end
@@ -80,11 +73,6 @@ function desktop_fit_floating()
 end
 
 hl.on("monitor.layout_changed", desktop_fit_floating)
-hl.on("window.open", function(window)
-    if window and window.class == "desktop-ai" then
-        fit(window)
-    end
-end)
 
 -- Transparent margins/backdrops stay clear; the glass surfaces receive blur.
 hl.layer_rule({

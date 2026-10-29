@@ -252,6 +252,47 @@ PanelWindow {
             }
             onClicked: ShellState.toggle("battery", bar.screen)
         }
+        // Claude: a dot while it works (accent), asks (danger) or finished unseen; the panel on click.
+        BarButton {
+            id: agentButton
+            visible: Agent.available
+            iconName: "assistant"
+            tooltip: I18n.tr("assistant.panelTooltip")
+            Accessible.name: I18n.tr("assistant.claude")
+            onClicked: ShellState.toggle("agent", bar.screen)
+            Rectangle {
+                id: agentDot
+                readonly property bool asking: Agent.state === "permission" || Agent.state === "error"
+                readonly property bool pulsing: Agent.state === "working" && !Config.reduceMotion
+                property real pulse: 1
+                visible: Agent.state === "working" || asking || Agent.unseen
+                opacity: pulsing ? pulse : 1
+                anchors {
+                    right: parent.right
+                    top: parent.top
+                    rightMargin: 3
+                    topMargin: 4
+                }
+                width: 7
+                height: 7
+                radius: 3.5
+                color: asking ? Theme.danger : BarStyle.accent
+                SequentialAnimation on pulse {
+                    running: agentDot.pulsing
+                    loops: Animation.Infinite
+                    NumberAnimation {
+                        to: 0.35
+                        duration: 700
+                        easing.type: Easing.InOutSine
+                    }
+                    NumberAnimation {
+                        to: 1
+                        duration: 700
+                        easing.type: Easing.InOutSine
+                    }
+                }
+            }
+        }
         BarButton {
             iconName: "keyboard"
             tooltip: I18n.tr("hints.tooltip")

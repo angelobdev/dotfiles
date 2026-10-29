@@ -31,7 +31,7 @@ Singleton {
         DesktopEntries.applications.values; // Re-resolve once desktop entries finish loading.
         for (const id of pinned) {
             const entry = DesktopEntries.byId(id);
-            if (!entry || byKey[entry.id])
+            if (!entry || byKey[entry.id] || hiddenApps.includes(entry.id))
                 continue;
             byKey[entry.id] = {
                 key: entry.id,
@@ -44,7 +44,7 @@ Singleton {
         }
         for (const toplevel of Hyprland.toplevels.values) {
             const appId = appIdOf(toplevel);
-            if (appId === "")
+            if (appId === "" || hiddenApps.includes(appId))
                 continue;
             // Window classes rarely equal desktop-entry IDs (zen → zen-browser).
             const entry = DesktopEntries.heuristicLookup(appId);
@@ -95,6 +95,9 @@ Singleton {
         shown.splice(Math.max(0, Math.min(slot, shown.length)), 0, id);
         savePins(shown.concat(pinned.filter(p => !shown.includes(p))));
     }
+    // The assistant console has its own icon in the bar (services/Agent.qml): neither its pin nor its
+    // window shows in the dock.
+    readonly property var hiddenApps: ["desktop-ai"]
     function appIdOf(toplevel) {
         return toplevel.wayland?.appId || toplevel.lastIpcObject?.class || "";
     }

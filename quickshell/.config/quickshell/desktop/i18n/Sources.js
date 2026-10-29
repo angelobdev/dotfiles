@@ -10,6 +10,7 @@ var bindKeys = {
     "Stop": "media.stop",
     "Calculator": "apps.calculator",
     "AI assistant": "assistant.title",
+    "AI assistant · move window in or out": "assistant.moveWindow",
     "Terminal": "apps.terminal",
     "Browser": "apps.browser",
     "1Password": "apps.passwordManager",

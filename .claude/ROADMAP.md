@@ -62,7 +62,7 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] Native HyprCapture editor on all four screenshot shortcuts; Hints groups them under “Screen capture”, displays “Print”, and updates bindings on Hyprland reload while open.
 - [x] HyprCapture overlay moves across monitors; virtual outputs at scales 1.667 and 1 verified with native 2880×1800/1920×1080 PNGs and an editor toolbar on the fractional-scale display.
 - [x] Installation into hyprpm's protected cache and loading in the main session: all five enabled and loaded; autoload verified with `desktop-plugins reload`, configuration has no errors.
-- [ ] Physical testing of hot corners on both monitors and glass appearance during daily use (touchscreen gestures: done with the touchscreen epic).
+- [x] Physical testing of hot corners on both monitors and glass appearance during daily use (touchscreen gestures: done with the touchscreen epic); confirmed by the user on 2026-10-29.
 
 ### Panels and Control Center
 
@@ -148,8 +148,16 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 - [x] Persist "Keep awake" (`Idle.keepAwake`) and "Do Not Disturb" (`Notices.quiet`) across shell restarts and logins (state file read at start).
 - [x] Keyboard shortcuts to toggle "Keep awake" (`Super + Ctrl + K`) and "Do Not Disturb" (`Super + Ctrl + N`) with a state OSD, listed in Hints.
 
-### AI assistant as a Quickshell widget (epic, to design)
+### AI assistant: console, state, usage and dictation (epic)
 
+Designed on 2026-10-29 after Omarchy 4.5 (rc2 source: `default/hypr/qconsole.lua`, `shell/plugins/agents/`, `bin/omarchy-agent*`): Claude Code stays a TUI in Kitty (voice, permissions, slash commands intact), and its presentation and integration change. No native chat: it would lose voice and permission prompts. Decisions with the user: usage from the documented status line JSON only (no undocumented endpoint), dictation on the Copilot key (Right Alt is AltGr on the Italian layout), the bar icon opens a panel.
+
+- [x] Phase 1, drop-down console: `special:ai` laid out under the bar by a Lua layout (60% of the usable height, twice as wide, side by side with two windows, above the docked keyboard), dimmed desktop, slide from the top; closes on a click or tap outside (a Quickshell Bottom-layer catcher) and on a workspace change; apps launched while it is open go to the normal workspace; `Super + Shift + A` moves the active window in or out.
+- [x] Phase 2, state and notifications: Claude Code hooks and a status line passed with `--settings` feed `agent.py` (state file in the runtime dir, usage file in the shell state); `services/Agent.qml`, a bar icon with a state dot, notifications with Open when the console is hidden (permission needed, finished).
+- [x] Phase 3, agent panel: plan (Max 5x), state, 5-hour and 7-day meters with reset times, model and context, Open/Hide console.
+- [ ] Phase 4, system dictation: hold the Copilot key (tap toggles), `pw-record` + whisper.cpp (a small helper against Fedora's `libwhisper`), text committed through the on-screen keyboard's input method (clipboard fallback); a microphone on the on-screen keyboard and in Assist.
+
+Earlier findings (Claude Code docs, 2026-10-29), kept for a possible native widget later:
 The assistant lives in a Kitty window on the special workspace `ai` (`Super + A`); the user does not like how the special workspace behaves, so the interaction is to be redesigned either way. Findings (Claude Code docs, 2026-10-29):
 - `claude -p` uses the claude.ai subscription login (no API key; `ANTHROPIC_API_KEY` must not be in the environment, as it wins in `-p`; `--bare` ignores OAuth).
 - `--input-format stream-json --output-format stream-json --verbose --include-partial-messages`: `system/init` (session id), `stream_event` text deltas, `assistant` / `user` (tool use and results), `result`. The raw stdin message shape is not documented as a contract (the Agent SDK uses `{"type": "user", "message": {...}}`).
@@ -157,7 +165,6 @@ The assistant lives in a Kitty window on the special workspace `ai` (`Super + A`
 - Permissions: in `-p` a call needing approval is denied unless a rule (`--allowedTools`), a hook or `--permission-prompt-tool` (an MCP tool, wire format undocumented) approves it.
 - Voice (hold Space) exists only in the interactive TUI; a widget needs its own speech-to-text or keeps the terminal for voice.
 - Policy: third-party products may not offer claude.ai login; a personal, undistributed UI is not addressed.
-- [ ] Design the widget (panel or window, chat with streaming, history, resume, permission approvals, voice) and how it replaces the special workspace.
 
 ### Control Center switches
 

@@ -7,10 +7,54 @@
   },
   "assistant": {
     "errors": {
-      "claudeMissing": "Claude Code non è installato: vedi .claude/docs/integrations.md"
+      "claudeMissing": "Claude Code non è installato: vedi .claude/docs/integrations.md",
+      "usage": "Uso: agent.py hook|statusline (JSON su stdin, da Claude Code)"
     },
     "language": "italian",
-    "title": "Assistente AI"
+    "title": "Assistente AI",
+    "moveWindow": "Assistente AI · porta dentro o fuori la finestra",
+    "statusLine": {
+      "context": "contesto %1%"
+    },
+    "claude": "Claude",
+    "openConsole": "Apri console",
+    "hideConsole": "Nascondi console",
+    "notices": {
+      "permission": "Claude chiede un permesso",
+      "finished": "Claude ha finito",
+      "error": "Claude si è fermato con un errore"
+    },
+    "plans": {
+      "max": "Max %1x",
+      "maxPlain": "Max",
+      "pro": "Pro"
+    },
+    "states": {
+      "missing": "Claude Code non è installato",
+      "off": "Non avviato: apri la console per avviare Claude",
+      "ready": "Pronto",
+      "working": "Al lavoro…",
+      "permission": "Aspetta un tuo permesso",
+      "finished": "Ha finito",
+      "error": "Si è fermato con un errore"
+    },
+    "timeFormat": "HH:mm",
+    "dayTimeFormat": "ddd HH:mm",
+    "since": "Dalle %1",
+    "panelTooltip": "Claude",
+    "usage": {
+      "title": "Utilizzo",
+      "titlePlan": "Utilizzo · %1",
+      "session": "Sessione (5 ore)",
+      "week": "Settimana (7 giorni)",
+      "unknown": "Nessun dato per questa finestra",
+      "empty": "Apri la console e invia un messaggio per leggere i limiti",
+      "modelContext": "%1 · contesto %2%",
+      "resetsAt": "Si azzera alle %1",
+      "resetsOn": "Si azzera %1",
+      "updatedAt": "Aggiornato alle %1",
+      "updatedOn": "Aggiornato %1"
+    }
   },
   "audio": {
     "devices": "Ingressi e uscite",

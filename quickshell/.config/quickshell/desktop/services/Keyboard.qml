@@ -214,6 +214,17 @@ Singleton {
                 root.setShown(false);
         }
     }
+    // The assistant console keeps the focus of its terminal while hidden when no other window takes it
+    // (an empty workspace), so showing and hiding it bring no activate or deactivate: follow the console.
+    Connections {
+        target: Agent
+        function onConsoleOpenChanged() {
+            if (Agent.consoleOpen && root.purpose !== "")
+                root.focusIn(root.purpose);
+            else if (!Agent.consoleOpen && root.autoShown)
+                hideTimer.restart();
+        }
+    }
     Component.onCompleted: {
         if (Config.oskAutoShow)
             process.running = true;
