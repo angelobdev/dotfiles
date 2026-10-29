@@ -628,5 +628,17 @@
     "rotatesInTablet": "Rotates in tablet mode",
     "rotatesAutomatically": "Follows the device",
     "locked": "Locked"
+  },
+  "assist": {
+    "title": "Assist",
+    "actions": {
+      "apps": "Apps",
+      "dock": "Dock",
+      "controls": "Control Center",
+      "notifications": "Notifications",
+      "overview": "Overview",
+      "workspacePrevious": "Previous workspace",
+      "workspaceNext": "Next workspace"
+    }
   }
 }

@@ -112,6 +112,14 @@ if plugins.hyprgrass then
         },
         action = hl.dsp.exec_cmd(shell .. " toggle controls"),
     })
+    -- The floating assist button, anywhere on the screen.
+    touch.bind({
+        pattern = {
+            kind = "longpress",
+            fingers = 3
+        },
+        action = hl.dsp.exec_cmd(shell .. " assist toggle"),
+    })
     if plugins.overview then
         touch.bind({
             pattern = {

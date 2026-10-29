@@ -324,3 +324,11 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - The Control Center shows the Rotation lock tile on the OmniBook.
 - The user folded the OmniBook into tablet mode and turned it in all four directions: the switch, the sensor mapping, touch and the rotation lock all behaved.
 - The assistant window kept 1036×756 after a rotation and overflowed the portrait screen. `hl.window.resize` takes `{ x, y, window }` and `hl.window.center` `{ window }`; `HL.Monitor.width/height` stay physical after a transform. On `monitor.layout_changed` it now becomes 648×1209 in portrait (60% × 70% of 1080×1728 logical), centred, and 1036×756 again upright.
+
+## Assist button verification
+
+- `desktop-shell assist show` mapped one `desktop-assist` overlay layer (1728×1080, eDP-1) with the button on the right edge at 62% of the free height; the input region is the button only, so clicks elsewhere reached the windows.
+- `assist menu` opened the eight actions beside the button, towards the middle. The first version bound the menu origin to its own grid size and Qt reported a binding loop, as the layout polished during the evaluation; the menu is now placed after layout (`Qt.callLater`) from the button's resting place. With the monospace interface font, "Notifications" needs 100 px buttons.
+- `hl.dsp.focus({ workspace = "e+1" })` stays put when no other workspace exists, unlike the bar; the workspace buttons now step along `WorkspaceModel.build` like bar scrolling.
+- `geometry tests` (`tst_assist_model.qml`): placing, tucking, snapping, the round trip and the menu origin.
+- The Hyprland plugins were not loaded in this session: Hyprland moved from 0.56.2-17 to -20 on 2026-10-24 and `plugins.py` suspends autoload for an unverified build ("Build differs from the verified version"). The three-finger long press needs them rebuilt (`./scripts/install-hypr-plugins.py`).

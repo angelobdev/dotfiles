@@ -628,5 +628,17 @@
     "rotatesInTablet": "Ruota in modalità tablet",
     "rotatesAutomatically": "Segue il dispositivo",
     "locked": "Bloccata"
+  },
+  "assist": {
+    "title": "Assist",
+    "actions": {
+      "apps": "App",
+      "dock": "Dock",
+      "controls": "Control Center",
+      "notifications": "Notifiche",
+      "overview": "Panoramica",
+      "workspacePrevious": "Workspace precedente",
+      "workspaceNext": "Workspace successivo"
+    }
   }
 }

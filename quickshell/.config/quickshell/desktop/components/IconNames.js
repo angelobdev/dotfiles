@@ -3,6 +3,7 @@
 // Shell glyph (assets/icons/<name>.svg) to freedesktop symbolic icon names, first match wins. Used when the
 // shell icons come from the icon pack; a glyph whose names the pack lacks keeps the bundled drawing.
 var names = {
+    "apps": ["view-app-grid-symbolic", "view-grid-symbolic"],
     "arrow-left": ["go-previous-symbolic", "go-left-symbolic"],
     "balanced": ["power-profile-balanced-symbolic"],
     "battery-0": ["battery-level-0-symbolic", "battery-empty-symbolic"],
@@ -24,6 +25,7 @@ var names = {
     "controls": ["emblem-system-symbolic", "preferences-system-symbolic"],
     "copy": ["edit-copy-symbolic"],
     "ethernet": ["network-wired-symbolic"],
+    "dock": ["user-desktop-symbolic", "preferences-desktop-symbolic"],
     "eye": ["view-reveal-symbolic"],
     "eye-off": ["view-conceal-symbolic"],
     "folder": ["folder-symbolic"],
@@ -37,6 +39,7 @@ var names = {
     "microphone-muted": ["microphone-sensitivity-muted-symbolic", "microphone-disabled-symbolic"],
     "monitor": ["video-display-symbolic"],
     "next": ["media-skip-forward-symbolic"],
+    "overview": ["view-dual-symbolic", "focus-windows-symbolic"],
     "pause": ["media-playback-pause-symbolic"],
     "performance": ["power-profile-performance-symbolic"],
     "pin": ["view-pin-symbolic"],

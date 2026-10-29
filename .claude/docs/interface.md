@@ -177,6 +177,7 @@ During the overview, the affected monitor's bar is invisible, releases its 38 px
 | Swipe upward from bottom edge | Applications |
 | Swipe downward from top edge | Control Center |
 | Long press on window border | Resize |
+| Three-finger long press | Assist button: show / hide |
 
 Sensitivity, edge margins, and actions are in `hypr/config/plugins.lua`. Touchpad gestures remain in `input.lua`: three fingers horizontally for workspaces, upward for applications, downward for controls.
 
@@ -185,6 +186,16 @@ Sensitivity, edge margins, and actions are in `hypr/config/plugins.lua`. Touchpa
 Folding the OmniBook screen back into tablet posture turns tablet mode on; unfolding it turns it off. In tablet mode the built-in display follows the accelerometer in quarter turns, with touch and stylus input rotated along with it; back in laptop mode it returns upright. Lying flat keeps the last orientation.
 
 **Rotation lock** in the Control Center (shown only on machines with an accelerometer) keeps the current orientation; `desktop-shell rotation-lock toggle|on|off` sets it with an OSD. It is remembered across restarts and logins. `desktop-shell tablet on|off|toggle` sets the posture by hand, for instance to try it without folding the screen.
+
+## Assist button
+
+A round floating button on the built-in display, for reaching the shell by touch. It appears with tablet mode and goes away in laptop mode; a three-finger long press (or `desktop-shell assist show|hide|toggle`) shows or hides it at any time, until the posture changes again.
+- **Drag** it with a finger or the mouse: it snaps to the nearer side edge, and the place is remembered for each monitor and orientation. After 3 seconds untouched it fades and slides halfway into the edge.
+- **Tap** opens a menu of large buttons beside it: Apps, Dock, Control Center, Notifications, Overview, Previous / Next workspace (one step along the bar's workspaces, empty ones included) and Rotation lock (only where there is an accelerometer). A tap outside closes it; `desktop-shell assist menu` opens it from scripts.
+- **Long press** runs a quick action, Apps by default.
+- It never takes keyboard focus, so the window underneath keeps typing.
+
+`Config.qml` sets `assistActions` (which actions, in order) and `assistLongPress`. Positions live in `~/.local/state/desktop-shell/assist.json`.
 
 ## Panel data
 

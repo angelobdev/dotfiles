@@ -7,6 +7,7 @@ import Quickshell.Services.UPower
 import Quickshell.Networking
 import Quickshell.Bluetooth
 import "bar"
+import "assist"
 import "dock"
 import "panels"
 import "controlcenter"
@@ -16,7 +17,7 @@ import "osd"
 import "services"
 
 ShellRoot {
-    // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher and the tablet posture.
+    // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher, the tablet posture and the assist button.
     property var audio: Audio
     property var notices: Notices
     property var clipboard: Clipboard
@@ -48,6 +49,9 @@ ShellRoot {
         }
         function rotationLock(action: string): bool {
             return Tablet.requestLock(action);
+        }
+        function assist(action: string): bool {
+            return Assist.request(action);
         }
         function close(): void {
             ShellState.close();
@@ -120,6 +124,11 @@ ShellRoot {
                     transform: Tablet.transform,
                     rotationLock: Tablet.locked
                 },
+                assist: {
+                    shown: Assist.shown,
+                    menu: Assist.menuOpen,
+                    actions: Assist.actions.map(a => a.name)
+                },
                 dynamicTheme: {
                     active: DynamicTheme.active,
                     source: DynamicTheme.source,
@@ -149,6 +158,7 @@ ShellRoot {
         }
     }
     OsdPopup {}
+    AssistWindow {}
     Launcher {}
     Controls {}
     NetworkPanel {}
