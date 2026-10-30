@@ -492,3 +492,9 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - End to end in a nested Hyprland: the real keyboard and a Qt text field, with the simulated touchscreen tapping the keys and the suggestion chips (`touchlab/osk/run.py`). Typing, a suggestion with its space, `perche` to `perché`, an English word, a capital kept and Backspace before a suggestion all reached the field. The lab has to set `kb_layout = "it"`: on the default layout `é` came out as `{`, since the keyboard follows the keymap of the compositor.
 - Word lists from subtitles drop accents: `perche` outnumbers `perché`, and `perchè` is common. Comparing pairs, a needed accent is at least half as common as the plain form (perché 85%, già 80%, città 100%), a real second word much less (là 1%, sì 32%, è 35%).
 
+## Touch on clients without wl_touch, 2026-10-30
+
+- Kitty (0.47 and 0.49) never calls `wl_seat.get_touch`: the seat announces touch, `glfw-wayland.so` has no `wl_touch` code, and a finger reached it only as the pointer warp of hyprgrass. No Kitty option changes this.
+- Fixed in the Hyprgrass patch, tested in a nested 0.57 with `touchlab/kitty-probe.py`, which reads the Wayland traffic of Kitty: a drag gives axis events and no button, a tap gives press and release, three fingers give neither.
+- Two traps: `windowAt()` needs `RESERVED_EXTENTS | INPUT_EXTENTS | ALLOW_FLOATING`, as `FOCUS_PRIORITY` alone finds no window; and `forwardTouchUp()` reports blocked when the touch has no surface, which is always true for such a client.
+

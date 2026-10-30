@@ -1,5 +1,5 @@
 diff --git a/src/GestureManager.cpp b/src/GestureManager.cpp
-index 69cd04f..75c3358 100644
+index 69cd04f..cfa87d8 100644
 --- a/src/GestureManager.cpp
 +++ b/src/GestureManager.cpp
 @@ -13,6 +13,7 @@
@@ -18,15 +18,16 @@ index 69cd04f..75c3358 100644
  #include <hyprland/src/output/Monitor.hpp>
  #include <hyprland/src/plugins/PluginSystem.hpp>
  #include <hyprland/src/pointer/PointerController.hpp>
-@@ -30,6 +32,7 @@
+@@ -30,6 +32,8 @@
  #include <hyprutils/string/Numeric.hpp>
  
  #include <algorithm>
 +#include <cmath>
++#include <linux/input-event-codes.h>
  #include <ranges>
  #include <vector>
  
-@@ -42,6 +45,16 @@ static int handleLongPressTimer(void* data) {
+@@ -42,6 +46,16 @@ static int handleLongPressTimer(void* data) {
      return 0;
  }
  
@@ -43,7 +44,7 @@ index 69cd04f..75c3358 100644
  static void updateGapsIn(const Config::CCssGapData& newGapsIn) {
      static auto PGAPSINDATA = CConfigValue<Config::IComplexConfigValue>("general:gaps_in");
  
-@@ -78,10 +91,12 @@ GestureManager::GestureManager() : IGestureManager(std::make_unique<HyprLogger>(
+@@ -78,10 +92,12 @@ GestureManager::GestureManager() : IGestureManager(std::make_unique<HyprLogger>(
      this->addPinchGesture(PINCH_THRESHOLD, sensitivity, longPressDelay);
  
      this->long_press_timer = wl_event_loop_add_timer(g_pCompositor->m_wlEventLoop, handleLongPressTimer, this);
@@ -56,7 +57,7 @@ index 69cd04f..75c3358 100644
  }
  
  FindGestureResult GestureManager::findCompletedGesture(const CompletedGestureEvent& gev) const {
-@@ -561,7 +576,8 @@ void GestureManager::stopLongPressTimer() {
+@@ -561,7 +577,8 @@ void GestureManager::stopLongPressTimer() {
  void GestureManager::sendCancelEventsToWindows() {
      static auto const SEND_CANCEL = g_config->sendCancel;
  
@@ -66,7 +67,7 @@ index 69cd04f..75c3358 100644
          return;
      }
  
-@@ -577,6 +593,11 @@ void GestureManager::sendCancelEventsToWindows() {
+@@ -577,6 +594,11 @@ void GestureManager::sendCancelEventsToWindows() {
  bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
      static auto const SEND_CANCEL = g_config->sendCancel;
  
@@ -78,7 +79,7 @@ index 69cd04f..75c3358 100644
      auto monitor =
          State::monitorState()->query().name(!ev.device->m_boundOutput.empty() ? ev.device->m_boundOutput : "").run();
      monitor = monitor ? monitor : Desktop::focusState()->monitor();
-@@ -601,7 +622,8 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
+@@ -601,7 +623,8 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
  
      g_pInputManager->refocus();
  
@@ -88,7 +89,7 @@ index 69cd04f..75c3358 100644
          this->touchedResources.clear();
          this->activeTrackpadGesture = nullptr;
      }
-@@ -635,10 +657,23 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
+@@ -635,10 +658,23 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
          .pos    = pos,
      };
  
@@ -102,18 +103,18 @@ index 69cd04f..75c3358 100644
 +        return false;
 +    }
 +
-+    // While touches are held the compositor still points at the surface of an earlier sequence, which
-+    // forwardTouchUp checks: only a recognised gesture decides.
-+    const bool holding = this->holdingTouches;
-+    const bool block   = this->forwardTouchUp(ev);
-+    return this->holdTouchUp(holding ? this->eventForwardingInhibited() : block);
++    // While touches are held, or stand in for a pointer, the compositor still points at the surface of an
++    // earlier sequence, which forwardTouchUp checks: only a recognised gesture decides.
++    const bool undelivered = this->holdingTouches || this->emulatingPointer;
++    const bool block       = this->forwardTouchUp(ev);
++    return this->holdTouchUp(ev.timeMs, undelivered ? this->eventForwardingInhibited() : block);
 +}
 +
 +bool GestureManager::forwardTouchUp(ITouch::SUpEvent ev) {
      static auto const SEND_CANCEL = g_config->sendCancel;
  
      wf::touch::point_t lift_off_pos;
-@@ -686,6 +721,10 @@ bool GestureManager::onTouchUp(ITouch::SUpEvent ev) {
+@@ -686,6 +722,10 @@ bool GestureManager::onTouchUp(ITouch::SUpEvent ev) {
  }
  
  bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
@@ -124,7 +125,7 @@ index 69cd04f..75c3358 100644
      if (!this->m_lastTouchedMonitor) {
          LOG(Log::ERR, "[hyprgrass] onTouchMove: where the fuck is my monitor");
          return false;
-@@ -700,7 +739,190 @@ bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
+@@ -700,7 +740,250 @@ bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
          .pos    = pos,
      };
  
@@ -158,6 +159,34 @@ index 69cd04f..75c3358 100644
 +    return true;
 +}
 +
++bool GestureManager::clientIgnoresTouch(const Vector2D& pos) const {
++    const auto window  = Desktop::viewState()->hitTest().windowAt(
++        pos, Desktop::View::RESERVED_EXTENTS | Desktop::View::INPUT_EXTENTS | Desktop::View::ALLOW_FLOATING
++    );
++    const auto surface = window ? window->wlSurface()->resource() : nullptr;
++    const auto seat    = surface ? g_pSeatManager->seatResourceForClient(surface->client()) : nullptr;
++
++    return seat && seat->m_touches.empty();
++}
++
++// Content follows the finger, as on any touch surface.
++void GestureManager::scrollPointer(uint32_t time, const wf::touch::point_t& to) {
++    g_pSeatManager->sendPointerAxis(
++        time, WL_POINTER_AXIS_VERTICAL_SCROLL, this->scrollPoint.y - to.y, 0, 0, WL_POINTER_AXIS_SOURCE_FINGER,
++        WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL
++    );
++    g_pSeatManager->sendPointerFrame();
++    this->scrollPoint = to;
++}
++
++// The pointer is already there: hyprgrass warps it to every touch.
++void GestureManager::clickPointer(uint32_t time) {
++    g_pSeatManager->sendPointerButton(time, BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
++    g_pSeatManager->sendPointerFrame();
++    g_pSeatManager->sendPointerButton(time, BTN_LEFT, WL_POINTER_BUTTON_STATE_RELEASED);
++    g_pSeatManager->sendPointerFrame();
++}
++
 +// @return whether this touch down should be blocked from forwarding to the client
 +bool GestureManager::holdTouchDown(const ITouch::SDownEvent& ev, bool first, bool block) {
 +    if (first) {
@@ -168,14 +197,20 @@ index 69cd04f..75c3358 100644
 +        const auto global    = monitor ? monitor->m_position + ev.pos * monitor->m_size : Vector2D{};
 +        this->holdingTouches = !block && this->shouldHoldTouches(global);
 +        this->touchesDelivered = !this->holdingTouches;
++        this->scrolling        = false;
++        this->emulatingPointer = this->holdingTouches && this->clientIgnoresTouch(global);
 +        if (!this->holdingTouches) {
 +            return block;
 +        }
 +
++        this->scrollPoint = this->wlrTouchEventPositionAsPixels(ev.pos.x, ev.pos.y);
 +        this->heldTouches.push_back(ev);
 +        wl_event_source_timer_update(this->holdTimer, HOLD_MS);
 +        return true;
 +    }
++
++    // A second finger is a gesture, or a pinch for a client that cannot see it anyway.
++    this->emulatingPointer = false;
 +
 +    if (this->touchesClaimed) {
 +        return true;
@@ -198,6 +233,18 @@ index 69cd04f..75c3358 100644
 +// @return whether this touch motion should be blocked from forwarding to the client
 +bool GestureManager::holdTouchMove(const ITouch::SMotionEvent& ev, bool block) {
 +    if (this->touchesClaimed) {
++        return true;
++    }
++
++    if (this->emulatingPointer) {
++        const auto to = this->wlrTouchEventPositionAsPixels(ev.pos.x, ev.pos.y);
++        if (this->scrolling) {
++            this->scrollPointer(ev.timeMs, to);
++        } else if (std::hypot(to.x - this->scrollPoint.x, to.y - this->scrollPoint.y) >= HOLD_SLOP) {
++            // From here on, so the content does not jump by the slop.
++            this->scrolling   = true;
++            this->scrollPoint = to;
++        }
 +        return true;
 +    }
 +
@@ -226,10 +273,17 @@ index 69cd04f..75c3358 100644
 +}
 +
 +// @return whether this touch up should be blocked from forwarding to the client
-+bool GestureManager::holdTouchUp(bool block) {
++bool GestureManager::holdTouchUp(uint32_t time, bool block) {
 +    bool result = block;
 +    if (this->touchesClaimed) {
 +        result = true;
++    } else if (this->emulatingPointer) {
++        if (!this->scrolling && !block) {
++            this->clickPointer(time);
++        }
++        this->emulatingPointer = false;
++        this->holdingTouches   = false;
++        result                 = true;
 +    } else if (this->holdingTouches) {
 +        if (block) {
 +            this->claimTouches();
@@ -260,6 +314,13 @@ index 69cd04f..75c3358 100644
 +
 +    if (this->eventForwardingInhibited()) {
 +        this->claimTouches();
++        return;
++    }
++
++    // Nothing to replay to a client that takes no touch.
++    if (this->emulatingPointer) {
++        this->heldTouches.clear();
++        this->holdingTouches = false;
 +        return;
 +    }
 +
@@ -317,7 +378,7 @@ index 69cd04f..75c3358 100644
  
  SMonitorArea GestureManager::getMonitorArea() const {
 diff --git a/src/GestureManager.hpp b/src/GestureManager.hpp
-index 14dff5f..2d38ffb 100644
+index 14dff5f..665903d 100644
 --- a/src/GestureManager.hpp
 +++ b/src/GestureManager.hpp
 @@ -94,6 +94,8 @@ class GestureManager final : public IGestureManager {
@@ -329,7 +390,7 @@ index 14dff5f..2d38ffb 100644
      const wf::touch::gesture_state_t& getGestureState() const {
          return this->m_sGestureState;
      }
-@@ -111,6 +113,26 @@ class GestureManager final : public IGestureManager {
+@@ -111,6 +113,35 @@ class GestureManager final : public IGestureManager {
      PHLMONITOR m_lastTouchedMonitor;
      SMonitorArea m_monitorArea;
      wl_event_source* long_press_timer;
@@ -345,10 +406,19 @@ index 14dff5f..2d38ffb 100644
 +    bool touchesDelivered     = false;
 +    bool replayingHeldTouches = false;
 +
++    // A client without wl_touch, Kitty among them, would lose every touch: one finger stands in for the
++    // pointer on it, a drag scrolling and a tap clicking.
++    bool emulatingPointer = false;
++    bool scrolling        = false;
++    wf::touch::point_t scrollPoint;
++
 +    bool shouldHoldTouches(const Vector2D& pos) const;
++    bool clientIgnoresTouch(const Vector2D& pos) const;
++    void scrollPointer(uint32_t time, const wf::touch::point_t& to);
++    void clickPointer(uint32_t time);
 +    bool holdTouchDown(const ITouch::SDownEvent& ev, bool first, bool block);
 +    bool holdTouchMove(const ITouch::SMotionEvent& ev, bool block);
-+    bool holdTouchUp(bool block);
++    bool holdTouchUp(uint32_t time, bool block);
 +    void claimTouches();
 +    void releaseHeldTouches();
 +    bool forwardTouchUp(ITouch::SUpEvent ev);
