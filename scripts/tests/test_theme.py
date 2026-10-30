@@ -394,10 +394,7 @@ class DynamicThemeTests(unittest.TestCase):
 
     @unittest.skipUnless(theme.shutil.which('matugen'), 'matugen is not installed')
     def test_real_matugen_output_converts(self):
-        image = REPO / 'shell/.local/share/icons/hicolor/scalable/apps/desktopai.svg'
-        wallpapers = sorted((Path.home() / '.local/share/desktop/wallpapers').glob('*/*.jp*g'))
-        if wallpapers:
-            image = wallpapers[0]
+        image = REPO / 'hyprpaper/.local/share/wallpapers/desktop-night.jpg'
         for mode in ('dark', 'light'):
             with self.subTest(mode=mode):
                 data = theme.run_matugen(image, {'dynamic': {'mode': mode}})

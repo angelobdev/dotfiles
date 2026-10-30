@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Check the relative links of the README and the docs: the target exists, and so does its heading."""
+"""Check the relative links of the README and the docs: the target is in the repository, with its heading."""
+import os
 from pathlib import Path
 import re
 import sys
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
 FENCED = re.compile(r'^```.*?^```', re.S | re.M)
 INLINE = re.compile(r'`[^`\n]*`')
-LINK = re.compile(r'\]\(([^)\s]+)\)|(?:src|href)="([^"]+)"')
+LINK = re.compile(r'\]\(([^)\s]+)(?:\s[^)]*)?\)|(?:src|href)="([^"]+)"')
 HEADING = re.compile(r'^#{1,6} (.+)$', re.M)
-EXTERNAL = ('http://', 'https://', 'mailto:')
 
 
 def prose(path):
@@ -30,13 +31,18 @@ def anchors(path):
 def broken(path):
     for first, second in LINK.findall(prose(path)):
         link = first or second
-        if link.startswith(EXTERNAL):
+        parts = urlsplit(link)
+        if parts.scheme or parts.netloc:
             continue
-        target, _, fragment = link.partition('#')
-        resolved = (path.parent / target).resolve() if target else path
-        if not resolved.exists():
+        # As on GitHub, a leading slash starts from the root. Symlinks are not followed: a link that leaves
+        # the repository through the stowed $HOME exists on this machine and nowhere else.
+        base = ROOT if parts.path.startswith('/') else path.parent
+        target = Path(os.path.normpath(base / parts.path.lstrip('/'))) if parts.path else path
+        if not target.is_relative_to(ROOT):
+            yield link, 'outside the repository'
+        elif not target.exists():
             yield link, 'missing file'
-        elif fragment and resolved.suffix == '.md' and fragment not in anchors(resolved):
+        elif parts.fragment and target.suffix == '.md' and parts.fragment not in anchors(target):
             yield link, 'missing heading'
 
 

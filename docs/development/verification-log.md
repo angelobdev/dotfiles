@@ -390,7 +390,7 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 ## Review batches D and E (docs, cleanup, i18n), 2026-10-29
 
 - Docs: gestures in plugins.md, the transparent bar blur, history across restarts, `no_anim` coverage, window borders, PAM and `tablet-auth.sh` in integrations.md, roadmap lines.
-- `check-i18n.py` now finds the keys after every `i18n.py` call in `shell/.local/bin/desktop-*` and `hypr/config/*.lua` (desktop-power, desktop-ai, binds.lua today), and the shared-catalog test uses `network.passwordFor` with a `$&` argument.
+- `check-i18n.py` now finds the keys after every `i18n.py` call in `shell/.local/bin/desktop-*` and `hypr/.config/hypr/config/*.lua` (desktop-power, desktop-ai, binds.lua today), and the shared-catalog test uses `network.passwordFor` with a `$&` argument.
 - After the prefix-to-placeholder change, Python helpers call `tr(key, [value])`; Hints still built its 86 binds with the catalog modifier names; `qmltestrunner` 26 passed with `WorkspaceModel.fromHyprland`.
 - Removed the dangling `~/.config/quickshell/desktop/assets/icons/wifi-weak.svg` link (its file left the repo); no other dangling link in the stowed directories.
 
@@ -492,3 +492,5 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - Hyprland refuses to start as root and needs `XDG_RUNTIME_DIR`, so the job runs `check.sh` as a normal user with its own runtime directory.
 - Without Stow, `i18n.py` finds no catalogs under `~/.config`, and `test_theme.py` compared raw keys: it now reads the catalogs of the tree.
 - `check-links.py` on a damaged copy: found a missing image in `src="..."`, a missing file and a missing heading, and ignored a link inside inline code.
+- After the review of that commit: `test_real_matugen_output_converts` fell back to an SVG that matugen cannot read, so `check.sh` failed with matugen installed and no JPEG wallpaper (reproduced with an empty `HOME`). It now uses the bundled `desktop-night.jpg`, and CI installs matugen. The same workflow commands in a fresh container: 149 Python tests, none skipped, 49 QML tests, config accepted.
+- `scripts/tests/test_links.py`: ten defects put back one at a time into a copy of `check-links.py` (titles, `src`/`href`, leaving the repository, followed symlinks, schemes, leading slash, headings, repeated headings, code, exit code), and the tests caught all ten.

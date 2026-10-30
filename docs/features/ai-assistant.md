@@ -10,7 +10,7 @@ Claude Code stays a real terminal app, with its voice and permission prompts, an
 
 ## How it is wired
 
-`Super + A` runs `desktop-ai`: the first press starts Claude Code (`claude`, installed in `~/.local/bin` by its installer) in a Kitty window of class `desktop-ai`, which the `desktop-ai` window rule puts on the special workspace `ai`. That workspace is a drop-down console, after the Omarchy 4.5 Quake console (`hypr/config/console.lua`):
+`Super + A` runs `desktop-ai`: the first press starts Claude Code (`claude`, installed in `~/.local/bin` by its installer) in a Kitty window of class `desktop-ai`, which the `desktop-ai` window rule puts on the special workspace `ai`. That workspace is a drop-down console, after the Omarchy 4.5 Quake console (`hypr/.config/hypr/config/console.lua`):
 
 - **Layout:** the Lua layout `lua:console` (`hl.layout.register`) tiles its windows in one box at the top of the usable area, just under the bar: 60% of the height below the bar and twice as wide (at most 92% of the width), centred, without a border. Two or more windows sit side by side across 96% of the width. The box never reaches below the docked on-screen keyboard, and it follows rotation, scale and monitor changes by itself.
 - **Look:** the rest of the screen is dimmed (`decoration.dim_special = 0.45`); the console slides in from the top and back up (`specialWorkspaceIn`/`Out` in `appearance.lua`).
