@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """predict.py: next letters from word lists."""
+import json
 from pathlib import Path
+import stat
 import sys
 import tempfile
 import unittest
@@ -86,6 +88,96 @@ class SuggestionTests(WordsTests):
 
     def test_letters_ignore_a_missing_accent(self):
         self.assertEqual(self.words('perché 10\n').letters('perch'), {'e': 1.0})
+
+
+class LearningTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.directory = Path(directory.name)
+        self.list = self.directory / 'it.txt'
+        self.list.write_text('casa 1000\ncane 500\nzucca 100\n', encoding='utf-8')
+        self.memory = self.directory / 'state/osk-words.json'
+
+    def words(self):
+        return predict.Words([self.list], self.memory)
+
+    def test_a_new_word_needs_two_uses(self):
+        words = self.words()
+        words.learn('zorbax')
+        self.assertEqual(words.suggestions('zo'), [])
+        words.learn('zorbax')
+        self.assertEqual(words.suggestions('zo'), ['zorbax'])
+
+    def test_a_known_word_rises_at_once(self):
+        with mock.patch.object(predict, 'BOOST', 1):
+            words = self.words()
+            words.learn('cane')
+            self.assertEqual(words.suggestions('ca'), ['cane', 'casa'])
+
+    def test_it_survives_a_restart(self):
+        words = self.words()
+        words.learn('zorbax')
+        words.learn('zorbax')
+        self.assertEqual(self.words().suggestions('zor'), ['zorbax'])
+
+    def test_learned_words_lean_on_the_keys(self):
+        words = self.words()
+        self.assertEqual(words.letters('zo'), {})
+        words.learn('zorbax')
+        words.learn('zorbax')
+        self.assertEqual(words.letters('zo'), {'r': 1.0})
+
+    def test_a_forgotten_word_stays_away(self):
+        words = self.words()
+        words.forget('casa')
+        self.assertEqual(self.words().suggestions('ca'), ['cane'])
+        words = self.words()
+        words.learn('casa')
+        self.assertEqual(words.counts, {})
+
+    def test_forgetting_also_drops_what_was_learned(self):
+        words = self.words()
+        words.learn('zorbax')
+        words.learn('zorbax')
+        words.forget('zorbax')
+        self.assertEqual(words.suggestions('zor'), [])
+        self.assertNotIn('zorbax', json.loads(self.memory.read_text())['counts'])
+
+    def test_the_file_is_private_and_shows_no_order(self):
+        words = self.words()
+        for word in ('zucca', 'alba', 'mare'):
+            words.learn(word)
+        self.assertEqual(stat.S_IMODE(self.memory.stat().st_mode), 0o600)
+        self.assertEqual(list(json.loads(self.memory.read_text())['counts']), ['alba', 'mare', 'zucca'])
+
+    def test_what_cannot_be_typed_or_is_too_short_is_not_learned(self):
+        words = self.words()
+        for word in ('a', "l'amico", 'mare1', 'Roma'):
+            words.learn(word)
+        self.assertEqual(words.counts, {})
+
+    def test_the_memory_has_a_limit(self):
+        with mock.patch.object(predict, 'MEMORY_LIMIT', 2):
+            words = self.words()
+            for word in ('alba', 'alba', 'mare', 'mare', 'zucca'):
+                words.learn(word)
+        self.assertEqual(sorted(words.counts), ['alba', 'mare'])
+
+    def test_a_broken_file_starts_empty(self):
+        self.memory.parent.mkdir(parents=True)
+        for text in ('not json', '[]', '{"counts": 3, "forgotten": []}'):
+            self.memory.write_text(text)
+            self.assertEqual(self.words().counts, {})
+
+    def test_nothing_is_written_without_a_memory(self):
+        words = predict.Words([self.list])
+        words.learn('zorbax')
+        self.assertFalse(self.memory.exists())
+
+    def test_letters_stay_quick_before_the_first_letter(self):
+        words = self.words()
+        self.assertEqual(words.letters(''), words.first)
 
 
 class FetchTests(unittest.TestCase):

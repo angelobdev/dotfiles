@@ -498,3 +498,8 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - Fixed in the Hyprgrass patch, tested in a nested 0.57 with `touchlab/kitty-probe.py`, which reads the Wayland traffic of Kitty: a drag gives axis events and no button, a tap gives press and release, three fingers give neither.
 - Two traps: `windowAt()` needs `RESERVED_EXTENTS | INPUT_EXTENTS | ALLOW_FLOATING`, as `FOCUS_PRIORITY` alone finds no window; and `forwardTouchUp()` reports blocked when the touch has no surface, which is always true for such a client.
 
+## Keyboard learning, 2026-10-30
+
+- End to end in a nested Hyprland with the real keyboard (`touchlab/osk/run.py`, 17 of 17): a word counted once at a space, offered after two uses, forgotten by holding its suggestion with nothing typed; the file at mode 0600 with sorted keys. A word typed in a Qt password field and one typed in Kitty reached those fields and did not reach the file. Fields that report no purpose were not exercised: `Keyboard.learning` excludes them by reading `purpose`.
+- With a full memory of 5,000 words: 1.4 ms to learn, 8 ms at worst for a lookup. `letters("")` is worked out once at load, as it covers every word and is needed after each word.
+

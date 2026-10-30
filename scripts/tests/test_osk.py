@@ -142,9 +142,10 @@ class PredictionTests(unittest.TestCase):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
         self.directory = Path(directory.name)
-        patcher = mock.patch.object(osk.predict, 'DIRECTORY', self.directory)
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        for name, value in (('DIRECTORY', self.directory), ('MEMORY', self.directory / 'memory.json')):
+            patcher = mock.patch.object(osk.predict, name, value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
 
     def test_missing_lists_are_fetched_once_and_type_nothing(self):
         prediction = osk.Prediction()
@@ -177,6 +178,21 @@ class PredictionTests(unittest.TestCase):
             osk.handle(None, 'predict ca')
             osk.handle(None, 'predict')
         self.assertEqual([call.args[0]['word'] for call in emit.call_args_list], ['ca', ''])
+
+    def test_learning_goes_through_the_words(self):
+        with mock.patch.object(osk.PREDICTION, 'words') as words:
+            osk.handle(None, 'learn casa')
+            osk.handle(None, 'forget cane')
+        words.learn.assert_called_once_with('casa')
+        words.forget.assert_called_once_with('cane')
+
+    def test_a_full_disk_does_not_reach_the_keys(self):
+        with mock.patch.object(osk.PREDICTION, 'words') as words:
+            words.learn.side_effect = OSError
+            osk.handle(None, 'learn casa')
+
+    def test_learning_before_the_lists_arrive_is_ignored(self):
+        osk.handle(None, 'learn casa')
 
     def test_a_malformed_line_is_ignored(self):
         with mock.patch.object(osk, 'emit') as emit:

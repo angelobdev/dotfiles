@@ -3,12 +3,16 @@
 
 fetch: downloads the word lists that are missing (FrequencyWords, CC-BY-SA-4.0, pinned by commit and hash)
 into ~/.local/share/desktop/keyboard/. Only the lists come from outside; nothing typed leaves the machine.
+
+Words typed in ordinary fields are counted in ~/.local/state/desktop-shell/osk-words.json, readable only by the
+owner: single words and how often, with no order and no time, so no sentence can be read back from it.
 """
-from common import replacing
+from common import replacing, write_atomic
 import bisect
 import functools
 import hashlib
 import heapq
+import json
 import os
 from pathlib import Path
 import re
@@ -19,6 +23,12 @@ URL = 'https://raw.githubusercontent.com/hermitdave/FrequencyWords/' + COMMIT + 
 LISTS = {'it': 'bb96cdcb56d28342c1e909db6b2525448b7767136b7e86a2ccc649a1be66fc19',
          'en': '5351ff405b1126ef555791dd4d9798a48e3e9a501a9fc481a9da957752cfb458'}
 DIRECTORY = Path(os.environ.get('XDG_DATA_HOME') or Path.home() / '.local/share') / 'desktop/keyboard'
+MEMORY = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'desktop-shell/osk-words.json'
+# A word the lists do not know needs two uses to show up, so a typo alone stays out.
+LEARNED_AFTER = 2
+# One use, as a share of a language: a handful of them put a word ahead of most with the same start.
+BOOST = 0.0001
+MEMORY_LIMIT = 5000
 # Accents hang off their base letter on the keyboard: a likely è makes the e key likely, and "perche"
 # finds "perché".
 BASE = str.maketrans('àèéìòù', 'aeeiou')
@@ -64,9 +74,19 @@ def misspelled(shares):
     return hidden
 
 
+def read_memory(path):
+    try:
+        saved = json.loads(Path(path).read_text(encoding='utf-8'))
+        counts = {word: count for word, count in saved['counts'].items()
+                  if TYPABLE.fullmatch(word) and isinstance(count, int) and count > 0}
+        return counts, set(saved['forgotten'])
+    except (OSError, ValueError, KeyError, AttributeError, TypeError):
+        return {}, set()
+
+
 class Words:
     # Each word counts by its share of its language, so neither list drowns the other.
-    def __init__(self, sources):
+    def __init__(self, sources, memory=None):
         shares = {}
         for source in sources:
             counts = {}
@@ -81,6 +101,10 @@ class Words:
         self.bases = [word.translate(BASE) for word in self.words]
         self.shares = [shares[word] for word in self.words]
         self.hidden = misspelled(shares)
+        self.memory = memory
+        self.counts, self.forgotten = read_memory(memory) if memory else ({}, set())
+        # Every word is a candidate before the first letter: too slow to work out at each word.
+        self.first = self.tally(dict(zip(self.words, self.shares)), 0)
         self.letters = functools.lru_cache(maxsize=256)(self.letters)
         self.suggestions = functools.lru_cache(maxsize=256)(self.suggestions)
 
@@ -88,25 +112,66 @@ class Words:
         base = prefix.translate(BASE)
         return bisect.bisect_left(self.bases, base), bisect.bisect_left(self.bases, base + '\U0010ffff')
 
-    def letters(self, prefix):
-        found = {}
+    # The words starting like this one with their weight: the lists plus what has been learned.
+    def scores(self, prefix):
         low, high = self.span(prefix)
-        for index in range(low, high):
-            if len(self.bases[index]) > len(prefix):
-                letter = self.bases[index][len(prefix)]
-                found[letter] = found.get(letter, 0) + self.shares[index]
+        found = dict(zip(self.words[low:high], self.shares[low:high]))
+        base = prefix.translate(BASE)
+        for word, count in self.counts.items():
+            if word.translate(BASE).startswith(base) and (word in found or count >= LEARNED_AFTER):
+                found[word] = found.get(word, 0) + count * BOOST
+        return found
+
+    @staticmethod
+    def tally(scores, size):
+        found = {}
+        for word, share in scores.items():
+            base = word.translate(BASE)
+            if len(base) > size:
+                found[base[size]] = found.get(base[size], 0) + share
         total = sum(found.values())
         return {letter: round(share / total, 4) for letter, share in found.items()} if total else {}
+
+    def letters(self, prefix):
+        return self.tally(self.scores(prefix), len(prefix)) if prefix else self.first
 
     # The likeliest words starting like this one, itself left out. With no letters yet there is nothing to
     # go on: predicting a whole next word would need pairs of words.
     def suggestions(self, prefix, count=3):
         if not prefix:
             return []
-        low, high = self.span(prefix)
-        found = [index for index in range(low, high) if self.words[index] != prefix and self.words[index] not in self.hidden
-                 and TYPABLE.fullmatch(self.words[index])]
-        return [self.words[index] for index in heapq.nlargest(count, found, key=self.shares.__getitem__)]
+        scores = self.scores(prefix)
+        found = [word for word in scores if word != prefix and word not in self.hidden and word not in self.forgotten
+                 and TYPABLE.fullmatch(word)]
+        return heapq.nlargest(count, found, key=scores.__getitem__)
+
+    def learn(self, word):
+        if len(word) < 2 or not TYPABLE.fullmatch(word) or word in self.forgotten:
+            return
+        self.counts[word] = self.counts.get(word, 0) + 1
+        if len(self.counts) > MEMORY_LIMIT:
+            del self.counts[min(self.counts, key=self.counts.get)]
+        self.changed()
+
+    def forget(self, word):
+        if TYPABLE.fullmatch(word):
+            self.forgotten.add(word)
+            self.counts.pop(word, None)
+            self.changed()
+
+    def changed(self):
+        self.letters.cache_clear()
+        self.suggestions.cache_clear()
+        if not self.memory:
+            return
+        path = Path(self.memory)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # Created for the owner alone; replacing the file keeps its mode.
+        if not path.exists():
+            os.close(os.open(path, os.O_CREAT | os.O_WRONLY, 0o600))
+        # Sorted, or the order of the file would show the order of the words.
+        write_atomic(path, json.dumps({'counts': self.counts, 'forgotten': sorted(self.forgotten)}, ensure_ascii=False,
+                                      sort_keys=True))
 
 
 def main():

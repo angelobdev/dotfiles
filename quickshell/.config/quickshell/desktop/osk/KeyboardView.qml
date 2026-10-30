@@ -344,7 +344,9 @@ Rectangle {
                         }
                         TapHandler {
                             id: suggestionTap
+                            longPressThreshold: 0.6
                             onTapped: Keyboard.complete(suggestion.modelData)
+                            onLongPressed: Keyboard.forget(suggestion.modelData)
                         }
                     }
                 }

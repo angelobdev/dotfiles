@@ -41,6 +41,8 @@ QtObject {
     readonly property bool oskAutoShow: true
     // Likely next letters are a little easier to hit, from Italian and English word lists fetched on first use.
     readonly property bool oskPrediction: true
+    // Learns the words typed in ordinary fields, as single words with a count, for the suggestions.
+    readonly property bool oskLearning: true
     // Keeps totals of how far touches land from the centre of their letter, never which letter or when.
     readonly property bool oskTouchStats: true
     // In tablet mode the shell hit targets (bar, buttons, switches, rows, dock icons) grow by this factor.

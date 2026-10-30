@@ -6,6 +6,8 @@ input:kb_layout), so keys mean what the layout drawn by the shell says. One comm
     key CODE MODS      press and release evdev CODE with the modifier mask MODS held
     press CODE / release CODE
     predict [WORD]     prints {"event": "letters", "word", "letters": {letter: probability}, "words": [...]}
+    learn WORD         counts a finished word (predict.py)
+    forget WORD        never suggests it again
 With --input-method it also registers as the input method, only to learn when a text field takes or loses
 the focus: it prints {"event": "activate", "purpose": ...} and {"event": "deactivate"}. Text still goes
 through the virtual keyboard, so it works the same in apps without text-input support.
@@ -249,7 +251,7 @@ class Prediction:
         if self.words is None and not self.failed:
             try:
                 if all(path.exists() for path in predict.paths()):
-                    self.words = predict.Words(predict.paths())
+                    self.words = predict.Words(predict.paths(), predict.MEMORY)
                 elif not self.fetching:
                     self.fetching = True
                     subprocess.Popen([sys.executable, predict.__file__, 'fetch'], stdout=subprocess.DEVNULL,
@@ -260,6 +262,14 @@ class Prediction:
 
     def suggestions(self, word):
         return self.words.suggestions(word) if self.words else []
+
+    # A full disk must not reach the keys.
+    def remember(self, action, word):
+        try:
+            if self.words:
+                getattr(self.words, action)(word)
+        except OSError:
+            pass
 
 
 PREDICTION = Prediction()
@@ -277,6 +287,8 @@ def handle(keyboard, line):
             word = words[1] if len(words) == 2 else ''
             emit({'event': 'letters', 'word': word, 'letters': PREDICTION.letters(word),
                   'words': PREDICTION.suggestions(word)})
+        elif len(words) == 2 and words[0] in ('learn', 'forget'):
+            PREDICTION.remember(words[0], words[1])
     except (ValueError, struct.error):
         pass
 

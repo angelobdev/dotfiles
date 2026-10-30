@@ -51,7 +51,11 @@ Singleton {
     property var letters: ({})
     // Words that finish the one being typed, likeliest first.
     property var suggestions: []
-    readonly property bool predicting: Config.oskPrediction && shown && !locked && page === "letters" && ["", "normal", "alpha", "name"].includes(purpose)
+    // The field has to be one the prediction may look at: never a password, a terminal, a URL or the lock screen.
+    readonly property bool fieldOpen: Config.oskPrediction && shown && !locked && ["", "normal", "alpha", "name"].includes(purpose)
+    readonly property bool predicting: fieldOpen && page === "letters"
+    // Teaching takes more: the field has to say what it is. One that says nothing could be anything.
+    readonly property bool learning: Config.oskLearning && fieldOpen && purpose !== ""
     // Offsets of touches from the centre of their letter, as running totals.
     property var touchTotals: {
         try {
@@ -155,6 +159,16 @@ Singleton {
         if (predicting && ready)
             process.write("predict " + value + "\n");
     }
+    function learn(value) {
+        if (learning && ready && value !== "")
+            process.write("learn " + value + "\n");
+    }
+    // Held down, a suggestion goes away for good, typos and unwanted words alike.
+    function forget(suggestion) {
+        suggestions = suggestions.filter(value => value !== suggestion);
+        if (ready)
+            process.write("forget " + suggestion + "\n");
+    }
     // A suggestion goes in as the keys a finger would press, so it works in every app, whatever that app
     // reports about its text.
     function complete(suggestion) {
@@ -168,6 +182,7 @@ Singleton {
         send(letterKeys.space.code, 0);
         if (shift === 1)
             shift = 0;
+        learn(suggestion);
         setWord("");
     }
     function noteTouch(dx, dy) {
@@ -205,8 +220,10 @@ Singleton {
         if (!process.running)
             return;
         process.write((down ? "press " : "release ") + key.code + "\n");
-        if (down)
+        if (down) {
+            learn(word);
             setWord("");
+        }
         if (!down) {
             accents = [];
             if (shift === 1)
@@ -223,6 +240,9 @@ Singleton {
         if (alt)
             mods |= 8;
         send(key.code, mods);
+        // A word counts once it is finished. Moving away with an arrow or a shortcut says nothing about it.
+        if (key.action === "enter" || /^[.,;:!?)]$/.test(key.label ?? ""))
+            learn(word);
         if (key.action === "backspace")
             setWord(word.slice(0, -1));
         else
