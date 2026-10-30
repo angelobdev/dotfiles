@@ -494,3 +494,10 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - `check-links.py` on a damaged copy: found a missing image in `src="..."`, a missing file and a missing heading, and ignored a link inside inline code.
 - After the review of that commit: `test_real_matugen_output_converts` fell back to an SVG that matugen cannot read, so `check.sh` failed with matugen installed and no JPEG wallpaper (reproduced with an empty `HOME`). It now uses the bundled `desktop-night.jpg`, and CI installs matugen. The same workflow commands in a fresh container: 149 Python tests, none skipped, 49 QML tests, config accepted.
 - `scripts/tests/test_links.py`: ten defects put back one at a time into a copy of `check-links.py` (titles, `src`/`href`, leaving the repository, followed symlinks, schemes, leading slash, headings, repeated headings, code, exit code), and the tests caught all ten.
+
+## Doc checks on GitHub's Markdown engine, 2026-10-31
+
+- `check-links.py` now reads the pages through `python3-cmarkgfm`, GitHub's own engine, instead of regular expressions. Compared with what GitHub's markdown API returns for all 19 pages: the same 186 ids and the same 113 internal links. The only difference is that GitHub wraps each README image in a link to itself.
+- `scripts/tests/test_links.py`: 26 tests. Twenty defects put back one at a time into a copy of the script, all caught; the first round missed three, which added a test that only GitHub's table rules pass, a test for stale catalogs, and removed a `pre` check that did nothing.
+- On a damaged copy of the real docs it found a heading faked inside a `~~~` block, a broken reference link, a wrong path in inline code and a stale doc path in a catalog.
+- `roadmap.md` and `verification-log.md` are exempt from the inline path check: they are history and name paths that are gone. Their links are still checked.

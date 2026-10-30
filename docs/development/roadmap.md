@@ -107,7 +107,7 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] XWayland fractional scaling: X resources from the focused monitor (`Xft.dpi` 160, Adwaita cursor theme, `Xcursor.size` 40 at 1.667) applied at session start and on monitor hotplug through `desktop-xwayland`; global `XCURSOR_SIZE` removed; Steam back to the monitor's own fractional scale; `desktop-aseprite` Steam launch option sets Aseprite to 200% × the monitor scale, rounded (3 on the built-in panel, 2 on an unscaled display) and enables its native cursor when unset.
 - [x] Physical HDMI hotplug verified with Philips FTV: monitor, bar, and brightness list removed/restored without restarting the shell. I²C permissions applied through ddcutil's udev rules.
 - [x] Public README with highlights, gallery and screenshots (English demo content, no personal data), MIT license, and the guides moved from `.claude/docs/` to `docs/`, one page per area.
-- [x] GitHub Actions: `check.sh` in a `fedora:44` container on pushes to `main` and pull requests; `scripts/check-links.py` checks the relative links of the README and the docs.
+- [x] GitHub Actions: `check.sh` in a `fedora:44` container on pushes to `main` and pull requests; `scripts/check-links.py` checks the links, headings and repository paths of the README and the docs through GitHub's own Markdown engine, and the doc paths in the catalogs.
 
 ## Next developments
 

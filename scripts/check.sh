@@ -10,7 +10,10 @@ for path in sys.argv[1:]:
     compile(pathlib.Path(path).read_text(encoding='utf-8'), path, 'exec')
 PY
 python3 "$repo/scripts/check-i18n.py"
-python3 "$repo/scripts/check-links.py"
+# Needs python3-cmarkgfm, the Markdown engine GitHub uses.
+if python3 -c 'import cmarkgfm' 2>/dev/null; then
+    python3 "$repo/scripts/check-links.py"
+fi
 for test in "$repo"/scripts/tests/test_*.py; do python3 "$test"; done
 # Same flags gaming.py uses when it caches the Steam UI library.
 if command -v cc >/dev/null; then

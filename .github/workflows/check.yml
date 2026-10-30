@@ -23,7 +23,8 @@ jobs:
           dnf -y install dnf-plugins-core
           dnf -y copr enable lionheartp/Hyprland
           dnf -y install --setopt=install_weak_deps=False \
-            desktop-file-utils gcc hyprland matugen python3 qt6-qtdeclarative-devel shadow-utils util-linux
+            desktop-file-utils gcc hyprland matugen python3 python3-cmarkgfm qt6-qtdeclarative-devel \
+            shadow-utils util-linux
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run the checks
         run: |
@@ -31,6 +32,7 @@ jobs:
           for tool in cc desktop-file-validate matugen /usr/lib64/qt6/bin/qmllint /usr/lib64/qt6/bin/qmltestrunner; do
             command -v "$tool"
           done
+          python3 -c 'import cmarkgfm'
           # Hyprland refuses to start as root, and the job runs as root. It also needs a runtime directory.
           useradd --create-home ci
           chown -R ci "$PWD"

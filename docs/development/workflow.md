@@ -29,7 +29,7 @@ The running desktop reads files through symlinks into this repository:
 
 ## Verification
 
-1. `./scripts/check.sh` must pass (it is fast). GitHub runs it too, in a `fedora:44` container, on every push to `main` and every pull request (`.github/workflows/check.yml`).
+1. `./scripts/check.sh` must pass (it is fast). GitHub runs it too, in a `fedora:44` container, on every push to `main` and every pull request (`.github/workflows/check.yml`). The doc check needs `python3-cmarkgfm` and is skipped without it, so install it to catch broken links before pushing.
 2. For QML: confirm the live reload succeeded and inspect `desktop-shell status`. Prefer isolated instances (`qs -p <dir>` with mock data, nested/headless Hyprland, private D-Bus buses) for anything that would touch the user's real devices, accounts, notifications or open applications.
 3. Behavior or visual changes: describe what was verified physically versus in isolation, and record it in `docs/development/verification-log.md`.
 4. Never leave test state behind (temporary preloads, debug ports, test symlinks, fake devices).
