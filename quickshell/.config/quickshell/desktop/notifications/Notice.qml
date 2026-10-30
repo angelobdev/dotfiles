@@ -10,7 +10,17 @@ Rectangle {
     id: root
     required property var notification
     signal hidePopup
+    signal deckRequested
+    signal stackToggled
     property bool popup: false
+    // In a deck: the lines a popup shows, and whether its text is hidden behind the front card.
+    property int bodyLines: 6
+    property bool contentHidden: false
+    // A closed deck of popups in tablet mode opens with a tap, as there is no hover to open it.
+    property bool opensDeck: false
+    // In the center: how many entries a closed stack stands for, and whether this one heads an open stack.
+    property int stackCount: 1
+    property bool stackOpen: false
     // Restored from before a shell restart: readable and removable, with no actions left.
     // The notification goes null for a moment when it closes, before this delegate does.
     readonly property bool archived: notification?.archived === true
@@ -88,6 +98,8 @@ Rectangle {
                 return;
             if (mouse.button === Qt.RightButton)
                 root.hidePopup();
+            else if (root.opensDeck)
+                root.deckRequested();
             else if (root.defaultAction)
                 root.defaultAction.invoke();
         }
@@ -101,6 +113,13 @@ Rectangle {
             margins: 12
         }
         spacing: 6
+        opacity: root.contentHidden ? 0 : 1
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.motionFast
+                easing.type: Easing.OutCubic
+            }
+        }
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
@@ -171,7 +190,7 @@ Rectangle {
             visible: text !== ""
             Layout.fillWidth: true
             wrapMode: Text.Wrap
-            maximumLineCount: root.popup ? 6 : 2147483647
+            maximumLineCount: root.popup ? root.bodyLines : 2147483647
             elide: Text.ElideRight
             textFormat: Text.StyledText
         }
@@ -187,6 +206,13 @@ Rectangle {
                     onClicked: modelData.invoke()
                 }
             }
+        }
+        ActionButton {
+            visible: root.stackCount > 1 || root.stackOpen
+            Layout.alignment: Qt.AlignRight
+            compact: true
+            text: root.stackOpen ? I18n.tr("notifications.less") : I18n.plural("notifications.more.one", "notifications.more.other", root.stackCount - 1)
+            onClicked: root.stackToggled()
         }
     }
 }

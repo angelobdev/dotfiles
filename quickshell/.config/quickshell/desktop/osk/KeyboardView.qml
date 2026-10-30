@@ -16,8 +16,125 @@ Rectangle {
     // Sized for fingers on a 14 inch display (a logical pixel is about 0.18 mm): keys of 10-11 mm.
     readonly property int keyHeight: floating ? 56 : 64
     readonly property real unit: (width - 2 * padding - 9 * spacing) / 10
+    // Fingers on the keys by touch point id: the key under each, and how its release ends. Plain JS state;
+    // pressedKeys is what the keys bind to.
+    property var touches: ({})
+    property var pressedKeys: []
     function keyWidth(units) {
         return units * (unit + spacing) - spacing;
+    }
+    // The key nearest to a point of the key area, so the gaps between keys type too.
+    function keyAt(x, y) {
+        let nearest = null;
+        let best = Infinity;
+        for (const row of keyRows.children) {
+            if (!row.visible)
+                continue;
+            for (const button of row.children) {
+                if (button.key === undefined)
+                    continue;
+                const origin = button.mapToItem(keys, 0, 0);
+                const dx = Math.max(origin.x - x, 0, x - origin.x - button.width);
+                const dy = Math.max(origin.y - y, 0, y - origin.y - button.height);
+                if (dx * dx + dy * dy < best) {
+                    best = dx * dx + dy * dy;
+                    nearest = button;
+                }
+            }
+        }
+        return nearest;
+    }
+    // After a long press the finger slides up to the accents in the strip: the one nearest across.
+    function accentAt(x, y) {
+        if (y > 0)
+            return null;
+        let nearest = null;
+        let best = Infinity;
+        for (const button of accentRow.children) {
+            if (button.key === undefined)
+                continue;
+            const centre = button.mapToItem(keys, button.width / 2, 0).x;
+            if (Math.abs(centre - x) < best) {
+                best = Math.abs(centre - x);
+                nearest = button;
+            }
+        }
+        return nearest;
+    }
+    function refreshPressed() {
+        pressedKeys = Object.values(touches).filter(t => t.button && !t.done).map(t => t.button);
+    }
+    // Space and Backspace stay with the finger that pressed them (held like a physical key, or repeating);
+    // every other key follows the finger and types on release.
+    function touchPressed(id, x, y) {
+        // A second finger commits the keys the others are on, so fast two-thumb typing keeps its order.
+        for (const other of Object.keys(touches))
+            commit(touches[other]);
+        const button = keyAt(x, y);
+        const key = button?.key;
+        const touch = {
+            button: button,
+            sticky: key?.action === "space" || key?.action === "backspace",
+            done: false,
+            accents: false
+        };
+        touches[id] = touch;
+        if (key?.action === "space") {
+            Keyboard.hold(key, true);
+        } else if (key?.action === "backspace") {
+            Keyboard.type(key);
+            repeat.key = key;
+            repeatDelay.restart();
+        }
+        longPress.touchId = id;
+        longPress.restart();
+        refreshPressed();
+    }
+    function touchMoved(id, x, y) {
+        const touch = touches[id];
+        if (!touch || touch.done)
+            return;
+        if (touch.accents) {
+            touch.button = accentAt(x, y);
+        } else if (touch.sticky) {
+            // Backspace stops repeating once the finger leaves it.
+            if (touch.button.key.action === "backspace" && keyAt(x, y) !== touch.button) {
+                repeatDelay.stop();
+                repeat.stop();
+                touch.done = true;
+            }
+        } else {
+            const button = keyAt(x, y);
+            if (button === touch.button)
+                return;
+            touch.button = button;
+            if (longPress.touchId === id)
+                longPress.restart();
+        }
+        refreshPressed();
+    }
+    function touchReleased(id, canceled) {
+        const touch = touches[id];
+        delete touches[id];
+        if (longPress.touchId === id)
+            longPress.stop();
+        if (!touch)
+            return;
+        if (touch.button?.key.action === "space" && touch.sticky) {
+            Keyboard.hold(touch.button.key, false);
+        } else if (touch.sticky) {
+            repeatDelay.stop();
+            repeat.stop();
+        } else if (!canceled) {
+            commit(touch);
+        }
+        refreshPressed();
+    }
+    function commit(touch) {
+        if (touch.done || touch.sticky || !touch.button)
+            return;
+        touch.done = true;
+        root.activate(touch.button.key);
     }
     function activate(key) {
         if (key.action === "shift")
@@ -47,9 +164,34 @@ Rectangle {
         interval: 420
         onTriggered: repeat.start()
     }
+    // A key held without moving away: its accents appear in the strip and the finger can slide up to one;
+    // a key without accents types at once.
+    Timer {
+        id: longPress
+        property var touchId: null
+        interval: 450
+        onTriggered: {
+            const touch = root.touches[touchId];
+            if (!touch || touch.done || touch.sticky || !touch.button)
+                return;
+            const key = touch.button.key;
+            if (Keyboard.layout.accents[key.label]) {
+                Keyboard.longPress(key);
+                touch.accents = true;
+                touch.button = null;
+            } else {
+                root.commit(touch);
+            }
+            root.refreshPressed();
+        }
+    }
     component KeyButton: Rectangle {
         id: button
         required property var key
+        // The accents in the strip take their own taps; the keys of the rows are driven by the touch area
+        // over them.
+        property bool standalone: false
+        readonly property bool down: tap.pressed || root.pressedKeys.includes(button)
         readonly property bool special: !!key.action && !["space", "enter"].includes(key.action) || key.name !== undefined
         readonly property bool lit: key.action === "shift" && Keyboard.shift > 0 || key.action === "modifier" && Keyboard[key.modifier] === true
         readonly property string icon: key.icon ?? (key.action === "backspace" ? "backspace" : key.action === "enter" ? "enter" : key.action === "shift" ? (Keyboard.shift === 2 ? "shift-lock" : "shift") : "")
@@ -57,14 +199,14 @@ Rectangle {
         height: root.keyHeight
         radius: Theme.corner(10)
         // Letters stand out from the keyboard background; function keys sit between the two.
-        color: tap.pressed ? Theme.accent : lit ? Qt.alpha(Theme.accent, 0.3) : special ? Theme.raised : Theme.tile
+        color: down ? Theme.accent : lit ? Qt.alpha(Theme.accent, 0.3) : special ? Theme.raised : Theme.tile
         border.width: 1
         border.color: Theme.stroke
         Icon {
             anchors.centerIn: parent
             visible: button.icon !== ""
             name: button.icon
-            color: tap.pressed ? Theme.accentText : Theme.text
+            color: button.down ? Theme.accentText : Theme.text
             width: 24
             height: 24
         }
@@ -72,7 +214,7 @@ Rectangle {
             anchors.centerIn: parent
             visible: button.icon === ""
             text: Keyboard.labelOf(button.key)
-            color: tap.pressed ? Theme.accentText : Theme.text
+            color: button.down ? Theme.accentText : Theme.text
             font.family: Theme.font
             font.pixelSize: button.special ? 15 : 22
         }
@@ -89,38 +231,12 @@ Rectangle {
             font.family: Theme.font
             font.pixelSize: 12
         }
-        // A key held without variants still types once; Backspace types on press and then repeats; Space
-        // follows the finger down and up (Keyboard.hold).
         TapHandler {
             id: tap
-            readonly property bool held: button.key.action === "space"
+            enabled: button.standalone
             longPressThreshold: 0.45
-            onTapped: if (!held)
-                root.activate(button.key)
-            onLongPressed: {
-                if (held)
-                    return;
-                if (Keyboard.layout.accents[button.key.label])
-                    Keyboard.longPress(button.key);
-                else if (button.key.action !== "backspace")
-                    root.activate(button.key);
-            }
-            onPressedChanged: {
-                if (held) {
-                    Keyboard.hold(button.key, pressed);
-                    return;
-                }
-                if (button.key.action !== "backspace")
-                    return;
-                if (pressed) {
-                    Keyboard.type(button.key);
-                    repeat.key = button.key;
-                    repeatDelay.start();
-                } else {
-                    repeatDelay.stop();
-                    repeat.stop();
-                }
-            }
+            onTapped: root.activate(button.key)
+            onLongPressed: root.activate(button.key)
         }
     }
     component StripButton: Rectangle {
@@ -173,6 +289,7 @@ Rectangle {
                 Accessible.name: I18n.tr("osk.extra")
             }
             Row {
+                id: accentRow
                 anchors.centerIn: parent
                 spacing: root.spacing
                 Repeater {
@@ -180,6 +297,7 @@ Rectangle {
                     KeyButton {
                         required property var modelData
                         key: modelData
+                        standalone: true
                         width: 72
                         height: 38
                     }
@@ -203,33 +321,55 @@ Rectangle {
                 }
             }
         }
-        Row {
-            visible: Keyboard.extraShown
-            Layout.alignment: Qt.AlignHCenter
-            spacing: root.spacing
-            Repeater {
-                model: Keyboard.layout.extra
-                KeyButton {
-                    required property var modelData
-                    key: Object.assign({
-                        width: 1.25
-                    }, modelData)
+        Item {
+            id: keys
+            Layout.fillWidth: true
+            implicitHeight: keyRows.implicitHeight
+            ColumnLayout {
+                id: keyRows
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: parent.top
                 }
-            }
-        }
-        Repeater {
-            model: Keyboard.rows
-            Row {
-                required property var modelData
-                Layout.alignment: Qt.AlignHCenter
                 spacing: root.spacing
-                Repeater {
-                    model: parent.modelData.keys
-                    KeyButton {
-                        required property var modelData
-                        key: modelData
+                Row {
+                    visible: Keyboard.extraShown
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: root.spacing
+                    Repeater {
+                        model: Keyboard.layout.extra
+                        KeyButton {
+                            required property var modelData
+                            key: Object.assign({
+                                width: 1.25
+                            }, modelData)
+                        }
                     }
                 }
+                Repeater {
+                    model: Keyboard.rows
+                    Row {
+                        required property var modelData
+                        Layout.alignment: Qt.AlignHCenter
+                        spacing: root.spacing
+                        Repeater {
+                            model: parent.modelData.keys
+                            KeyButton {
+                                required property var modelData
+                                key: modelData
+                            }
+                        }
+                    }
+                }
+            }
+            // One area over every key, so a finger keeps its touch while it slides from key to key.
+            MultiPointTouchArea {
+                anchors.fill: parent
+                onPressed: points => points.forEach(p => root.touchPressed(p.pointId, p.x, p.y))
+                onUpdated: points => points.forEach(p => root.touchMoved(p.pointId, p.x, p.y))
+                onReleased: points => points.forEach(p => root.touchReleased(p.pointId, false))
+                onCanceled: points => points.forEach(p => root.touchReleased(p.pointId, true))
             }
         }
     }

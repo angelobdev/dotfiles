@@ -8,6 +8,8 @@ import ".."
 Singleton {
     id: root
     readonly property bool quiet: SessionState.quiet
+    // Decks show only a few of these; the oldest give way, and stay in the center.
+    readonly property int popupLimit: 20
     property var popupIds: []
     readonly property var popups: server.trackedNotifications.values.filter(n => popupIds.includes(n.id))
     readonly property var notifications: server.trackedNotifications
@@ -178,7 +180,7 @@ Singleton {
                 [n.id]: Date.now()
             });
             if (!n.lastGeneration)
-                root.popupIds = root.popupIds.filter(id => id !== n.id).concat(n.id).slice(-3);
+                root.popupIds = root.popupIds.filter(id => id !== n.id).concat(n.id).slice(-root.popupLimit);
         }
     }
 }

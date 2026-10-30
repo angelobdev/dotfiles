@@ -507,6 +507,11 @@
     "empty": "Nessuna notifica",
     "enabled": "Notifiche attive",
     "fallbackTitle": "Notifica",
+    "less": "Mostra meno",
+    "more": {
+      "one": "%1 altra",
+      "other": "%1 altre"
+    },
     "quietTooltip": "Notifiche · Non disturbare",
     "silenced": "Popup silenziati",
     "title": "Notifiche"

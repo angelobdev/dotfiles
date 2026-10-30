@@ -507,6 +507,11 @@
     "empty": "No notifications",
     "enabled": "Notifications enabled",
     "fallbackTitle": "Notification",
+    "less": "Show less",
+    "more": {
+      "one": "%1 more",
+      "other": "%1 more"
+    },
     "quietTooltip": "Notifications · Do Not Disturb",
     "silenced": "Popups silenced",
     "title": "Notifications"

@@ -5,8 +5,13 @@ import Quickshell
 import ".."
 import "../components"
 import "../services"
+import "NotificationDeck.js" as NotificationDeck
 
 Overlay {
+    id: root
+    // Decks are grouped as in the popups; those opened with the button under their newest entry.
+    property var openStacks: []
+    readonly property var stacks: NotificationDeck.collapse(Notices.entries, openStacks)
     panelName: "notifications"
     SidePanelCard {
         height: Math.min(600, parent.height - 76)
@@ -40,7 +45,7 @@ Overlay {
                 spacing: 10
                 // Live notifications and the archive kept across shell restarts.
                 model: ScriptModel {
-                    values: Notices.entries
+                    values: root.stacks.entries
                     objectProp: "id"
                 }
                 add: Transition {
@@ -87,8 +92,12 @@ Overlay {
                 }
                 delegate: Notice {
                     required property var modelData
+                    readonly property string stackKey: root.stacks.keys[modelData?.id] ?? ""
                     width: list.width
                     notification: modelData
+                    stackCount: root.stacks.counts[modelData?.id] ?? 1
+                    stackOpen: stackCount > 1 && root.openStacks.includes(stackKey)
+                    onStackToggled: root.openStacks = stackOpen ? root.openStacks.filter(key => key !== stackKey) : root.openStacks.concat(stackKey)
                 }
                 ScrollBar.vertical: ScrollBar {}
                 Text {

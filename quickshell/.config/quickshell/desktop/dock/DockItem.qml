@@ -70,6 +70,9 @@ Row {
             property bool moved: false
             // A long press (touch) opens the menu like a right click; the release then does nothing.
             property bool held: false
+            // In tablet mode a finger that moves before its pin lifts neither taps nor drags.
+            property bool strayed: false
+            property point lastPoint: Qt.point(0, 0)
             anchors {
                 left: parent.left
                 right: parent.right
@@ -82,30 +85,44 @@ Row {
             acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
             pressAndHoldInterval: 500
             onPressed: event => {
-                pressPoint = Qt.point(event.x, event.y);
+                pressPoint = mapToItem(null, event.x, event.y);
+                lastPoint = pressPoint;
                 moved = false;
                 held = false;
+                strayed = false;
                 Dock.touched();
             }
             onPressAndHold: event => {
-                if (moved || event.button !== Qt.LeftButton)
+                if (moved || strayed || event.button !== Qt.LeftButton)
                     return;
                 held = true;
                 root.menuRequested(root.modelData, cell);
             }
             // Pinned apps start dragging after 6 px (24 in tablet mode, where a finger always moves a little
-            // while it taps); positions go to the window in its own coordinates.
+            // while it taps). Distances and positions are in window coordinates: this area moves and grows
+            // with the magnification, so a still pointer would seem to travel across it.
             readonly property real dragThreshold: Tablet.active ? 24 : 6
             onPositionChanged: event => {
-                // After a long press the menu is open: the finger may move without dragging the pin.
-                if (!(pressedButtons & Qt.LeftButton) || !root.modelData.pinned || held)
+                if (!(pressedButtons & Qt.LeftButton) || strayed)
                     return;
-                if (!moved && Math.hypot(event.x - pressPoint.x, event.y - pressPoint.y) > dragThreshold) {
+                const point = mapToItem(null, event.x, event.y);
+                lastPoint = point;
+                if (!moved) {
+                    if (Math.hypot(point.x - pressPoint.x, point.y - pressPoint.y) <= dragThreshold)
+                        return;
+                    // A finger only drags a pin that has lifted (see lift); moving earlier is a slide, or a
+                    // reach for the long press menu.
+                    if (Tablet.active) {
+                        strayed = true;
+                        return;
+                    }
+                    // The mouse drags a pin at once, but not once its menu is open (the pointer goes there).
+                    if (!root.modelData.pinned || held)
+                        return;
                     moved = true;
                     root.dragStarted(root.modelData);
                 }
-                if (moved)
-                    root.dragMoved(mapToItem(null, event.x, event.y));
+                root.dragMoved(point);
             }
             onReleased: if (moved)
                 root.dragFinished(false)
@@ -114,7 +131,7 @@ Row {
                 root.dragFinished(true);
             }
             onClicked: event => {
-                if (moved || held)
+                if (moved || held || strayed)
                     return;
                 if (event.button === Qt.RightButton)
                     root.menuRequested(root.modelData, cell);
@@ -122,6 +139,17 @@ Row {
                     Dock.launchNew(root.modelData);
                 else
                     Dock.activate(root.modelData);
+            }
+            // In tablet mode a pin held still past its menu lifts out of the dock and follows the finger; the
+            // menu closes for it.
+            Timer {
+                interval: 1500
+                running: mouse.held && mouse.pressed && !mouse.strayed && !mouse.moved && Tablet.active && root.modelData.pinned
+                onTriggered: {
+                    mouse.moved = true;
+                    root.dragStarted(root.modelData);
+                    root.dragMoved(mouse.lastPoint);
+                }
             }
         }
         Image {
@@ -188,7 +216,8 @@ Row {
             text: root.label
             above: true
             gap: 8 + Math.max(0, -icon.y)
-            hovered: mouse.containsMouse && !mouse.pressed || root.selected
+            // A touch leaves the pointer over the icon (hyprgrass warps it): no hover tooltip in tablet mode.
+            hovered: mouse.containsMouse && !mouse.pressed && !Tablet.active || root.selected
         }
     }
 }

@@ -39,14 +39,17 @@ PanelWindow {
     property bool selectionKept: false
     readonly property bool shown: Config.dockEnabled && Dock.items.length > 0 && !compositorHidden && !fullscreen && (hovered || dragKey !== "" || Dock.menuScreen === screen.name || request === true || request !== false && (Dock.peeks[screen.name] !== undefined || emptyWorkspace))
     readonly property int margin: 8
+    // Hover magnification is for the mouse. In tablet mode a touch also warps the pointer under the finger
+    // (hyprgrass), so the icons would grow and slide under a tap; there they stay still.
+    readonly property bool magnifies: !Tablet.active
     // Room above the shelf for magnified icons.
-    readonly property real rise: root.iconSize * Math.max(0, Config.dockMagnification - 1)
+    readonly property real rise: magnifies ? root.iconSize * Math.max(0, Config.dockMagnification - 1) : 0
     // The surface keeps enough transparent room above the shelf to draw a pin being dragged off; input
     // stays limited to the mask, so the room never blocks windows underneath.
     readonly property real dragRoom: root.iconSize * 2.5
     readonly property real pointerOffset: pointer.hovered ? pointer.point.position.x - width / 2 : NaN
     // Magnification eases in and out on entering and leaving; while moving it follows the pointer directly.
-    property real zoomAmount: pointer.hovered && shown && dragKey === "" ? 1 : 0
+    property real zoomAmount: magnifies && pointer.hovered && shown && dragKey === "" ? 1 : 0
     Behavior on zoomAmount {
         NumberAnimation {
             duration: Theme.motionFast
@@ -230,7 +233,12 @@ PanelWindow {
                         dragged: index === root.dragFrom
                         selected: root.keyboardMode && index === root.selection
                         onMenuRequested: (item, anchor) => menu.open(item, anchor)
-                        onDragStarted: item => root.dragKey = item.key
+                        // A touch drag starts from the long press menu, which closes for it.
+                        onDragStarted: item => {
+                            root.dragKey = item.key;
+                            if (menu.visible)
+                                menu.dismiss(false);
+                        }
                         onDragMoved: position => root.dragPoint = position
                         onDragFinished: canceled => root.finishDrag(canceled)
                     }
