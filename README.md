@@ -1,46 +1,73 @@
-# Hyprland + Quickshell
+<h1 align="center">Hyprland + Quickshell</h1>
 
-Custom desktop for Fedora 44, with Hyprland Lua, a Quickshell interface, and GNU Stow packages. The repository manages the bar, launcher, Control Center, notifications, calendar, clipboard, screenshots, recording, lock screen, and wallpapers.
+<p align="center">
+  A complete Fedora desktop for a 2-in-1 laptop: every panel hand-written in Quickshell,<br>
+  Hyprland configured in Lua, and a tablet mode that actually feels like one.
+</p>
 
-NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, and Polkit provide the backends. All panels use Quickshell, without external applets.
+<p align="center">
+  <img alt="Fedora 44" src="https://img.shields.io/badge/Fedora-44-51A2DA?logo=fedora&logoColor=white">
+  <img alt="Hyprland 0.57" src="https://img.shields.io/badge/Hyprland-0.57-58E1FF?logo=hyprland&logoColor=white">
+  <img alt="Quickshell 0.3" src="https://img.shields.io/badge/Quickshell-0.3-7C6FE0">
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-green">
+</p>
+
+<p align="center">
+  <img alt="The desktop with the bar, the dock and a terminal" src="docs/screenshots/hero.webp">
+</p>
+
+## Highlights
+
+- **One shell, no external applets.** Bar, launcher, Control Center, dock, notifications, calendar, clipboard, power menu, Polkit agent and screen-sharing picker are all [Quickshell](https://quickshell.org/) and share one design.
+- **[A real tablet mode](docs/features/tablet-and-touch.md).** Fold the laptop and the shell grows its touch targets, the display follows the sensor, and gestures take over. Gesture touches never reach the app underneath, so a swipe over a video does not pause it.
+- **[An on-screen keyboard written for this desktop](docs/features/on-screen-keyboard.md).** Slide between keys, hit likely letters more easily, tap word suggestions in Italian and English. It learns your words, and nothing you type leaves the machine.
+- **[Themes that reach everything](docs/features/theming.md).** One click changes the shell, terminal, GTK and Qt apps, lock screen, wallpapers, fonts and icons. Five hand-made themes, plus a dynamic one drawn from your wallpaper.
+- **[Notifications in decks](docs/features/notifications.md).** Popups stack per app, or per site for browsers, and open on hover or tap.
+- **[Claude Code as part of the desktop](docs/features/ai-assistant.md).** A drop-down console, a state icon in the bar, usage meters and notifications when it needs you.
+- **The small things.** Italian and English everywhere, Steam and gamescope launchers tuned for HiDPI, system updates in the bar, automounted drives, fingerprint unlock.
+
+## Gallery
+
+| | |
+| --- | --- |
+| ![The application launcher](docs/screenshots/launcher.webp) | ![The Control Center](docs/screenshots/control-center.webp) |
+| **Launcher.** Search, icons and keyboard navigation. | **Control Center.** Network, audio, brightness, media and switches. |
+| ![The Theming panel](docs/screenshots/theming.webp) | ![Notifications stacked in decks](docs/screenshots/notifications.webp) |
+| **Theming.** Themes, wallpapers, fonts and icons in one place. | **Notifications.** One deck per app, newest on top. |
+| ![The on-screen keyboard with word suggestions](docs/screenshots/keyboard.webp) | ![The Claude Code console](docs/screenshots/console.webp) |
+| **On-screen keyboard.** Suggestions above the keys. | **AI console.** Claude Code dropping down from the bar, ready in this repository. |
+
+All shots use the Tokyo Night theme with a wallpaper from [Omarchy](https://github.com/basecamp/omarchy).
 
 ## Getting started
 
-- [Installation, packages, and updates](docs/guide/installation.md)
-- [Hyprland plugins: overview, touch gestures, glass, and screenshots](docs/guide/plugins.md)
-- [Interface and shortcuts](docs/guide/interface.md)
-- [Configuration, language, theme, brightness, and wallpapers](docs/guide/configuration.md)
-- [Lock screen, fingerprints, XWayland, Steam/gamescope, screen sharing, and iPhone](docs/guide/integrations.md)
-- [Troubleshooting and verification status](docs/guide/troubleshooting.md)
-- [Roadmap](docs/development/roadmap.md)
-- [Contributor and agent guidance](.claude/CLAUDE.md)
+> [!NOTE]
+> This is a personal desktop, tuned for Fedora 44 and an HP OmniBook Ultra Flip. It should work on other hardware, with some settings to adjust, and other distributions are on the [roadmap](docs/development/roadmap.md).
 
-## Updating the configuration
-
-After installing the dependencies listed in the guide:
+Install the packages listed in the [installation guide](docs/guide/installation.md), then link the configuration:
 
 ```sh
+git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
 cd ~/.dotfiles
-./scripts/stow.py dry-run
-./scripts/stow.py apply
+./scripts/stow.py dry-run    # shows what would change
+./scripts/stow.py apply      # backs up conflicts, then links
 ./scripts/check.sh
-hyprctl reload
-desktop-session start
-desktop-shell restart
 ```
 
-Do not run Stow with sudo. `apply` backs up conflicting files before linking them to the repository. Run `apply` again after adding files.
+Do not run Stow with sudo. Everything is a symlink to this repository, so editing a file here changes the live desktop. [Hyprland plugins](docs/guide/plugins.md) are built separately.
 
-The top-left corner toggles Hyprspace; the bar releases its reserved space and input during the overview. HyprCapture follows the pointer across monitors: `Super + Shift + S` or `Print` opens area capture with the editor; `Super + Shift + Alt + S` or `Alt + Print` captures the monitor with the editor. Hints shows the active session's bindings, grouping screenshots and recordings under “Screen capture”.
+## Documentation
 
-The shell supports Italian and US English, selected from `/etc/locale.conf`; text, calendar, and clock follow the system language. Nested JSON catalogs with semantic keys such as `clipboard.deleteItem` live in [`desktop/i18n/`](quickshell/.config/quickshell/desktop/i18n); see [Interface language](docs/guide/configuration.md#interface-language). Documentation, code, comments, and default labels are in English; Italian text belongs only in `i18n/it_IT.json`.
+- **[Guides](docs/README.md#guides):** installation, interface and shortcuts, configuration, plugins, integrations, troubleshooting.
+- **[Features](docs/README.md#features):** one page for each area of the desktop.
+- **[Development](docs/README.md#development):** architecture, conventions, workflow, roadmap and the verification log.
 
-Kitty includes a complete reference with commented defaults; Fastfetch uses a Fedora layout with a neutral palette.
+## Built with
 
-Main settings are in [`Config.qml`](quickshell/.config/quickshell/desktop/Config.qml), the palette in [`Theme.qml`](quickshell/.config/quickshell/desktop/Theme.qml), and machine overrides in [`local.lua`](hypr/.config/hypr/config/local.lua).
+[Hyprland](https://hypr.land/), [Quickshell](https://quickshell.org/) and GNU Stow, with [Hyprspace](https://github.com/KZDKM/Hyprspace), [Hyprgrass](https://github.com/horriblename/hyprgrass), [Hyprglass](https://github.com/hyprnux/hyprglass) and [HyprCapture](https://github.com/gfhdhytghd/HyprCapture). The default wallpaper is Fedora's night artwork ([CC-BY-SA-4.0](hyprpaper/.local/share/wallpapers/ATTRIBUTION.md)). Theme wallpapers come from [Omarchy](https://github.com/basecamp/omarchy) and community collections, and word lists from [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (CC-BY-SA-4.0): both are fetched on demand and are not part of this repository.
 
-Quickshell is organized by function (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), with shared components and services. The [directory layout](docs/guide/configuration.md#quickshell-layout) explains where to make changes. The local Files/Nautilus launcher prefers Wayland; see [XWayland and text clarity](docs/guide/integrations.md#xwayland).
+Much of this desktop was built together with [Claude Code](https://claude.com/claude-code), and the [verification log](docs/development/verification-log.md) records what was tested and how.
 
-Removable drives are automounted by udiskie without an external tray icon; notifications appear in Quickshell. iPhones use GVfs/AFC in Files after device trust is granted. See [removable drives and iPhone](docs/guide/integrations.md#removable-drives-and-iphone).
+## License
 
-Steam uses a monitor-aware launcher with 1:1 XWayland rendering for clearer HiDPI text. Gamescope is available per game through `desktop-gamescope -- %command%`; see [Steam and gamescope](docs/guide/integrations.md#steam-and-gamescope) for setup and scaling options.
+[MIT](LICENSE), except the bundled wallpaper, which keeps its [own license](hyprpaper/.local/share/wallpapers/LICENSE).
