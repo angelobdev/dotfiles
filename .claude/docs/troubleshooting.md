@@ -486,3 +486,9 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - The new build reports its real commit, so the ABI hash differs from the cache and the installer refuses it: reset `/var/cache/hyprpm/$USER` after logging in on the new version, then run the installer. The first login comes up without plugins, which is expected, and no plugin is loaded when the installer loads them.
 - The old 0.56 compositor segfaulted at 20:08:30, ten seconds before the login on 0.57, with its binary and libraries already replaced on disk. The cause was not established, and 0.57 has not crashed since.
 - Confirmed by the user on the panel after the move: hyprlock, gestures on YouTube, the hot corner in the bar. Screen sharing on the new portal (1.5.0) is still to be tested.
+
+## Keyboard suggestions, 2026-10-30
+
+- End to end in a nested Hyprland: the real keyboard and a Qt text field, with the simulated touchscreen tapping the keys and the suggestion chips (`touchlab/osk/run.py`). Typing, a suggestion with its space, `perche` to `perché`, an English word, a capital kept and Backspace before a suggestion all reached the field. The lab has to set `kb_layout = "it"`: on the default layout `é` came out as `{`, since the keyboard follows the keymap of the compositor.
+- Word lists from subtitles drop accents: `perche` outnumbers `perché`, and `perchè` is common. Comparing pairs, a needed accent is at least half as common as the plain form (perché 85%, già 80%, città 100%), a real second word much less (là 1%, sì 32%, è 35%).
+

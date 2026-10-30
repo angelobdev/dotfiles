@@ -12,6 +12,20 @@ function gain(probability, reach) {
     return reach * (Math.log(Math.min(probability, 1)) - Math.log(FLOOR)) / -Math.log(FLOOR);
 }
 
+// What it takes to turn the letters typed into a suggestion: going back over what differs (an accent left
+// out) and typing on from there.
+function edit(typed, word) {
+    const letters = Array.from(word);
+    const done = Array.from(typed);
+    let same = 0;
+    while (same < done.length && done[same] === letters[same])
+        same++;
+    return {
+        back: done.length - same,
+        rest: letters.slice(same)
+    };
+}
+
 // Among keys with their distance from the touch, 0 inside the key. Only letters compete: a touch nearest
 // to any other key is that key, and with no prediction the nearest key wins.
 function pick(keys, letters, reach) {

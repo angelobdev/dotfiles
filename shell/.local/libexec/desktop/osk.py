@@ -5,7 +5,7 @@ run [--input-method]: a persistent virtual keyboard with the same XKB keymap as 
 input:kb_layout), so keys mean what the layout drawn by the shell says. One command per stdin line:
     key CODE MODS      press and release evdev CODE with the modifier mask MODS held
     press CODE / release CODE
-    predict [WORD]     prints {"event": "letters", "word": ..., "letters": {letter: probability}} (predict.py)
+    predict [WORD]     prints {"event": "letters", "word", "letters": {letter: probability}, "words": [...]}
 With --input-method it also registers as the input method, only to learn when a text field takes or loses
 the focus: it prints {"event": "activate", "purpose": ...} and {"event": "deactivate"}. Text still goes
 through the virtual keyboard, so it works the same in apps without text-input support.
@@ -258,6 +258,9 @@ class Prediction:
                 self.failed = True
         return self.words.letters(word) if self.words else {}
 
+    def suggestions(self, word):
+        return self.words.suggestions(word) if self.words else []
+
 
 PREDICTION = Prediction()
 
@@ -272,7 +275,8 @@ def handle(keyboard, line):
             keyboard.key(int(words[1]), words[0] == 'press')
         elif 1 <= len(words) <= 2 and words[0] == 'predict':
             word = words[1] if len(words) == 2 else ''
-            emit({'event': 'letters', 'word': word, 'letters': PREDICTION.letters(word)})
+            emit({'event': 'letters', 'word': word, 'letters': PREDICTION.letters(word),
+                  'words': PREDICTION.suggestions(word)})
     except (ValueError, struct.error):
         pass
 

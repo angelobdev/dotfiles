@@ -105,6 +105,19 @@ class InputMethodTests(unittest.TestCase):
         self.assertEqual(method.emitted, [{'event': 'activate', 'purpose': 'normal'}, {'event': 'unavailable'}])
 
 
+class SuggestionKeyTests(unittest.TestCase):
+    def test_the_layout_can_type_every_suggestion(self):
+        labels = {key.get('label') for row in LAYOUT['pages']['letters'] for key in row['keys']}
+        labels |= {key['label'] for variants in LAYOUT['accents'].values() for key in variants}
+        for letter in 'abcdefghijklmnopqrstuvwxyzàèéìòù':
+            self.assertIn(letter, labels)
+        self.assertTrue(osk.predict.TYPABLE.fullmatch('abcdefghijklmnopqrstuvwxyzàèéìòù'))
+
+    def test_backspace_and_space_are_on_the_letters_page(self):
+        actions = {key.get('action') for row in LAYOUT['pages']['letters'] for key in row['keys']}
+        self.assertLessEqual({'backspace', 'space'}, actions)
+
+
 class SecretFieldTests(InputMethodTests):
     def purpose(self, hint, name):
         method = self.method()

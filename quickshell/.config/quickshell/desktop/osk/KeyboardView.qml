@@ -314,6 +314,41 @@ Rectangle {
                     }
                 }
             }
+            // Words that finish the one being typed, in the place of the accents. With Caps Lock on they would
+            // go in lower case, so they wait.
+            Row {
+                anchors.centerIn: parent
+                visible: Keyboard.accents.length === 0 && Keyboard.shift !== 2
+                spacing: root.spacing
+                Repeater {
+                    model: Keyboard.suggestions
+                    Rectangle {
+                        id: suggestion
+                        required property string modelData
+                        width: Math.min(170, (strip.width - 220) / 3)
+                        height: 38
+                        radius: Theme.corner(8)
+                        color: suggestionTap.pressed ? Theme.raised : Theme.tile
+                        Accessible.role: Accessible.Button
+                        Accessible.name: modelData
+                        Text {
+                            anchors.centerIn: parent
+                            width: parent.width - 12
+                            text: suggestion.modelData
+                            textFormat: Text.PlainText
+                            horizontalAlignment: Text.AlignHCenter
+                            elide: Text.ElideRight
+                            color: Theme.text
+                            font.family: Theme.font
+                            font.pixelSize: 16
+                        }
+                        TapHandler {
+                            id: suggestionTap
+                            onTapped: Keyboard.complete(suggestion.modelData)
+                        }
+                    }
+                }
+            }
             Row {
                 anchors {
                     right: parent.right

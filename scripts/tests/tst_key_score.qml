@@ -57,6 +57,28 @@ TestCase {
         fuzzyCompare(KeyScore.gain(1, reach), reach, 0.0001);
     }
 
+    function test_aSuggestionOnlyAddsWhatIsMissing() {
+        compare(KeyScore.edit("cas", "casa"), {
+            back: 0,
+            rest: ["a"]
+        });
+    }
+
+    function test_aSuggestionGoesBackOverAMissingAccent() {
+        compare(KeyScore.edit("perche", "perché"), {
+            back: 1,
+            rest: ["é"]
+        });
+        compare(KeyScore.edit("citta", "città"), {
+            back: 1,
+            rest: ["à"]
+        });
+        compare(KeyScore.edit("perch", "perché"), {
+            back: 0,
+            rest: ["é"]
+        });
+    }
+
     function test_noKeys() {
         compare(KeyScore.pick([], {
             a: 1

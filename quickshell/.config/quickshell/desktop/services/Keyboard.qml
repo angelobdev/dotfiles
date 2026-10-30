@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import ".."
+import "../osk/KeyScore.js" as KeyScore
 
 // The on-screen keyboard: what it shows (osk/layouts/<layout>.json) and what it types, through osk.py, a
 // virtual keyboard with the keymap of the physical one. Docked or floating and the extra row are saved.
@@ -48,6 +49,8 @@ Singleton {
     property string word: ""
     // Letters likely next, from osk.py: empty until it answers, and in fields the prediction stays out of.
     property var letters: ({})
+    // Words that finish the one being typed, likeliest first.
+    property var suggestions: []
     readonly property bool predicting: Config.oskPrediction && shown && !locked && page === "letters" && ["", "normal", "alpha", "name"].includes(purpose)
     // Offsets of touches from the centre of their letter, as running totals.
     property var touchTotals: {
@@ -69,6 +72,19 @@ Singleton {
             extra: []
         })
     readonly property var rows: layout.pages[page] ?? []
+    // Every letter by its label, the accented ones too, with Backspace and Space by their action.
+    readonly property var letterKeys: {
+        const found = {};
+        for (const row of layout.pages.letters ?? []) {
+            for (const key of row.keys)
+                found[key.label ?? key.action] = key;
+        }
+        for (const variants of Object.values(layout.accents ?? {})) {
+            for (const key of variants)
+                found[key.label] = key;
+        }
+        return found;
+    }
     property bool ready: false
     // A full-screen layer that maps over a shown keyboard (a panel, a password prompt) asks for it to be
     // mapped again on top (KeyboardWindow).
@@ -135,8 +151,24 @@ Singleton {
     function setWord(value) {
         word = value;
         letters = ({});
+        suggestions = [];
         if (predicting && ready)
             process.write("predict " + value + "\n");
+    }
+    // A suggestion goes in as the keys a finger would press, so it works in every app, whatever that app
+    // reports about its text.
+    function complete(suggestion) {
+        const edit = KeyScore.edit(word, suggestion);
+        for (let index = 0; index < edit.back; index++)
+            send(letterKeys.backspace.code, 0);
+        for (const letter of edit.rest) {
+            const key = letterKeys[letter];
+            send(key.code, key.mods ?? 0);
+        }
+        send(letterKeys.space.code, 0);
+        if (shift === 1)
+            shift = 0;
+        setWord("");
     }
     function noteTouch(dx, dy) {
         if (!Config.oskTouchStats || !predicting)
@@ -327,8 +359,10 @@ Singleton {
                     root.ready = true;
                     root.inputMethod = Config.oskAutoShow;
                 } else if (message.event === "letters") {
-                    if (message.word === root.word && root.predicting)
+                    if (message.word === root.word && root.predicting) {
                         root.letters = message.letters;
+                        root.suggestions = message.words ?? [];
+                    }
                 } else if (message.event === "activate") {
                     root.focusIn(message.purpose ?? "normal");
                 } else if (message.event === "deactivate") {
