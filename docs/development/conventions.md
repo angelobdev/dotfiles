@@ -1,6 +1,6 @@
 # Conventions
 
-[← CLAUDE.md](../CLAUDE.md)
+[← Docs](../README.md)
 
 Match the surrounding code. Comments are sparse one-liners that explain *why* ("Only scan while the user is looking at the network panel"), never what.
 

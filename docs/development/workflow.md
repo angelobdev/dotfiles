@@ -1,6 +1,6 @@
 # Workflow
 
-[← CLAUDE.md](../CLAUDE.md)
+[← Docs](../README.md)
 
 ## Live reload
 
@@ -24,15 +24,15 @@ The running desktop reads files through symlinks into this repository:
 | New helper or argv/stdout change | The QML service that parses it (byte-exact contract) |
 | New Stow package | `PACKAGES` in `scripts/stow.py`, package table in `docs/installation.md` |
 | Anything in `scripts/hyprpm/` | Changes the bundle digest: requires `hyprpm remove dotfiles-desktop` and a reinstall; new files also go in `BUNDLE` in `install-hypr-plugins.py` |
-| Moved docs | Links in `README.md`, `.claude/**`, and the doc paths quoted in the `capture.errors.pluginMissing` / `plugins.errors.rebuildRequired` catalog strings |
+| Moved docs | Links in `README.md`, `docs/**`, `.claude/CLAUDE.md`, and the doc paths quoted in the `assistant.errors.claudeMissing`, `capture.errors.pluginMissing` and `plugins.errors.rebuildRequired` catalog strings |
 
 ## Verification
 
 1. `./scripts/check.sh` must pass (it is fast).
 2. For QML: confirm the live reload succeeded and inspect `desktop-shell status`. Prefer isolated instances (`qs -p <dir>` with mock data, nested/headless Hyprland, private D-Bus buses) for anything that would touch the user's real devices, accounts, notifications or open applications.
-3. Behavior or visual changes: describe what was verified physically versus in isolation, and record it in `docs/troubleshooting.md`.
+3. Behavior or visual changes: describe what was verified physically versus in isolation, and record it in `docs/development/verification-log.md`.
 4. Never leave test state behind (temporary preloads, debug ports, test symlinks, fake devices).
 
 ## Reporting
 
-Keep cleanups and behavior changes apart. When a fix would change behavior (even a bug fix), propose it with evidence and let the owner decide; add accepted-but-pending items to `ROADMAP.md`.
+Keep cleanups and behavior changes apart. When a fix would change behavior (even a bug fix), propose it with evidence and let the owner decide; add accepted-but-pending items to `docs/development/roadmap.md`.

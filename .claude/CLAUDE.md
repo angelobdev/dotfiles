@@ -5,7 +5,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 ## Hard rules
 
 - **Behavior is the contract.** Refactors must not change what the user sees or does unless explicitly asked. Separate "cleanup" from "behavior change" in plans, commits and reports.
-- **The live session runs from this repo.** Hyprland and Quickshell hot-reload symlinked files on save. A broken edit breaks the running desktop immediately; see [workflow](steering/workflow.md#live-reload).
+- **The live session runs from this repo.** Hyprland and Quickshell hot-reload symlinked files on save. A broken edit breaks the running desktop immediately; see [workflow](../docs/development/workflow.md#live-reload).
 - **English everywhere** (code, comments, docs, default labels). Italian text lives only in `quickshell/.config/quickshell/desktop/i18n/it_IT.json`.
 - **Every user-visible string goes through i18n**: `I18n.tr()` / `I18n.plural()` in QML, `tr()` in Python helpers, with the key added to *both* catalogs.
 - **Never run Stow with sudo**, never `git add -A` blindly (state and backups live outside the repo but check `git status`), never edit `scripts/hyprpm/` casually (it changes the plugin bundle digest and forces a rebuild).
@@ -21,6 +21,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 | `shell/.config/systemd/user/` | User units started by `desktop-session` (`desktop-updates.timer`) |
 | `shell/.local/libexec/desktop/*.py` | Python helpers spawned by QML services and wrappers; `i18n.py` shares the QML catalogs |
 | `hypridle/ hyprlock/ hyprpaper/ gtk/ kitty/ fastfetch/ portals/ udiskie/ electron/` | Plain config packages |
+| `docs/` | User guides (`guide/`), one page per area (`features/`), developer docs (`development/`) |
 | `scripts/` | `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, hyprpm plugin packaging |
 
 ## Commands
@@ -33,15 +34,17 @@ qs log -p ~/.config/quickshell/desktop | tail   # live shell reload result
 ~/.local/bin/desktop-shell status               # JSON snapshot of every service
 ```
 
-## Steering docs
+## Development docs
 
-- [Architecture](steering/architecture.md): how session startup, IPC, services, helpers and panels connect.
-- [Conventions](steering/conventions.md): style rules per language, i18n and theme usage.
-- [Workflow](steering/workflow.md): making changes safely, sync points, verification.
-- [Roadmap](ROADMAP.md): current direction, completed work, open items and review follow-ups.
+- [Architecture](../docs/development/architecture.md): how session startup, IPC, services, helpers and panels connect.
+- [Conventions](../docs/development/conventions.md): style rules per language, i18n and theme usage.
+- [Workflow](../docs/development/workflow.md): making changes safely, sync points, verification.
+- [Roadmap](../docs/development/roadmap.md): current direction, completed work, open items and review follow-ups.
 
 ## User documentation
 
-[Installation](docs/installation.md) · [Plugins](docs/plugins.md) · [Interface & shortcuts](docs/interface.md) · [Configuration](docs/configuration.md) · [Integrations](docs/integrations.md) · [Troubleshooting](docs/troubleshooting.md)
+The index is [docs/README.md](../docs/README.md); each area of the desktop has its page in `docs/features/`.
 
-Keep these guides accurate when behavior changes; record verification results in `docs/troubleshooting.md` and progress in `ROADMAP.md`.
+[Installation](../docs/guide/installation.md) · [Plugins](../docs/guide/plugins.md) · [Interface & shortcuts](../docs/guide/interface.md) · [Configuration](../docs/guide/configuration.md) · [Integrations](../docs/guide/integrations.md) · [Troubleshooting](../docs/guide/troubleshooting.md)
+
+Keep these guides accurate when behavior changes; record verification results in `docs/development/verification-log.md` and progress in `docs/development/roadmap.md`.

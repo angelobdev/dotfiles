@@ -1,6 +1,6 @@
 # Architecture
 
-[← CLAUDE.md](../CLAUDE.md)
+[← Docs](../README.md)
 
 ## Session startup
 
@@ -58,7 +58,7 @@ Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha
 
 ## Themes
 
-`theme.py` turns `themes/<id>/theme.json` plus `templates/*.tpl` (both under `~/.local/share/desktop/`, stowed from `shell/`) into `~/.local/state/desktop-theme/`. The stowed application configs only reference those generated files and keep Graphite fallbacks (details in [configuration](../docs/configuration.md#themes)).
+`theme.py` turns `themes/<id>/theme.json` plus `templates/*.tpl` (both under `~/.local/share/desktop/`, stowed from `shell/`) into `~/.local/state/desktop-theme/`. The stowed application configs only reference those generated files and keep Graphite fallbacks (details in [configuration](../features/theming.md#themes)).
 
 `scripts/tests/test_theme.py` (run by `check.sh`) renders Graphite and compares it with those fallbacks:
 - `hyprlock.conf` and the qtXct `colors/desktop.conf`, byte for byte;

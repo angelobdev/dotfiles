@@ -7,7 +7,7 @@
   },
   "assistant": {
     "errors": {
-      "claudeMissing": "Claude Code non è installato: vedi .claude/docs/integrations.md",
+      "claudeMissing": "Claude Code non è installato: vedi docs/features/ai-assistant.md",
       "usage": "Uso: agent.py hook|statusline (JSON su stdin, da Claude Code)"
     },
     "language": "italian",
@@ -241,7 +241,7 @@
   "capture": {
     "displayWithEditor": "Screenshot · Monitor con editor",
     "errors": {
-      "pluginMissing": "HyprCapture non caricato: vedere .claude/docs/plugins.md"
+      "pluginMissing": "HyprCapture non caricato: vedere docs/guide/plugins.md"
     },
     "regionWithEditor": "Screenshot · Area con editor",
     "title": "Screenshot"
@@ -522,7 +522,7 @@
   },
   "plugins": {
     "errors": {
-      "rebuildRequired": "Hyprland è cambiato. Verificare i pin e ricompilare: .claude/docs/plugins.md.",
+      "rebuildRequired": "Hyprland è cambiato. Verificare i pin e ricompilare: docs/guide/plugins.md.",
       "unverifiedBuild": "Build diversa da quella verificata: autoload sospeso."
     },
     "notificationTitle": "Plugin Hyprland non caricati"
