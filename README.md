@@ -39,7 +39,7 @@ Kitty includes a complete reference with commented defaults; Fastfetch uses a Fe
 
 Main settings are in [`Config.qml`](quickshell/.config/quickshell/desktop/Config.qml), the palette in [`Theme.qml`](quickshell/.config/quickshell/desktop/Theme.qml), and machine overrides in [`local.lua`](hypr/.config/hypr/config/local.lua).
 
-Quickshell is organized by function (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), with shared components and services. The [directory layout](.claude/docs/configuration.md#quickshell-layout) explains where to make changes. Local ChatGPT and Files/Nautilus launchers prefer Wayland; see [XWayland and text clarity](.claude/docs/integrations.md#xwayland).
+Quickshell is organized by function (`bar`, `controlcenter`, `panels`, `notifications`, `session`, `osd`), with shared components and services. The [directory layout](.claude/docs/configuration.md#quickshell-layout) explains where to make changes. The local Files/Nautilus launcher prefers Wayland; see [XWayland and text clarity](.claude/docs/integrations.md#xwayland).
 
 Removable drives are automounted by udiskie without an external tray icon; notifications appear in Quickshell. iPhones use GVfs/AFC in Files after device trust is granted. See [removable drives and iPhone](.claude/docs/integrations.md#removable-drives-and-iphone).
 
