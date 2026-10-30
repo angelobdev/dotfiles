@@ -1,5 +1,5 @@
 diff --git a/src/GestureManager.cpp b/src/GestureManager.cpp
-index ad658d0..61b0ba6 100644
+index ad658d0..1b6be12 100644
 --- a/src/GestureManager.cpp
 +++ b/src/GestureManager.cpp
 @@ -17,6 +17,8 @@
@@ -49,7 +49,17 @@ index ad658d0..61b0ba6 100644
  }
  
  bool GestureManager::findCompletedGesture(const CompletedGestureEvent& gev) const {
-@@ -577,6 +592,11 @@ void GestureManager::sendCancelEventsToWindows() {
+@@ -561,7 +576,8 @@ void GestureManager::stopLongPressTimer() {
+ void GestureManager::sendCancelEventsToWindows() {
+     static auto const SEND_CANCEL = g_config->sendCancel;
+ 
+-    if (!SEND_CANCEL->value()) {
++    // Nothing of this sequence reached a window, and the resources may still list an earlier one.
++    if (!SEND_CANCEL->value() || !this->touchesDelivered) {
+         return;
+     }
+ 
+@@ -577,6 +593,11 @@ void GestureManager::sendCancelEventsToWindows() {
  bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
      static auto const SEND_CANCEL = g_config->sendCancel;
  
@@ -61,7 +71,7 @@ index ad658d0..61b0ba6 100644
      auto monitor = State::monitorState()->query().name(!ev.device->m_boundOutput.empty() ? ev.device->m_boundOutput : "").run();
      monitor      = monitor ? monitor : Desktop::focusState()->monitor();
  
-@@ -600,7 +620,8 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
+@@ -600,7 +621,8 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
  
      g_pInputManager->refocus();
  
@@ -71,7 +81,7 @@ index ad658d0..61b0ba6 100644
          this->touchedResources.clear();
          this->activeTrackpadGesture = nullptr;
      }
-@@ -634,10 +655,23 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
+@@ -634,10 +656,23 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
          .pos    = pos,
      };
  
@@ -96,7 +106,7 @@ index ad658d0..61b0ba6 100644
      static auto const SEND_CANCEL = g_config->sendCancel;
  
      wf::touch::point_t lift_off_pos;
-@@ -685,6 +719,10 @@ bool GestureManager::onTouchUp(ITouch::SUpEvent ev) {
+@@ -685,6 +720,10 @@ bool GestureManager::onTouchUp(ITouch::SUpEvent ev) {
  }
  
  bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
@@ -107,7 +117,7 @@ index ad658d0..61b0ba6 100644
      if (!this->m_lastTouchedMonitor) {
          Log::logger->log(Log::ERR, "[hyprgrass] onTouchMove: where the fuck is my monitor");
          return false;
-@@ -699,7 +737,190 @@ bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
+@@ -699,7 +738,190 @@ bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
          .pos    = pos,
      };
  
@@ -150,6 +160,7 @@ index ad658d0..61b0ba6 100644
 +        const auto monitor   = this->m_lastTouchedMonitor;
 +        const auto global    = monitor ? monitor->m_position + ev.pos * monitor->m_size : Vector2D{};
 +        this->holdingTouches = !block && this->shouldHoldTouches(global);
++        this->touchesDelivered = !this->holdingTouches;
 +        if (!this->holdingTouches) {
 +            return block;
 +        }
@@ -165,7 +176,7 @@ index ad658d0..61b0ba6 100644
 +
 +    // Three fingers are a gesture: the window never gets them, or gets a cancel for those it already has.
 +    if (block || this->m_sGestureState.fingers.size() >= 3) {
-+        this->claimTouches(!this->holdingTouches);
++        this->claimTouches();
 +        return true;
 +    }
 +
@@ -188,7 +199,7 @@ index ad658d0..61b0ba6 100644
 +    }
 +
 +    if (block) {
-+        this->claimTouches(false);
++        this->claimTouches();
 +        return true;
 +    }
 +
@@ -214,7 +225,7 @@ index ad658d0..61b0ba6 100644
 +        result = true;
 +    } else if (this->holdingTouches) {
 +        if (block) {
-+            this->claimTouches(false);
++            this->claimTouches();
 +            result = true;
 +        } else {
 +            // A lift ends a tap or a short touch: the window gets it whole.
@@ -241,7 +252,7 @@ index ad658d0..61b0ba6 100644
 +    }
 +
 +    if (this->eventForwardingInhibited()) {
-+        this->claimTouches(false);
++        this->claimTouches();
 +        return;
 +    }
 +
@@ -257,19 +268,18 @@ index ad658d0..61b0ba6 100644
 +}
 +
 +// The rest of the sequence belongs to the compositor; touches already delivered are cancelled.
-+void GestureManager::claimTouches(bool delivered) {
++void GestureManager::claimTouches() {
 +    wl_event_source_timer_update(this->holdTimer, 0);
 +    this->heldTouches.clear();
 +    this->holdingTouches = false;
 +    this->touchesClaimed = true;
-+    if (delivered) {
-+        this->sendCancelEventsToWindows();
-+    }
++    this->sendCancelEventsToWindows();
 +}
 +
 +void GestureManager::releaseHeldTouches() {
 +    wl_event_source_timer_update(this->holdTimer, 0);
-+    this->holdingTouches = false;
++    this->holdingTouches   = false;
++    this->touchesDelivered = true;
 +
 +    const auto held            = std::move(this->heldTouches);
 +    this->heldTouches          = {};
@@ -300,7 +310,7 @@ index ad658d0..61b0ba6 100644
  
  SMonitorArea GestureManager::getMonitorArea() const {
 diff --git a/src/GestureManager.hpp b/src/GestureManager.hpp
-index 8d3275b..aedeb4c 100644
+index 8d3275b..0ce11c9 100644
 --- a/src/GestureManager.hpp
 +++ b/src/GestureManager.hpp
 @@ -92,6 +92,8 @@ class GestureManager : public IGestureManager {
@@ -312,7 +322,7 @@ index 8d3275b..aedeb4c 100644
      // workaround
      void touchBindDispatcher(std::string args);
  
-@@ -108,6 +110,25 @@ class GestureManager : public IGestureManager {
+@@ -108,6 +110,26 @@ class GestureManager : public IGestureManager {
      PHLMONITOR m_lastTouchedMonitor;
      SMonitorArea m_monitorArea;
      wl_event_source* long_press_timer;
@@ -325,13 +335,14 @@ index 8d3275b..aedeb4c 100644
 +    bool holdingTouches       = false;
 +    bool holdExtended         = false;
 +    bool touchesClaimed       = false;
++    bool touchesDelivered     = false;
 +    bool replayingHeldTouches = false;
 +
 +    bool shouldHoldTouches(const Vector2D& pos) const;
 +    bool holdTouchDown(const ITouch::SDownEvent& ev, bool first, bool block);
 +    bool holdTouchMove(const ITouch::SMotionEvent& ev, bool block);
 +    bool holdTouchUp(bool block);
-+    void claimTouches(bool delivered);
++    void claimTouches();
 +    void releaseHeldTouches();
 +    bool forwardTouchUp(ITouch::SUpEvent ev);
 +

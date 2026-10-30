@@ -23,7 +23,7 @@ The running desktop reads files through symlinks into this repository:
 | New user-visible string | Both `en_US.json` and `it_IT.json`, same path and placeholders |
 | New helper or argv/stdout change | The QML service that parses it (byte-exact contract) |
 | New Stow package | `PACKAGES` in `scripts/stow.py`, package table in `docs/installation.md` |
-| Anything in `scripts/hyprpm/` | Changes the bundle digest: requires `hyprpm remove dotfiles-desktop` and a reinstall |
+| Anything in `scripts/hyprpm/` | Changes the bundle digest: requires `hyprpm remove dotfiles-desktop` and a reinstall; new files also go in `BUNDLE` in `install-hypr-plugins.py` |
 | Moved docs | Links in `README.md`, `.claude/**`, and the doc paths quoted in the `capture.errors.pluginMissing` / `plugins.errors.rebuildRequired` catalog strings |
 
 ## Verification

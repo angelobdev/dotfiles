@@ -13,6 +13,7 @@ import tomllib
 
 REPO = Path(__file__).resolve().parent.parent
 PACKAGING = REPO / 'scripts/hyprpm'
+BUNDLE = ('build.py', 'hyprpm.toml', 'hyprgrass-hold-touches.patch')
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(PACKAGING))
 from build import PLUGINS, fingerprint, rpm_version, run
@@ -70,14 +71,14 @@ def main():
             run('sudo', 'install', '-m644', str(state_file), str(cache / 'state.toml'))
     # A local packaging repository keeps upstream pins and the Lua compatibility
     # patch reproducible. hyprpm still builds, installs, enables and loads each plugin.
-    digest = hashlib.sha256(b''.join((PACKAGING / f).read_bytes() for f in ('build.py', 'hyprpm.toml'))).hexdigest()[:16]
+    digest = hashlib.sha256(b''.join((PACKAGING / f).read_bytes() for f in BUNDLE)).hexdigest()[:16]
     bundle = Path.home() / '.local/share/dotfiles/hyprpm' / digest
     if not (bundle / '.git').exists():
         bundle.mkdir(parents=True, exist_ok=True)
-        for name in ('build.py', 'hyprpm.toml'):
+        for name in BUNDLE:
             shutil.copy2(PACKAGING / name, bundle / name)
         run('git', 'init', '-q', str(bundle))
-        run('git', '-C', str(bundle), 'add', 'build.py', 'hyprpm.toml')
+        run('git', '-C', str(bundle), 'add', *BUNDLE)
         run('git', '-C', str(bundle), '-c', 'user.name=Dotfiles packaging', '-c', 'user.email=dotfiles@localhost', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'Package tested Hyprland plugins')
     repo_state = cache / 'dotfiles-desktop/state.toml'
     if repo_state.exists():

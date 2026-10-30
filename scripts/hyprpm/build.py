@@ -13,6 +13,8 @@ PLUGINS = {
     'hypr-hot-edge': ('claychinasky/hypr-hot-edge', '32b2dffdf2900a5a4b8cd10133f6a58cfd7ec4d6', 'build/hypr-hot-edge.so'),
     'HyprCapture': ('gfhdhytghd/HyprCapture', 'bf4d1f9021fc288200002f5a7d8291ed56f0df83', 'build/libhyprcapture.so'),
 }
+# Keeps the fingers of a gesture from reaching the window under them.
+HYPRGRASS_PATCH = Path(__file__).resolve().with_name('hyprgrass-hold-touches.patch')
 
 
 def run(*args, **kwargs):
@@ -29,7 +31,7 @@ def fingerprint():
         raise RuntimeError('hyprland and hyprland-devel must have the same RPM version')
     if version != '0.56.2-20.fc44.x86_64':
         raise RuntimeError('Hyprland build differs from the verified version: update and verify pins before building')
-    return hashlib.sha256((version + Path(__file__).read_text()).encode()).hexdigest()[:20]
+    return hashlib.sha256((version + Path(__file__).read_text() + HYPRGRASS_PATCH.read_text()).encode()).hexdigest()[:20]
 
 
 def build(name):
@@ -54,6 +56,10 @@ def build(name):
             if old not in text and new not in text:
                 raise RuntimeError('Lua patch context has changed')
             cmake.write_text(text.replace(old, new))
+        if name == 'hyprgrass':
+            # A build that stopped halfway has already patched this checkout.
+            run('git', 'checkout', '--', '.', cwd=cache)
+            run('git', 'apply', str(HYPRGRASS_PATCH), cwd=cache)
         jobs = '2'  # Keep desktop responsiveness and memory use predictable.
         if name in ('Hyprspace', 'hyprglass'):
             run('make', '-j' + jobs, cwd=cache)
