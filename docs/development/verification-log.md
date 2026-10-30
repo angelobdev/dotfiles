@@ -485,3 +485,10 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 
 - End to end in a nested Hyprland with the real keyboard (`touchlab/osk/run.py`, 17 of 17): a word counted once at a space, offered after two uses, forgotten by holding its suggestion with nothing typed; the file at mode 0600 with sorted keys. A word typed in a Qt password field and one typed in Kitty reached those fields and did not reach the file. Fields that report no purpose were not exercised: `Keyboard.learning` excludes them by reading `purpose`.
 - With a full memory of 5,000 words: 1.4 ms to learn, 8 ms at worst for a lookup. `letters("")` is worked out once at load, as it covers every word and is needed after each word.
+
+## GitHub Actions, 2026-10-30
+
+- The commands of `.github/workflows/check.yml`, read from the YAML and run in a fresh `fedora:44` container with `CI=true` and `HOME=/github/home`: `check.sh` passes, 138 Python tests (1 skipped, as matugen is not installed), 49 QML tests, and Hyprland 0.57.0 from the COPR accepts the config without plugins. This container stands in for the GitHub runner.
+- Hyprland refuses to start as root and needs `XDG_RUNTIME_DIR`, so the job runs `check.sh` as a normal user with its own runtime directory.
+- Without Stow, `i18n.py` finds no catalogs under `~/.config`, and `test_theme.py` compared raw keys: it now reads the catalogs of the tree.
+- `check-links.py` on a damaged copy: found a missing image in `src="..."`, a missing file and a missing heading, and ignored a link inside inline code.

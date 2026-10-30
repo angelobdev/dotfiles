@@ -10,6 +10,7 @@
   <img alt="Hyprland 0.57" src="https://img.shields.io/badge/Hyprland-0.57-58E1FF?logo=hyprland&logoColor=white">
   <img alt="Quickshell 0.3" src="https://img.shields.io/badge/Quickshell-0.3-7C6FE0">
   <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-green">
+  <a href="https://github.com/angelobdev/dotfiles/actions/workflows/check.yml"><img alt="Checks" src="https://github.com/angelobdev/dotfiles/actions/workflows/check.yml/badge.svg"></a>
 </p>
 
 <p align="center">

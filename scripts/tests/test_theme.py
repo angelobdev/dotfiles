@@ -19,8 +19,10 @@ GRAPHITE = json.loads((REPO / 'shell/.local/share/desktop/themes/graphite/theme.
 class GraphiteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        # The stowed fallbacks hold the English text: render as an en_US session whatever the machine says.
-        with mock.patch('i18n.language', return_value='en_US'):
+        # The stowed fallbacks hold the English text: render as an en_US session whatever the machine says,
+        # with the catalogs of this tree, which are not stowed in CI.
+        with mock.patch('i18n.language', return_value='en_US'), \
+                mock.patch.dict('os.environ', XDG_CONFIG_HOME=str(REPO / 'quickshell/.config')):
             cls.out = theme.render_all(theme.complete(GRAPHITE), TEMPLATES)
 
     def test_hyprlock_matches_the_stowed_fallback(self):

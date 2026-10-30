@@ -17,18 +17,19 @@ The running desktop reads files through symlinks into this repository:
 
 | Change | Also update |
 | --- | --- |
-| New panel | `ShellState.qml` allow-list, `desktop-shell` usage/allow-list, an `Overlay` instance in `shell.qml`, a bind in `binds.lua`, `docs/interface.md` |
+| New panel | `ShellState.qml` allow-list, `desktop-shell` usage/allow-list, an `Overlay` instance in `shell.qml`, a bind in `binds.lua`, `docs/guide/interface.md` |
 | New layer namespace | Hyprglass/blur rules in `config/plugins.lua` and `config/rules.lua` |
 | New/renamed bind description | `i18n/Sources.js` mapping + both catalogs (Hints translation) |
 | New user-visible string | Both `en_US.json` and `it_IT.json`, same path and placeholders |
 | New helper or argv/stdout change | The QML service that parses it (byte-exact contract) |
-| New Stow package | `PACKAGES` in `scripts/stow.py`, package table in `docs/installation.md` |
+| New Stow package | `PACKAGES` in `scripts/stow.py`, package table in `docs/guide/installation.md` |
 | Anything in `scripts/hyprpm/` | Changes the bundle digest: requires `hyprpm remove dotfiles-desktop` and a reinstall; new files also go in `BUNDLE` in `install-hypr-plugins.py` |
-| Moved docs | Links in `README.md`, `docs/**`, `.claude/CLAUDE.md`, and the doc paths quoted in the `assistant.errors.claudeMissing`, `capture.errors.pluginMissing` and `plugins.errors.rebuildRequired` catalog strings |
+| Moved docs | Links in `README.md`, `docs/**`, `.claude/CLAUDE.md` (`scripts/check-links.py` finds the broken ones), and the doc paths quoted in the `assistant.errors.claudeMissing`, `capture.errors.pluginMissing` and `plugins.errors.rebuildRequired` catalog strings |
+| Tool needed by `check.sh` | The package list in `.github/workflows/check.yml`, and its list of required tools when `check.sh` skips that tool if missing |
 
 ## Verification
 
-1. `./scripts/check.sh` must pass (it is fast).
+1. `./scripts/check.sh` must pass (it is fast). GitHub runs it too, in a `fedora:44` container, on every push to `main` and every pull request (`.github/workflows/check.yml`).
 2. For QML: confirm the live reload succeeded and inspect `desktop-shell status`. Prefer isolated instances (`qs -p <dir>` with mock data, nested/headless Hyprland, private D-Bus buses) for anything that would touch the user's real devices, accounts, notifications or open applications.
 3. Behavior or visual changes: describe what was verified physically versus in isolation, and record it in `docs/development/verification-log.md`.
 4. Never leave test state behind (temporary preloads, debug ports, test symlinks, fake devices).

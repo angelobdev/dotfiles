@@ -22,12 +22,13 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 | `shell/.local/libexec/desktop/*.py` | Python helpers spawned by QML services and wrappers; `i18n.py` shares the QML catalogs |
 | `hypridle/ hyprlock/ hyprpaper/ gtk/ kitty/ fastfetch/ portals/ udiskie/ electron/` | Plain config packages |
 | `docs/` | User guides (`guide/`), one page per area (`features/`), developer docs (`development/`) |
-| `scripts/` | `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, hyprpm plugin packaging |
+| `scripts/` | `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, `check-links.py`, hyprpm plugin packaging |
+| `.github/workflows/check.yml` | CI: `check.sh` in a `fedora:44` container on pushes to `main` and pull requests |
 
 ## Commands
 
 ```sh
-./scripts/check.sh              # bash -n, Python compile, i18n tests, cc, desktop-file-validate, qmllint, Hyprland --verify-config
+./scripts/check.sh              # bash -n, Python compile, i18n tests, doc links, cc, desktop-file-validate, qmllint, Hyprland --verify-config
 ./scripts/stow.py dry-run       # then: ./scripts/stow.py apply (needed after ADDING files)
 hyprctl configerrors            # live Hyprland config state
 qs log -p ~/.config/quickshell/desktop | tail   # live shell reload result
