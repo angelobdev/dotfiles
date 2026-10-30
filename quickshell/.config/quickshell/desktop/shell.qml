@@ -184,6 +184,9 @@ ShellRoot {
                     purpose: Keyboard.purpose,
                     autoShown: Keyboard.autoShown,
                     locked: Keyboard.locked,
+                    predicting: Keyboard.predicting,
+                    letters: Object.keys(Keyboard.letters).length,
+                    touch: Keyboard.touchSpread(),
                     area: Keyboard.areaVisible ? [Keyboard.screenName, Keyboard.area.x, Keyboard.area.y, Keyboard.area.width, Keyboard.area.height] : []
                 },
                 assist: {

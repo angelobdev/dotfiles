@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import ".."
 import "../components"
 import "../services"
+import "KeyScore.js" as KeyScore
 
 // The keys and the strip above them: the extra row switch on the left, accented variants in the middle
 // after a long press, docking and hiding on the right. In the floating keyboard the strip is the handle.
@@ -23,10 +24,10 @@ Rectangle {
     function keyWidth(units) {
         return units * (unit + spacing) - spacing;
     }
-    // The key nearest to a point of the key area, so the gaps between keys type too.
+    // The key a touch lands on: the nearest one, so the gaps between keys type too, with likely letters a
+    // little easier to reach.
     function keyAt(x, y) {
-        let nearest = null;
-        let best = Infinity;
+        const candidates = [];
         for (const row of keyRows.children) {
             if (!row.visible)
                 continue;
@@ -36,13 +37,15 @@ Rectangle {
                 const origin = button.mapToItem(keys, 0, 0);
                 const dx = Math.max(origin.x - x, 0, x - origin.x - button.width);
                 const dy = Math.max(origin.y - y, 0, y - origin.y - button.height);
-                if (dx * dx + dy * dy < best) {
-                    best = dx * dx + dy * dy;
-                    nearest = button;
-                }
+                candidates.push({
+                    button: button,
+                    label: button.key.label,
+                    distance: Math.hypot(dx, dy)
+                });
             }
         }
-        return nearest;
+        const letters = Keyboard.predicting ? Keyboard.letters : {};
+        return KeyScore.pick(candidates, letters, keyHeight * KeyScore.REACH)?.button ?? null;
     }
     // After a long press the finger slides up to the accents in the strip: the one nearest across.
     function accentAt(x, y) {
@@ -74,6 +77,9 @@ Rectangle {
         const key = button?.key;
         const touch = {
             button: button,
+            pressed: button,
+            x: x,
+            y: y,
             sticky: key?.action === "space" || key?.action === "backspace",
             done: false,
             accents: false
@@ -134,6 +140,11 @@ Rectangle {
         if (touch.done || touch.sticky || !touch.button)
             return;
         touch.done = true;
+        // Only a touch that stayed on its letter says where a finger lands on the key it meant.
+        if (touch.button === touch.pressed && /^[a-z]$/.test(touch.button.key.label ?? "")) {
+            const centre = touch.button.mapToItem(keys, touch.button.width / 2, touch.button.height / 2);
+            Keyboard.noteTouch(touch.x - centre.x, touch.y - centre.y);
+        }
         root.activate(touch.button.key);
     }
     function activate(key) {

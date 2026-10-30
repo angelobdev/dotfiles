@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 import struct
 import sys
+import tempfile
 import unittest
+from unittest import mock
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / 'shell/.local/libexec/desktop'))
@@ -101,6 +103,72 @@ class InputMethodTests(unittest.TestCase):
         method.event(5, b'')
         method.event(6, b'')
         self.assertEqual(method.emitted, [{'event': 'activate', 'purpose': 'normal'}, {'event': 'unavailable'}])
+
+
+class SecretFieldTests(InputMethodTests):
+    def purpose(self, hint, name):
+        method = self.method()
+        method.event(0, b'')
+        method.event(4, struct.pack('<II', hint, osk.PURPOSES.index(name)))
+        method.event(5, b'')
+        return method.emitted[-1]['purpose']
+
+    def test_hidden_or_sensitive_text_counts_as_a_password(self):
+        self.assertEqual(self.purpose(0x40, 'normal'), 'password')
+        self.assertEqual(self.purpose(0x80, 'alpha'), 'password')
+
+    def test_other_hints_change_nothing(self):
+        self.assertEqual(self.purpose(0x1 | 0x2 | 0x4, 'normal'), 'normal')
+
+    def test_a_hidden_pin_stays_on_the_digits(self):
+        self.assertEqual(self.purpose(0x40, 'pin'), 'pin')
+
+
+class PredictionTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.directory = Path(directory.name)
+        patcher = mock.patch.object(osk.predict, 'DIRECTORY', self.directory)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_missing_lists_are_fetched_once_and_type_nothing(self):
+        prediction = osk.Prediction()
+        with mock.patch.object(osk.subprocess, 'Popen') as popen:
+            self.assertEqual(prediction.letters(''), {})
+            self.assertEqual(prediction.letters('ca'), {})
+        popen.assert_called_once()
+
+    def test_a_failed_fetch_does_not_reach_the_keys(self):
+        prediction = osk.Prediction()
+        with mock.patch.object(osk.subprocess, 'Popen', side_effect=OSError):
+            self.assertEqual(prediction.letters(''), {})
+
+    def test_a_broken_list_is_not_read_again(self):
+        for path in osk.predict.paths():
+            path.write_text('casa molte\n')
+        prediction = osk.Prediction()
+        with mock.patch.object(osk.predict, 'Words', side_effect=ValueError) as words:
+            self.assertEqual(prediction.letters(''), {})
+            self.assertEqual(prediction.letters('c'), {})
+        words.assert_called_once()
+
+    def test_lists_load_when_they_arrive(self):
+        for path in osk.predict.paths():
+            path.write_text('casa 30\ncane 10\n')
+        self.assertEqual(osk.Prediction().letters('ca'), {'s': 0.75, 'n': 0.25})
+
+    def test_the_answer_names_its_word(self):
+        with mock.patch.object(osk, 'emit') as emit, mock.patch.object(osk.PREDICTION, 'letters', return_value={'a': 1.0}):
+            osk.handle(None, 'predict ca')
+            osk.handle(None, 'predict')
+        self.assertEqual([call.args[0]['word'] for call in emit.call_args_list], ['ca', ''])
+
+    def test_a_malformed_line_is_ignored(self):
+        with mock.patch.object(osk, 'emit') as emit:
+            osk.handle(None, 'predict too many words')
+        emit.assert_not_called()
 
 
 class WireTests(unittest.TestCase):

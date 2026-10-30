@@ -5,6 +5,7 @@ run [--input-method]: a persistent virtual keyboard with the same XKB keymap as 
 input:kb_layout), so keys mean what the layout drawn by the shell says. One command per stdin line:
     key CODE MODS      press and release evdev CODE with the modifier mask MODS held
     press CODE / release CODE
+    predict [WORD]     prints {"event": "letters", "word": ..., "letters": {letter: probability}} (predict.py)
 With --input-method it also registers as the input method, only to learn when a text field takes or loses
 the focus: it prints {"event": "activate", "purpose": ...} and {"event": "deactivate"}. Text still goes
 through the virtual keyboard, so it works the same in apps without text-input support.
@@ -13,6 +14,7 @@ The client speaks the Wayland wire protocol itself, so it needs nothing beyond t
 libxkbcommon.
 """
 from i18n import tr
+import predict
 import ctypes
 import json
 import os
@@ -28,6 +30,8 @@ import time
 # zwp_text_input_v3 content purposes, in protocol order.
 PURPOSES = ('normal', 'alpha', 'digits', 'number', 'phone', 'url', 'email', 'name', 'password', 'pin', 'date',
             'time', 'datetime', 'terminal')
+# zwp_text_input_v3 hints hidden_text and sensitive_data.
+SECRET = 0x40 | 0x80
 
 
 class RuleNames(ctypes.Structure):
@@ -213,8 +217,10 @@ class InputMethod:
         elif opcode == 1:
             self.pending['active'] = False
         elif opcode == 4:
-            purpose = struct.unpack('<II', body[:8])[1]
-            self.pending['purpose'] = PURPOSES[purpose] if purpose < len(PURPOSES) else 'normal'
+            hint, purpose = struct.unpack('<II', body[:8])
+            name = PURPOSES[purpose] if purpose < len(PURPOSES) else 'normal'
+            # A hidden field is a password whatever it calls itself; the keyboard stays out of those.
+            self.pending['purpose'] = 'password' if hint & SECRET and name in ('normal', 'alpha', 'name') else name
         elif opcode == 5:
             active = self.pending.get('active', self.active)
             purpose = self.pending.get('purpose', self.purpose)
@@ -232,6 +238,30 @@ def emit(message):
     print(json.dumps(message), flush=True)
 
 
+# The word lists load on first use, which is also when missing ones are fetched, once and in the background.
+class Prediction:
+    def __init__(self):
+        self.words = None
+        self.fetching = False
+        self.failed = False
+
+    def letters(self, word):
+        if self.words is None and not self.failed:
+            try:
+                if all(path.exists() for path in predict.paths()):
+                    self.words = predict.Words(predict.paths())
+                elif not self.fetching:
+                    self.fetching = True
+                    subprocess.Popen([sys.executable, predict.__file__, 'fetch'], stdout=subprocess.DEVNULL,
+                                     stderr=subprocess.DEVNULL)
+            except (OSError, ValueError):
+                self.failed = True
+        return self.words.letters(word) if self.words else {}
+
+
+PREDICTION = Prediction()
+
+
 # A malformed or out of range line is ignored; it must not end the helper and silence the keyboard.
 def handle(keyboard, line):
     words = line.split()
@@ -240,6 +270,9 @@ def handle(keyboard, line):
             keyboard.tap(int(words[1]), int(words[2]))
         elif len(words) == 2 and words[0] in ('press', 'release'):
             keyboard.key(int(words[1]), words[0] == 'press')
+        elif 1 <= len(words) <= 2 and words[0] == 'predict':
+            word = words[1] if len(words) == 2 else ''
+            emit({'event': 'letters', 'word': word, 'letters': PREDICTION.letters(word)})
     except (ValueError, struct.error):
         pass
 

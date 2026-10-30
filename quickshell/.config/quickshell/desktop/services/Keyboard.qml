@@ -43,6 +43,26 @@ Singleton {
     property bool alt: false
     // Accented variants offered after a long press, in the strip above the keys.
     property var accents: []
+    // The word being typed through these keys. It starts again at anything but a letter and in every field;
+    // an app can move its caret without saying so, but a stale word only leans on the keys a little.
+    property string word: ""
+    // Letters likely next, from osk.py: empty until it answers, and in fields the prediction stays out of.
+    property var letters: ({})
+    readonly property bool predicting: Config.oskPrediction && shown && !locked && page === "letters" && ["", "normal", "alpha", "name"].includes(purpose)
+    // Offsets of touches from the centre of their letter, as running totals.
+    property var touchTotals: {
+        try {
+            return JSON.parse(SessionState.oskTouch);
+        } catch (failure) {
+            return {
+                count: 0,
+                x: 0,
+                y: 0,
+                xx: 0,
+                yy: 0
+            };
+        }
+    }
     property var layout: ({
             pages: {},
             accents: {},
@@ -112,12 +132,49 @@ Singleton {
         if (process.running)
             process.write("key " + code + " " + mods + "\n");
     }
+    function setWord(value) {
+        word = value;
+        letters = ({});
+        if (predicting && ready)
+            process.write("predict " + value + "\n");
+    }
+    function noteTouch(dx, dy) {
+        if (!Config.oskTouchStats || !predicting)
+            return;
+        const totals = touchTotals;
+        touchTotals = {
+            count: totals.count + 1,
+            x: totals.x + dx,
+            y: totals.y + dy,
+            xx: totals.xx + dx * dx,
+            yy: totals.yy + dy * dy
+        };
+        saveTouch.start();
+    }
+    // Pixels: the mean offset of a touch and how far touches spread around it.
+    function touchSpread() {
+        const t = touchTotals;
+        if (t.count === 0)
+            return {
+                count: 0
+            };
+        const spread = (sum, squares) => Math.sqrt(Math.max(0, squares / t.count - (sum / t.count) ** 2));
+        return {
+            count: t.count,
+            meanX: t.x / t.count,
+            meanY: t.y / t.count,
+            spreadX: spread(t.x, t.xx),
+            spreadY: spread(t.y, t.yy)
+        };
+    }
     // Space goes down with the finger and up with it, like a physical key: held, the app sees it repeat,
     // which is how Claude Code tells its hold-to-talk Space from a typed one.
     function hold(key, down) {
         if (!process.running)
             return;
         process.write((down ? "press " : "release ") + key.code + "\n");
+        if (down)
+            setWord("");
         if (!down) {
             accents = [];
             if (shift === 1)
@@ -134,6 +191,10 @@ Singleton {
         if (alt)
             mods |= 8;
         send(key.code, mods);
+        if (key.action === "backspace")
+            setWord(word.slice(0, -1));
+        else
+            setWord(!ctrl && !alt && /^[a-zàèéìòù]$/.test(key.label ?? "") ? word + key.label : "");
         accents = [];
         if (shift === 1)
             shift = 0;
@@ -165,6 +226,7 @@ Singleton {
     function focusIn(fieldPurpose) {
         hideTimer.stop();
         purpose = fieldPurpose;
+        setWord("");
         // A field of a panel (the launcher search) keeps a keyboard that the panel would have closed, and
         // brings it back over the panel.
         if (shown && ShellState.panel !== "")
@@ -180,6 +242,7 @@ Singleton {
     }
     function focusOut() {
         purpose = "";
+        setWord("");
         if (locked)
             return;
         // Moving between fields deactivates one and activates the next: wait before closing.
@@ -225,9 +288,16 @@ Singleton {
                 hideTimer.restart();
         }
     }
+    onPredictingChanged: setWord(word)
+    onReadyChanged: setWord(word)
     Component.onCompleted: {
         if (Config.oskAutoShow)
             process.running = true;
+    }
+    Timer {
+        id: saveTouch
+        interval: 30000
+        onTriggered: SessionState.set("oskTouch", JSON.stringify(root.touchTotals))
     }
     Timer {
         id: shiftTimer
@@ -256,6 +326,9 @@ Singleton {
                 if (message.status === "ready") {
                     root.ready = true;
                     root.inputMethod = Config.oskAutoShow;
+                } else if (message.event === "letters") {
+                    if (message.word === root.word && root.predicting)
+                        root.letters = message.letters;
                 } else if (message.event === "activate") {
                     root.focusIn(message.purpose ?? "normal");
                 } else if (message.event === "deactivate") {

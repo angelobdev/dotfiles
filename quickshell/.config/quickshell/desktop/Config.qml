@@ -39,6 +39,10 @@ QtObject {
     readonly property string oskLayout: "it"
     // In tablet mode, open the keyboard when a text field takes the focus (apps with text-input-v3).
     readonly property bool oskAutoShow: true
+    // Likely next letters are a little easier to hit, from Italian and English word lists fetched on first use.
+    readonly property bool oskPrediction: true
+    // Keeps totals of how far touches land from the centre of their letter, never which letter or when.
+    readonly property bool oskTouchStats: true
     // In tablet mode the shell hit targets (bar, buttons, switches, rows, dock icons) grow by this factor.
     readonly property real touchScale: 1.25
     // Order and presence of modules. Unknown names are ignored.

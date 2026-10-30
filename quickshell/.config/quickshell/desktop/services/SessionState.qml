@@ -13,6 +13,7 @@ Singleton {
     readonly property bool rotationLock: state.rotationLock === true
     readonly property bool oskFloating: state.oskFloating === true
     readonly property bool oskExtra: state.oskExtra === true
+    readonly property string oskTouch: state.oskTouch
     readonly property string nightShiftMode: state.nightShiftMode
     readonly property int nightShiftTemperature: state.nightShiftTemperature
     readonly property real nightShiftOverrideUntil: state.nightShiftOverrideUntil
@@ -38,6 +39,7 @@ Singleton {
             property bool rotationLock: false
             property bool oskFloating: false
             property bool oskExtra: false
+            property string oskTouch: ""
             property string nightShiftMode: "off"
             property int nightShiftTemperature: 0
             property real nightShiftOverrideUntil: 0
