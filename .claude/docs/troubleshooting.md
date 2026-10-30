@@ -478,3 +478,11 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - The engine on the real lists: 83,973 words, 79 ms and about 15 MB on first use, then 1 ms at worst per lookup. `import urllib` alone added 8 MB to `osk.py`, so `fetch()` imports it itself.
 - `Config.oskTouchStats` keeps five totals in `session.json` (`oskTouch`), never a letter or a time; `desktop-shell status` shows them under `keyboard.touch` in pixels (1 px is about 0.18 mm).
 
+## Hyprland 0.57, 2026-10-30
+
+- Before touching the system: `hyprland-devel` unpacked into a scratch folder and a `hyprland.pc` pointing at it let every plugin compile against 0.57 headers at its new pin. `hypr-hot-edge` fails: `managers/KeybindManager.hpp` and its dispatcher map are gone from 0.57, 13 errors remained once those were cut, and the compiler falls back on the system headers of the older version, which looks like an environment problem. It was replaced by a hover area of the bar.
+- The GDM session runs `hyprland-uwsm.desktop`, which this COPR ships in the weak dependency `hyprland-uwsm`: `install_weak_deps=False` would break the login.
+- After `distro-sync`, from the old session: `--verify-config` on the installed 0.57; in a nested 0.57, the touch lab with the plugin from `build.py` (19 of 19 scenarios) and the four plugins with the real `plugins.lua` and the whole shell on the new Quickshell (no config errors, the overview opened and closed; the only warning was the second polkit agent). `--verify-config` skips the plugin blocks, so only the nested run covers them. The lab lives in `~/.local/share/dotfiles/hyprgrass-test/touchlab/`, outside the repository.
+- The new build reports its real commit, so the ABI hash differs from the cache and the installer refuses it: reset `/var/cache/hyprpm/$USER` after logging in on the new version, then run the installer. The first login comes up without plugins, which is expected, and no plugin is loaded when the installer loads them.
+- The old 0.56 compositor segfaulted at 20:08:30, ten seconds before the login on 0.57, with its binary and libraries already replaced on disk. The cause was not established, and 0.57 has not crashed since.
+

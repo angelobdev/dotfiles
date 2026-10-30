@@ -2,7 +2,7 @@
 
 [← README](../../README.md)
 
-Verified versions: Hyprland 0.56.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0.9.6, and hyprpaper 0.8.4.
+Verified versions: Hyprland 0.57.0, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0.9.6, and hyprpaper 0.8.4.
 
 ## Packages
 
@@ -23,7 +23,7 @@ Verified versions: Hyprland 0.56.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 
 ## Installation and updates
 
-This machine uses the `nett00n/hyprland` and `errornointernet/quickshell` COPRs.
+This machine uses the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR, which the Hyprland wiki recommends for Fedora and which also provides Quickshell. Its `hyprland-uwsm` package holds the GDM session entry, so do not disable weak dependencies.
 
 ```sh
 sudo dnf install hyprland quickshell stow kitty brightnessctl ddcutil wireplumber \
@@ -61,7 +61,7 @@ The Theming panel lists the installed fonts. These add common interface and codi
 sudo dnf install rsms-inter-fonts ibm-plex-sans-fonts ibm-plex-mono-fonts jetbrains-mono-fonts fira-code-fonts
 ```
 
-The dynamic theme (the Dynamic card in the Theming panel) needs matugen, from the `nett00n/hyprland` COPR that also provides Hyprland:
+The dynamic theme (the Dynamic card in the Theming panel) needs matugen, from the same COPR as Hyprland:
 
 ```sh
 sudo dnf install matugen
@@ -103,7 +103,7 @@ Steam must already be installed from the configured package source. `gcc` suppli
 
 ## Compositor plugins
 
-Hyprspace, Hyprgrass, Hyprglass, hypr-hot-edge, and HyprCapture are managed through hyprpm. Build dependencies, installation, and updates are described in [Hyprland plugins](plugins.md). Run Stow after adding files, then run `./scripts/install-hypr-plugins.py` from a terminal in the Hyprland session.
+Hyprspace, Hyprgrass, Hyprglass, and HyprCapture are managed through hyprpm. Build dependencies, installation, and updates are described in [Hyprland plugins](plugins.md). Run Stow after adding files, then run `./scripts/install-hypr-plugins.py` from a terminal in the Hyprland session.
 
 ## Removal
 

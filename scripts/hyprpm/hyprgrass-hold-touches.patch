@@ -1,17 +1,24 @@
 diff --git a/src/GestureManager.cpp b/src/GestureManager.cpp
-index ad658d0..1b6be12 100644
+index 69cd04f..75c3358 100644
 --- a/src/GestureManager.cpp
 +++ b/src/GestureManager.cpp
-@@ -17,6 +17,8 @@
+@@ -13,6 +13,7 @@
+ #include <hyprland/src/config/shared/complex/ComplexDataTypes.hpp>
+ #include <hyprland/src/config/supplementary/propRefresher/PropRefresher.hpp>
+ #include <hyprland/src/desktop/state/FocusState.hpp>
++#include <hyprland/src/desktop/state/ViewState.hpp>
+ #include <hyprland/src/desktop/view/window/WindowPresentation.hpp>
+ #include <hyprland/src/keybinds/Manager.hpp>
+ #include <hyprland/src/layout/LayoutManager.hpp>
+@@ -20,6 +21,7 @@
  #include <hyprland/src/managers/fullscreen/FullscreenController.hpp>
  #include <hyprland/src/managers/input/InputManager.hpp>
  #include <hyprland/src/managers/input/UnifiedWorkspaceSwipeGesture.hpp>
-+#include <hyprland/src/desktop/state/ViewState.hpp>
 +#include <hyprland/protocols/wlr-layer-shell-unstable-v1.hpp>
+ #include <hyprland/src/output/Monitor.hpp>
  #include <hyprland/src/plugins/PluginSystem.hpp>
- #include <hyprland/src/protocols/core/Compositor.hpp>
- #undef private
-@@ -24,6 +26,7 @@
+ #include <hyprland/src/pointer/PointerController.hpp>
+@@ -30,6 +32,7 @@
  #include <hyprutils/string/Numeric.hpp>
  
  #include <algorithm>
@@ -19,7 +26,7 @@ index ad658d0..1b6be12 100644
  #include <ranges>
  #include <vector>
  
-@@ -70,6 +73,16 @@ static int handleLongPressTimer(void* data) {
+@@ -42,6 +45,16 @@ static int handleLongPressTimer(void* data) {
      return 0;
  }
  
@@ -36,7 +43,7 @@ index ad658d0..1b6be12 100644
  static void updateGapsIn(const Config::CCssGapData& newGapsIn) {
      static auto PGAPSINDATA = CConfigValue<Config::IComplexConfigValue>("general:gaps_in");
  
-@@ -106,10 +119,12 @@ GestureManager::GestureManager() : IGestureManager(std::make_unique<HyprLogger>(
+@@ -78,10 +91,12 @@ GestureManager::GestureManager() : IGestureManager(std::make_unique<HyprLogger>(
      this->addPinchGesture(PINCH_THRESHOLD, sensitivity, longPressDelay);
  
      this->long_press_timer = wl_event_loop_add_timer(g_pCompositor->m_wlEventLoop, handleLongPressTimer, this);
@@ -48,7 +55,7 @@ index ad658d0..1b6be12 100644
 +    wl_event_source_remove(this->holdTimer);
  }
  
- bool GestureManager::findCompletedGesture(const CompletedGestureEvent& gev) const {
+ FindGestureResult GestureManager::findCompletedGesture(const CompletedGestureEvent& gev) const {
 @@ -561,7 +576,8 @@ void GestureManager::stopLongPressTimer() {
  void GestureManager::sendCancelEventsToWindows() {
      static auto const SEND_CANCEL = g_config->sendCancel;
@@ -68,10 +75,10 @@ index ad658d0..1b6be12 100644
 +        return false;
 +    }
 +
-     auto monitor = State::monitorState()->query().name(!ev.device->m_boundOutput.empty() ? ev.device->m_boundOutput : "").run();
-     monitor      = monitor ? monitor : Desktop::focusState()->monitor();
- 
-@@ -600,7 +621,8 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
+     auto monitor =
+         State::monitorState()->query().name(!ev.device->m_boundOutput.empty() ? ev.device->m_boundOutput : "").run();
+     monitor = monitor ? monitor : Desktop::focusState()->monitor();
+@@ -601,7 +622,8 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
  
      g_pInputManager->refocus();
  
@@ -81,7 +88,7 @@ index ad658d0..1b6be12 100644
          this->touchedResources.clear();
          this->activeTrackpadGesture = nullptr;
      }
-@@ -634,10 +656,23 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
+@@ -635,10 +657,23 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
          .pos    = pos,
      };
  
@@ -106,7 +113,7 @@ index ad658d0..1b6be12 100644
      static auto const SEND_CANCEL = g_config->sendCancel;
  
      wf::touch::point_t lift_off_pos;
-@@ -685,6 +720,10 @@ bool GestureManager::onTouchUp(ITouch::SUpEvent ev) {
+@@ -686,6 +721,10 @@ bool GestureManager::onTouchUp(ITouch::SUpEvent ev) {
  }
  
  bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
@@ -115,14 +122,14 @@ index ad658d0..1b6be12 100644
 +    }
 +
      if (!this->m_lastTouchedMonitor) {
-         Log::logger->log(Log::ERR, "[hyprgrass] onTouchMove: where the fuck is my monitor");
+         LOG(Log::ERR, "[hyprgrass] onTouchMove: where the fuck is my monitor");
          return false;
-@@ -699,7 +738,190 @@ bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
+@@ -700,7 +739,190 @@ bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
          .pos    = pos,
      };
  
--    return IGestureManager::onTouchMove(gesture_event);
-+    const bool block = IGestureManager::onTouchMove(gesture_event);
+-    return IGestureManager::onTouchMove(gesture_event) != FindGestureResult::NONE;
++    const bool block = IGestureManager::onTouchMove(gesture_event) != FindGestureResult::NONE;
 +    return this->holdTouchMove(ev, block);
 +}
 +
@@ -310,19 +317,19 @@ index ad658d0..1b6be12 100644
  
  SMonitorArea GestureManager::getMonitorArea() const {
 diff --git a/src/GestureManager.hpp b/src/GestureManager.hpp
-index 8d3275b..0ce11c9 100644
+index 14dff5f..2d38ffb 100644
 --- a/src/GestureManager.hpp
 +++ b/src/GestureManager.hpp
-@@ -92,6 +92,8 @@ class GestureManager : public IGestureManager {
+@@ -94,6 +94,8 @@ class GestureManager final : public IGestureManager {
  
      void onLongPressTimeout(uint32_t time_msec);
  
 +    void onHoldTimeout();
 +
-     // workaround
-     void touchBindDispatcher(std::string args);
- 
-@@ -108,6 +110,26 @@ class GestureManager : public IGestureManager {
+     const wf::touch::gesture_state_t& getGestureState() const {
+         return this->m_sGestureState;
+     }
+@@ -111,6 +113,26 @@ class GestureManager final : public IGestureManager {
      PHLMONITOR m_lastTouchedMonitor;
      SMonitorArea m_monitorArea;
      wl_event_source* long_press_timer;

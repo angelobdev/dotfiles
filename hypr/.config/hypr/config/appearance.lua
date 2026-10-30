@@ -59,12 +59,12 @@ hl.curve("inout", {
     points = { { 0.65, 0.0 }, { 0.35, 1.0 } }
 })
 
--- Critically damped (dampening = 2 * sqrt(stiffness)): tiling reflow glides without bouncing.
+-- Critically damped (damping = 2 * sqrt(stiffness)): tiling reflow glides without bouncing.
 hl.curve("move", {
     type = "spring",
     mass = 1,
     stiffness = 240,
-    dampening = 31
+    damping = 31
 })
 
 hl.animation({

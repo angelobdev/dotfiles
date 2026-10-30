@@ -7,11 +7,10 @@ import subprocess
 import sys
 
 PLUGINS = {
-    'Hyprspace': ('KZDKM/Hyprspace', 'cf08bed82621c1fb943ef4934ff0ba36540fea77', 'Hyprspace.so'),
-    'hyprgrass': ('horriblename/hyprgrass', '8e605468cbf429791d61ddbfaeb14ff5e08fec3e', 'build/src/libhyprgrass.so'),
-    'hyprglass': ('hyprnux/hyprglass', '84c1a5ab217101a317d4edaab7fba2efcc1bf346', 'hyprglass.so'),
-    'hypr-hot-edge': ('claychinasky/hypr-hot-edge', '32b2dffdf2900a5a4b8cd10133f6a58cfd7ec4d6', 'build/hypr-hot-edge.so'),
-    'HyprCapture': ('gfhdhytghd/HyprCapture', 'bf4d1f9021fc288200002f5a7d8291ed56f0df83', 'build/libhyprcapture.so'),
+    'Hyprspace': ('KZDKM/Hyprspace', '258b7b8bcea177e99da74946cf5cddd1dfe0e1ab', 'Hyprspace.so'),
+    'hyprgrass': ('horriblename/hyprgrass', '8ca1af717d5b4ea1215a781df52bcef02d7b15e6', 'build/src/libhyprgrass.so'),
+    'hyprglass': ('hyprnux/hyprglass', '28b38df92176baf3d42fe58bf6c3b663d230c6c9', 'hyprglass.so'),
+    'HyprCapture': ('gfhdhytghd/HyprCapture', 'fd465d85d953592862e30b296dd69ad746bc79af', 'build/libhyprcapture.so'),
 }
 # Keeps the fingers of a gesture from reaching the window under them.
 HYPRGRASS_PATCH = Path(__file__).resolve().with_name('hyprgrass-hold-touches.patch')
@@ -29,7 +28,7 @@ def fingerprint():
     version = rpm_version('hyprland')
     if version != rpm_version('hyprland-devel'):
         raise RuntimeError('hyprland and hyprland-devel must have the same RPM version')
-    if version != '0.56.2-20.fc44.x86_64':
+    if version != '0.57.0-1.fc44.x86_64':
         raise RuntimeError('Hyprland build differs from the verified version: update and verify pins before building')
     return hashlib.sha256((version + Path(__file__).read_text() + HYPRGRASS_PATCH.read_text()).encode()).hexdigest()[:20]
 
@@ -47,15 +46,6 @@ def build(name):
         run('git', 'fetch', '--depth', '1', 'origin', revision, cwd=cache)
         run('git', 'checkout', '--detach', revision, cwd=cache)
         run('git', 'submodule', 'update', '--init', '--recursive', '--depth', '1', cwd=cache)
-        if name == 'hypr-hot-edge':
-            # The plugin uses Lua APIs shared by 5.4/5.5; match Fedora's compositor.
-            cmake = cache / 'CMakeLists.txt'
-            text = cmake.read_text()
-            old = 'pkg_search_module(LUA REQUIRED lua5.5 lua-5.5 lua55 lua>=5.5)'
-            new = 'pkg_check_modules(LUA REQUIRED lua>=5.4 lua<5.5)'
-            if old not in text and new not in text:
-                raise RuntimeError('Lua patch context has changed')
-            cmake.write_text(text.replace(old, new))
         if name == 'hyprgrass':
             # A build that stopped halfway has already patched this checkout.
             run('git', 'checkout', '--', '.', cwd=cache)

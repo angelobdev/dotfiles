@@ -23,14 +23,14 @@ PanelWindow {
     color: "transparent"
     WlrLayershell.namespace: "desktop-bar"
     // Keep the surface mapped: Hyprspace restores its alpha when it closes.
-    // An invisible bar must neither reserve space nor intercept preview clicks.
+    // An invisible bar must neither reserve space nor intercept preview clicks, but its corner still closes
+    // the overview.
     readonly property bool compositorHidden: BarVisibility.hidden(screen.name)
     exclusiveZone: compositorHidden ? 0 : implicitHeight
-    mask: compositorHidden ? emptyInput : null
+    mask: compositorHidden ? cornerInput : null
     Region {
-        id: emptyInput
-        width: 0
-        height: 0
+        id: cornerInput
+        item: corner
     }
     readonly property var monitor: Hyprland.monitorFor(screen)
     readonly property var workspaces: WorkspaceModel.fromHyprland(Hyprland, Config.minimumWorkspaces)[screen.name] || []
@@ -43,6 +43,23 @@ PanelWindow {
     IdleInhibitor {
         window: bar
         enabled: Idle.keepAwake
+    }
+    // Resting the pointer in the top-left corner toggles the overview of this monitor, once per visit. Not
+    // in tablet mode, where a touch moves the pointer. The handler leaves clicks to the button under it.
+    Item {
+        id: corner
+        z: 1
+        width: 8
+        height: 8
+        HoverHandler {
+            id: cornerHover
+            enabled: !Tablet.active
+        }
+    }
+    Timer {
+        interval: 220
+        running: cornerHover.hovered
+        onTriggered: Quickshell.execDetached(["hyprctl", "eval", "if desktop_overview then desktop_overview(" + JSON.stringify(bar.screen.name) + ") end"])
     }
     TrayMenuWindow {
         id: trayMenu

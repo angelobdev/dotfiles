@@ -23,57 +23,12 @@ if plugins.overview then
     })
 end
 
-if plugins.hyprhotedge and plugins.overview then
-    local trigger = "desktop-overview-trigger"
-    hl.config({
-        plugin = {
-            hyprhotedge = {
-                edge1 = {
-                    enabled = 1,
-                    side = "topleft",
-                    trigger_width = 8,
-                    dwell_time = 220,
-                    special_workspace = trigger,
-                    target_monitor = "*",
-                    hide_on_leave = 0,
-                }
-            }
-        }
-    })
-
-    -- Upstream hot-edge only opens special workspaces. Use an empty internal
-    -- workspace as a signal, close it before toggling the overview, then rearm
-    -- after leaving the corner (the upstream exact-corner trigger repeats).
-    local pending = false
-    local function rearm()
-        local cursor, monitor = hl.get_cursor_pos(), hl.get_monitor_at_cursor()
-        if cursor and monitor and cursor.x >= monitor.x and cursor.y >= monitor.y
-            and cursor.x < monitor.x + 12 and cursor.y < monitor.y + 12 then
-            hl.timer(rearm, { timeout = 100, type = "oneshot" })
-        else
-            plugins.hyprhotedge.enable()
-            pending = false
-        end
+if plugins.overview then
+    -- Called with `hyprctl eval` by the corner of a bar: the overview of that monitor.
+    function desktop_overview(monitor)
+        hl.dispatch(hl.dsp.focus({ monitor = monitor }))
+        plugins.overview.toggle()
     end
-    hl.on("workspace.special_active", function(workspace, monitor)
-        if pending or not workspace or workspace.name ~= "special:" .. trigger then return end
-        pending = true
-        plugins.hyprhotedge.disable()
-        local monitorName = monitor.name
-        hl.timer(function()
-            local current = hl.get_monitor(monitorName)
-            if current then
-                local special = current.active_special_workspace
-                if special and special.name == "special:" .. trigger then
-                    current:set_special_workspace({})
-                    hl.dispatch(hl.dsp.focus({ monitor = monitorName }))
-                    plugins.overview.toggle()
-                end
-            end
-            rearm()
-        end, { timeout = 1, type = "oneshot" })
-    end)
-    plugins.hyprhotedge.enable()
 end
 
 if plugins.hyprgrass then

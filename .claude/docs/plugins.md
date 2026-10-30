@@ -6,7 +6,7 @@ Configuration: [`plugins.lua`](../../hypr/.config/hypr/config/plugins.lua). Scre
 
 ## Installation
 
-Verified build: **Hyprland and hyprland-devel 0.56.2-20.fc44.x86_64**, nett00n COPR (0.56.2-17 before 2026-10-24; same upstream version and ABI hash, so the plugin revisions below are unchanged). Build dependencies:
+Verified build: **Hyprland and hyprland-devel 0.57.0-1.fc44.x86_64**, from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora. Build dependencies:
 
 ```sh
 sudo dnf install hyprland-devel git gcc-c++ make cmake pkgconf-pkg-config \
@@ -25,28 +25,24 @@ cd ~/.dotfiles
 
 The script requests sudo for hyprpm's protected cache; confirm the local repository addition when hyprpm asks. Builds run as the user and may take several minutes initially. Verified builds are already cached on the development machine.
 
-Packaging in [`scripts/hyprpm`](../../scripts/hyprpm) downloads the five original projects at the revisions below. The script creates a local Git copy under `~/.local/share/dotfiles/hyprpm/`, registered with hyprpm as **dotfiles-desktop**. Enable/disable each plugin individually using its runtime name. No commit is created in the dotfiles repository.
+Packaging in [`scripts/hyprpm`](../../scripts/hyprpm) downloads the four original projects at the revisions below. The script creates a local Git copy under `~/.local/share/dotfiles/hyprpm/`, registered with hyprpm as **dotfiles-desktop**. Enable/disable each plugin individually using its runtime name. No commit is created in the dotfiles repository.
 
 | Plugin / source | Pinned revision |
 | --- | --- |
-| [Hyprspace](https://github.com/KZDKM/Hyprspace) | `cf08bed82621c1fb943ef4934ff0ba36540fea77` |
-| [Hyprgrass](https://github.com/horriblename/hyprgrass) | `8e605468cbf429791d61ddbfaeb14ff5e08fec3e` |
-| [Hyprglass](https://github.com/hyprnux/hyprglass) | `84c1a5ab217101a317d4edaab7fba2efcc1bf346` |
-| [hypr-hot-edge](https://github.com/claychinasky/hypr-hot-edge) | `32b2dffdf2900a5a4b8cd10133f6a58cfd7ec4d6` |
-| [HyprCapture](https://github.com/gfhdhytghd/HyprCapture) | `bf4d1f9021fc288200002f5a7d8291ed56f0df83` |
+| [Hyprspace](https://github.com/KZDKM/Hyprspace) | `258b7b8bcea177e99da74946cf5cddd1dfe0e1ab` |
+| [Hyprgrass](https://github.com/horriblename/hyprgrass) | `8ca1af717d5b4ea1215a781df52bcef02d7b15e6` |
+| [Hyprglass](https://github.com/hyprnux/hyprglass) | `28b38df92176baf3d42fe58bf6c3b663d230c6c9` |
+| [HyprCapture](https://github.com/gfhdhytghd/HyprCapture) | `fd465d85d953592862e30b296dd69ad746bc79af` |
 
 ## Fedora COPR adaptations
 
-This build reports Git commit `unknown`, so downloading headers from a Git revision is not usable. The installer checks that the session, installed binary, and `hyprland-devel` package match, then prepares hyprpm headers by copying the actual RPM headers. It preserves the original `version.h` and ABI. The cache remains root-owned at `/var/cache/hyprpm/$USER`; privileged operations are limited to this cache.
-
-Fedora Hyprland uses Lua 5.4. hypr-hot-edge requires 5.5 in CMake despite using APIs available in both versions: packaging changes only dependency discovery to require Lua 5.4. Building and loading were verified with the compositor's library.
+The installer checks that the session, installed binary, and `hyprland-devel` package match, then prepares hyprpm headers by copying the actual RPM headers, preserving `version.h` and the ABI. The cache remains root-owned at `/var/cache/hyprpm/$USER`; privileged operations are limited to this cache. Unlike the previous COPR, this build reports its real Git commit, so the ABI hash changes with each Hyprland release: after an update the cache has to be reset (`sudo rm -rf /var/cache/hyprpm/$USER`, then the installer).
 
 The manifest uses runtime name **HyprCapture**, including capitalization, avoiding the upstream manifest mismatch. It installs the Qt helper `~/.local/bin/hyprcapture-ui` and licenses. It does not install the optional TensorFlow/AEC microphone runtime: capture does not require it. Quickshell recording continues to use wf-recorder.
 
 ## Behavior
 
-- **Hyprspace:** overview through the top-left corner, a four-finger upward touchscreen swipe or the assist button. The same corner closes it on the next visit; no keyboard shortcut opens it, and `Esc` closes it. `affectStrut = false` prevents layout shifts; `hideTopLayers`/`hideOverlayLayers` exclude shell surfaces from previews.
-- **hypr-hot-edge:** activates an empty internal special workspace; the Lua callback closes it and toggles Hyprspace on the affected monitor. The trigger rearms when the pointer leaves the corner. Applications cannot use it as a scratchpad.
+- **Hyprspace:** overview through the top-left corner (a hover area of the bar that calls `desktop_overview` with `hyprctl eval`), a four-finger upward touchscreen swipe or the assist button. The same corner closes it on the next visit; no keyboard shortcut opens it, and `Esc` closes it. `affectStrut = false` prevents layout shifts; `hideTopLayers`/`hideOverlayLayers` exclude shell surfaces from previews.
 - **Hyprgrass:** `hyprgrass-hold-touches.patch` (below) keeps gesture touches away from apps. No edge swipes. Three fingers left / right step workspaces, up opens applications, down the Control Center, a three-finger long press shows or hides the assist button; four fingers left / right move the active window to the neighbouring workspace, up toggles the overview, down opens notifications; a two-finger long press then drag moves a window; a long press on a window border resizes. The full table is in [interface.md](interface.md#hot-corner-and-touchscreen). Gestures are registered again on every reload.
 - **Hyprglass:** `desktop` preset based on `subtle`, with moderate blur, the theme tint, and light refraction; its light or dark tuning follows the theme mode (`mode` in the rendered `hyprland.lua`). It glasses the same shell surfaces the `desktop-glass` blur rule covers (dock, panels, notifications, OSD, share picker, menus, on-screen keyboard, password and PIN prompts); the bar has no background and only gets the native blur. Center distortion and chromatic aberration are zero. Fully opaque applications stay opaque; translucent surfaces receive the effect. Quickshell panel namespaces are explicit; the alpha threshold excludes the transparent area around panels. A backgroundless top bar is not filtered over text alone.
 - **HyprCapture:** `Super + Shift + S` / `Print` selects an area; `Super + Shift + Alt + S` / `Alt + Print` captures the current monitor. All four bindings use `open_editor()`. PNGs are saved to the XDG Pictures directory under `Screenshots`, copied to the clipboard, and announced with a system notification. `overlay_scope = "focus"` allows selection across monitors. The current configuration assigns no separate shortcut to direct capture or the active window.
@@ -64,7 +60,7 @@ hyprctl configerrors
 desktop-plugins reload
 ```
 
-`desktop-plugins reload` runs automatically at Hyprland startup. Before loading, it compares the RPM, ABI, and running binary against installer state. After a COPR update it suspends autoload and shows a notification: the `unknown` hash alone cannot identify a compatible build.
+`desktop-plugins reload` runs automatically at Hyprland startup. Before loading, it compares the RPM, ABI, and running binary against installer state. After a COPR update it suspends autoload and shows a notification, so the next login runs without plugins until they are rebuilt.
 
 Pins and the accepted RPM build are intentionally explicit in `scripts/hyprpm/build.py`. Compositor updates require compatible revisions to be checked, rebuilt, and tested in an isolated session before changing that guard. `hyprpm update` on the local packaging retains pins; it does not automatically select new upstream revisions.
 
@@ -80,8 +76,8 @@ desktop-plugins reload
 hyprctl reload
 ```
 
-The installer reenables all five plugins. Lua blocks are guarded so startup also works without plugins. Native Hyprland blur remains the fallback when Hyprglass is disabled.
+The installer reenables all four plugins. Lua blocks are guarded so startup also works without plugins. Native Hyprland blur remains the fallback when Hyprglass is disabled.
 
-Main-session installation is complete: all five plugins are enabled in hyprpm and loaded in Hyprland; `desktop-plugins reload` and `hyprctl configerrors` pass without errors.
+Main-session installation is complete: all four plugins are enabled in hyprpm and loaded in Hyprland; `desktop-plugins reload` and `hyprctl configerrors` pass without errors.
 
-Isolated-session verification covered loading all five `.so` files, parsing the actual Lua files, hot-edge → overview with internal workspace closure, rearming, and capturing the test monitor. Additional checks used two virtual outputs, 2880×1800 at scale 1.667 and 1920×1080 at scale 1: the same hot corner opens/closes the overview, reserved space changes 38 → 0 → 38 only on the affected monitor, HyprCapture overlays work on both, PNGs have native resolutions, and the editor toolbar is visible on the fractional-scale display. Physical gestures and selection on real displays still need confirmation during daily use.
+Isolated-session verification on 0.56 covered loading the `.so` files, parsing the actual Lua files, the hot corner, rearming, and capturing the test monitor; on 0.57 see [troubleshooting](troubleshooting.md#hyprland-057-2026-10-30). Additional checks used two virtual outputs, 2880×1800 at scale 1.667 and 1920×1080 at scale 1: the same hot corner opens/closes the overview, reserved space changes 38 → 0 → 38 only on the affected monitor, HyprCapture overlays work on both, PNGs have native resolutions, and the editor toolbar is visible on the fractional-scale display. Physical gestures and selection on real displays still need confirmation during daily use.

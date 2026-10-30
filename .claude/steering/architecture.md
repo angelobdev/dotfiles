@@ -48,7 +48,7 @@ Crashed watchers restart through a `Timer` whose `running` is `<enabled> && !pro
 
 ## Compositor plugins
 
-Hyprspace, Hyprgrass, Hyprglass, hypr-hot-edge and HyprCapture are built by hyprpm from the pinned packaging in `scripts/hyprpm/`, which patches Hyprgrass so gesture touches never reach windows. `config/plugins.lua` guards every block (`local plugins = hl.plugin or {}`; `if plugins.X then … end`) so `--verify-config` and plugin-less startup work. Actions that need a plugin (screenshots) check `hl.plugin` at press time because plugins load after `hyprland.start`. `desktop-plugins reload` refuses to autoload after a compositor update until the build is re-verified.
+Hyprspace, Hyprgrass, Hyprglass and HyprCapture are built by hyprpm from the pinned packaging in `scripts/hyprpm/`, which patches Hyprgrass so gesture touches never reach windows. `config/plugins.lua` guards every block (`local plugins = hl.plugin or {}`; `if plugins.X then … end`) so `--verify-config` and plugin-less startup work. Actions that need a plugin (screenshots) check `hl.plugin` at press time because plugins load after `hyprland.start`. `desktop-plugins reload` refuses to autoload after a compositor update until the build is re-verified.
 
 Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha over Hyprland IPC; `BarVisibility.hidden(screen)` drops the bar's exclusive zone and input mask while keeping the surface mapped (it carries the idle inhibitor).
 
