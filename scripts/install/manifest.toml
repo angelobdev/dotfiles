@@ -1,0 +1,171 @@
+# What install-desktop.py sets up, by distribution and profile.
+#
+# A distribution with no table here is refused as not verified. Porting one means adding a table with the same
+# profile keys and a module with the functions of fedora.py, using package names checked on that distribution.
+#
+# Profile keys: repos, packages, services, user_services, disable, files, groups, flatpaks, firewall_zone, auth, notes.
+
+# The desktop itself, whatever the distribution calls its packages.
+[verify]
+commands = [
+    'Hyprland', 'hyprctl', 'hyprpm', 'uwsm', 'qs', 'stow', 'kitty', 'python3',
+    'hyprpaper', 'hypridle', 'hyprlock', 'udiskie', 'magick', 'wl-copy', 'wl-paste', 'cliphist',
+    'notify-send', 'wpctl', 'brightnessctl', 'nmcli', 'wf-recorder', 'slurp', 'qt5ct', 'nautilus',
+    'dbus-update-activation-environment', 'xrdb', 'xdg-user-dir', 'xdg-open',
+]
+
+[fedora]
+versions = ['45']
+
+[fedora.repos.hyprland]
+kind = 'copr'
+name = 'lionheartp/Hyprland'
+
+[fedora.repos.zen]
+kind = 'copr'
+name = 'sneexy/zen-browser'
+
+[fedora.repos.rpmfusion-free]
+kind = 'release'
+package = 'rpmfusion-free-release'
+url = 'https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{release}.noarch.rpm'
+
+[fedora.repos.rpmfusion-nonfree]
+kind = 'release'
+package = 'rpmfusion-nonfree-release'
+url = 'https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{release}.noarch.rpm'
+
+[fedora.repos.1password]
+kind = 'file'
+file = '1password.repo'
+content = '''
+[1password]
+name=1Password Stable Channel
+baseurl=https://downloads.1password.com/linux/rpm/stable/$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://downloads.1password.com/linux/keys/1password.asc
+'''
+
+[fedora.repos.vscode]
+kind = 'file'
+file = 'vscode.repo'
+content = '''
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+autorefresh=1
+type=rpm-md
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+'''
+
+[fedora.repos.google-chrome]
+kind = 'file'
+file = 'google-chrome.repo'
+content = '''
+[google-chrome]
+name=google-chrome
+baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=https://dl.google.com/linux/linux_signing_key.pub
+'''
+
+# The desktop: everything the session, the shell and its panels call.
+[fedora.core]
+repos = ['hyprland']
+packages = [
+    # Session. hyprland-uwsm is only a weak dependency of hyprland, and GDM needs its session entry.
+    'gdm', 'accountsservice', 'hyprland', 'hyprland-uwsm', 'hyprland-guiutils', 'quickshell', 'stow',
+    'hypridle', 'hyprlock', 'hyprpaper', 'hyprsunset', 'kitty', 'dbus-tools', 'polkit', 'oo7-daemon',
+    'xorg-x11-server-Xwayland', 'xrdb', 'mesa-dri-drivers', 'mesa-vulkan-drivers',
+    # Portals.
+    'xdg-desktop-portal', 'xdg-desktop-portal-hyprland', 'xdg-desktop-portal-gtk',
+    # Audio, network and power.
+    'pipewire', 'pipewire-pulseaudio', 'wireplumber', 'pulseaudio-utils',
+    'NetworkManager', 'NetworkManager-wifi', 'NetworkManager-bluetooth', 'nm-connection-editor',
+    'bluez', 'upower', 'tuned', 'tuned-ppd', 'brightnessctl', 'ddcutil',
+    # Shell helpers.
+    'python3', 'python3-gobject', 'ImageMagick', 'libnotify', 'libical-glib', 'evolution-data-server',
+    'gnome-online-accounts-gtk', 'matugen', 'jq', 'ripgrep', 'grim', 'slurp', 'wl-clipboard', 'cliphist',
+    'wf-recorder', 'btop', 'fastfetch', 'flatpak', 'xdg-user-dirs', 'xdg-utils', 'dconf',
+    # Drives and phones.
+    'udiskie', 'udisks2', 'gvfs', 'gvfs-afc', 'gvfs-gphoto2', 'usbmuxd', 'libimobiledevice-utils',
+    # Look.
+    'qt5ct', 'qt6ct', 'qt6-qtsvg', 'qt6-qtimageformats', 'papirus-icon-theme', 'adwaita-icon-theme',
+    'adwaita-cursor-theme', 'fontconfig', 'adwaita-sans-fonts', 'adwaita-mono-fonts',
+    'google-noto-color-emoji-fonts', 'rsms-inter-fonts', 'ibm-plex-sans-fonts', 'ibm-plex-mono-fonts',
+    'jetbrains-mono-fonts', 'fira-code-fonts',
+    # Apps the shell opens.
+    'nautilus', 'gnome-calculator',
+]
+services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service']
+# Has no D-Bus activation: passwords are stored nowhere until it runs, and pam_oo7 waits for it at login.
+user_services = ['oo7-daemon.service']
+disable = ['cockpit.socket']
+notes = ['Sign in to your calendars with gnome-online-accounts-gtk.']
+
+# This laptop: an HP OmniBook Ultra Flip. Most of it suits any recent Intel 2-in-1.
+[fedora.hardware]
+repos = ['rpmfusion-free', 'rpmfusion-nonfree']
+packages = [
+    'iwlwifi-mvm-firmware', 'iwlbluetooth-firmware', 'intel-gpu-firmware', 'intel-vsc-firmware', 'intel-npu-firmware',
+    'intel-audio-firmware', 'cirrus-audio-firmware', 'alsa-sof-firmware', 'alsa-ucm', 'alsa-utils',
+    'intel-vpl-gpu-rt', 'libvpl', 'libva-utils', 'libva-intel-media-driver', 'intel-media-driver',
+    'pipewire-codec-aptx', 'libcamera', 'libcamera-ipa', 'pipewire-plugin-libcamera',
+    'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'iio-sensor-proxy', 'libwacom', 'fprintd', 'fprintd-pam',
+]
+services = ['thermald.service', 'intel_lpmd.service']
+disable = ['sshd.service']
+firewall_zone = 'FedoraWorkstation'
+auth = true
+notes = ['Enroll your fingerprint: fprintd-enroll']
+
+[[fedora.hardware.files]]
+path = '/etc/modules-load.d/hid-sensors.conf'
+content = '''
+intel_ishtp_hid
+hid_sensor_hub
+'''
+
+# Building the Hyprland plugins. hyprland-devel stays installed: the login check reads its version.
+[fedora.plugins]
+repos = ['rpmfusion-free']
+packages = [
+    'hyprland-devel', 'git', 'gcc-c++', 'make', 'cmake', 'pkgconf-pkg-config', 'meson', 'ninja-build', 'patch', 'cpio',
+    'glm-devel', 'lua-devel', 'pango-devel', 'libXcursor-devel', 'json-devel', 'libjpeg-turbo-devel',
+    'qt6-qtsvg-devel', 'qt6-qtwayland-devel', 'layer-shell-qt-devel', 'opencv-devel', 'pipewire-devel',
+    'pulseaudio-libs-devel', 'fftw-devel', 'ffmpeg', 'ffmpeg-devel', 'x265-devel', 'libde265-devel',
+]
+
+# Personal apps, only with --profiles ...,apps.
+[fedora.apps]
+repos = ['zen', 'rpmfusion-free', 'rpmfusion-nonfree', '1password', 'vscode', 'google-chrome']
+packages = [
+    'zen-browser', 'google-chrome-stable', '1password', 'code', 'loupe', 'papers', 'gnome-text-editor', 'showtime',
+    'steam', 'gamescope', 'gcc', 'mesa-dri-drivers(x86-32)', 'mesa-vulkan-drivers(x86-32)', 'vulkan-loader(x86-32)',
+    'moby-engine', 'docker-compose', 'tailscale', 'gh', 'glab', 'neovim', 'zsh', 'fzf', 'uv', 'freerdp',
+    'xclip', 'wev', 'unrar', 'fuse-libs', 'gstreamer1-plugins-bad-freeworld', 'gstreamer1-plugins-ugly',
+    'libheif-freeworld',
+]
+services = ['docker.service', 'tailscaled.service']
+groups = ['docker']
+flatpaks = [
+    'com.github.flxzt.rnote', 'com.github.tchx84.Flatseal', 'com.github.xournalpp.xournalpp',
+    'com.modrinth.ModrinthApp', 'com.usebottles.bottles', 'io.github.chidiwilliams.Buzz',
+    'it.mijorus.gearlever', 'org.localsend.localsend_app',
+]
+notes = [
+    'Connect Tailscale: sudo tailscale up',
+    'Sign in to GitHub: gh auth login',
+    'Change your login shell: chsh -s /usr/bin/zsh',
+    'Install Claude Code from its own installer: Super + A tells you when it is missing',
+]
+
+[[fedora.apps.files]]
+path = '/etc/1password/custom_allowed_browsers'
+content = '''
+zen-bin
+'''

@@ -26,10 +26,13 @@ The running desktop reads files through symlinks into this repository:
 | Anything in `scripts/hyprpm/` | Changes the bundle digest: requires `hyprpm remove dotfiles-desktop` and a reinstall; new files also go in `BUNDLE` in `install-hypr-plugins.py` |
 | Moved docs | Links in `README.md`, `docs/**`, `.claude/CLAUDE.md` (`scripts/check-links.py` finds the broken ones), and the doc paths quoted in the `assistant.errors.claudeMissing`, `capture.errors.pluginMissing` and `plugins.errors.rebuildRequired` catalog strings |
 | Tool needed by `check.sh` | The package list in `.github/workflows/check.yml`, and its list of required tools when `check.sh` skips that tool if missing |
+| New runtime dependency | `scripts/install/manifest.toml`, the only list of packages; `[verify]` too if the desktop cannot start without it |
+| New Fedora release | `versions` in the manifest, the accepted builds in `scripts/hyprpm/build.py`, the matrix in `check.yml`, the image in `install.yml` |
 
 ## Verification
 
 1. `./scripts/check.sh` must pass (it is fast). GitHub runs it too, in a `fedora:44` container, on every push to `main` and every pull request (`.github/workflows/check.yml`). The doc check needs `python3-cmarkgfm` and is skipped without it, so install it to catch broken links before pushing.
+   The installer has its own proof: `scripts/tests/install-container.sh` runs it for real in a fresh `fedora:45` container, as its header shows, and `.github/workflows/install.yml` runs that when the installer changes. Set `COMPILE=1` to build the plugins too. A container has no systemd, so the login, firewall and Flatpak steps need a VM, and a VM cannot show everything: with virgl kitty does not start and layers lose their transparency, and with software rendering hyprpaper crashes ([verification log](verification-log.md#installer-in-a-vm-with-fedora-45-server-2026-10-31)).
 2. For QML: confirm the live reload succeeded and inspect `desktop-shell status`. Prefer isolated instances (`qs -p <dir>` with mock data, nested/headless Hyprland, private D-Bus buses) for anything that would touch the user's real devices, accounts, notifications or open applications.
 3. Behavior or visual changes: describe what was verified physically versus in isolation, and record it in `docs/development/verification-log.md`.
 4. Never leave test state behind (temporary preloads, debug ports, test symlinks, fake devices).

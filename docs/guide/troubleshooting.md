@@ -27,7 +27,9 @@ sudo rm -rf /var/cache/hyprpm/$USER
 ./scripts/install-hypr-plugins.py
 ```
 
-`scripts/hyprpm/build.py` accepts one exact Hyprland build, so a new version needs new pins first: see [Hyprland plugins](plugins.md#verification-and-updates).
+`scripts/hyprpm/build.py` accepts only the Hyprland builds it lists, so a new version needs new pins first: see [Hyprland plugins](plugins.md#verification-and-updates). The installer warns about this before you reboot.
+
+**The installer stops on a full disk.** Fedora Server's guided partitioning gives `/` only 15 GiB on LVM. Grow it with the command the installer printed, `sudo lvextend -r -l +100%FREE /dev/mapper/<root volume>`, then run `./scripts/install-desktop.py apply` again: it picks up where it stopped.
 
 **The desktop comes back bare after a crash.** `start-hyprland` restarts Hyprland with `--safe-mode`: no user config, no plugins, no shell. Save anything open and log in again. Reports are in `~/.cache/hyprland/` and `coredumpctl list`.
 

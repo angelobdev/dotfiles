@@ -21,19 +21,39 @@ Verified versions: Hyprland 0.57.0, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | `portals` | XDG preferences: Hyprland for capture/sharing, GTK for files and settings |
 | `electron` | `~/.config/electron-flags.conf` (Wayland and IME flags) and `~/.config/desktop/electron-apps.conf` (the apps that get them through `electron.py`) |
 
-## Installation and updates
+## Automated installation
 
-This machine uses the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR, which the Hyprland wiki recommends for Fedora and which also provides Quickshell. Its `hyprland-uwsm` package holds the GDM session entry, so do not disable weak dependencies.
+`scripts/install-desktop.py` turns an installed Fedora 45 into this desktop. It starts from any edition, Server included, and leaves disks and partitions alone. Other distributions and releases are refused until they are verified: [`manifest.toml`](../../scripts/install/manifest.toml) has the supported list.
 
 ```sh
-sudo dnf install hyprland quickshell stow kitty brightnessctl ddcutil wireplumber \
-  NetworkManager bluez upower power-profiles-daemon \
-  hypridle hyprlock hyprpaper qt5ct qt6ct papirus-icon-theme ripgrep \
-  f44-backgrounds-base xorg-x11-server-Xwayland ImageMagick python3 libnotify jq grim slurp \
-  xdg-desktop-portal xdg-desktop-portal-hyprland xdg-desktop-portal-gtk \
-  wl-clipboard cliphist wf-recorder pulseaudio-utils fprintd fprintd-pam \
-  python3-gobject evolution-data-server \
-  udiskie udisks2 gvfs gvfs-afc gvfs-gphoto2 usbmuxd libimobiledevice-utils
+sudo dnf install -y git-core python3
+git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
+cd ~/.dotfiles
+./scripts/install-desktop.py                                 # preview: changes nothing
+./scripts/install-desktop.py apply                           # add --profiles core,hardware,plugins,apps for the apps
+sudo systemctl reboot
+```
+
+Run it as your user: it asks sudo for each system change. Each step checks what is left to do first, so running it again is always safe, and after an interruption it picks up where it stopped. The boot step comes last: until then the system keeps starting on the console.
+
+| Profile | Installs |
+| --- | --- |
+| `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls |
+| `hardware` | Firmware, video decoding and sensors of an Intel 2-in-1, fingerprint and [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), firewall zone, `sshd` off |
+| `plugins` | What building the [Hyprland plugins](plugins.md) needs, from RPM Fusion too |
+| `apps` | Personal apps: browsers, editors, Steam, Docker, Tailscale, Flatpaks. Only when asked for |
+
+The default is `core,hardware,plugins`. The manifest is the only list of packages: a new dependency goes there.
+
+After the reboot, sign in at GDM. A terminal opens by itself and runs `install-desktop.py post`, which builds the plugins (hyprpm asks for confirmation) and lists what is left by hand. If it fails it comes back at the next login; to run it yourself, press `Super + Return`.
+
+On Fedora Server the guided partitioning stops `/` at 15 GiB, which is not enough. Choose custom partitioning, or grow it afterwards: the installer warns under 30 GiB free and prints the command.
+
+## Updates
+
+The [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR, which the Hyprland wiki recommends for Fedora, provides Hyprland and Quickshell. Its `hyprland-uwsm` package holds the GDM session entry.
+
+```sh
 cd ~/.dotfiles
 ./scripts/stow.py dry-run
 ./scripts/stow.py apply
@@ -49,35 +69,13 @@ The repository is the source of the files; Stow creates symlinks without directo
 
 Multilingual support uses the existing Qt and Python installations, with no additional dependencies. The shell language comes from `/etc/locale.conf`; see [Interface language](configuration.md#interface-language) for details and catalogs.
 
-Packages use standard XDG paths under `$HOME`. The two Qt `color_scheme_path` settings and the Steam desktop launcher contain `/home/angelo`: update them when installing for another user. The Fedora 44 wallpaper is included as JPEG in `hyprpaper/.local/share/wallpapers`, converted from the installed JPEG XL image because this hyprpaper build cannot decode it. It comes from `f44-backgrounds-base`; the original CC BY-SA 4.0 license and Fedora attribution are included in the package files.
+Packages use standard XDG paths under `$HOME`. The `desktop-ai` and Steam desktop launchers contain `/home/angelo`: update them when installing for another user. The Fedora night wallpaper is included as JPEG in `hyprpaper/.local/share/wallpapers`, converted from the JPEG XL image of Fedora's `f44-backgrounds-base` because this hyprpaper build cannot decode it; the CC BY-SA 4.0 license and Fedora attribution are included next to it.
 
 Removable drives use udiskie; iPhone access uses GVfs/AFC and usbmuxd. See [Removable drives and iPhone](integrations.md#removable-drives-and-iphone). The usbmuxd system service is activated by device discovery; no manual service enablement is required.
 
-## Optional fonts
-
-The Theming panel lists the installed fonts. These add common interface and coding families from the Fedora repositories:
-
-```sh
-sudo dnf install rsms-inter-fonts ibm-plex-sans-fonts ibm-plex-mono-fonts jetbrains-mono-fonts fira-code-fonts
-```
-
-The dynamic theme (the Dynamic card in the Theming panel) needs matugen, from the same COPR as Hyprland:
-
-```sh
-sudo dnf install matugen
-```
-
-## Night shift
-
-The Night shift switch of the Control Center uses hyprsunset, from the same COPR as Hyprland:
-
-```sh
-sudo dnf install hyprsunset
-```
-
 ## Tablet mode sign-in without the fingerprint reader
 
-Folded into tablet mode, the OmniBook screen covers the fingerprint reader, and `pam_fprintd` (authselect `with-fingerprint`) makes sudo, polkit and the lock screen wait for it. This optional step makes PAM skip the reader while the desktop is in tablet mode and ask for the password at once (typed on the on-screen keyboard); elsewhere nothing changes:
+Folded into tablet mode, the OmniBook screen covers the fingerprint reader, and `pam_fprintd` (authselect `with-fingerprint`) makes sudo, polkit and the lock screen wait for it. This step, part of the `hardware` profile, makes PAM skip the reader while the desktop is in tablet mode and ask for the password at once (typed on the on-screen keyboard); elsewhere nothing changes. To run it by hand:
 
 ```sh
 ./scripts/tablet-auth.sh install   # or: status, remove
@@ -85,25 +83,13 @@ Folded into tablet mode, the OmniBook screen covers the fingerprint reader, and 
 
 It installs `/usr/local/libexec/desktop-tablet-mode` (succeeds only while `$XDG_RUNTIME_DIR/desktop-shell/tablet.json` of the user says `"tablet": true`), copies the `local` authselect profile to `custom/desktop-tablet`, inserts `auth [success=1 default=ignore] pam_exec.so quiet …` right before `pam_fprintd.so` in its `system-auth`, and selects it with the same features. `remove` selects `local` again and deletes both. Without it, Ctrl+C at the fingerprint prompt of sudo goes on to the password.
 
-WebP previews in the file picker (`Super + Shift + W`) need Qt's image format plugins; the Theming panel does not, as it shows cached JPEG thumbnails:
+## Gaming
 
-```sh
-sudo dnf install qt6-qtimageformats
-```
-
-## Optional gaming packages
-
-For the RPM Steam client and per-game gamescope support:
-
-```sh
-sudo dnf install gamescope gcc
-```
-
-Steam must already be installed from the configured package source. `gcc` supplies the C compiler used to cache the optional renderer scaling workaround; the existing plugin build tools already provide it on this machine. Mesa Vulkan drivers and `vulkan-loader` are needed in x86_64 and i686 variants for 64/32-bit Intel games; both are present on this machine. See [Steam and gamescope](integrations.md#steam-and-gamescope) for the local launcher and per-game launch options. Run Stow after adding these launchers, then completely exit and reopen Steam.
+The `apps` profile installs the RPM Steam client, gamescope, `gcc` (the C compiler used to cache the optional renderer scaling workaround) and the 32-bit Mesa Vulkan drivers and `vulkan-loader` that 32-bit Intel games need. See [Steam and gamescope](integrations.md#steam-and-gamescope) for the local launcher and per-game launch options. Run Stow after adding these launchers, then completely exit and reopen Steam.
 
 ## Compositor plugins
 
-Hyprspace, Hyprgrass, Hyprglass, and HyprCapture are managed through hyprpm. Build dependencies, installation, and updates are described in [Hyprland plugins](plugins.md). Run Stow after adding files, then run `./scripts/install-hypr-plugins.py` from a terminal in the Hyprland session.
+Hyprspace, Hyprgrass, Hyprglass, and HyprCapture are managed through hyprpm. The `plugins` profile installs their build dependencies; installation and updates are described in [Hyprland plugins](plugins.md). Run Stow after adding files, then run `./scripts/install-hypr-plugins.py` from a terminal in the Hyprland session.
 
 ## Removal
 

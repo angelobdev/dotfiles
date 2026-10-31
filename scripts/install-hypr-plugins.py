@@ -110,7 +110,7 @@ def main():
     errors = subprocess.check_output(['hyprctl', 'configerrors'], text=True).strip()
     if errors:
         sys.exit(errors)
-    print('Five plugins installed and loaded; configuration has no errors.')
+    print('Four plugins installed and loaded; configuration has no errors.')
 
 
 if __name__ == '__main__':

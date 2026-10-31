@@ -43,19 +43,19 @@ All shots use the Tokyo Night theme with a wallpaper from [Omarchy](https://gith
 ## Getting started
 
 > [!NOTE]
-> This is a personal desktop, tuned for Fedora 44 and an HP OmniBook Ultra Flip. It should work on other hardware, with some settings to adjust, and other distributions are on the [roadmap](docs/development/roadmap.md).
+> This is a personal desktop, tuned for Fedora and an HP OmniBook Ultra Flip. It should work on other hardware, with some settings to adjust, and other distributions are on the [roadmap](docs/development/roadmap.md).
 
-Install the packages listed in the [installation guide](docs/guide/installation.md), then link the configuration:
+On a fresh Fedora 45, Server edition included, one script installs everything:
 
 ```sh
+sudo dnf install -y git-core python3
 git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
 cd ~/.dotfiles
-./scripts/stow.py dry-run    # shows what would change
-./scripts/stow.py apply      # backs up conflicts, then links
-./scripts/check.sh
+./scripts/install-desktop.py          # preview: changes nothing
+./scripts/install-desktop.py apply    # sets up the desktop, then reboot
 ```
 
-Do not run Stow with sudo. Everything is a symlink to this repository, so editing a file here changes the live desktop. [Hyprland plugins](docs/guide/plugins.md) are built separately.
+At the first login a terminal opens and builds the [Hyprland plugins](docs/guide/plugins.md). Everything is a symlink to this repository, so editing a file here changes the live desktop. The [installation guide](docs/guide/installation.md) covers the profiles and what the script does.
 
 ## Documentation
 

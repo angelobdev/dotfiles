@@ -6,15 +6,7 @@ Configuration: [`plugins.lua`](../../hypr/.config/hypr/config/plugins.lua). Scre
 
 ## Installation
 
-Verified build: **Hyprland and hyprland-devel 0.57.0-1.fc44.x86_64**, from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora. Build dependencies:
-
-```sh
-sudo dnf install hyprland-devel git gcc-c++ make cmake pkgconf-pkg-config \
-  meson ninja-build glm-devel lua-devel pango-devel patch \
-  qt6-qtsvg-devel qt6-qtwayland-devel layer-shell-qt-devel \
-  opencv-devel pipewire-devel pulseaudio-libs-devel fftw-devel ffmpeg-devel \
-  nlohmann-json-devel libjpeg-turbo-devel x265-devel libde265-devel
-```
+Verified build: **Hyprland and hyprland-devel 0.57.0-1.fc44.x86_64**, from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora. The `plugins` profile of the [installer](installation.md#automated-installation) lists the build dependencies, some from RPM Fusion, and runs this step at the first login. `hyprland-devel` has to stay installed: the check at every login reads its version.
 
 From a terminal in the Hyprland session, as a regular user:
 

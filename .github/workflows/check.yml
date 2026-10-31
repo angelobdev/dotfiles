@@ -15,12 +15,16 @@ defaults:
 jobs:
   check:
     runs-on: ubuntu-latest
-    container: fedora:44
+    container: fedora:${{ matrix.fedora }}
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        fedora: [44, 45]
     steps:
       - name: Install the tools
         run: |
-          dnf -y install dnf-plugins-core
+          dnf -y install dnf5-plugins
           dnf -y copr enable lionheartp/Hyprland
           dnf -y install --setopt=install_weak_deps=False \
             desktop-file-utils gcc hyprland matugen python3 python3-cmarkgfm qt6-qtdeclarative-devel \
