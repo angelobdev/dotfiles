@@ -519,3 +519,11 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - **Found and fixed:** `oo7-daemon.service` is disabled on Server, where no preset turns it on, and it has no D-Bus activation, so `org.freedesktop.secrets` did not exist and `pam_oo7` timed out at login. It is now enabled for every user. After the next login the collection was unlocked with no prompt, and `secret-tool` stored and read a value.
 - **Limits of the VM, not of the desktop:** with the virgl GPU, kitty finds no EGL config and the transparent parts of the bar and dock layers are black; with software rendering, hyprpaper crashes, as hyprtoolkit cannot allocate a GBM buffer. Fedora 45's kitty and Mesa 26.2.3 in a container opened on the laptop's real Intel GPU with `background_opacity 0.94`, on this laptop's Fedora 44 Hyprland. Fedora 45's Quickshell and hyprpaper on real hardware are still to be seen.
 - Not covered: Wi-Fi, fingerprint, rotation, audio hardware, touch, screen sharing and the final Fedora 45 repositories.
+
+## Workspace scroll past the last pill, 2026-11-01
+
+- `tst_workspace_model.qml` covers the new id and the scroll target, and `check.sh` passes.
+- An isolated `qs` instance ran the real `scroll()` of `WorkspaceStrip`, without the pills: wheel and pixel deltas forward on an occupied last pill open the new id, half a pixel step does nothing, and an empty last pill, the first pill scrolling back and `scrollEnabled: false` all stay put.
+- The session shell restarted on the new code with a clean log and a bar on both monitors.
+- **Found:** the edits did not reload the running shell. Saving by writing a new file and renaming it over the old one gives the file a new inode, the watch on it is lost, and the log shows no new `Configuration Loaded`. `touch` on a file still watched did not reload it either. `desktop-shell restart` loaded the new code.
+- This system has no tool to inject scroll events, so the owner tried it by hand on the live bar and confirmed that it works.

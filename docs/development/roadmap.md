@@ -35,6 +35,7 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] 38 px top bar with transparent/translucent background, Fedora logo, and application menu.
 - [x] Occupied and active workspaces represented by pills, highlighting active and urgent states.
 - [x] At least two pills per monitor, empty placeholders with globally unique IDs, and wheel/touchpad navigation across the workspace area's full height.
+- [x] Scrolling past the last pill opens a new workspace on that monitor, unless the last one is empty; the assist button still stops at the ends.
 - [x] Window title, spacer, tray, battery percentage/icon, Hints, notifications, Control Center, date/time, and power menu.
 - [x] QML tray menus with matching background/border, rounded corners, hover, submenus, anchoring below the icon on its monitor, and keyboard navigation; Esc and outside clicks close the menu.
 - [x] Centered status icons and native tooltips below buttons; bar buttons no longer retain a highlight from mouse focus after panels close, while keyboard and panel focus indicators remain available.

@@ -33,7 +33,8 @@ PanelWindow {
         item: corner
     }
     readonly property var monitor: Hyprland.monitorFor(screen)
-    readonly property var workspaces: WorkspaceModel.fromHyprland(Hyprland, Config.minimumWorkspaces)[screen.name] || []
+    readonly property var workspaceSlots: WorkspaceModel.fromHyprland(Hyprland, Config.minimumWorkspaces)
+    readonly property var workspaces: workspaceSlots[screen.name] || []
     function focusWorkspace(id) {
         Hyprland.dispatch("hl.dsp.focus({ monitor = " + JSON.stringify(screen.name) + " })");
         Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })");
@@ -132,6 +133,7 @@ PanelWindow {
             Layout.fillHeight: true
             workspaces: bar.workspaces
             activeId: bar.monitor?.activeWorkspace?.id ?? -1
+            newId: WorkspaceModel.newId(bar.workspaceSlots, bar.screen.name)
             scrollEnabled: Config.workspaceScroll
             onActivated: id => bar.focusWorkspace(id)
         }

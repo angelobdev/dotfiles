@@ -6,11 +6,14 @@ import QtQuick.Layouts
 import Quickshell
 import ".."
 import "../services"
+import "WorkspaceModel.js" as WorkspaceModel
 
 RowLayout {
     id: root
     required property var workspaces
     required property int activeId
+    // The id of a workspace opened by scrolling past the last pill; -1 opens none.
+    property int newId: -1
     property bool scrollEnabled: true
     property real accumulated: 0
     property bool pixelGesture: false
@@ -33,12 +36,9 @@ RowLayout {
         if (!steps)
             return;
         accumulated -= steps * threshold;
-        const current = workspaces.findIndex(w => w.id === activeId);
-        if (current < 0)
-            return;
-        const next = Math.max(0, Math.min(workspaces.length - 1, current - steps));
-        if (next !== current)
-            activated(workspaces[next].id);
+        const next = WorkspaceModel.scrollTarget(workspaces, activeId, -steps, newId);
+        if (next >= 0)
+            activated(next);
     }
     Timer {
         id: reset

@@ -233,8 +233,8 @@ Singleton {
             return false;
         return true;
     }
-    // Like scrolling over the bar: one slot along the workspaces of the focused monitor, empty ones included,
-    // stopping at either end.
+    // One slot along the workspaces of the focused monitor, empty ones included, stopping at either end:
+    // unlike scrolling over the bar, it never opens a new workspace.
     function stepWorkspace(direction) {
         const monitor = Hyprland.focusedMonitor;
         if (!monitor)
