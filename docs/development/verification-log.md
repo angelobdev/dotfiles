@@ -527,3 +527,8 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - The session shell restarted on the new code with a clean log and a bar on both monitors.
 - **Found:** the edits did not reload the running shell. Saving by writing a new file and renaming it over the old one gives the file a new inode, the watch on it is lost, and the log shows no new `Configuration Loaded`. `touch` on a file still watched did not reload it either. `desktop-shell restart` loaded the new code.
 - This system has no tool to inject scroll events, so the owner tried it by hand on the live bar and confirmed that it works.
+
+## Hyprland 0.57.0-2 and libheif 1.23.7, 2026-11-03
+
+- `dnf upgrade` did nothing: `libheif-freeworld` 1.23.6 from RPM Fusion requires exactly `libheif` 1.23.6, Fedora shipped 1.23.7 (a high-severity security update, stable on 2026-11-01), and `hyprgraphics-devel` 0.6.0 needs `libheif-devel`, which exists only at 1.23.7, so the whole Hyprland stack was held back as well. `--allowerasing` does not help; `dnf do --action=remove libheif-freeworld --action=upgrade libheif libheif-ffmpeg` updated libheif alone. Reinstall `libheif-freeworld` once RPM Fusion rebuilds it for 1.23.7.
+- The COPR rebuild `0.57.0-2` keeps the commit but moves to aquamarine 0.16 and hyprgraphics 0.6, which are part of the ABI hash (`_aq_0.16_hu_0.14_hg_0.6_hc_0.1_hlg_0.6`). After the upgrade and a reboot the session came up without plugins, as expected; the pin in `build.py` moved to `0.57.0-2`, the hyprpm cache was reset and the installer rebuilt and loaded all four plugins with no config errors. The installer needs a real terminal: `sudo` cannot ask for the fingerprint from Claude Code's `!` prompt.
