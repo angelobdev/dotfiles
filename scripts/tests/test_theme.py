@@ -328,7 +328,7 @@ class DynamicThemeTests(unittest.TestCase):
         self.assertEqual(generated['mode'], 'dark')
         self.assertEqual(generated['source'], '/pictures/sea.jpg')
         self.assertEqual(generated['wallpaperDirectories'], ['/pictures'])
-        self.assertEqual(generated['system']['gtkTheme'], 'Adwaita-dark')
+        self.assertEqual(generated['system']['gtkTheme'], 'adw-gtk3-dark')
         light = theme.dynamic_theme(matugen_output('light'), '/pictures/snow.jpg')
         self.assertEqual((light['mode'], light['palette']['base']), ('light', '#f3f3fa'))
         self.assertEqual(light['system']['iconTheme'], 'Papirus-Light')

@@ -248,6 +248,11 @@ Backlog from tablet use (reported 2026-10-30):
 - [x] Timeouts on the one-shot calls of recording, portal picker, osk layout and clipboard; `check.sh` globs `scripts/tests/test_*.py`; fastfetch "threads"; the two animation literals follow `reduceMotion`.
 - [x] Checked: the bar double-tap does not fire from a bar button or the window title. Buttons and the title accept the press, so the handler underneath never sees it (qmltestrunner with touch on the same structure: button and title 0 toggles, empty bar 1); the user confirmed it with the mouse.
 
+### Backlog (reported 2026-11-03)
+
+- [x] Light GTK dialogs with the dark theme (file chooser, keyring unlock): GTK 3 asked for `Adwaita-dark`, which Fedora 44 no longer ships (`gnome-themes-extra` is gone), and fell back to light Adwaita. Themes now name `adw-gtk3-dark`/`adw-gtk3` (`adw-gtk3-theme` in the manifest), which also takes the theme palette from `gtk.css`. The portal file chooser floats centered at 50%×60% of the monitor instead of tiling to full height (`portal-file-chooser` rule).
+- [x] Volume did nothing with the JBL TUNE760NC: in that connection BlueZ's AVRCP volume stayed at 96/127 whatever PipeWire sent. After `systemctl --user restart wireplumber` hardware volume works (transport 38/76/57 for 0.3/0.6/0.45), so it was the connection, not the headset; the `bluetoothd` log shows a connect collision. A per-device rule for software volume was tried and dropped. Troubleshooting has the check and the restart.
+
 ### Hardware
 
 - [ ] Complete a successful DDC/CI test (read, minimal change, restore) with a display that responds to the protocol. The connected Philips FTV is identified on bus 14 but responds to neither VCP 10 nor capabilities, even after applying permissions and increasing timings. GNOME's built-in control may use software brightness; this does not confirm the display's DDC/CI support.

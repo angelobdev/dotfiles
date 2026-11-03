@@ -37,6 +37,10 @@ sudo rm -rf /var/cache/hyprpm/$USER
 
 **A QML edit does not show up.** Look for "Reloading configuration" in `qs log -p ~/.config/quickshell/desktop`. If it is missing, make an in-place change to `shell.qml`, as [Conventions](../development/conventions.md) describes.
 
+**Volume does nothing with Bluetooth headphones.** PipeWire uses the headset's own volume (AVRCP absolute volume), and a connection that went wrong can leave it unsynced: the level changes in the shell, not in the ears. Check with `busctl get-property org.bluez <transport> org.bluez.MediaTransport1 Volume` (the transport is the `.../sepN/fdN` path in `busctl tree org.bluez`): it should move with the slider. If it does not, `systemctl --user restart wireplumber` recreates the transport. Seen once when headset and laptop connected at the same time (`bluetoothd`: "Operation already in progress"). If a headset never syncs, `bluez5.hw-volume = [ hfp_ag hsp_ag ]` in a `monitor.bluez.rules` entry for its `device.name` makes PipeWire scale the stream instead.
+
+**GTK 3 dialogs are light with a dark theme.** The theme asks for `adw-gtk3-dark`; without `adw-gtk3-theme` installed GTK 3 falls back to light Adwaita. Install it (`sudo dnf install adw-gtk3-theme`) and run `systemctl --user restart xdg-desktop-portal-gtk`.
+
 **The keyboard offers no suggestions.** The word lists download on first use: run `~/.local/libexec/desktop/predict.py fetch`. Suggestions stay away from terminals, passwords and URLs by design.
 
 ## References

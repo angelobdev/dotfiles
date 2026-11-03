@@ -566,7 +566,7 @@ def dynamic_theme(data, source):
         'mode': 'dark' if dark else 'light',
         'source': str(source),
         'fonts': {'sans': 'Adwaita Sans', 'mono': 'Adwaita Mono', 'size': 10, 'terminalSize': 11},
-        'system': {'gtkTheme': 'Adwaita-dark' if dark else 'Adwaita', 'iconTheme': 'Papirus-Dark' if dark else 'Papirus-Light',
+        'system': {'gtkTheme': 'adw-gtk3-dark' if dark else 'adw-gtk3', 'iconTheme': 'Papirus-Dark' if dark else 'Papirus-Light',
                    'cursorTheme': 'Adwaita', 'cursorSize': 24, 'accentColor': nearest_accent(palette['accent'])},
         'palette': palette,
         'ansi': ansi,

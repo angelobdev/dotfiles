@@ -8,7 +8,7 @@
     "terminalSize": 11
   },
   "system": {
-    "gtkTheme": "Adwaita-dark",
+    "gtkTheme": "adw-gtk3-dark",
     "iconTheme": "Papirus-Dark",
     "cursorTheme": "Adwaita",
     "cursorSize": 24,

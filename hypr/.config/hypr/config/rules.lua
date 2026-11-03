@@ -44,6 +44,16 @@ hl.window_rule({
     center = true,
 })
 
+-- The portal file chooser (xdg-desktop-portal-gtk) is a dialog: tiled it took the whole height of the
+-- workspace.
+hl.window_rule({
+    name = "portal-file-chooser",
+    match = { class = "^xdg-desktop-portal-gtk$" },
+    float = true,
+    size = { "monitor_w*0.5", "monitor_h*0.6" },
+    center = true,
+})
+
 -- Floating windows keep their pixel size and place when the usable area of a monitor changes (rotation in
 -- tablet mode, a new scale, the docked on-screen keyboard reserving the bottom): a floating window that no
 -- longer fits there moves in and shrinks to fit, inside the area left by the bar and the keyboard.
