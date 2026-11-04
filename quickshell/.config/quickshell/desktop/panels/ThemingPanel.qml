@@ -960,6 +960,9 @@ Overlay {
                 font.pixelSize: 12
             }
             Text {
+                // Wraps instead of widening the layout past the panel (wide theme fonts, long translations).
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
                 text: Theming.busy ? I18n.tr("theming.working") : Tablet.active ? "" : I18n.tr("theming.navigationHint")
                 color: Theme.muted
                 font.family: Theme.font

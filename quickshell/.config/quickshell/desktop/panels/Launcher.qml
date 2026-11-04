@@ -136,7 +136,10 @@ Overlay {
                 }
             }
             Text {
-                // Touch has no arrows, Enter or Ctrl+P.
+                // Touch has no arrows, Enter or Ctrl+P. Wraps: a wide theme font (Fira Code) or a long
+                // translation would otherwise run past the card.
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
                 text: Tablet.active ? I18n.tr("launcher.touchHint") : I18n.tr("launcher.navigationHint")
                 color: Theme.muted
                 font.pixelSize: 12
