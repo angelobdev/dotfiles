@@ -601,3 +601,10 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - Nautilus override dropped: the user disabled `org.gnome.Nautilus.desktop` and Nautilus worked from the system entry; the session already exports `GDK_BACKEND=wayland,x11,*` to D-Bus activation (`systemctl --user show-environment`). Removed from `shell`, with its renamed link.
 - After the cleanup script and a reboot: `dracut -f` put the HP firmware into the initramfs, the kernel logged "load firmware: intel/ish/ish_lnlm_12128606.bin … firmware loaded … FW base version: 5.8.0.7726", `iio-sensor-proxy` is active and the user confirmed rotation works. Chrome, Text Editor, FreeRDP, the five GNOME extras, `ffmpeg-free`, `libva-intel-media-driver` and every Flatpak app are gone; `intel-media-driver` and `gstreamer1-plugin-libav` are installed.
 - Found: the swap step still listed `libva-intel-media-driver -> intel-media-driver`, because `intel-media-driver` provides that name and the check used `rpm -q --whatprovides`. Swaps now look the old package up by name (`fedora.installed`); the dry-run with every profile says "Nothing to do."
+
+## Fingerprint on Fedora 45, 2026-11-04
+
+- Enrolled (right index, Synaptics press sensor). sudo in kitty, polkit and `pkexec` accept it (the journal shows `grantors=pam_fprintd` for `polkit-agent-helper-1`).
+- GDM asked only for the password after a reboot with the finger already enrolled: `gdm-password` authenticated at 23:45:18, and `fprintd` first started at 23:50. PAM is complete (`/usr/lib/pam.d/gdm-fingerprint`, authselect `with-fingerprint`, `enable-fingerprint-authentication` true, `enable-switchable-authentication` false). The cause is GNOME Shell 51 itself: in `gdm/authServicesLegacy.js` (from `libshell-51.so`), `_connectFingerprintManager()` returns unless `_reauthOnly`, so the login dialog never asks fprintd; only reauthentication offers the finger. Not changeable from the configuration.
+- Keyring: the password at GDM unlocks oo7 through `pam_oo7` ("Retrieved stashed password", `oo7-daemon-login`), and the `login` collection reports `Locked false`. No prompt follows, so the keyring follow-up is closed.
+
