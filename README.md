@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img alt="Fedora 44" src="https://img.shields.io/badge/Fedora-44-51A2DA?logo=fedora&logoColor=white">
+  <img alt="Fedora 45" src="https://img.shields.io/badge/Fedora-45-51A2DA?logo=fedora&logoColor=white">
   <img alt="Hyprland 0.57" src="https://img.shields.io/badge/Hyprland-0.57-58E1FF?logo=hyprland&logoColor=white">
   <img alt="Quickshell 0.3" src="https://img.shields.io/badge/Quickshell-0.3-7C6FE0">
   <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-green">

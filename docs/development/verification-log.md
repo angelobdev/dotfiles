@@ -580,3 +580,12 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - Versions: Hyprland and `hyprland-uwsm` 0.57.1-1.fc45, Quickshell 0.3.2-6 (git 9b0f339), kitty 0.50.0, matugen 4.2.0, GDM 51.0. Authselect `custom/desktop-tablet with-fingerprint`, `oo7-daemon` enabled for every user, `oo7-portal` the only Secret portal, `gdm-password` with both `pam_oo7` and `pam_gnome_keyring`, `allow_vendor_change` not set.
 - Hyprspace, hyprgrass, hyprglass and HyprCapture compiled against `0.57.1-1.fc45` with no unresolved libraries; `scripts/hyprpm/build.py` now accepts that build next to the fc44 one, and the container script rewrites the new `VERIFIED` tuple.
 - The `google-chrome-stable` scriptlet could not import its key while the transaction held the RPM keyring lock ("key 1 import failed"); the package installed. On real hardware, check `rpm -q gpg-pubkey --qf '%{SUMMARY}\n' | grep -i google` after the install.
+
+## The laptop on Fedora 45, 2026-11-04
+
+- Clean install (Everything netinstall, Minimal Install, then `install-desktop.py apply --profiles core,hardware,plugins`; `apps` was stopped halfway and is being reviewed).
+- Working on the hardware: Wi-Fi, audio, touch, screen sharing, the transparency of the bar. The Chrome key check is no longer needed.
+- Fingerprint: not enrolled yet.
+- Rotation: not working. The HP firmware `ish_lnlm_12128606.bin` is in `/lib/firmware/intel/ish/`, but the kernel loaded the generic `intel/ish/ish_lnlm.bin` ("ISH loader: cmd 2 failed 10") at 22:54:51, from the initramfs. The initramfs was built at 22:06, before the firmware was copied at 22:51, so it does not contain it. With no accelerometer, `iio-sensor-proxy` exits and the Control Center shows no rotation lock.
+- Fedora 44 dropped from `check.yml` and from `VERIFIED` in `scripts/hyprpm/build.py`. The plugins already built keep loading at login; the next `install-hypr-plugins.py` run needs `hyprpm remove dotfiles-desktop` first, as with every change in `scripts/hyprpm/`.
+

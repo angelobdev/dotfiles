@@ -31,7 +31,7 @@ The running desktop reads files through symlinks into this repository:
 
 ## Verification
 
-1. `./scripts/check.sh` must pass (it is fast). GitHub runs it too, in a `fedora:44` container, on every push to `main` and every pull request (`.github/workflows/check.yml`). The doc check needs `python3-cmarkgfm` and is skipped without it, so install it to catch broken links before pushing.
+1. `./scripts/check.sh` must pass (it is fast). GitHub runs it too, in a `fedora:45` container, on every push to `main` and every pull request (`.github/workflows/check.yml`). The doc check needs `python3-cmarkgfm` and is skipped without it, so install it to catch broken links before pushing.
    The installer has its own proof: `scripts/tests/install-container.sh` runs it for real in a fresh `fedora:45` container, as its header shows, and `.github/workflows/install.yml` runs that when the installer changes. Set `COMPILE=1` to build the plugins too. A container has no systemd, so the login, firewall and Flatpak steps need a VM, and a VM cannot show everything: with virgl kitty does not start and layers lose their transparency, and with software rendering hyprpaper crashes ([verification log](verification-log.md#installer-in-a-vm-with-fedora-45-server-2026-10-31)).
 2. For QML: confirm the live reload succeeded and inspect `desktop-shell status`. Prefer isolated instances (`qs -p <dir>` with mock data, nested/headless Hyprland, private D-Bus buses) for anything that would touch the user's real devices, accounts, notifications or open applications.
 3. Behavior or visual changes: describe what was verified physically versus in isolation, and record it in `docs/development/verification-log.md`.

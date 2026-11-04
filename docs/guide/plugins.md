@@ -6,7 +6,7 @@ Configuration: [`plugins.lua`](../../hypr/.config/hypr/config/plugins.lua). Scre
 
 ## Installation
 
-Verified builds: **Hyprland and hyprland-devel 0.57.1-1.fc44.x86_64 and 0.57.1-1.fc45.x86_64**, from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora. The `plugins` profile of the [installer](installation.md#automated-installation) lists the build dependencies, some from RPM Fusion, and runs this step at the first login. `hyprland-devel` has to stay installed: the check at every login reads its version.
+Verified builds: **Hyprland and hyprland-devel 0.57.1-1.fc45.x86_64**, from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora. The `plugins` profile of the [installer](installation.md#automated-installation) lists the build dependencies, some from RPM Fusion, and runs this step at the first login. `hyprland-devel` has to stay installed: the check at every login reads its version.
 
 From a terminal in the Hyprland session, as a regular user:
 

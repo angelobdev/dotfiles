@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        fedora: [44, 45]
+        fedora: [45]
     steps:
       - name: Install the tools
         run: |
