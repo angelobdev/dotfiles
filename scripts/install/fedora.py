@@ -88,6 +88,15 @@ def write_file(path, content):
         sudo('install', '-D', '-o', 'root', '-g', 'root', '-m', '0644', temporary.name, str(path))
 
 
+def install_firmware(source, target):
+    sudo('install', '-D', '-o', 'root', '-g', 'root', '-m', '0644', str(source), str(target))
+    sudo('restorecon', str(target))
+
+
+def rebuild_initramfs():
+    sudo('dracut', '--force', '--regenerate-all')
+
+
 def auth_base():
     fields = query('authselect', 'current', '--raw').stdout.split()
     return fields[0] if fields else ''

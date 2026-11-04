@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from collections import namedtuple
 import getpass
 import grp
+import hashlib
 import importlib
 import os
 from pathlib import Path
@@ -30,7 +31,8 @@ BOOT_GDM = 'enable gdm.service'
 BOOT_TARGET = 'boot into graphical.target'
 BOOT_AUTOSTART = 'finish the plugins at the first login'
 
-Plan = namedtuple('Plan', 'distro release table commands profiles')
+# firmware: the directory --firmware names, searched for the blobs the manifest lists; None when not given.
+Plan = namedtuple('Plan', 'distro release table commands profiles firmware', defaults=(None,))
 Step = namedtuple('Step', 'title pending apply')
 sys.dont_write_bytecode = True
 
@@ -185,6 +187,50 @@ def clones_apply(plan, paths):
         subprocess.run(('git', '-C', str(path), '-c', 'advice.detachedHead=false', 'checkout', '-q', '--force', item['commit']), check=True)
 
 
+def dmi(field):
+    try:
+        return Path('/sys/class/dmi/id', field).read_text(encoding='utf-8').strip()
+    except OSError:
+        return ''
+
+
+def sha256(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as file:
+        for block in iter(lambda: file.read(1 << 20), b''):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def firmware_needed(plan):
+    # Only for the model each blob belongs to, and only where it is missing or different.
+    return [item for item in merged(plan, 'firmware') if dmi('product_name') == item['product']
+            and not (Path(item['target']).is_file() and sha256(item['target']) == item['sha256'])]
+
+
+def firmware_source(plan, item):
+    # By hash, not by name: the vendor package names it differently from the kernel.
+    if not plan.firmware:
+        return None
+    # The size check first: only files that can match get hashed, even in a whole backup disk.
+    for path in sorted(Path(plan.firmware).expanduser().rglob('*')):
+        if path.is_file() and path.stat().st_size == item['size'] and sha256(path) == item['sha256']:
+            return path
+    return None
+
+
+def firmware_pending(plan):
+    return [item['target'] for item in firmware_needed(plan) if firmware_source(plan, item)]
+
+
+def firmware_apply(plan, targets):
+    for item in firmware_needed(plan):
+        if item['target'] in targets:
+            plan.distro.install_firmware(firmware_source(plan, item), item['target'])
+    # The ISH loader runs from the initramfs, before the root file system: every kernel needs it there.
+    plan.distro.rebuild_initramfs()
+
+
 def services_pending(plan):
     enable = [unit for unit in merged(plan, 'services') if unit_state(unit) not in ('enabled', 'static', 'alias')]
     disable = [unit for unit in merged(plan, 'disable') if unit_state(unit) == 'enabled']
@@ -310,6 +356,7 @@ STEPS = (
     Step('swaps', swaps_pending, swaps_apply),
     Step('packages', packages_pending, packages_apply),
     Step('files', files_pending, files_apply),
+    Step('firmware', firmware_pending, firmware_apply),
     Step('groups', groups_pending, groups_apply),
     Step('shell', shell_pending, shell_apply),
     Step('services', services_pending, services_apply),
@@ -332,7 +379,7 @@ def os_release(path=Path('/etc/os-release')):
     return fields
 
 
-def load_plan(profiles, release=None):
+def load_plan(profiles, release=None, firmware=None):
     manifest = tomllib.loads((INSTALL / 'manifest.toml').read_text(encoding='utf-8'))
     release = release or os_release()
     name, version = release.get('ID', ''), release.get('VERSION_ID', '')
@@ -342,7 +389,7 @@ def load_plan(profiles, release=None):
     if version not in table['versions']:
         sys.exit(f'{name} {version} is not verified: supported versions are {", ".join(table["versions"])}.')
     sys.path.insert(0, str(INSTALL))
-    return Plan(importlib.import_module(name), version, table, manifest['verify']['commands'], profiles)
+    return Plan(importlib.import_module(name), version, table, manifest['verify']['commands'], profiles, firmware)
 
 
 def preflight(plan):
@@ -358,6 +405,10 @@ def preflight(plan):
         warnings.append(f'Only {free // 2**30} GiB free on /.{grow}')
     if setting(plan, 'auth') and plan.distro.auth_base() not in ('local', plan.distro.AUTH_PROFILE):
         warnings.append(f'The auth step expects the local authselect profile, found "{plan.distro.auth_base()}".')
+    for item in firmware_needed(plan):
+        if not firmware_source(plan, item):
+            where = f'{plan.firmware} has no copy of it' if plan.firmware else 'pass --firmware <directory with a copy>'
+            warnings.append(f'{item["purpose"]} needs {Path(item["target"]).name} ({item["source"]}): {where}.')
     for warning in warnings:
         print('Warning: ' + warning)
 
@@ -407,6 +458,7 @@ def post(plan):
 def main(argv=None):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('action', nargs='?', choices=('dry-run', 'apply', 'post'), default='dry-run')
+    parser.add_argument('--firmware', metavar='DIR', help='directory searched (by hash) for the vendor firmware the manifest lists')
     parser.add_argument('--profiles', default=DEFAULT_PROFILES, help=f'comma separated, from {", ".join(PROFILES)} (default: {DEFAULT_PROFILES})')
     args = parser.parse_args(argv)
     profiles = tuple(args.profiles.split(','))
@@ -414,7 +466,7 @@ def main(argv=None):
         parser.error(f'--profiles needs core, and takes only {", ".join(PROFILES)}.')
     if os.geteuid() == 0:
         sys.exit('Run as the desktop user: the script asks sudo for each system change.')
-    plan = load_plan(profiles)
+    plan = load_plan(profiles, firmware=args.firmware)
     preflight(plan)
     if args.action == 'post':
         post(plan)

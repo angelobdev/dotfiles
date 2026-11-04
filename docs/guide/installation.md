@@ -41,7 +41,7 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 | Profile | Installs |
 | --- | --- |
 | `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls; zsh as your login shell, with its [plugins](../features/shell.md) |
-| `hardware` | Firmware, video decoding and sensors of an Intel 2-in-1, fingerprint and [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), firewall zone, `sshd` off |
+| `hardware` | Firmware, video decoding and sensors of an Intel 2-in-1, fingerprint and [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), firewall zone, `sshd` off; on the OmniBook, HP's sensor hub firmware for rotation from `--firmware DIR` (see [Tablet and touch](../features/tablet-and-touch.md#tablet-mode-and-rotation)) |
 | `plugins` | What building the [Hyprland plugins](plugins.md) needs, from RPM Fusion too; the RPM Fusion `ffmpeg` replaces `ffmpeg-free` |
 | `apps` | Zen Browser, 1Password, VS Code, Neovim, `gh`, `glab`, `uv`, `gcc` and a few command-line tools |
 | `containers` | Docker (`moby-engine`, `docker-compose`, the `docker` group) and Tailscale |

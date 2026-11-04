@@ -18,7 +18,7 @@ spec.loader.exec_module(installer)
 import fedora  # noqa: E402
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
-PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes'}
+PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'firmware', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes'}
 TABLE = {
     'repos': {'one': {'kind': 'copr', 'name': 'a/b'}},
     'core': {'repos': ['one'], 'packages': ['a', 'b'], 'exclude': ['tour'], 'services': ['s.service'], 'user_services': ['u.service'],
@@ -90,6 +90,12 @@ class ManifestTests(unittest.TestCase):
         zshrc = (REPO / 'zsh/.config/zsh/.zshrc').read_text() + (REPO / 'zsh/.config/zsh/p10k.zsh').read_text()
         for clone in self.fedora['core']['clones']:
             self.assertIn(clone['path'].removeprefix('.local/share/'), zshrc.replace('${XDG_DATA_HOME:-$HOME/.local/share}/', '').replace('$plugins', 'zsh/plugins'))
+
+    def test_firmware_entries_are_complete(self):
+        for item in (item for profile in self.profiles for item in profile.get('firmware', ())):
+            self.assertLessEqual({'product', 'purpose', 'source', 'target', 'sha256', 'size'}, set(item))
+            self.assertRegex(item['sha256'], '^[0-9a-f]{64}$')
+            self.assertTrue(item['target'].startswith('/usr/lib/firmware/'))
 
     def test_passwords_have_a_service_on_every_edition(self):
         # Nothing starts it on Server: no preset, and no D-Bus activation.
@@ -248,7 +254,8 @@ class StepTests(unittest.TestCase):
         distro = fake_distro()
         with mock.patch('subprocess.run') as run:
             done = installer.run_steps(plan(distro), True)
-        self.assertEqual(done, len(installer.STEPS) - 1)  # All but verify: its commands are found here.
+        # All but verify (its commands are found here) and firmware (FirmwareTests covers it).
+        self.assertEqual(done, len(installer.STEPS) - 2)
         run.assert_not_called()
         for change in (distro.sudo, distro.add_repo, distro.upgrade, distro.install, distro.write_file, distro.auth_apply):
             change.assert_not_called()
@@ -428,6 +435,72 @@ class StepTests(unittest.TestCase):
         self.assertNotIn(installer.BOOT_AUTOSTART, installer.boot_pending(plan(fake_distro(), profiles=('core',))))
 
 
+class FirmwareTests(unittest.TestCase):
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.base = Path(folder.name)
+        self.blob = b'firmware bytes'
+        self.vendor = self.base / 'softpaq/Driver/FWImage/blob_0207.bin'
+        self.vendor.parent.mkdir(parents=True)
+        self.vendor.write_bytes(self.blob)
+        (self.base / 'softpaq/other.bin').write_bytes(b'x' * len(self.blob))
+        self.target = self.base / 'lib/ish_lnlm.bin'
+        import hashlib
+        self.item = {'product': 'Laptop 14', 'purpose': 'Screen rotation', 'source': 'vendor package',
+                     'target': str(self.target), 'sha256': hashlib.sha256(self.blob).hexdigest(), 'size': len(self.blob)}
+        patcher = mock.patch.object(installer, 'dmi', return_value='Laptop 14')
+        self.dmi = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def plan(self, firmware=None):
+        return installer.Plan(fake_distro(), '45', {'hardware': {'firmware': [self.item]}}, [], ('hardware',), firmware)
+
+    def test_the_vendor_file_is_found_by_hash_whatever_its_name(self):
+        self.assertEqual(installer.firmware_source(self.plan(str(self.base)), self.item), self.vendor)
+
+    def test_without_a_directory_nothing_is_pending(self):
+        self.assertEqual(installer.firmware_pending(self.plan()), [])
+
+    def test_with_a_copy_it_is_pending_until_installed(self):
+        self.assertEqual(installer.firmware_pending(self.plan(str(self.base))), [str(self.target)])
+        self.target.parent.mkdir(parents=True)
+        self.target.write_bytes(self.blob)
+        self.assertEqual(installer.firmware_pending(self.plan(str(self.base))), [])
+
+    def test_another_model_needs_nothing(self):
+        self.dmi.return_value = 'Another laptop'
+        self.assertEqual(installer.firmware_needed(self.plan(str(self.base))), [])
+
+    def test_apply_installs_then_rebuilds_the_initramfs(self):
+        current = self.plan(str(self.base))
+        order = mock.Mock()
+        current.distro.install_firmware = order.install
+        current.distro.rebuild_initramfs = order.rebuild
+        installer.firmware_apply(current, [str(self.target)])
+        self.assertEqual(order.mock_calls, [mock.call.install(self.vendor, str(self.target)), mock.call.rebuild()])
+
+    def warnings(self, firmware):
+        current = self.plan(firmware)
+        with mock.patch.object(installer, 'member', return_value=True), \
+                mock.patch('shutil.disk_usage', return_value=mock.Mock(free=40 * 2**30)), mock.patch('builtins.print') as printed:
+            installer.preflight(current)
+        return ' '.join(call.args[0] for call in printed.call_args_list)
+
+    def test_a_missing_blob_is_a_warning_that_names_the_option(self):
+        text = self.warnings(None)
+        self.assertIn('Screen rotation needs ish_lnlm.bin', text)
+        self.assertIn('--firmware', text)
+
+    def test_a_directory_without_the_blob_says_so(self):
+        self.assertIn('has no copy of it', self.warnings(str(self.base / 'lib')))
+
+    def test_the_firmware_comes_before_the_boot_step(self):
+        titles = [step.title for step in installer.STEPS]
+        self.assertLess(titles.index('packages'), titles.index('firmware'))
+        self.assertLess(titles.index('firmware'), titles.index('boot'))
+
+
 class PostTests(unittest.TestCase):
     def setUp(self):
         folder = tempfile.TemporaryDirectory()
@@ -580,6 +653,15 @@ class FedoraTests(unittest.TestCase):
                                  ('custom/desktop-tablet with-fingerprint with-mdns4', []), ('', [fedora.AUTH_FEATURE, fedora.AUTH_PROFILE])):
             with mock.patch.object(fedora, 'query', return_value=reply(output)):
                 self.assertEqual(fedora.auth_pending(), expected)
+
+    def test_firmware_keeps_the_selinux_label_and_reaches_every_initramfs(self):
+        with mock.patch.object(fedora, 'sudo') as sudo:
+            fedora.install_firmware(Path('/media/blob.bin'), '/usr/lib/firmware/x.bin')
+            fedora.rebuild_initramfs()
+        commands = [call.args for call in sudo.call_args_list]
+        self.assertEqual(commands[0][:7], ('install', '-D', '-o', 'root', '-g', 'root', '-m'))
+        self.assertEqual(commands[1], ('restorecon', '/usr/lib/firmware/x.bin'))
+        self.assertEqual(commands[2], ('dracut', '--force', '--regenerate-all'))
 
     def test_the_feature_comes_before_the_tablet_profile(self):
         # tablet-auth.sh copies the current features.

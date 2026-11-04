@@ -30,6 +30,14 @@ Folding the OmniBook screen back into tablet posture turns tablet mode on; unfol
 
 **Long press** does what a right click does: the dock menu, the pin menu in the launcher, tray menus, and hiding a notification popup. A tap on a stacked deck of popups opens it, and it closes after 6 s without a touch. Dock icons do not magnify in tablet mode, and a finger that slides off an icon neither taps nor drags it. **Swipe** a notification sideways past a third of its width: a popup goes away (it stays in the center), an entry in the center is deleted; a shorter swipe springs back.
 
+The OmniBook's accelerometer sits behind the Intel Sensor Hub (ISH), which needs HP's firmware: linux-firmware carries the HP blob for another SKU only, and HP does not allow redistributing it, so the repository cannot ship it. Extract HP SoftPaq sp158489 (or keep a copy of `ish_lnlm_12128606.bin`) and point the installer at it:
+
+```sh
+./scripts/install-desktop.py apply --firmware /path/to/sp158489
+```
+
+It looks for the file by its sha256 (in the SoftPaq it is `Driver/IshHeciExtension/FWImage/0003/ishC_0207.bin`), installs it as `/usr/lib/firmware/intel/ish/ish_lnlm_12128606.bin`, and rebuilds every initramfs with dracut, since the ISH loader runs from the initramfs before the root file system is mounted. Without `--firmware` the installer only warns that rotation will be missing. After a reboot, `journalctl -k -b | grep 'ISH loader'` shows `load firmware: intel/ish/ish_lnlm_12128606.bin`; with the generic `ish_lnlm.bin` and `cmd 2 failed 10` there is no accelerometer and no rotation lock.
+
 **Rotation lock** in the Control Center (shown only on machines with an accelerometer) keeps the current orientation; `desktop-shell rotation-lock toggle|on|off` sets it with an OSD. It is remembered across restarts and logins. `desktop-shell tablet on|off|toggle` sets the posture by hand, for instance to try it without folding the screen.
 
 ## Assist button

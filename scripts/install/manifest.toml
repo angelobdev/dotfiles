@@ -9,6 +9,8 @@
 # exclude: packages kept out of every install, such as the weak dependencies of GNOME Shell that GDM brings.
 # login_shell: the shell the installing user logs in with.
 # clones: [[...]] tables of repo, commit and path (under the home), for what the distribution does not package.
+# firmware: [[...]] vendor blobs nobody may redistribute, for one DMI product_name: install-desktop.py --firmware DIR
+#   finds them by sha256 (and size) and installs them to target, then rebuilds the initramfs.
 
 # The desktop itself, whatever the distribution calls its packages.
 [verify]
@@ -131,6 +133,15 @@ disable = ['sshd.service']
 firewall_zone = 'FedoraWorkstation'
 auth = true
 notes = ['Enroll your fingerprint: fprintd-enroll']
+
+# The accelerometer behind screen rotation. linux-firmware has the HP blob for another SKU only.
+[[fedora.hardware.firmware]]
+product = 'HP OmniBook Ultra Flip Laptop 14-fh0xxx'
+purpose = 'Screen rotation'
+source = 'HP SoftPaq sp158489, Driver/IshHeciExtension/FWImage/0003/ishC_0207.bin'
+target = '/usr/lib/firmware/intel/ish/ish_lnlm_12128606.bin'
+sha256 = 'aafe1129e21ad0b082333e66dfbd81540c627a9f5d41f8707053362b6de7474f'
+size = 838144
 
 [[fedora.hardware.files]]
 path = '/etc/modules-load.d/hid-sensors.conf'
