@@ -7,6 +7,8 @@
 # swaps: [old, new] pairs; new replaces old where old is installed, and old is never installed alongside it.
 # stow: optional Stow packages (scripts/stow.py --with).
 # exclude: packages kept out of every install, such as the weak dependencies of GNOME Shell that GDM brings.
+# login_shell: the shell the installing user logs in with.
+# clones: [[...]] tables of repo, commit and path (under the home), for what the distribution does not package.
 
 # The desktop itself, whatever the distribution calls its packages.
 [verify]
@@ -92,7 +94,10 @@ packages = [
     'jetbrains-mono-fonts', 'fira-code-fonts',
     # Apps the shell opens.
     'nautilus', 'gnome-calculator',
+    # The login shell and its plugins; Powerlevel10k and zsh-autocomplete come from clones below.
+    'zsh', 'zsh-autosuggestions', 'zsh-syntax-highlighting', 'git-core', 'fzf', 'zoxide', 'eza', 'bat',
 ]
+login_shell = '/usr/bin/zsh'
 services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service']
 # Has no D-Bus activation: passwords are stored nowhere until it runs, and pam_oo7 waits for it at login.
 user_services = ['oo7-daemon.service']
@@ -100,6 +105,17 @@ user_services = ['oo7-daemon.service']
 exclude = ['gnome-tour', 'malcontent-control', 'gnome-color-manager', 'gnome-remote-desktop', 'rygel']
 disable = ['cockpit.socket']
 notes = ['Sign in to your calendars with gnome-online-accounts-gtk.']
+
+# Not packaged by Fedora. Updating one: a new commit here, then install-desktop.py apply.
+[[fedora.core.clones]]
+repo = 'https://github.com/romkatv/powerlevel10k'
+commit = 'd05a1b00f9a61f9578bf9dc19b8451942dde8734'
+path = '.local/share/zsh/plugins/powerlevel10k'
+
+[[fedora.core.clones]]
+repo = 'https://github.com/marlonrichert/zsh-autocomplete'
+commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
+path = '.local/share/zsh/plugins/zsh-autocomplete'
 
 # This laptop: an HP OmniBook Ultra Flip. Most of it suits any recent Intel 2-in-1.
 [fedora.hardware]
@@ -141,12 +157,11 @@ swaps = [['ffmpeg-free', 'ffmpeg']]
 [fedora.apps]
 repos = ['zen', 'rpmfusion-free', 'rpmfusion-nonfree', '1password', 'vscode']
 packages = [
-    'zen-browser', '1password', 'code', 'neovim', 'gh', 'glab', 'uv', 'gcc', 'fzf', 'zsh',
+    'zen-browser', '1password', 'code', 'neovim', 'gh', 'glab', 'uv', 'gcc',
     'xclip', 'wev', 'unrar', 'fuse-libs',
 ]
 notes = [
     'Sign in to GitHub: gh auth login',
-    'Change your login shell: chsh -s /usr/bin/zsh',
     'Install Claude Code from its own installer: Super + A tells you when it is missing',
 ]
 

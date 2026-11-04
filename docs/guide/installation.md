@@ -20,6 +20,7 @@ Verified versions: Hyprland 0.57.1, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | `udiskie` | Removable-drive automounting, Quickshell notifications, and no external tray icon |
 | `portals` | XDG preferences: Hyprland for capture/sharing, GTK for files and settings |
 | `electron` | `~/.config/electron-flags.conf` (Wayland and IME flags) and `~/.config/desktop/electron-apps.conf` (the apps that get them through `electron.py`) |
+| `zsh` | `~/.zshenv` and `~/.config/zsh`: the login shell with Powerlevel10k, zsh-autocomplete and the other plugins; see [Terminal shell](../features/shell.md) |
 | `steam-hidpi` | Optional: `~/.local/share/applications/steam.desktop`, Steam through `desktop-steam` (only with `--with steam-hidpi`) |
 
 ## Automated installation
@@ -39,10 +40,10 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 
 | Profile | Installs |
 | --- | --- |
-| `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls |
+| `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls; zsh as your login shell, with its [plugins](../features/shell.md) |
 | `hardware` | Firmware, video decoding and sensors of an Intel 2-in-1, fingerprint and [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), firewall zone, `sshd` off |
 | `plugins` | What building the [Hyprland plugins](plugins.md) needs, from RPM Fusion too; the RPM Fusion `ffmpeg` replaces `ffmpeg-free` |
-| `apps` | Zen Browser, 1Password, VS Code, Neovim, `gh`, `glab`, `uv`, `gcc`, `fzf`, zsh and a few command-line tools |
+| `apps` | Zen Browser, 1Password, VS Code, Neovim, `gh`, `glab`, `uv`, `gcc` and a few command-line tools |
 | `containers` | Docker (`moby-engine`, `docker-compose`, the `docker` group) and Tailscale |
 | `media` | Loupe, Papers and Showtime for images, PDFs and videos |
 | `gaming` | Steam, gamescope and the 32-bit drivers games need; see [Gaming](#gaming) |

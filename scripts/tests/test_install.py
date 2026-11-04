@@ -18,11 +18,12 @@ spec.loader.exec_module(installer)
 import fedora  # noqa: E402
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
-PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes'}
+PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes'}
 TABLE = {
     'repos': {'one': {'kind': 'copr', 'name': 'a/b'}},
     'core': {'repos': ['one'], 'packages': ['a', 'b'], 'exclude': ['tour'], 'services': ['s.service'], 'user_services': ['u.service'],
-             'disable': ['d.socket'], 'files': [{'path': '/etc/x', 'content': '\nx\n'}], 'groups': ['g'], 'notes': ['first']},
+             'disable': ['d.socket'], 'files': [{'path': '/etc/x', 'content': '\nx\n'}], 'groups': ['g'], 'notes': ['first'],
+             'login_shell': '/usr/bin/zsh', 'clones': [{'repo': 'https://example.com/p.git', 'commit': 'c' * 40, 'path': '.local/p'}]},
     'plugins': {'packages': ['b', 'c', 'old'], 'swaps': [['old', 'new']], 'stow': ['extra'], 'flatpaks': ['org.example.App'], 'firewall_zone': 'Zone', 'auth': True,
                 'notes': ['second']},
 }
@@ -73,6 +74,22 @@ class ManifestTests(unittest.TestCase):
     def test_names_that_are_wrong_on_fedora_stay_out(self):
         packages = {package for profile in self.profiles for package in profile.get('packages', ())}
         self.assertFalse(packages & {'power-profiles-daemon', 'f44-backgrounds-base', 'nlohmann-json-devel', 'sof-firmware'})
+
+    def test_zsh_is_the_login_shell_of_the_default_install(self):
+        self.assertEqual(self.fedora['core']['login_shell'], '/usr/bin/zsh')
+        for package in ('zsh', 'zsh-autosuggestions', 'zsh-syntax-highlighting', 'git-core', 'fzf'):
+            self.assertIn(package, self.fedora['core']['packages'])
+
+    def test_clones_are_pinned_to_full_commits_in_the_home(self):
+        for clone in (clone for profile in self.profiles for clone in profile.get('clones', ())):
+            self.assertRegex(clone['commit'], '^[0-9a-f]{40}$')
+            self.assertTrue(clone['repo'].startswith('https://'))
+            self.assertFalse(clone['path'].startswith(('/', '~')) or '..' in clone['path'])
+
+    def test_the_zsh_files_name_the_clones(self):
+        zshrc = (REPO / 'zsh/.config/zsh/.zshrc').read_text() + (REPO / 'zsh/.config/zsh/p10k.zsh').read_text()
+        for clone in self.fedora['core']['clones']:
+            self.assertIn(clone['path'].removeprefix('.local/share/'), zshrc.replace('${XDG_DATA_HOME:-$HOME/.local/share}/', '').replace('$plugins', 'zsh/plugins'))
 
     def test_passwords_have_a_service_on_every_edition(self):
         # Nothing starts it on Server: no preset, and no D-Bus activation.
@@ -208,9 +225,12 @@ class StepTests(unittest.TestCase):
                 return reply('FedoraServer' if pending else 'Zone')
             if command[0] == 'flatpak':
                 return reply('' if pending else 'org.example.App')
+            if command[0] == 'git':
+                return reply('' if pending else 'c' * 40, 128 if pending else 0)
             return reply('LINK: a => b\n' if pending else 'WARNING: in simulation mode\n')
         group = mock.Mock(gr_mem=[] if pending else ['angelo'])
         patches = [mock.patch.object(installer, 'query', side_effect=query), mock.patch('grp.getgrnam', return_value=group),
+                   mock.patch.object(installer, 'login_shell', return_value='/bin/bash' if pending else '/usr/bin/zsh'),
                    mock.patch.object(installer, 'booted', return_value=booted)]
         for patcher in patches:
             patcher.start()
@@ -281,6 +301,42 @@ class StepTests(unittest.TestCase):
         distro = fake_distro()
         installer.swaps_apply(plan(distro), ['old -> new'])
         distro.swap.assert_called_once_with('old', 'new')
+
+    def test_the_login_shell_is_set_with_usermod(self):
+        distro = fake_distro()
+        current = installer.Plan(distro, '45', {'core': {'login_shell': '/usr/bin/zsh'}}, [], ('core',))
+        with mock.patch.object(installer, 'login_shell', return_value='/bin/bash'):
+            pending = installer.shell_pending(current)
+        self.assertEqual(pending, ['/usr/bin/zsh'])
+        with mock.patch('getpass.getuser', return_value='someone'):
+            installer.shell_apply(current, pending)
+        distro.sudo.assert_called_once_with('usermod', '--shell', '/usr/bin/zsh', 'someone')
+
+    def test_the_login_shell_is_done_once_set(self):
+        current = installer.Plan(fake_distro(), '45', {'core': {'login_shell': '/usr/bin/zsh'}}, [], ('core',))
+        with mock.patch.object(installer, 'login_shell', return_value='/usr/bin/zsh'):
+            self.assertEqual(installer.shell_pending(current), [])
+
+    def clone_plan(self):
+        clone = {'repo': 'https://example.com/p.git', 'commit': 'a' * 40, 'path': '.local/share/p'}
+        return installer.Plan(fake_distro(), '45', {'core': {'clones': [clone]}}, [], ('core',)), clone
+
+    def test_a_clone_is_pending_until_it_is_at_its_commit(self):
+        current, clone = self.clone_plan()
+        for head, expected in (('', ['.local/share/p']), ('b' * 40, ['.local/share/p']), ('a' * 40, [])):
+            with mock.patch.object(installer, 'clone_head', return_value=head):
+                self.assertEqual(installer.clones_pending(current), expected)
+
+    def test_a_clone_fetches_only_its_commit_as_the_user(self):
+        current, clone = self.clone_plan()
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, 'home', return_value=Path(home)), \
+                mock.patch('subprocess.run') as run:
+            installer.clones_apply(current, ['.local/share/p'])
+        commands = [call.args[0] for call in run.call_args_list]
+        self.assertEqual(commands[0][-2:], ('init', '-q'))
+        self.assertIn(('fetch', '-q', '--depth', '1', clone['repo'], clone['commit']), [c[3:] for c in commands])
+        self.assertEqual(commands[-1][-1], clone['commit'])
+        self.assertFalse([c for c in commands if 'sudo' in c])
 
     def test_stow_is_pending_until_it_exists(self):
         with mock.patch('shutil.which', return_value=None):

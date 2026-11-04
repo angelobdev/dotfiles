@@ -18,6 +18,7 @@
 - [Notifications](features/notifications.md)
 - [Theming](features/theming.md)
 - [AI assistant](features/ai-assistant.md)
+- [Terminal shell](features/shell.md)
 
 ## Development
 

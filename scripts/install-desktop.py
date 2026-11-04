@@ -8,6 +8,7 @@ import importlib
 import os
 from pathlib import Path
 import platform
+import pwd
 import shutil
 import subprocess
 import sys
@@ -144,6 +145,46 @@ def groups_apply(plan, groups):
         plan.distro.sudo('usermod', '-aG', group, getpass.getuser())
 
 
+def login_shell():
+    return pwd.getpwnam(getpass.getuser()).pw_shell
+
+
+def shell_pending(plan):
+    shell = setting(plan, 'login_shell')
+    return [shell] if shell and login_shell() != shell else []
+
+
+def shell_apply(plan, shells):
+    # usermod, not chsh: chsh is not on every edition, and it asks for the password again.
+    plan.distro.sudo('usermod', '--shell', shells[0], getpass.getuser())
+
+
+def clone_path(item):
+    return Path.home() / item['path']
+
+
+def clone_head(path):
+    result = query('git', '-C', str(path), 'rev-parse', 'HEAD')
+    return result.stdout.strip() if result.returncode == 0 else ''
+
+
+def clones_pending(plan):
+    return [item['path'] for item in merged(plan, 'clones') if clone_head(clone_path(item)) != item['commit']]
+
+
+def clones_apply(plan, paths):
+    # As the desktop user, into the home: pinned commits of what the distribution does not package.
+    for item in merged(plan, 'clones'):
+        if item['path'] not in paths:
+            continue
+        path = clone_path(item)
+        if not (path / '.git').exists():
+            path.mkdir(parents=True, exist_ok=True)
+            subprocess.run(('git', '-C', str(path), 'init', '-q'), check=True)
+        subprocess.run(('git', '-C', str(path), 'fetch', '-q', '--depth', '1', item['repo'], item['commit']), check=True)
+        subprocess.run(('git', '-C', str(path), '-c', 'advice.detachedHead=false', 'checkout', '-q', '--force', item['commit']), check=True)
+
+
 def services_pending(plan):
     enable = [unit for unit in merged(plan, 'services') if unit_state(unit) not in ('enabled', 'static', 'alias')]
     disable = [unit for unit in merged(plan, 'disable') if unit_state(unit) == 'enabled']
@@ -270,10 +311,12 @@ STEPS = (
     Step('packages', packages_pending, packages_apply),
     Step('files', files_pending, files_apply),
     Step('groups', groups_pending, groups_apply),
+    Step('shell', shell_pending, shell_apply),
     Step('services', services_pending, services_apply),
     Step('firewall', firewall_pending, firewall_apply),
     Step('auth', auth_pending, auth_apply),
     Step('stow', stow_pending, stow_apply),
+    Step('clones', clones_pending, clones_apply),
     Step('flatpak', flatpak_pending, flatpak_apply),
     Step('verify', verify_pending, verify_apply),
     Step('boot', boot_pending, boot_apply),

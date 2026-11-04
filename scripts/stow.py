@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import sys
 
-PACKAGES = ('hypr', 'quickshell', 'shell', 'hypridle', 'hyprlock', 'hyprpaper', 'gtk', 'kitty', 'fastfetch', 'portals', 'udiskie', 'electron')
+PACKAGES = ('hypr', 'quickshell', 'shell', 'hypridle', 'hyprlock', 'hyprpaper', 'gtk', 'kitty', 'fastfetch', 'portals', 'udiskie', 'electron', 'zsh')
 # Linked only when asked for (install-desktop.py profiles); remove unlinks them too.
 OPTIONAL = ('steam-hidpi',)
 ROOT = Path(__file__).resolve().parents[1]
