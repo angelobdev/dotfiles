@@ -182,7 +182,7 @@ GNOME's built-in control can use software brightness through Mutter, especially 
 
 The `udiskie` Stow package manages `~/.config/udiskie/config.yml`. `desktop-session start` launches one udiskie process alongside hyprpaper/hypridle, with logs in `~/.local/state/desktop-session/udiskie.log`; repeated startup does not create duplicate processes. `desktop-session status` includes udiskie.
 
-Automatic mounting and notifications are enabled, the tray icon is disabled, and system-internal disks are ignored. Notification browsing opens Nautilus; Quickshell displays the notifications using its existing notification server. Mounted drives normally appear under `/run/media/$USER/` and in Files. Use Files' eject control before unplugging a drive, or run `udiskie-umount --detach "/run/media/$USER/DRIVE_LABEL"` for a specific USB drive. Close files on the drive first.
+Automatic mounting and notifications are enabled, the tray icon appears only while a removable device is present (`tray: auto`, `appindicator: true`), and system-internal disks are ignored. Notification browsing opens Nautilus; Quickshell displays the notifications using its existing notification server. Mounted drives normally appear under `/run/media/$USER/` and in Files. Use Files' eject control before unplugging a drive, or run `udiskie-umount --detach "/run/media/$USER/DRIVE_LABEL"` for a specific USB drive. Close files on the drive first.
 
 After changing the udiskie configuration, restart only that daemon:
 

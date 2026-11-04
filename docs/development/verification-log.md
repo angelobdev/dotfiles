@@ -618,3 +618,8 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 
 - New `firmware` key of `hardware` (product, purpose, source, target, sha256, size) and `firmware` step after `files`; `--firmware DIR` names where to look. The blob is found by size and sha256, so the extracted SoftPaq works as well as a renamed copy: with `--firmware …/sp158489` the search returned `Driver/IshHeciExtension/FWImage/0003/ishC_0207.bin`. Fedora installs it as root with `restorecon`, then `dracut --force --regenerate-all`. Only the DMI product `HP OmniBook Ultra Flip Laptop 14-fh0xxx` gets it; a missing blob there is a warning, not a stop.
 - On this laptop the target already holds the blob with the expected hash, so the dry-run shows neither the step nor the warning. The missing and copied cases, another model, the order (install, then initramfs) and the warnings are covered by tests: 92 installer tests pass, and `check.sh` passes.
+
+## udiskie in the tray, 2026-11-05
+
+- `tray: auto` and `appindicator: true` in the udiskie config; `libayatana-appindicator-gtk3` joins `core` (on this laptop the legacy `libappindicator-gtk3`, from `gnome-shell-extension-appindicator`, already provided the typelib). Restarted from Hyprland, udiskie logged nothing and registered `/org/ayatana/NotificationItem/udiskie` with the StatusNotifierWatcher.
+- The bar tray showed every item, Passive ones too, which would have kept udiskie's icon there without devices; tray items with `Status.Passive` are now hidden (the StatusNotifierItem meaning of Passive). The shell restarted cleanly; the icon with a USB drive plugged in is still to be seen on screen.

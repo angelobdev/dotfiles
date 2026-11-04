@@ -2,7 +2,9 @@
 program_options:
   automount: true
   notify: true
-  tray: false
+  # Only while a removable device is there, as a StatusNotifierItem: the bar's tray reads those, not XEmbed icons.
+  tray: auto
+  appindicator: true
   file_manager: nautilus
 
 # Keep system disks outside the automounter's scope.

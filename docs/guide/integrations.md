@@ -111,7 +111,7 @@ While there are updates, an icon with their number shows in the bar; a notificat
 
 ## Removable drives and iPhone
 
-`desktop-session start` starts udiskie without a tray icon and activates `gvfs-afc-volume-monitor.service` in the user session. USB drives are automatically mounted through UDisks2; their notifications appear in Quickshell and Files handles browsing/ejection. Configuration is in the `udiskie` Stow package.
+`desktop-session start` starts udiskie and activates `gvfs-afc-volume-monitor.service` in the user session. USB drives are automatically mounted through UDisks2; their notifications appear in Quickshell and Files handles browsing/ejection. While a removable drive is connected, udiskie also shows a tray icon in the bar (`tray: auto`, as an AppIndicator from `libayatana-appindicator-gtk3`) whose menu mounts, unmounts, ejects and opens each device. Configuration is in the `udiskie` Stow package.
 
 An iPhone is not a USB block disk: GVfs/AFC provides access in Nautilus, while usbmuxd and libimobiledevice handle USB communication and pairing. Connect a data-capable cable, unlock the phone, and accept **Trust This Computer** on the device, including its passcode if requested. Open Files and select the iPhone or its Documents entry. The GPhoto2 backend can also expose photos/camera content. Availability depends on iOS and the services/apps exposed by the phone; AFC does not grant access to the entire iOS filesystem, and app documents require the app's file-sharing support. No jailbreak or iOS modification is configured.
 

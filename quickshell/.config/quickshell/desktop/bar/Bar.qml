@@ -183,6 +183,8 @@ PanelWindow {
             Item {
                 id: trayItem
                 required property var modelData
+                // Passive means nothing to show right now (udiskie with no removable device, for one).
+                visible: modelData.status !== Status.Passive
                 implicitWidth: Theme.hit(28)
                 implicitHeight: Theme.hit(28)
                 Accessible.role: Accessible.Button

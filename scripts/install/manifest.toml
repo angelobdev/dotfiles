@@ -88,7 +88,8 @@ packages = [
     'gnome-online-accounts-gtk', 'matugen', 'jq', 'ripgrep', 'grim', 'slurp', 'wl-clipboard', 'cliphist',
     'wf-recorder', 'btop', 'fastfetch', 'flatpak', 'xdg-user-dirs', 'xdg-utils', 'dconf',
     # Drives and phones.
-    'udiskie', 'udisks2', 'gvfs', 'gvfs-afc', 'gvfs-gphoto2', 'usbmuxd', 'libimobiledevice-utils',
+    # udiskie's tray icon is an AppIndicator (StatusNotifierItem) for the bar's tray.
+    'udiskie', 'libayatana-appindicator-gtk3', 'udisks2', 'gvfs', 'gvfs-afc', 'gvfs-gphoto2', 'usbmuxd', 'libimobiledevice-utils',
     # Look.
     'qt5ct', 'qt6ct', 'qt6-qtsvg', 'qt6-qtimageformats', 'papirus-icon-theme', 'adwaita-icon-theme', 'adw-gtk3-theme',
     'adwaita-cursor-theme', 'fontconfig', 'adwaita-sans-fonts', 'adwaita-mono-fonts',
