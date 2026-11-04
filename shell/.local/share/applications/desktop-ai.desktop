@@ -1,8 +1,8 @@
 [Desktop Entry]
 Name=AI assistant
 Comment=Claude Code with voice dictation
-Exec=/home/angelo/.local/bin/desktop-ai
-TryExec=/home/angelo/.local/bin/desktop-ai
+Exec=desktop-ai
+TryExec=desktop-ai
 Icon=desktopai
 Terminal=false
 Type=Application

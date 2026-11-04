@@ -7,6 +7,14 @@ hl.env("QT_QPA_PLATFORMTHEME", "qt5ct")
 hl.env("QT_QUICK_CONTROLS_STYLE", "Basic")
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")
 
+-- The desktop commands, for the shell and everything it starts: desktop entries name them without a path,
+-- since an entry cannot spell the home of whoever installs it. The check keeps reloads from repeating it.
+local bin = os.getenv("HOME") .. "/.local/bin"
+local path = os.getenv("PATH") or "/usr/local/bin:/usr/bin"
+if not (":" .. path .. ":"):find(":" .. bin .. ":", 1, true) then
+    hl.env("PATH", bin .. ":" .. path)
+end
+
 hl.env("XDG_SESSION_TYPE", "wayland")
 hl.env("XDG_CURRENT_DESKTOP", "Hyprland")
 

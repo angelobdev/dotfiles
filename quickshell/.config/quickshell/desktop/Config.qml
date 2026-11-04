@@ -10,6 +10,9 @@ QtObject {
     readonly property int clipboardMaxItems: 200
     readonly property int recordingFramerate: 30
     readonly property string recordingCodec: "libvpx-vp9"
+    // Desktop-entry IDs the launcher leaves out: GNOME Settings (GDM needs it, it runs only in GNOME) and the
+    // OpenCASCADE tool that the plugin build dependencies bring, and the uwsm unit menu.
+    readonly property var launcherHidden: ["org.gnome.Settings", "opencascade-draw", "uuctl"]
     // Dock: desktop-entry IDs pinned in this order, a reveal strip along the bottom edge (logical px) and its hover delay (ms).
     readonly property bool dockEnabled: true
     readonly property var dockPinned: ["kitty", "zen-browser", "org.gnome.Nautilus", "com.microsoft.VSCode", "steam"]

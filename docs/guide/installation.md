@@ -20,6 +20,7 @@ Verified versions: Hyprland 0.57.1, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | `udiskie` | Removable-drive automounting, Quickshell notifications, and no external tray icon |
 | `portals` | XDG preferences: Hyprland for capture/sharing, GTK for files and settings |
 | `electron` | `~/.config/electron-flags.conf` (Wayland and IME flags) and `~/.config/desktop/electron-apps.conf` (the apps that get them through `electron.py`) |
+| `steam-hidpi` | Optional: `~/.local/share/applications/steam.desktop`, Steam through `desktop-steam` (only with `--with steam-hidpi`) |
 
 ## Automated installation
 
@@ -30,7 +31,7 @@ sudo dnf install -y git-core python3
 git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
 cd ~/.dotfiles
 ./scripts/install-desktop.py                                 # preview: changes nothing
-./scripts/install-desktop.py apply                           # add --profiles core,hardware,plugins,apps for the apps
+./scripts/install-desktop.py apply                           # or --profiles core,hardware,plugins,apps,codecs, …
 sudo systemctl reboot
 ```
 
@@ -40,10 +41,15 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 | --- | --- |
 | `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls |
 | `hardware` | Firmware, video decoding and sensors of an Intel 2-in-1, fingerprint and [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), firewall zone, `sshd` off |
-| `plugins` | What building the [Hyprland plugins](plugins.md) needs, from RPM Fusion too |
-| `apps` | Personal apps: browsers, editors, Steam, Docker, Tailscale, Flatpaks. Only when asked for |
+| `plugins` | What building the [Hyprland plugins](plugins.md) needs, from RPM Fusion too; the RPM Fusion `ffmpeg` replaces `ffmpeg-free` |
+| `apps` | Zen Browser, 1Password, VS Code, Neovim, `gh`, `glab`, `uv`, `gcc`, `fzf`, zsh and a few command-line tools |
+| `containers` | Docker (`moby-engine`, `docker-compose`, the `docker` group) and Tailscale |
+| `media` | Loupe, Papers and Showtime for images, PDFs and videos |
+| `gaming` | Steam, gamescope and the 32-bit drivers games need; see [Gaming](#gaming) |
+| `steam-hidpi` | The Steam launcher that scales the client for the monitor it opens on (the optional `steam-hidpi` Stow package) |
+| `codecs` | The RPM Fusion codecs: `ffmpeg` and `intel-media-driver` replace `ffmpeg-free` and `libva-intel-media-driver`, plus the GStreamer freeworld plugins, libav, OpenH264, HEIF and aptX |
 
-The default is `core,hardware,plugins`. The manifest is the only list of packages: a new dependency goes there.
+The default is `core,hardware,plugins`; the others are opt-in. No Flatpak is installed: Flathub is yours to choose from. GDM needs GNOME Shell and GNOME Settings; the extras they recommend (Tour, Parental Controls, Color Profile Viewer, remote desktop, Rygel) are kept out. The manifest is the only list of packages: a new dependency goes there.
 
 After the reboot, sign in at GDM. A terminal opens by itself and runs `install-desktop.py post`, which builds the plugins (hyprpm asks for confirmation) and lists what is left by hand. If it fails it comes back at the next login; to run it yourself, press `Super + Return`.
 
@@ -65,11 +71,11 @@ systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-
 ~/.local/bin/desktop-shell restart
 ```
 
-The repository is the source of the files; Stow creates symlinks without directory folding. `dry-run` writes nothing and reports conflicts as errors. `apply` backs up conflicting files to `~/.local/state/dotfiles/backups/<timestamp>/`, simulates the operation, then applies the links. It rejects symlinked parent directories. Run `apply` again after adding files. Do not use sudo with Stow.
+The repository is the source of the files; Stow creates symlinks without directory folding. `dry-run` writes nothing and reports conflicts as errors. `--with steam-hidpi` also links that optional package. `apply` backs up conflicting files to `~/.local/state/dotfiles/backups/<timestamp>/`, simulates the operation, then applies the links. It rejects symlinked parent directories. Run `apply` again after adding files. Do not use sudo with Stow.
 
 Multilingual support uses the existing Qt and Python installations, with no additional dependencies. The shell language comes from `/etc/locale.conf`; see [Interface language](configuration.md#interface-language) for details and catalogs.
 
-Packages use standard XDG paths under `$HOME`. The `desktop-ai` and Steam desktop launchers contain `/home/angelo`: update them when installing for another user. The Fedora night wallpaper is included as JPEG in `hyprpaper/.local/share/wallpapers`, converted from the JPEG XL image of Fedora's `f44-backgrounds-base` because this hyprpaper build cannot decode it; the CC BY-SA 4.0 license and Fedora attribution are included next to it.
+Packages use standard XDG paths under `$HOME`, and nothing names a user: desktop entries call `desktop-*` commands by name, found through the `PATH` that `hypr/config/session.lua` extends with `~/.local/bin`. The Fedora night wallpaper is included as JPEG in `hyprpaper/.local/share/wallpapers`, converted from the JPEG XL image of Fedora's `f44-backgrounds-base` because this hyprpaper build cannot decode it; the CC BY-SA 4.0 license and Fedora attribution are included next to it.
 
 Removable drives use udiskie; iPhone access uses GVfs/AFC and usbmuxd. See [Removable drives and iPhone](integrations.md#removable-drives-and-iphone). The usbmuxd system service is activated by device discovery; no manual service enablement is required.
 
@@ -85,7 +91,7 @@ It installs `/usr/local/libexec/desktop-tablet-mode` (succeeds only while `$XDG_
 
 ## Gaming
 
-The `apps` profile installs the RPM Steam client, gamescope, `gcc` (the C compiler used to cache the optional renderer scaling workaround) and the 32-bit Mesa Vulkan drivers and `vulkan-loader` that 32-bit Intel games need. See [Steam and gamescope](integrations.md#steam-and-gamescope) for the local launcher and per-game launch options. Run Stow after adding these launchers, then completely exit and reopen Steam.
+The `gaming` profile installs the RPM Steam client, gamescope, `gcc` (the C compiler used to cache the optional renderer scaling workaround) and the 32-bit Mesa Vulkan drivers and `vulkan-loader` that 32-bit Intel games need. The `steam-hidpi` profile adds the launcher that scales Steam for the monitor; by hand, `./scripts/stow.py apply --with steam-hidpi` links it and `./scripts/stow.py remove` unlinks it with the rest. See [Steam and gamescope](integrations.md#steam-and-gamescope) for the launcher and per-game launch options. Completely exit and reopen Steam after linking it.
 
 ## Compositor plugins
 

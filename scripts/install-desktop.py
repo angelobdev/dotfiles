@@ -15,13 +15,11 @@ import tomllib
 
 REPO = Path(__file__).resolve().parent.parent
 INSTALL = REPO / 'scripts/install'
-PROFILES = ('core', 'hardware', 'plugins', 'apps')
+PROFILES = ('core', 'hardware', 'plugins', 'apps', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs')
 DEFAULT_PROFILES = 'core,hardware,plugins'
 MIN_FREE = 30 * 2**30
 SESSION = 'hyprland-uwsm'
 FLATHUB = 'https://dl.flathub.org/repo/flathub.flatpakrepo'
-# The Steam and assistant launchers name this home.
-EXPECTED_HOME = Path('/home/angelo')
 AUTOSTART = Path.home() / '.config/autostart/desktop-finish-install.desktop'
 STAMP = Path.home() / '.local/state/dotfiles/hypr-plugins.json'
 ACCOUNTS = 'org.freedesktop.Accounts'
@@ -99,12 +97,32 @@ def upgrade_apply(plan, items):
     plan.distro.upgrade()
 
 
+def swaps(plan):
+    return [tuple(pair) for pair in merged(plan, 'swaps')]
+
+
+def wanted_packages(plan):
+    # A swapped package is replaced, never installed: its replacement takes its place.
+    old = {pair[0] for pair in swaps(plan)}
+    return [package for package in merged(plan, 'packages') + [pair[1] for pair in swaps(plan)] if package not in old]
+
+
+def swaps_pending(plan):
+    return [f'{old} -> {new}' for old, new in swaps(plan) if plan.distro.installed(old)]
+
+
+def swaps_apply(plan, items):
+    for old, new in swaps(plan):
+        if f'{old} -> {new}' in items:
+            plan.distro.swap(old, new)
+
+
 def packages_pending(plan):
-    return plan.distro.missing(merged(plan, 'packages'))
+    return plan.distro.missing(list(dict.fromkeys(wanted_packages(plan))))
 
 
 def packages_apply(plan, packages):
-    plan.distro.install(packages)
+    plan.distro.install(packages, merged(plan, 'exclude'))
 
 
 def files_pending(plan):
@@ -159,10 +177,15 @@ def auth_apply(plan, items):
     plan.distro.auth_apply(items, REPO / 'scripts/tablet-auth.sh')
 
 
+def stow_command(plan, action):
+    extra = [argument for name in merged(plan, 'stow') for argument in ('--with', name)]
+    return (str(REPO / 'scripts/stow.py'), action, *extra)
+
+
 def stow_pending(plan):
     if not shutil.which('stow'):
         return ['every package: GNU Stow is not installed yet']
-    result = query(str(REPO / 'scripts/stow.py'), 'dry-run')
+    result = query(*stow_command(plan, 'dry-run'))
     if result.returncode:
         raise RuntimeError('stow.py dry-run failed: ' + (result.stderr or result.stdout).strip()[-300:])
     lines = (result.stdout + result.stderr).splitlines()
@@ -171,7 +194,7 @@ def stow_pending(plan):
 
 def stow_apply(plan, items):
     # Never with sudo: the links belong to the desktop user.
-    subprocess.run((str(REPO / 'scripts/stow.py'), 'apply'), check=True)
+    subprocess.run(stow_command(plan, 'apply'), check=True)
 
 
 def flatpak_pending(plan):
@@ -242,6 +265,8 @@ def boot_apply(plan, items):
 STEPS = (
     Step('repos', repos_pending, repos_apply),
     Step('upgrade', upgrade_pending, upgrade_apply),
+    # Before packages: a package that needs the replacement would conflict with what it replaces.
+    Step('swaps', swaps_pending, swaps_apply),
     Step('packages', packages_pending, packages_apply),
     Step('files', files_pending, files_apply),
     Step('groups', groups_pending, groups_apply),
@@ -288,8 +313,6 @@ def preflight(plan):
         source = query('findmnt', '-no', 'SOURCE', '/').stdout.strip()
         grow = f' Grow it with: sudo lvextend -r -l +100%FREE {source}' if source.startswith('/dev/mapper/') else ''
         warnings.append(f'Only {free // 2**30} GiB free on /.{grow}')
-    if Path.home() != EXPECTED_HOME:
-        warnings.append(f'The desktop-ai and steam launchers name {EXPECTED_HOME}: edit them for {Path.home()}.')
     if setting(plan, 'auth') and plan.distro.auth_base() not in ('local', plan.distro.AUTH_PROFILE):
         warnings.append(f'The auth step expects the local authselect profile, found "{plan.distro.auth_base()}".')
     for warning in warnings:

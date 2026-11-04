@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Steam
 Comment=Steam client with monitor-aware UI scaling
-Exec=/home/angelo/.local/bin/desktop-steam %U
+Exec=desktop-steam %U
 TryExec=/usr/bin/steam
 Icon=steam
 Terminal=false
@@ -15,36 +15,36 @@ Actions=Store;Community;Library;Servers;Screenshots;News;Settings;BigPicture;Fri
 
 [Desktop Action Store]
 Name=Store
-Exec=/home/angelo/.local/bin/desktop-steam steam://store
+Exec=desktop-steam steam://store
 
 [Desktop Action Community]
 Name=Community
-Exec=/home/angelo/.local/bin/desktop-steam steam://url/CommunityHome/
+Exec=desktop-steam steam://url/CommunityHome/
 
 [Desktop Action Library]
 Name=Library
-Exec=/home/angelo/.local/bin/desktop-steam steam://open/games
+Exec=desktop-steam steam://open/games
 
 [Desktop Action Servers]
 Name=Servers
-Exec=/home/angelo/.local/bin/desktop-steam steam://open/servers
+Exec=desktop-steam steam://open/servers
 
 [Desktop Action Screenshots]
 Name=Screenshots
-Exec=/home/angelo/.local/bin/desktop-steam steam://open/screenshots
+Exec=desktop-steam steam://open/screenshots
 
 [Desktop Action News]
 Name=News
-Exec=/home/angelo/.local/bin/desktop-steam steam://openurl/https://store.steampowered.com/news
+Exec=desktop-steam steam://openurl/https://store.steampowered.com/news
 
 [Desktop Action Settings]
 Name=Settings
-Exec=/home/angelo/.local/bin/desktop-steam steam://open/settings
+Exec=desktop-steam steam://open/settings
 
 [Desktop Action BigPicture]
 Name=Big Picture
-Exec=/home/angelo/.local/bin/desktop-steam steam://open/bigpicture
+Exec=desktop-steam steam://open/bigpicture
 
 [Desktop Action Friends]
 Name=Friends
-Exec=/home/angelo/.local/bin/desktop-steam steam://open/friends
+Exec=desktop-steam steam://open/friends

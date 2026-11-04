@@ -9,11 +9,15 @@ import subprocess
 import sys
 
 PACKAGES = ('hypr', 'quickshell', 'shell', 'hypridle', 'hyprlock', 'hyprpaper', 'gtk', 'kitty', 'fastfetch', 'portals', 'udiskie', 'electron')
+# Linked only when asked for (install-desktop.py profiles); remove unlinks them too.
+OPTIONAL = ('steam-hidpi',)
 ROOT = Path(__file__).resolve().parents[1]
 parser = ArgumentParser(description=__doc__)
 parser.add_argument('action', choices=('dry-run', 'apply', 'remove'))
+parser.add_argument('--with', dest='optional', action='append', default=[], choices=OPTIONAL, help='also link this optional package')
 parser.add_argument('--target', type=Path, default=Path.home(), help='Stow target (default: home)')
 args = parser.parse_args()
+selected = (*PACKAGES, *dict.fromkeys(args.optional))
 target = args.target.expanduser().absolute()
 if not target.is_dir():
     parser.error(f'Target directory does not exist: {target}')
@@ -22,10 +26,10 @@ if not shutil.which('stow'):
 
 command = ['stow', '--dir', str(ROOT), '--target', str(target), '--no-folding', '--verbose', r'--ignore=__pycache__|\.py[co]$']
 if args.action == 'remove':
-    sys.exit(subprocess.call(command + ['--delete', *PACKAGES]))
+    sys.exit(subprocess.call(command + ['--delete', *PACKAGES, *OPTIONAL]))
 
 conflicts = []
-for package in PACKAGES:
+for package in selected:
     package_root = ROOT / package
     for source in sorted(package_root.rglob('*')):
         if source.is_dir() or '__pycache__' in source.parts or source.suffix in ('.pyc', '.pyo'):
@@ -47,7 +51,7 @@ for package in PACKAGES:
 if args.action == 'dry-run':
     for path in conflicts:
         print(f'Will back up on apply: {path}', flush=True)
-    sys.exit(subprocess.call(command + ['--simulate', '--stow', *PACKAGES]))
+    sys.exit(subprocess.call(command + ['--simulate', '--stow', *selected]))
 
 backup = None
 moved = []
@@ -62,8 +66,8 @@ try:
             moved.append((path, saved))
         print(f'Backup: {backup}', flush=True)
     # Check the entire transaction before creating any links.
-    subprocess.run(command + ['--simulate', '--stow', *PACKAGES], check=True)
-    subprocess.run(command + ['--stow', *PACKAGES], check=True)
+    subprocess.run(command + ['--simulate', '--stow', *selected], check=True)
+    subprocess.run(command + ['--stow', *selected], check=True)
 except (OSError, subprocess.CalledProcessError):
     for original, saved in reversed(moved):
         # Never overwrite a new file that appeared while Stow was running.

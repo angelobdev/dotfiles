@@ -21,7 +21,7 @@ if command -v cc >/dev/null; then
     cc -Wall -Wextra -Werror -shared -fPIC -O2 -o /dev/null "$repo/shell/.local/libexec/desktop/steam-scale.c" -ldl
 fi
 if command -v desktop-file-validate >/dev/null; then
-    desktop-file-validate --no-hints "$repo"/shell/.local/share/applications/*.desktop
+    desktop-file-validate --no-hints "$repo"/shell/.local/share/applications/*.desktop "$repo"/steam-hidpi/.local/share/applications/*.desktop
 fi
 # Quickshell ships no qmltypes: skip type-resolution categories, keep syntax and QML errors.
 qmllint=/usr/lib64/qt6/bin/qmllint

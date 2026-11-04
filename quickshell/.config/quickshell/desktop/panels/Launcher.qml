@@ -86,7 +86,7 @@ Overlay {
                 highlightMoveDuration: Theme.motionNormal
                 highlightMoveVelocity: -1
                 highlightResizeDuration: 0
-                model: DesktopEntries.applications.values.filter(e => !e.noDisplay && (e.name + " " + e.genericName + " " + e.keywords.join(" ")).toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name))
+                model: DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (e.name + " " + e.genericName + " " + e.keywords.join(" ")).toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name))
                 delegate: ActionButton {
                     id: row
                     required property var modelData

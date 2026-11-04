@@ -25,8 +25,18 @@ def missing(packages):
     return [line.removeprefix(prefix) for line in lines if line.startswith(prefix)]
 
 
-def install(packages):
-    sudo('dnf', 'install', '-y', *packages)
+def installed(package):
+    # By name, not --whatprovides: a replacement often provides the name of what it replaces.
+    return query('rpm', '-q', package).returncode == 0
+
+
+def install(packages, exclude=()):
+    sudo('dnf', 'install', '-y', *(['--exclude=' + ','.join(exclude)] if exclude else []), *packages)
+
+
+def swap(old, new):
+    # --allowerasing: the replacement conflicts with what it replaces and with the packages built against it.
+    sudo('dnf', 'swap', '-y', '--allowerasing', old, new)
 
 
 def upgrades_pending():

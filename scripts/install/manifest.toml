@@ -3,7 +3,10 @@
 # A distribution with no table here is refused as not verified. Porting one means adding a table with the same
 # profile keys and a module with the functions of fedora.py, using package names checked on that distribution.
 #
-# Profile keys: repos, packages, services, user_services, disable, files, groups, flatpaks, firewall_zone, auth, notes.
+# Profile keys: repos, packages, swaps, services, user_services, disable, files, groups, stow, flatpaks, firewall_zone, auth, notes.
+# swaps: [old, new] pairs; new replaces old where old is installed, and old is never installed alongside it.
+# stow: optional Stow packages (scripts/stow.py --with).
+# exclude: packages kept out of every install, such as the weak dependencies of GNOME Shell that GDM brings.
 
 # The desktop itself, whatever the distribution calls its packages.
 [verify]
@@ -61,17 +64,6 @@ gpgcheck=1
 gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 '''
 
-[fedora.repos.google-chrome]
-kind = 'file'
-file = 'google-chrome.repo'
-content = '''
-[google-chrome]
-name=google-chrome
-baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
-enabled=1
-gpgcheck=1
-gpgkey=https://dl.google.com/linux/linux_signing_key.pub
-'''
 
 # The desktop: everything the session, the shell and its panels call.
 [fedora.core]
@@ -104,17 +96,18 @@ packages = [
 services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service']
 # Has no D-Bus activation: passwords are stored nowhere until it runs, and pam_oo7 waits for it at login.
 user_services = ['oo7-daemon.service']
+# Recommended by gnome-shell and gnome-control-center, which GDM requires; none of them works outside GNOME or is used here.
+exclude = ['gnome-tour', 'malcontent-control', 'gnome-color-manager', 'gnome-remote-desktop', 'rygel']
 disable = ['cockpit.socket']
 notes = ['Sign in to your calendars with gnome-online-accounts-gtk.']
 
 # This laptop: an HP OmniBook Ultra Flip. Most of it suits any recent Intel 2-in-1.
 [fedora.hardware]
-repos = ['rpmfusion-free', 'rpmfusion-nonfree']
 packages = [
     'iwlwifi-mvm-firmware', 'iwlbluetooth-firmware', 'intel-gpu-firmware', 'intel-vsc-firmware', 'intel-npu-firmware',
     'intel-audio-firmware', 'cirrus-audio-firmware', 'alsa-sof-firmware', 'alsa-ucm', 'alsa-utils',
-    'intel-vpl-gpu-rt', 'libvpl', 'libva-utils', 'libva-intel-media-driver', 'intel-media-driver',
-    'pipewire-codec-aptx', 'libcamera', 'libcamera-ipa', 'pipewire-plugin-libcamera',
+    'intel-vpl-gpu-rt', 'libvpl', 'libva-utils', 'libva-intel-media-driver',
+    'libcamera', 'libcamera-ipa', 'pipewire-plugin-libcamera',
     'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'iio-sensor-proxy', 'libwacom', 'fprintd', 'fprintd-pam',
 ]
 services = ['thermald.service', 'intel_lpmd.service']
@@ -139,26 +132,19 @@ packages = [
     'qt6-qtsvg-devel', 'qt6-qtwayland-devel', 'layer-shell-qt-devel', 'opencv-devel', 'pipewire-devel',
     'pulseaudio-libs-devel', 'fftw-devel', 'ffmpeg', 'ffmpeg-devel', 'x265-devel', 'libde265-devel',
 ]
+# ffmpeg-devel needs the RPM Fusion ffmpeg, which conflicts with the ffmpeg-free that Workstation ships.
+swaps = [['ffmpeg-free', 'ffmpeg']]
 
-# Personal apps, only with --profiles ...,apps.
+# Everything below is opt-in: add the profile to --profiles.
+
+# Personal apps.
 [fedora.apps]
-repos = ['zen', 'rpmfusion-free', 'rpmfusion-nonfree', '1password', 'vscode', 'google-chrome']
+repos = ['zen', 'rpmfusion-free', 'rpmfusion-nonfree', '1password', 'vscode']
 packages = [
-    'zen-browser', 'google-chrome-stable', '1password', 'code', 'loupe', 'papers', 'gnome-text-editor', 'showtime',
-    'steam', 'gamescope', 'gcc', 'mesa-dri-drivers(x86-32)', 'mesa-vulkan-drivers(x86-32)', 'vulkan-loader(x86-32)',
-    'moby-engine', 'docker-compose', 'tailscale', 'gh', 'glab', 'neovim', 'zsh', 'fzf', 'uv', 'freerdp',
-    'xclip', 'wev', 'unrar', 'fuse-libs', 'gstreamer1-plugins-bad-freeworld', 'gstreamer1-plugins-ugly',
-    'libheif-freeworld',
-]
-services = ['docker.service', 'tailscaled.service']
-groups = ['docker']
-flatpaks = [
-    'com.github.flxzt.rnote', 'com.github.tchx84.Flatseal', 'com.github.xournalpp.xournalpp',
-    'com.modrinth.ModrinthApp', 'com.usebottles.bottles', 'io.github.chidiwilliams.Buzz',
-    'it.mijorus.gearlever', 'org.localsend.localsend_app',
+    'zen-browser', '1password', 'code', 'neovim', 'gh', 'glab', 'uv', 'gcc', 'fzf', 'zsh',
+    'xclip', 'wev', 'unrar', 'fuse-libs',
 ]
 notes = [
-    'Connect Tailscale: sudo tailscale up',
     'Sign in to GitHub: gh auth login',
     'Change your login shell: chsh -s /usr/bin/zsh',
     'Install Claude Code from its own installer: Super + A tells you when it is missing',
@@ -169,3 +155,32 @@ path = '/etc/1password/custom_allowed_browsers'
 content = '''
 zen-bin
 '''
+
+# Docker and Tailscale.
+[fedora.containers]
+packages = ['moby-engine', 'docker-compose', 'tailscale']
+services = ['docker.service', 'tailscaled.service']
+groups = ['docker']
+notes = ['Connect Tailscale: sudo tailscale up']
+
+# GNOME viewers for images, PDFs and videos.
+[fedora.media]
+packages = ['loupe', 'papers', 'showtime']
+
+# Steam, gamescope, and what 32-bit Intel games need. gcc caches the optional renderer scaling workaround.
+[fedora.gaming]
+repos = ['rpmfusion-free', 'rpmfusion-nonfree']
+packages = ['steam', 'gamescope', 'gcc', 'mesa-dri-drivers(x86-32)', 'mesa-vulkan-drivers(x86-32)', 'vulkan-loader(x86-32)']
+
+# A Steam launcher that scales the client for the monitor it opens on (desktop-steam).
+[fedora.steam-hidpi]
+stow = ['steam-hidpi']
+
+# Patent-encumbered codecs from RPM Fusion in place of the free builds Fedora ships.
+[fedora.codecs]
+repos = ['rpmfusion-free', 'rpmfusion-nonfree']
+packages = [
+    'gstreamer1-plugins-bad-freeworld', 'gstreamer1-plugins-ugly', 'gstreamer1-plugin-libav', 'gstreamer1-plugin-openh264',
+    'libheif-freeworld', 'pipewire-codec-aptx',
+]
+swaps = [['ffmpeg-free', 'ffmpeg'], ['libva-intel-media-driver', 'intel-media-driver']]

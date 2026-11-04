@@ -8,7 +8,7 @@ import signal
 import sys
 from gi.repository import Gio, GLib, GLibUnix
 
-PATH = '/org/angelo/Desktop/BluetoothAgent'
+PATH = '/org/dotfiles/Desktop/BluetoothAgent'
 XML = '''<node><interface name="org.bluez.Agent1">
 <method name="Release"/><method name="Cancel"/>
 <method name="RequestPinCode"><arg type="o" direction="in"/><arg type="s" direction="out"/></method>

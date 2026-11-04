@@ -18,12 +18,12 @@ spec.loader.exec_module(installer)
 import fedora  # noqa: E402
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
-PROFILE_KEYS = {'repos', 'packages', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes'}
+PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes'}
 TABLE = {
     'repos': {'one': {'kind': 'copr', 'name': 'a/b'}},
-    'core': {'repos': ['one'], 'packages': ['a', 'b'], 'services': ['s.service'], 'user_services': ['u.service'],
+    'core': {'repos': ['one'], 'packages': ['a', 'b'], 'exclude': ['tour'], 'services': ['s.service'], 'user_services': ['u.service'],
              'disable': ['d.socket'], 'files': [{'path': '/etc/x', 'content': '\nx\n'}], 'groups': ['g'], 'notes': ['first']},
-    'plugins': {'packages': ['b', 'c'], 'flatpaks': ['org.example.App'], 'firewall_zone': 'Zone', 'auth': True,
+    'plugins': {'packages': ['b', 'c', 'old'], 'swaps': [['old', 'new']], 'stow': ['extra'], 'flatpaks': ['org.example.App'], 'firewall_zone': 'Zone', 'auth': True,
                 'notes': ['second']},
 }
 
@@ -36,7 +36,9 @@ def fake_distro(pending=True):
     distro = mock.Mock(ADMIN_GROUP='wheel', AUTH_PROFILE='custom/desktop-tablet')
     distro.repo_missing.return_value = pending
     distro.upgrades_pending.return_value = pending
-    distro.missing.return_value = ['a'] if pending else []
+    # Still to do: every package is missing but the one a swap replaces. Done: that one is gone, the rest is there.
+    distro.missing.side_effect = lambda packages: [package for package in packages if (package != 'old') == pending]
+    distro.installed.side_effect = lambda package: package != 'old' or pending
     distro.file_differs.return_value = pending
     distro.auth_pending.return_value = ['with-fingerprint'] if pending else []
     distro.auth_base.return_value = 'local'
@@ -62,14 +64,14 @@ class ManifestTests(unittest.TestCase):
 
     def test_no_package_is_named_twice(self):
         for profile in self.profiles:
-            self.assertEqual(len(profile['packages']), len(set(profile['packages'])))
+            self.assertEqual(len(profile.get('packages', ())), len(set(profile.get('packages', ()))))
 
     def test_the_login_depends_on_these_being_named(self):
         for package in ('gdm', 'hyprland-uwsm', 'dbus-tools', 'accountsservice', 'qt6-qtsvg', 'quickshell', 'stow'):
             self.assertIn(package, self.fedora['core']['packages'])
 
     def test_names_that_are_wrong_on_fedora_stay_out(self):
-        packages = {package for profile in self.profiles for package in profile['packages']}
+        packages = {package for profile in self.profiles for package in profile.get('packages', ())}
         self.assertFalse(packages & {'power-profiles-daemon', 'f44-backgrounds-base', 'nlohmann-json-devel', 'sof-firmware'})
 
     def test_passwords_have_a_service_on_every_edition(self):
@@ -78,7 +80,19 @@ class ManifestTests(unittest.TestCase):
         self.assertIn('oo7-daemon.service', self.fedora['core']['user_services'])
 
     def test_personal_apps_are_opt_in(self):
-        self.assertNotIn('apps', installer.DEFAULT_PROFILES.split(','))
+        for profile in ('apps', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs'):
+            self.assertNotIn(profile, installer.DEFAULT_PROFILES.split(','))
+
+    def test_no_flatpak_is_installed_for_you(self):
+        self.assertFalse([profile for profile in self.profiles if profile.get('flatpaks')])
+
+    def test_optional_stow_packages_exist(self):
+        for name in (name for profile in self.profiles for name in profile.get('stow', ())):
+            self.assertTrue((REPO / name).is_dir(), name)
+
+    def test_swaps_are_pairs(self):
+        for pair in (pair for profile in self.profiles for pair in profile.get('swaps', ())):
+            self.assertEqual(len(pair), 2)
 
 
 class RefusalTests(unittest.TestCase):
@@ -93,7 +107,7 @@ class RefusalTests(unittest.TestCase):
     def test_the_verify_table_is_not_a_distribution(self):
         self.assert_refused({'ID': 'verify', 'VERSION_ID': '1'}, 'not verified')
 
-    def test_this_fedora_44_laptop(self):
+    def test_an_older_fedora(self):
         self.assert_refused({'ID': 'fedora', 'VERSION_ID': '44'}, 'fedora 44 is not verified')
 
     def test_a_verified_release_loads_its_module(self):
@@ -150,8 +164,8 @@ class WarningTests(unittest.TestCase):
     def test_a_small_root_elsewhere_gets_no_lvm_command(self):
         self.assertNotIn('lvextend', self.warnings(10 * 2**30, '/dev/nvme0n1p3'))
 
-    def test_another_home(self):
-        self.assertIn('/home/angelo', self.warnings(40 * 2**30, home='/home/someone'))
+    def test_another_home_says_nothing(self):
+        self.assertEqual(self.warnings(40 * 2**30, home='/home/someone'), '')
 
     def test_an_unexpected_auth_profile(self):
         self.assertIn('sssd', self.warnings(40 * 2**30, base='sssd'))
@@ -203,7 +217,7 @@ class StepTests(unittest.TestCase):
             self.addCleanup(patcher.stop)
 
     def test_profiles_merge_in_order_without_repeats(self):
-        self.assertEqual(installer.merged(plan(fake_distro()), 'packages'), ['a', 'b', 'c'])
+        self.assertEqual(installer.merged(plan(fake_distro()), 'packages'), ['a', 'b', 'c', 'old'])
 
     def test_a_tool_that_is_not_installed_yet_is_an_empty_answer(self):
         result = installer.query('this-command-does-not-exist-here')
@@ -237,9 +251,36 @@ class StepTests(unittest.TestCase):
     def test_stow_never_runs_under_sudo(self):
         distro = fake_distro()
         with mock.patch('subprocess.run') as run:
-            installer.stow_apply(plan(distro), ['LINK: a'])
+            installer.stow_apply(plan(distro, profiles=('core',)), ['LINK: a'])
         self.assertEqual(run.call_args.args[0], (str(REPO / 'scripts/stow.py'), 'apply'))
         distro.sudo.assert_not_called()
+
+    def test_stow_links_the_optional_packages_of_the_profiles(self):
+        with mock.patch('subprocess.run') as run:
+            installer.stow_apply(plan(fake_distro(), profiles=('core', 'plugins')), ['LINK: a'])
+        self.assertEqual(run.call_args.args[0], (str(REPO / 'scripts/stow.py'), 'apply', '--with', 'extra'))
+
+    def test_a_swapped_package_is_replaced_never_installed(self):
+        current = plan(fake_distro())
+        self.assertEqual(installer.wanted_packages(current), ['a', 'b', 'c', 'new'])
+        self.assertEqual(installer.swaps_pending(current), ['old -> new'])
+
+    def test_a_swap_is_done_once_the_old_package_is_gone(self):
+        self.assertEqual(installer.swaps_pending(plan(fake_distro(pending=False))), [])
+
+    def test_swaps_come_before_the_packages(self):
+        titles = [step.title for step in installer.STEPS]
+        self.assertLess(titles.index('swaps'), titles.index('packages'))
+
+    def test_the_install_keeps_the_excluded_packages_out(self):
+        distro = fake_distro()
+        installer.packages_apply(plan(distro), ['a'])
+        distro.install.assert_called_once_with(['a'], ['tour'])
+
+    def test_swaps_apply_what_is_pending(self):
+        distro = fake_distro()
+        installer.swaps_apply(plan(distro), ['old -> new'])
+        distro.swap.assert_called_once_with('old', 'new')
 
     def test_stow_is_pending_until_it_exists(self):
         with mock.patch('shutil.which', return_value=None):
@@ -297,7 +338,7 @@ class StepTests(unittest.TestCase):
         distro = fake_distro()
         installer.verify_pending(plan(distro))
         installer.plugin_guard.assert_not_called()
-        distro.missing.return_value = []
+        distro.missing.side_effect = lambda packages: []
         installer.verify_pending(plan(distro))
         installer.plugin_guard.assert_called_once()
 
@@ -429,6 +470,33 @@ class FedoraTests(unittest.TestCase):
         with mock.patch.object(fedora, 'write_file') as write:
             fedora.add_repo({'kind': 'file', 'file': 'x.repo', 'content': '\n[x]\n'}, '45')
         write.assert_called_once_with(fedora.REPOS / 'x.repo', '[x]\n')
+
+    def test_excluded_packages_stay_out_of_the_install(self):
+        with mock.patch.object(fedora, 'sudo') as sudo:
+            fedora.install(['a'], ['tour', 'rygel'])
+        sudo.assert_called_once_with('dnf', 'install', '-y', '--exclude=tour,rygel', 'a')
+
+    def test_no_exclude_means_a_plain_install(self):
+        with mock.patch.object(fedora, 'sudo') as sudo:
+            fedora.install(['a'])
+        sudo.assert_called_once_with('dnf', 'install', '-y', 'a')
+
+    def test_an_excluded_package_is_never_also_wanted(self):
+        fedora_table = MANIFEST['fedora']
+        wanted = {package for name in installer.PROFILES for package in fedora_table[name].get('packages', ())}
+        excluded = {package for name in installer.PROFILES for package in fedora_table[name].get('exclude', ())}
+        self.assertFalse(wanted & excluded)
+
+    def test_a_replaced_package_is_looked_up_by_name(self):
+        # intel-media-driver provides libva-intel-media-driver: --whatprovides would call the swap still to do.
+        with mock.patch.object(fedora, 'query', return_value=mock.Mock(returncode=1)) as query:
+            self.assertFalse(fedora.installed('libva-intel-media-driver'))
+        query.assert_called_once_with('rpm', '-q', 'libva-intel-media-driver')
+
+    def test_a_swap_may_remove_what_conflicts(self):
+        with mock.patch.object(fedora, 'sudo') as sudo:
+            fedora.swap('ffmpeg-free', 'ffmpeg')
+        sudo.assert_called_once_with('dnf', 'swap', '-y', '--allowerasing', 'ffmpeg-free', 'ffmpeg')
 
     def test_a_failed_check_is_not_a_clean_system(self):
         with mock.patch.object(fedora, 'query', return_value=mock.Mock(returncode=1, stderr='no network')):
