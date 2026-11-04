@@ -14,6 +14,8 @@ PLUGINS = {
 }
 # Keeps the fingers of a gesture from reaching the window under them.
 HYPRGRASS_PATCH = Path(__file__).resolve().with_name('hyprgrass-hold-touches.patch')
+# RPM builds of hyprland and hyprland-devel these pins were verified against.
+VERIFIED = ('0.57.1-1.fc44.x86_64', '0.57.1-1.fc45.x86_64')
 
 
 def run(*args, **kwargs):
@@ -28,7 +30,7 @@ def fingerprint():
     version = rpm_version('hyprland')
     if version != rpm_version('hyprland-devel'):
         raise RuntimeError('hyprland and hyprland-devel must have the same RPM version')
-    if version != '0.57.1-1.fc44.x86_64':
+    if version not in VERIFIED:
         raise RuntimeError('Hyprland build differs from the verified version: update and verify pins before building')
     return hashlib.sha256((version + Path(__file__).read_text() + HYPRGRASS_PATCH.read_text()).encode()).hexdigest()[:20]
 

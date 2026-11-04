@@ -573,3 +573,10 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 
 - Bar style, window corners, border, gaps, screen margin, dynamic mode, font size and shell icons are `ChoiceCombo` drop-downs. In the restarted shell each shows its current value; with the virtual mouse the Gaps drop-down opened with 4 highlighted, choosing 8 gave `general:gaps_in` 8 and `gapsIn: 8` in `preferences.json`, the reopened list marked 8, and choosing 4 restored it. `check.sh` passes.
 - **Found:** restarting the shell before `stow.py apply` left it down for about a minute (`ChoiceCombo is not a type`: the new file had no link in `~/.config` yet). A new QML file needs the stow step before the shell can load it, as the workflow says.
+
+## Installer on the final Fedora 45 repositories, 2026-11-04
+
+- `scripts/tests/install-container.sh` in the released `fedora:45` image (`fedora-repos-45-1`) with `PROFILES=core,hardware,plugins,apps` and `COMPILE=1`: the preview changed nothing, `apply` installed 1,402 packages, `ffmpeg-free`, `libavcodec-free` and `power-profiles-daemon` stayed out, a second `apply` said "Nothing to do", and `check.sh` passed with the same qmllint warnings as on Fedora 44.
+- Versions: Hyprland and `hyprland-uwsm` 0.57.1-1.fc45, Quickshell 0.3.2-6 (git 9b0f339), kitty 0.50.0, matugen 4.2.0, GDM 51.0. Authselect `custom/desktop-tablet with-fingerprint`, `oo7-daemon` enabled for every user, `oo7-portal` the only Secret portal, `gdm-password` with both `pam_oo7` and `pam_gnome_keyring`, `allow_vendor_change` not set.
+- Hyprspace, hyprgrass, hyprglass and HyprCapture compiled against `0.57.1-1.fc45` with no unresolved libraries; `scripts/hyprpm/build.py` now accepts that build next to the fc44 one, and the container script rewrites the new `VERIFIED` tuple.
+- The `google-chrome-stable` scriptlet could not import its key while the transaction held the RPM keyring lock ("key 1 import failed"); the package installed. On real hardware, check `rpm -q gpg-pubkey --qf '%{SUMMARY}\n' | grep -i google` after the install.

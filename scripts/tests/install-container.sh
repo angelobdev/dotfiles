@@ -79,7 +79,7 @@ if [[ ${COMPILE:-} == 1 ]]; then
     # On this copy only: the guard accepts a build once it has compiled here.
     section 'Compile the plugins against this release'
     version=$(rpm -q --qf '%{VERSION}-%{RELEASE}.%{ARCH}' hyprland)
-    sed -i "s/if version != '[^']*':/if version != '$version':/" scripts/hyprpm/build.py
+    sed -i "s/^VERIFIED = .*/VERIFIED = ('$version',)/" scripts/hyprpm/build.py
     build=$(as_user mktemp -d)
     for plugin in Hyprspace hyprgrass hyprglass HyprCapture; do
         echo "-- $plugin"
