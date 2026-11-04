@@ -28,7 +28,7 @@ def fingerprint():
     version = rpm_version('hyprland')
     if version != rpm_version('hyprland-devel'):
         raise RuntimeError('hyprland and hyprland-devel must have the same RPM version')
-    if version != '0.57.0-2.fc44.x86_64':
+    if version != '0.57.1-1.fc44.x86_64':
         raise RuntimeError('Hyprland build differs from the verified version: update and verify pins before building')
     return hashlib.sha256((version + Path(__file__).read_text() + HYPRGRASS_PATCH.read_text()).encode()).hexdigest()[:20]
 

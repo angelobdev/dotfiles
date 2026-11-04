@@ -2,7 +2,7 @@
 
 [← README](../../README.md)
 
-Verified versions: Hyprland 0.57.0, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0.9.6, and hyprpaper 0.8.4.
+Verified versions: Hyprland 0.57.1, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0.9.6, and hyprpaper 0.8.4.
 
 ## Packages
 
