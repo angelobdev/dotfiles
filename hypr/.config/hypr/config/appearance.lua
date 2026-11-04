@@ -2,8 +2,8 @@ local theme = require("config.theme")
 
 hl.config({
     general = {
-        gaps_in = 4,
-        gaps_out = 4,
+        gaps_in = theme.gapsIn,
+        gaps_out = theme.gapsOut,
         border_size = theme.borderSize,
         col = {
             active_border = theme.activeBorder,

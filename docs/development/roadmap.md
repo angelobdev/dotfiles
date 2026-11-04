@@ -144,6 +144,11 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
   - [x] Window corners (0–24) and border width (0–4 px) in the Theme tab; border colours from the theme (accent active, border inactive); the corners also scale every shell radius (`Theme.corner`) and the lock screen field.
   - [x] The border width and colours also frame the shell surfaces: panels and menus in the active colour, dock, OSD and notification popups in the inactive one; with no border they keep the thin stroke.
 - [x] Phase 5, dynamic theme: `theme.py generate` turns matugen's JSON for the wallpaper into `~/.config/desktop/themes/dynamic/theme.json` (Material roles → palette, standard terminal hues harmonized toward the primary with a contrast floor, nearest GSettings accent) and applies it through the same templates; Dynamic card plus mode (Auto · Dark · Light) and palette style chips in the Theme tab; `DynamicTheme.qml` regenerates on every wallpaper change while it is current; light themes shade the bar with their background; installation docs updated.
+- [x] Phase 6, Glass (2026-11-03): Glass and Glass Light, macOS-style themes with mostly transparent surfaces and a refractive Hyprglass `liquid` preset (`glassStyle`, contour masks); a glass-settings page in the Theme tab tunes it per theme (`desktop-theme glass`); window gaps and screen margin join corners and border.
+  - [ ] Try the glass page by hand and look at Glass Light on screen.
+  - [x] Panels, the assistant console and translucent terminals showed a frozen copy of what was behind them: Hyprglass missed the changes, so `force_live_resample` is on for layers and `background_cache` is off for windows; measure its battery cost over a day and report it upstream if it holds.
+  - [x] Top-level shell surfaces take exactly the window radius (aligned with windows and their glass); Glass popup notifications get a denser `shell.notice` fill.
+  - [x] Dynamic palette styles dropped (they worked, but mostly moved the accent, and only showed while the dynamic theme was current); the mode stays.
 
 ### Shell state and shortcuts
 

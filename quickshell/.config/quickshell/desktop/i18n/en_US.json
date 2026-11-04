@@ -592,7 +592,8 @@
       "unknown": "Unknown theme: %1",
       "matugenMissing": "matugen is not installed; install it with: sudo dnf install matugen",
       "matugenFailed": "matugen could not read the image: %1",
-      "noWallpaper": "There is no wallpaper image to generate the theme from."
+      "noWallpaper": "There is no wallpaper image to generate the theme from.",
+      "glassUntunable": "%1 has no glass settings"
     },
     "wallpapers": {
       "downloading": "Downloading the %1 wallpapers; the first one appears as soon as it arrives.",
@@ -647,18 +648,29 @@
     "dynamicHint": "Colours from the wallpaper",
     "dynamicInstall": "Install matugen: sudo dnf install matugen",
     "dynamicMode": "Dynamic mode",
-    "dynamicStyle": "Palette",
     "dynamicModes": {
       "auto": "Auto",
       "dark": "Dark",
       "light": "Light"
     },
-    "dynamicSchemes": {
-      "tonalSpot": "Tonal spot",
-      "vibrant": "Vibrant",
-      "expressive": "Expressive",
-      "fidelity": "Fidelity",
-      "neutral": "Neutral"
+    "windowGapsIn": "Gaps",
+    "windowGapsOut": "Screen margin",
+    "glassSettings": "Glass settings",
+    "glassTitle": "Glass settings: %1",
+    "glassHint": "Changes apply to this theme only and show as soon as you release a slider.",
+    "glassBack": "Themes",
+    "glassReset": "Reset to defaults",
+    "glassDefault": "Default %1",
+    "glassOptions": {
+      "blurStrength": "Blur",
+      "refractionStrength": "Refraction",
+      "chromaticAberration": "Colour fringe",
+      "edgeThicknessPx": "Lens rim width",
+      "edgeHeight": "Lens depth",
+      "fresnelReflection": "Rim reflection",
+      "specularStrength": "Highlight",
+      "bevelStrength": "Window bevel",
+      "noiseStrength": "Grain"
     }
   },
   "wallpaper": {

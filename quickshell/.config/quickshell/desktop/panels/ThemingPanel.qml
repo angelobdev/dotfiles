@@ -11,7 +11,9 @@ Overlay {
     panelName: "theming"
     dialog: true
     property string tab: "theme"
-    readonly property var tabs: ["theme", "wallpaper", "font", "icons"]
+    // "glass" is a page of the Theme tab, reached from the card of a theme with liquid glass.
+    readonly property var tabs: ["theme", "wallpaper", "font", "icons", "glass"]
+    readonly property var cycle: ["theme", "wallpaper", "font", "icons"]
     readonly property Item sansList: sansProxy.list ?? themeGrid
     function fileUrl(path) {
         return "file://" + path.split("/").map(encodeURIComponent).join("/");
@@ -21,12 +23,39 @@ Overlay {
         if (name === "wallpaper")
             Theming.makeThumbs();
         Qt.callLater(() => {
-            const view = [themeGrid, wallpaperGrid, sansList, iconList][tabs.indexOf(name)];
+            const view = [themeGrid, wallpaperGrid, sansList, iconList, glassBack][tabs.indexOf(name)];
             view.forceActiveFocus();
         });
     }
     function cycleTab(step) {
-        showTab(tabs[(tabs.indexOf(tab) + step + tabs.length) % tabs.length]);
+        const from = Math.max(0, cycle.indexOf(tab === "glass" ? "theme" : tab));
+        showTab(cycle[(from + step + cycle.length) % cycle.length]);
+    }
+    // Labels of the glass options theme.py offers (GLASS_TUNING); an unknown one shows its own name.
+    function glassLabel(option) {
+        const labels = {
+            blur_strength: I18n.tr("theming.glassOptions.blurStrength"),
+            refraction_strength: I18n.tr("theming.glassOptions.refractionStrength"),
+            chromatic_aberration: I18n.tr("theming.glassOptions.chromaticAberration"),
+            edge_thickness_px: I18n.tr("theming.glassOptions.edgeThicknessPx"),
+            edge_height: I18n.tr("theming.glassOptions.edgeHeight"),
+            fresnel_reflection: I18n.tr("theming.glassOptions.fresnelReflection"),
+            specular_strength: I18n.tr("theming.glassOptions.specularStrength"),
+            bevel_strength: I18n.tr("theming.glassOptions.bevelStrength"),
+            noise_strength: I18n.tr("theming.glassOptions.noiseStrength")
+        };
+        return labels[option] ?? option;
+    }
+    function glassText(entry, value) {
+        return entry.step >= 1 ? String(Math.round(value)) + " px" : Number(value).toFixed(2);
+    }
+    // A theme without liquid glass (another theme chosen meanwhile) has no glass page.
+    Connections {
+        target: Theming
+        function onGlassChanged() {
+            if (root.tab === "glass" && !Theming.glass)
+                root.showTab("theme");
+        }
     }
     onOpened: {
         Theming.refresh();
@@ -79,7 +108,7 @@ Overlay {
                             label: I18n.tr("theming.tabs.icons")
                         }
                     ]
-                    current: root.tab
+                    current: root.tab === "glass" ? "theme" : root.tab
                     onChosen: name => root.showTab(name)
                 }
             }
@@ -90,16 +119,12 @@ Overlay {
                 // Theme: a card per theme with a small mock-up of its surfaces and accent, and its colours.
                 ColumnLayout {
                     spacing: 10
-                    RowLayout {
-                        spacing: 10
-                        Text {
-                            text: I18n.tr("theming.bar")
-                            color: Theme.muted
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                        }
-                        ChoiceChips {
-                            Layout.fillWidth: false
+                    // Options: a label and a drop-down each, wrapping onto as many lines as the width needs.
+                    Flow {
+                        Layout.fillWidth: true
+                        spacing: 16
+                        Setting {
+                            label: I18n.tr("theming.bar")
                             options: [
                                 {
                                     name: "shade",
@@ -113,26 +138,9 @@ Overlay {
                             current: Theme.barStyle
                             onChosen: name => Theming.setBarStyle(name)
                         }
-                        Text {
-                            Layout.fillWidth: true
-                            text: I18n.tr("theming.barHint")
-                            elide: Text.ElideRight
-                            color: Theme.muted
-                            font.family: Theme.font
-                            font.pixelSize: 11
-                        }
-                    }
-                    // Windows: corner rounding and border width; the border colours come from the theme.
-                    RowLayout {
-                        spacing: 10
-                        Text {
-                            text: I18n.tr("theming.windowRounding")
-                            color: Theme.muted
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                        }
-                        ChoiceChips {
-                            Layout.fillWidth: false
+                        // Windows: corner rounding and border width; the border colours come from the theme.
+                        Setting {
+                            label: I18n.tr("theming.windowRounding")
                             options: [0, 4, 8, 12, 16, 20, 24].map(value => ({
                                         name: String(value),
                                         label: String(value)
@@ -140,17 +148,8 @@ Overlay {
                             current: String(Theming.windows.rounding)
                             onChosen: name => Theming.setWindowStyle("rounding", Number(name))
                         }
-                    }
-                    RowLayout {
-                        spacing: 10
-                        Text {
-                            text: I18n.tr("theming.windowBorder")
-                            color: Theme.muted
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                        }
-                        ChoiceChips {
-                            Layout.fillWidth: false
+                        Setting {
+                            label: I18n.tr("theming.windowBorder")
                             options: [0, 1, 2, 3, 4].map(value => ({
                                         name: String(value),
                                         label: value === 0 ? I18n.tr("theming.windowBorderNone") : String(value)
@@ -158,19 +157,29 @@ Overlay {
                             current: String(Theming.windows.borderSize)
                             onChosen: name => Theming.setWindowStyle("border", Number(name))
                         }
-                    }
-                    // Dynamic theme: light or dark (Auto lets the image decide) and the palette style.
-                    RowLayout {
-                        visible: Theming.dynamic.available
-                        spacing: 10
-                        Text {
-                            text: I18n.tr("theming.dynamicMode")
-                            color: Theme.muted
-                            font.family: Theme.font
-                            font.pixelSize: 12
+                        // Gaps between windows and to the screen edges (Hyprland gaps_in / gaps_out).
+                        Setting {
+                            label: I18n.tr("theming.windowGapsIn")
+                            options: [0, 2, 4, 6, 8, 12, 16].map(value => ({
+                                        name: String(value),
+                                        label: String(value)
+                                    }))
+                            current: String(Theming.windows.gapsIn)
+                            onChosen: name => Theming.setWindowStyle("gapsIn", Number(name))
                         }
-                        ChoiceChips {
-                            Layout.fillWidth: false
+                        Setting {
+                            label: I18n.tr("theming.windowGapsOut")
+                            options: [0, 4, 8, 12, 16, 24, 32].map(value => ({
+                                        name: String(value),
+                                        label: String(value)
+                                    }))
+                            current: String(Theming.windows.gapsOut)
+                            onChosen: name => Theming.setWindowStyle("gapsOut", Number(name))
+                        }
+                        // Dynamic theme: light or dark (Auto lets the image decide).
+                        Setting {
+                            visible: Theming.dynamic.available
+                            label: I18n.tr("theming.dynamicMode")
                             options: [
                                 {
                                     name: "auto",
@@ -188,39 +197,14 @@ Overlay {
                             current: Theming.dynamic.mode
                             onChosen: name => Theming.setDynamic("mode", name)
                         }
-                        Text {
-                            text: I18n.tr("theming.dynamicStyle")
-                            color: Theme.muted
-                            font.family: Theme.font
-                            font.pixelSize: 12
-                        }
-                        ChoiceChips {
-                            Layout.fillWidth: false
-                            options: [
-                                {
-                                    name: "tonal-spot",
-                                    label: I18n.tr("theming.dynamicSchemes.tonalSpot")
-                                },
-                                {
-                                    name: "vibrant",
-                                    label: I18n.tr("theming.dynamicSchemes.vibrant")
-                                },
-                                {
-                                    name: "expressive",
-                                    label: I18n.tr("theming.dynamicSchemes.expressive")
-                                },
-                                {
-                                    name: "fidelity",
-                                    label: I18n.tr("theming.dynamicSchemes.fidelity")
-                                },
-                                {
-                                    name: "neutral",
-                                    label: I18n.tr("theming.dynamicSchemes.neutral")
-                                }
-                            ]
-                            current: Theming.dynamic.scheme
-                            onChosen: name => Theming.setDynamic("scheme", name)
-                        }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: I18n.tr("theming.barHint")
+                        elide: Text.ElideRight
+                        color: Theme.muted
+                        font.family: Theme.font
+                        font.pixelSize: 11
                     }
                     GridView {
                         id: themeGrid
@@ -406,11 +390,21 @@ Overlay {
                                             font.family: Theme.font
                                             font.pixelSize: 11
                                         }
+                                        // Opens the glass page; the MouseArea of the card lies beneath it.
+                                        CompactIconButton {
+                                            visible: themeCell.active && !!Theming.glass
+                                            iconName: "controls"
+                                            iconSize: 16
+                                            tooltip: I18n.tr("theming.glassSettings")
+                                            onClicked: root.showTab("glass")
+                                        }
                                     }
                                 }
                             }
+                            // Beneath the content of the card, so buttons on it take their own clicks.
                             MouseArea {
                                 id: themeMouse
+                                z: -1
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 enabled: !themeCell.unavailable
@@ -640,7 +634,8 @@ Overlay {
                             font.family: Theme.font
                             font.pixelSize: 12
                         }
-                        ChoiceChips {
+                        ChoiceCombo {
+                            Accessible.name: I18n.tr("theming.size")
                             options: [9, 10, 11, 12, 13].map(size => ({
                                         name: String(size),
                                         label: String(size)
@@ -704,8 +699,8 @@ Overlay {
                             font.family: Theme.font
                             font.pixelSize: 12
                         }
-                        ChoiceChips {
-                            Layout.fillWidth: false
+                        ChoiceCombo {
+                            Accessible.name: I18n.tr("theming.shellIcons")
                             options: [
                                 {
                                     name: "desktop",
@@ -794,6 +789,138 @@ Overlay {
                         placeholder: I18n.tr("theming.otherIcons")
                     }
                 }
+                // Glass: the Hyprglass options of the current theme, each saved as it is released.
+                ColumnLayout {
+                    spacing: 10
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        ActionButton {
+                            id: glassBack
+                            iconName: "arrow-left"
+                            text: I18n.tr("theming.glassBack")
+                            onClicked: root.showTab("theme")
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            text: I18n.tr("theming.glassTitle", [Theming.themes.find(t => t.id === Theming.current)?.name ?? Theming.current])
+                            textFormat: Text.PlainText
+                            elide: Text.ElideRight
+                            color: Theme.text
+                            font.family: Theme.font
+                            font.pixelSize: 14
+                            font.bold: true
+                        }
+                        ActionButton {
+                            text: I18n.tr("theming.glassReset")
+                            enabled: (Theming.glass ?? []).some(entry => entry.value !== entry.default)
+                            onClicked: Theming.resetGlass()
+                        }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: I18n.tr("theming.glassHint")
+                        wrapMode: Text.Wrap
+                        color: Theme.muted
+                        font.family: Theme.font
+                        font.pixelSize: 12
+                    }
+                    Flickable {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        contentHeight: glassRows.implicitHeight
+                        boundsBehavior: Flickable.StopAtBounds
+                        ColumnLayout {
+                            id: glassRows
+                            width: parent.width
+                            spacing: 4
+                            Repeater {
+                                // By position, so the rows (and the focused slider) survive each refresh.
+                                model: (Theming.glass ?? []).length
+                                RowLayout {
+                                    id: glassRow
+                                    required property int index
+                                    readonly property var entry: Theming.glass?.[index] ?? {
+                                        option: "",
+                                        value: 0,
+                                        default: 0,
+                                        min: 0,
+                                        max: 1,
+                                        step: 0.05
+                                    }
+                                    Layout.fillWidth: true
+                                    spacing: 12
+                                    Text {
+                                        Layout.preferredWidth: 200
+                                        text: root.glassLabel(glassRow.entry.option)
+                                        elide: Text.ElideRight
+                                        color: Theme.text
+                                        font.family: Theme.font
+                                        font.pixelSize: 13
+                                    }
+                                    ControlSlider {
+                                        id: glassSlider
+                                        // From the first move until the saved value comes back, the slider keeps
+                                        // its own value instead of snapping back to the old one.
+                                        property bool holding: false
+                                        Layout.fillWidth: true
+                                        from: glassRow.entry.min
+                                        to: glassRow.entry.max
+                                        stepSize: glassRow.entry.step
+                                        snapMode: Slider.SnapAlways
+                                        Accessible.name: root.glassLabel(glassRow.entry.option)
+                                        Binding on value {
+                                            when: !glassSlider.pressed && !glassSlider.holding
+                                            value: glassRow.entry.value
+                                        }
+                                        function commit() {
+                                            glassCommit.stop();
+                                            if (Math.abs(value - glassRow.entry.value) > glassRow.entry.step / 2)
+                                                Theming.setGlass(glassRow.entry.option, value);
+                                            else
+                                                holding = false;
+                                        }
+                                        // Each change reloads Hyprland: a drag commits on release, arrow keys after a pause.
+                                        onMoved: {
+                                            holding = true;
+                                            if (!pressed)
+                                                glassCommit.restart();
+                                        }
+                                        onPressedChanged: if (!pressed && holding)
+                                            commit()
+                                        Connections {
+                                            target: glassRow
+                                            function onEntryChanged() {
+                                                if (!glassSlider.pressed && !glassCommit.running)
+                                                    glassSlider.holding = false;
+                                            }
+                                        }
+                                        Timer {
+                                            id: glassCommit
+                                            interval: 450
+                                            onTriggered: glassSlider.commit()
+                                        }
+                                    }
+                                    Text {
+                                        Layout.preferredWidth: 64
+                                        horizontalAlignment: Text.AlignRight
+                                        text: root.glassText(glassRow.entry, glassSlider.value)
+                                        color: Math.abs(glassSlider.value - glassRow.entry.default) > glassRow.entry.step / 2 ? Theme.accent : Theme.muted
+                                        font.family: Theme.font
+                                        font.pixelSize: 12
+                                        HoverHandler {
+                                            id: valueHover
+                                        }
+                                        ToolTip.visible: valueHover.hovered
+                                        ToolTip.text: I18n.tr("theming.glassDefault", [root.glassText(glassRow.entry, glassRow.entry.default)])
+                                    }
+                                }
+                            }
+                        }
+                        ScrollBar.vertical: ScrollBar {}
+                    }
+                }
             }
             // Fonts and icons reach the shell after a restart; the rest of the desktop has them already.
             Rectangle {
@@ -838,6 +965,26 @@ Overlay {
                 font.family: Theme.font
                 font.pixelSize: 12
             }
+        }
+    }
+    // One option of the panel: its label and a drop-down of its choices.
+    component Setting: RowLayout {
+        id: setting
+        property string label: ""
+        property alias options: combo.options
+        property alias current: combo.current
+        signal chosen(string name)
+        spacing: 8
+        Text {
+            text: setting.label
+            color: Theme.muted
+            font.family: Theme.font
+            font.pixelSize: 12
+        }
+        ChoiceCombo {
+            id: combo
+            Accessible.name: setting.label
+            onChosen: name => setting.chosen(name)
         }
     }
     // A family or icon theme installed by hand, typed in and checked before it applies.

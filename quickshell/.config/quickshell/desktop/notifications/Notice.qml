@@ -32,8 +32,9 @@ Rectangle {
             return icon;
         return icon && !icon.includes(":") ? Quickshell.iconPath(icon, true) : "";
     }
-    color: Theme.raised
-    radius: Theme.corner(10)
+    color: popup ? Theme.notice : Theme.raised
+    // A popup is a surface of its own, with the window radius; entries of the center sit inside its card.
+    radius: popup ? Theme.radius : Theme.corner(10)
     // Popups are surfaces of their own and take the window border; entries in the center sit in its card.
     border.width: popup ? Theme.borderSize : 0
     border.color: Theme.frameInactive

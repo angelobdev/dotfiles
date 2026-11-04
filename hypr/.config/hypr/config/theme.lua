@@ -4,10 +4,15 @@
 local defaults = {
     shadow = 0x660d0e10,
     glassTint = 0x191a1d22,
+    glassStyle = "desktop",
+    -- Theming panel changes to the liquid glass of this theme (plugins.lua).
+    glassTuning = {},
     activeBorder = "rgba(d4d6dcff)",
     inactiveBorder = "rgba(44474eff)",
     rounding = 16,
     borderSize = 0,
+    gapsIn = 4,
+    gapsOut = 4,
     mode = "dark",
 }
 

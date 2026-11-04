@@ -32,7 +32,7 @@ Rectangle {
     }
     implicitWidth: 252
     implicitHeight: list.contentHeight + 12
-    radius: Theme.corner(12)
+    radius: Theme.radius
     color: Theme.background
     border.width: Theme.frameWidth
     border.color: Theme.frameActive

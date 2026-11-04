@@ -382,7 +382,7 @@ class DynamicThemeTests(unittest.TestCase):
         self.assertEqual(dark['shell']['barShadeTop'], '#00000055')
 
     def test_dynamic_preferences_are_kept_and_cleaned(self):
-        chosen = {'dynamic': {'mode': 'light', 'scheme': ''}}
+        chosen = {'dynamic': {'mode': 'light', 'scheme': 'vibrant'}}
         with tempfile.TemporaryDirectory() as directory:
             original = theme.STATE
             theme.STATE = Path(directory)
@@ -442,6 +442,59 @@ class ReviewRegressionTests(unittest.TestCase):
                     theme.load('broken')
             finally:
                 theme.THEME_DIRS = original
+
+
+
+GLASS = json.loads((REPO / 'shell/.local/share/desktop/themes/glass/theme.json').read_text(encoding='utf-8'))
+
+
+class GlassTuningTests(unittest.TestCase):
+    def test_defaults_match_the_liquid_preset(self):
+        # theme.py shows these as the defaults; plugins.lua must start from the same values.
+        lua = (REPO / 'hypr/.config/hypr/config/plugins.lua').read_text(encoding='utf-8')
+        preset = lua[lua.index('local liquid = {'):lua.index('glass.preset("liquid"')]
+        for option, default, *_ in theme.GLASS_TUNING:
+            match = re.search(r'\b' + option + r' = ([0-9.]+),', preset)
+            self.assertIsNotNone(match, option)
+            self.assertEqual(float(match[1]), default, option)
+
+    def test_tuning_is_rendered_clamped_and_per_theme(self):
+        chosen = {'glass': {'glass': {'refraction_strength': 9, 'edge_height': 30.4, 'unknown': 1},
+                            'glass-light': {'blur_strength': 0.1}}}
+        merged = theme.with_preferences(theme.complete(GLASS), chosen, 'glass')
+        tuning = merged['hyprland']['glassTuning']
+        self.assertEqual(tuning['refraction_strength'], 3.0)
+        self.assertEqual(tuning['edge_height'], 30)
+        self.assertEqual(tuning['blur_strength'], 0.45)
+        self.assertNotIn('unknown', tuning)
+        rendered = theme.render_all(merged, TEMPLATES)['hyprland.lua']
+        self.assertIn('edge_height = 30,', rendered)
+        self.assertIn('refraction_strength = 3.0,', rendered)
+
+    def test_themes_without_liquid_glass_get_no_tuning(self):
+        merged = theme.with_preferences(theme.complete(GRAPHITE), {'glass': {'graphite': {'blur_strength': 1}}}, 'graphite')
+        self.assertNotIn('glassTuning', merged['hyprland'])
+        self.assertIn('glassTuning = {},', theme.render_all(merged, TEMPLATES)['hyprland.lua'])
+
+    def test_saved_tuning_drops_defaults_and_unknown_options(self):
+        chosen = {'glass': {'glass': {'blur_strength': 0.45, 'bevel_strength': 0.2, 'xray': 1}, 'glass-light': {'noise_strength': 0}}}
+        with tempfile.TemporaryDirectory() as directory:
+            original = theme.STATE
+            theme.STATE = Path(directory)
+            try:
+                theme.save_preferences(chosen)
+                self.assertEqual(theme.preferences().get('glass'), {'glass': {'bevel_strength': 0.2}})
+            finally:
+                theme.STATE = original
+
+    def test_gaps_reach_hyprland(self):
+        default = theme.render_all(theme.complete(GRAPHITE), TEMPLATES)['hyprland.lua']
+        self.assertIn('gapsIn = 4,', default)
+        self.assertIn('gapsOut = 4,', default)
+        chosen = theme.complete(theme.with_preferences(GRAPHITE, {'windows': {'gapsIn': 8, 'gapsOut': 16}}))
+        rendered = theme.render_all(chosen, TEMPLATES)['hyprland.lua']
+        self.assertIn('gapsIn = 8,', rendered)
+        self.assertIn('gapsOut = 16,', rendered)
 
 
 if __name__ == '__main__':

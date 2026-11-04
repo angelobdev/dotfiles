@@ -1,0 +1,74 @@
+{
+  "name": "Glass",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "blue"
+  },
+  "shell": {
+    "background": "#1c1c1e80",
+    "surface": "#1c1c1e4d",
+    "raised": "#ffffff1f",
+    "tile": "#ffffff12",
+    "track": "#ffffff2e",
+    "stroke": "#ffffff40",
+    "tooltip": "#2c2c2ee6",
+    "notice": "#1c1c1eb8"
+  },
+  "palette": {
+    "bg": "#1c1c1e",
+    "base": "#161618",
+    "raised": "#2c2c2e",
+    "border": "#48484a",
+    "fg": "#f5f5f7",
+    "muted": "#c7c7cc",
+    "dim": "#8e8e93",
+    "accent": "#4da3ff",
+    "accentFg": "#0b0b0d",
+    "link": "#64d2ff",
+    "danger": "#ff6961",
+    "success": "#30d158",
+    "warning": "#ffd60a"
+  },
+  "ansi": [
+    "#2c2c2e",
+    "#ff6961",
+    "#30d158",
+    "#ffd60a",
+    "#4da3ff",
+    "#bf5af2",
+    "#64d2ff",
+    "#c7c7cc",
+    "#636366",
+    "#ff8a80",
+    "#5de07f",
+    "#ffe34d",
+    "#80bdff",
+    "#d38cf7",
+    "#8fe0ff",
+    "#f5f5f7"
+  ],
+  "terminal": {
+    "opacity": 0.82
+  },
+  "hyprland": {
+    "glassTint": "#1c1c1e1a",
+    "glassStyle": "liquid"
+  },
+  "vscode": {
+    "theme": "Default Dark Modern"
+  },
+  "wallpaperDirectories": [
+    "~/.local/share/wallpapers",
+    "~/Pictures/Wallpapers"
+  ]
+}

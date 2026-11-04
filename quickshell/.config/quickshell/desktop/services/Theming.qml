@@ -9,17 +9,21 @@ Singleton {
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/theme.py"
     readonly property string wallpaperHelper: Quickshell.env("HOME") + "/.local/libexec/desktop/wallpaper.py"
     property var themes: []
-    // Corner rounding and border width of windows, as Hyprland applies them now.
+    // Corner rounding, border width and gaps of windows, as Hyprland applies them now.
     property var windows: ({
             rounding: 16,
-            borderSize: 0
+            borderSize: 0,
+            gapsIn: 4,
+            gapsOut: 4
         })
+    // The glass options of the current theme ({option, value, default, min, max, step} each), or null
+    // when it has no liquid glass to tune.
+    property var glass: null
     property string current: ""
-    // The theme generated from the wallpaper: whether matugen is installed, its mode and palette style.
+    // The theme generated from the wallpaper: whether matugen is installed and its mode.
     property var dynamic: ({
             available: false,
             mode: "auto",
-            scheme: "tonal-spot",
             source: null
         })
     // Shipped and user themes, then the dynamic one, with the colours it was generated with last, if any.
@@ -146,7 +150,19 @@ Singleton {
         run([["python3", helper, "shell-icons", source]]);
     }
     function setWindowStyle(option, value) {
-        run([["python3", helper, "window-style", option === "rounding" ? "--rounding" : "--border", String(value)]]);
+        const flags = {
+            rounding: "--rounding",
+            border: "--border",
+            gapsIn: "--gaps-in",
+            gapsOut: "--gaps-out"
+        };
+        run([["python3", helper, "window-style", flags[option], String(value)]]);
+    }
+    function setGlass(option, value) {
+        run([["python3", helper, "glass", "--option", option, "--value", String(value)]]);
+    }
+    function resetGlass() {
+        run([["python3", helper, "glass", "--reset"]]);
     }
     function setBarStyle(style) {
         run([["python3", helper, "bar-style", style]]);
@@ -242,6 +258,7 @@ Singleton {
                     root.themes = data.themes;
                     root.current = data.current;
                     root.windows = data.windows ?? root.windows;
+                    root.glass = data.glass ?? null;
                     root.dynamic = data.dynamic ?? root.dynamic;
                 }
             }

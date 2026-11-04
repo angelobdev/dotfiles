@@ -592,7 +592,8 @@
       "unknown": "Tema sconosciuto: %1",
       "matugenMissing": "matugen non è installato; installalo con: sudo dnf install matugen",
       "matugenFailed": "matugen non è riuscito a leggere l’immagine: %1",
-      "noWallpaper": "Non c’è un’immagine di sfondo da cui generare il tema."
+      "noWallpaper": "Non c’è un’immagine di sfondo da cui generare il tema.",
+      "glassUntunable": "%1 non ha impostazioni del vetro"
     },
     "wallpapers": {
       "downloading": "Scarico gli sfondi di %1; il primo compare appena arriva.",
@@ -647,18 +648,29 @@
     "dynamicHint": "Colori dallo sfondo",
     "dynamicInstall": "Installa matugen: sudo dnf install matugen",
     "dynamicMode": "Modalità dinamica",
-    "dynamicStyle": "Palette",
     "dynamicModes": {
       "auto": "Auto",
       "dark": "Scuro",
       "light": "Chiaro"
     },
-    "dynamicSchemes": {
-      "tonalSpot": "Tonale",
-      "vibrant": "Vivace",
-      "expressive": "Espressiva",
-      "fidelity": "Fedele",
-      "neutral": "Neutra"
+    "windowGapsIn": "Spazio tra finestre",
+    "windowGapsOut": "Margine dallo schermo",
+    "glassSettings": "Impostazioni vetro",
+    "glassTitle": "Impostazioni vetro: %1",
+    "glassHint": "Le modifiche valgono solo per questo tema e si vedono appena rilasci un cursore.",
+    "glassBack": "Temi",
+    "glassReset": "Ripristina predefiniti",
+    "glassDefault": "Predefinito %1",
+    "glassOptions": {
+      "blurStrength": "Sfocatura",
+      "refractionStrength": "Rifrazione",
+      "chromaticAberration": "Frange di colore",
+      "edgeThicknessPx": "Larghezza bordo lente",
+      "edgeHeight": "Profondità lente",
+      "fresnelReflection": "Riflesso del bordo",
+      "specularStrength": "Lucentezza",
+      "bevelStrength": "Smussatura finestre",
+      "noiseStrength": "Grana"
     }
   },
   "wallpaper": {

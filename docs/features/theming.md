@@ -10,13 +10,19 @@ One panel switches the whole desktop: shell, terminal, GTK and Qt apps, lock scr
 
 **Tabs**
 - **Theme:** a card per theme with a small mock-up of its surfaces, text and accent, plus its terminal colours; the current one is marked. Choosing one switches colours at once, and the theme's wallpaper follows.
+  - Above the cards, each option is a label and a drop-down (`components/ChoiceCombo.qml`, the interface of `ChoiceChips`), wrapping onto a second line when the panel is narrow; the font size and the shell icon source on their tabs are drop-downs too. Only the tab switcher keeps its pills.
   - **Bar: Shaded · Transparent** sets the bar style. Transparent drops the dark gradient, and the bar stays transparent. Only its text and icons change colour, taking whichever of the theme's light and dark text contrasts more with the wallpaper under the bar. With nothing drawn, the blur (which skips nearly transparent pixels) does not show either.
   - A double-click on an empty part of the bar switches the style too.
   - **Window corners** (0–24) and **Border** (none, 1–4 px) set the window rounding and border width. The border colours come from the theme: its accent for the focused window, its border colour for the others.
   - The border also frames the shell surfaces at the same width. Panels and menus take the accent, as they hold the focus. The dock, OSD and notification popups take the border colour. With **None** they keep their thin neutral outline.
+  - **Gaps** (0–16) and **Screen margin** (0–32) set the space between tiled windows and between windows and the screen edges (Hyprland `gaps_in` / `gaps_out`, 4 and 4 by default).
+  - Top-level shell surfaces take exactly the window radius, so panels, the Control Center, the dock, the OSD, popup notifications and menus line up with the windows, and their glass follows the same corner. What sits inside them keeps its own, smaller radius.
   - The corners apply to the whole desktop, scaled from the design size of 16: windows, shell panels, cards, buttons, chips, the dock, OSD, tooltips, menus and the lock screen password field. Small dots and slider tracks stay round.
   - **Dynamic**, the last card, generates a theme from the current wallpaper with matugen and switches to it; its mock-up sits on that wallpaper. Choosing it again generates again. While it is the current theme, every wallpaper change (the gallery, Custom…, `Super + Ctrl + W`) generates it anew, and `Super + Ctrl + W` cycles the folder of the image it came from. Without matugen the card shows the install command instead.
-  - **Dynamic mode: Auto · Dark · Light** and **Palette: Tonal spot · Vibrant · Expressive · Fidelity · Neutral** (shown once matugen is installed) shape the generated theme. Auto lets the image decide between light and dark. A change regenerates at once when the dynamic theme is active.
+  - **Dynamic mode: Auto · Dark · Light** (shown once matugen is installed) shapes the generated theme. Auto lets the image decide between light and dark. A change regenerates at once when the dynamic theme is active. The palette always uses matugen's Tonal spot style: the other styles mostly moved the accent and were dropped.
+- **Glass settings**, the slider button on the current theme's card, opens a page with the Hyprglass options of that theme: blur, refraction, colour fringe, lens rim width, lens depth, rim reflection, highlight, window bevel and grain. The bevel applies to windows only: shell surfaces keep their own 1 px stroke instead. Only themes with `glassStyle = "liquid"` (Glass and Glass Light) have it.
+  - Each slider saves when it is released (with the arrow keys, after a short pause) and reloads Hyprland, so the glass changes at once. A value that differs from the default is shown in the accent colour; hovering it shows the default.
+  - **Reset to defaults** clears the theme's changes; **Themes** goes back. Each theme keeps its own values.
 - **Wallpaper:** thumbnails of the current theme's set, with the current one outlined. For Graphite these are the images in the local wallpaper folders.
   - Thumbnails are cached JPEGs (`~/.cache/desktop-theme/thumbs/`), so WebP and very large images preview too.
   - Images that are not downloaded yet show a placeholder; "Download wallpapers" fetches them, and thumbnails appear as they arrive.
@@ -34,7 +40,7 @@ Font, size, icon pack, shell icons and bar style are your preferences: they appl
 
 ## Themes
 
-The palette above is the **Graphite** theme. Four more ship with the dotfiles, all dark:
+The palette above is the **Graphite** theme. Six more ship with the dotfiles; all are dark except Glass Light:
 
 | Theme | Accent | GSettings accent | VS Code |
 | --- | --- | --- | --- |
@@ -42,6 +48,10 @@ The palette above is the **Graphite** theme. Four more ship with the dotfiles, a
 | `tokyo-night` | blue `#7aa2f7` | blue | Tokyo Night |
 | `gruvbox` | yellow `#fabd2f` | yellow | Gruvbox Dark Medium |
 | `everforest` | green `#a7c080` | green | Everforest Dark |
+| `glass` | blue `#4da3ff` | blue | Default Dark Modern |
+| `glass-light` | blue `#006be0` | blue | Default Light Modern |
+
+**Glass** and **Glass Light** are the macOS-style pair. Their panels are mostly glass: the card under a panel, the dock and the OSD keep about 30% (dark) or 40% (light) of their fill instead of 85%, tiles and hover states are a thin white veil instead of a second dark layer, popup notifications get a denser fill of their own (`shell.notice`, 72% dark and 80% light, while other themes keep `raised`) so their text reads over any page, and the stroke is brighter, with an 82–85% terminal and `glassStyle = "liquid"`: Hyprglass draws a lens rim that bends and mirrors what is around each card, toast and menu, a thin lit bevel and a little dispersion on the rim, over a flat, lightly frosted center ([plugins](../guide/plugins.md#behavior)). Without Hyprglass loaded they keep Hyprland's native blur and stay readable, only flatter. Both use the local wallpaper folders, like Graphite; glass shows best over a colourful wallpaper.
 
 Graphite uses VS Code's own Default Dark Modern. Their surfaces and terminal colours come from each project's published palette and Kitty port.
 
@@ -50,14 +60,14 @@ A theme is one `theme.json` with:
 - `shell` (the `Theme.qml` tokens);
 - `palette` (the semantic colours the application templates use);
 - `ansi` (16 terminal colours), `terminal.opacity`;
-- `hyprland` (shadow, Hyprglass tint).
+- `hyprland` (shadow, Hyprglass tint, `glassStyle`: `desktop` or `liquid`).
 
 - `vscode` (`theme`, optional `extension`).
 
 Only `palette` (bg, base, raised, border, fg, muted, dim, accent, accentFg, link, danger, success, warning) and `ansi` are required. `theme.py` derives any missing value from them, and explicit values always win:
 - the `shell` tokens, with Graphite's alphas;
 - the Qt bevel shades;
-- the Hyprland shadow and glass tint.
+- the Hyprland shadow and glass tint; `glassStyle` defaults to `desktop`.
 
 Colours are `#rrggbb` or `#rrggbbaa`. Shipped themes live in `~/.local/share/desktop/themes/<id>/` (from `shell/.local/share/desktop/themes/`). Themes in `~/.config/desktop/themes/<id>/` take precedence.
 
@@ -90,7 +100,8 @@ Preferences: `~/.local/state/desktop-theme/preferences.json` holds what is chose
 - `desktop-theme icon-theme NAME|default`.
 - `desktop-theme shell-icons desktop|pack`: the shell glyphs from `assets/icons`, or the icon pack's symbolic icons mapped in `components/IconNames.js`.
 - `desktop-theme bar-style shade|transparent|toggle`.
-- `desktop-theme window-style --rounding N --border N` (`--default` clears them). Hyprland `decoration.rounding` and `general.border_size`, defaulting to 16 and 0. The border colours (`general.col.active_border` / `inactive_border`) are the theme's accent and border colours, rendered into `hyprland.lua` and applied with `hyprctl reload`. The same rounding reaches Quickshell as `rounding` in `quickshell.json`: `Theme.corner(n)` scales each design radius by rounding/16, and `Theme.radius` is `corner(18)`. Radii under 6 (dots, tracks) are not scaled. hyprlock gets `rounding = 26 × rounding/16` for its password field. The border width and both colours reach Quickshell as `borderSize`, `activeBorder` and `inactiveBorder`. While `borderSize` is above 0, `Theme.frameWidth` and `Theme.frameActive` frame `Card` (every panel), `PopupMenu` and the tray menu, and `Theme.frameInactive` frames the dock, the OSD and notification popups. At 0 they keep a 1 px `stroke`, and popups none.
+- `desktop-theme glass --option OPTION --value N` / `--reset`: the glass tuning of the current theme, saved under `glass.<theme>` in `preferences.json` (only values that differ from the default). `GLASS_TUNING` in `theme.py` lists the options with their defaults (the `liquid` preset in `plugins.lua`, checked by `test_theme.py`) and ranges; values are clamped to them. They are rendered into `hyprland.lua` as `glassTuning`, and `plugins.lua` lays them over the preset. A theme without liquid glass refuses the command.
+- `desktop-theme window-style --rounding N --border N --gaps-in N --gaps-out N` (`--default` clears them). Hyprland `decoration.rounding`, `general.border_size`, `general.gaps_in` and `general.gaps_out`, defaulting to 16, 0, 4 and 4. The border colours (`general.col.active_border` / `inactive_border`) are the theme's accent and border colours, rendered into `hyprland.lua` and applied with `hyprctl reload`. The same rounding reaches Quickshell as `rounding` in `quickshell.json`: `Theme.radius`, used by `Card`, the dock, the OSD, popup notifications, `PopupMenu` and the tray menu, is the rounding itself; `Theme.corner(n)` scales the radii inside them by rounding/16. Radii under 6 (dots, tracks) are not scaled. hyprlock gets `rounding = 26 × rounding/16` for its password field. The border width and both colours reach Quickshell as `borderSize`, `activeBorder` and `inactiveBorder`. While `borderSize` is above 0, `Theme.frameWidth` and `Theme.frameActive` frame `Card` (every panel), `PopupMenu` and the tray menu, and `Theme.frameInactive` frames the dock, the OSD and notification popups. At 0 they keep a 1 px `stroke`, and popups none.
 
 The bar style and shell icon source reach Quickshell through `quickshell.json` (`barStyle`, `iconSource`).
 
@@ -117,7 +128,7 @@ Commands:
 - **Light mode:** the bar shade uses bg at 60%/53% instead of black, so its dark text stays readable. This applies to any theme with `"mode": "light"` that does not set `barShadeTop`/`barShadeBottom`.
 - `wallpaperDirectories` is the image's folder, so `Super + Ctrl + W` cycles it.
 
-`desktop-theme dynamic --mode auto|dark|light --scheme tonal-spot|vibrant|expressive|fidelity|neutral` stores `dynamic` in `preferences.json` (matugen `-m smart|dark|light` and `-t scheme-…`) and regenerates when the dynamic theme is current. `services/DynamicTheme.qml` watches `current.json`, the wallpaper selection and the generated theme: while the theme is `dynamic` and the wallpaper is not its `source`, it runs `theme.py generate`, one run at a time.
+`desktop-theme dynamic --mode auto|dark|light` stores `dynamic` in `preferences.json` (matugen `-m smart|dark|light`, always with `-t scheme-tonal-spot`) and regenerates when the dynamic theme is current. `services/DynamicTheme.qml` watches `current.json`, the wallpaper selection and the generated theme: while the theme is `dynamic` and the wallpaper is not its `source`, it runs `theme.py generate`, one run at a time.
 
 Templates use `{{ path }}` or `{{ path | filter }}`, with the filters `hex`, `rgba[:aa]`, `qt[:aa]`, `hypr` and `hexrgba`. A key the theme lacks is an error, never an empty value.
 

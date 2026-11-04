@@ -1,0 +1,76 @@
+{
+  "name": "Glass Light",
+  "mode": "light",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3",
+    "iconTheme": "Papirus-Light",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "blue"
+  },
+  "shell": {
+    "background": "#f5f5f799",
+    "surface": "#f5f5f766",
+    "raised": "#ffffff73",
+    "tile": "#ffffff4d",
+    "track": "#3c3c432e",
+    "stroke": "#ffffffa6",
+    "tooltip": "#f5f5f7eb",
+    "scrim": "#00000010",
+    "notice": "#f5f5f7cc"
+  },
+  "palette": {
+    "bg": "#f5f5f7",
+    "base": "#ffffff",
+    "raised": "#e8e8ed",
+    "border": "#d2d2d7",
+    "fg": "#1d1d1f",
+    "muted": "#515154",
+    "dim": "#86868b",
+    "accent": "#006be0",
+    "accentFg": "#ffffff",
+    "link": "#0066cc",
+    "danger": "#d70015",
+    "success": "#248a3d",
+    "warning": "#b25000"
+  },
+  "ansi": [
+    "#515154",
+    "#d70015",
+    "#248a3d",
+    "#a05a00",
+    "#007aff",
+    "#8944ab",
+    "#0071a4",
+    "#d2d2d7",
+    "#86868b",
+    "#ff3b30",
+    "#2d9d48",
+    "#b25000",
+    "#0a84ff",
+    "#a050c8",
+    "#0088c2",
+    "#e8e8ed"
+  ],
+  "terminal": {
+    "opacity": 0.85
+  },
+  "hyprland": {
+    "shadow": "#00000038",
+    "glassTint": "#ffffff26",
+    "glassStyle": "liquid"
+  },
+  "vscode": {
+    "theme": "Default Light Modern"
+  },
+  "wallpaperDirectories": [
+    "~/.local/share/wallpapers",
+    "~/Pictures/Wallpapers"
+  ]
+}

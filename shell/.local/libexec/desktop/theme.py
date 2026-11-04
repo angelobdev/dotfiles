@@ -38,6 +38,16 @@ WALLPAPER = Path(__file__).resolve().with_name('wallpaper.py')
 REQUIRED = ('bg', 'base', 'raised', 'border', 'fg', 'muted', 'dim', 'accent', 'accentFg', 'link', 'danger',
             'success', 'warning')
 DEFAULT = 'graphite'
+# The Hyprglass options of the "liquid" look that the Theming panel changes, per theme: option, default
+# (the liquid preset in plugins.lua), minimum, maximum and step. A step of 1 is a whole number of px.
+GLASS_TUNING = (('blur_strength', 0.45, 0.0, 2.0, 0.05), ('refraction_strength', 1.8, 0.0, 3.0, 0.05),
+                ('chromatic_aberration', 0.5, 0.0, 1.0, 0.05), ('edge_thickness_px', 40, 0, 80, 1),
+                ('edge_height', 60, 0, 120, 1), ('fresnel_reflection', 0.6, 0.0, 1.0, 0.05),
+                ('specular_strength', 0.6, 0.0, 1.0, 0.05), ('bevel_strength', 0.5, 0.0, 1.0, 0.05),
+                ('noise_strength', 0.0, 0.0, 0.5, 0.01))
+GLASS_OPTIONS = {option: (default, low, high, step) for option, default, low, high, step in GLASS_TUNING}
+# Window gaps: between windows and to the screen edges (Hyprland general.gaps_in / gaps_out).
+WINDOW_KEYS = ('rounding', 'borderSize', 'gapsIn', 'gapsOut')
 # {{ path }} or {{ path | filter }} or {{ path | filter:alpha }}; braces are free for CSS, Lua and JSON.
 PLACEHOLDER = re.compile(r'\{\{\s*([A-Za-z0-9_.]+)\s*(?:\|\s*([a-z]+)(?::([0-9a-f]{2}))?\s*)?\}\}')
 COLOR = re.compile(r'#([0-9a-f]{6})([0-9a-f]{2})?')
@@ -153,14 +163,21 @@ def complete(theme):
                        ('handlePressed', palette['brightText']), ('handleFocus', mix(palette['muted'], palette['dim'], 0.5)),
                        ('barShadeTop', alpha(shade, shade_top)), ('barShadeBottom', alpha(shade, shade_bottom)), ('shareShade', '#00000028')):
         shell.setdefault(key, value)
+    # Popup notifications float over any content; a theme with very clear surfaces gives them more body.
+    shell.setdefault('notice', shell['raised'])
     hyprland = theme.setdefault('hyprland', {})
     hyprland.setdefault('shadow', alpha(palette['shadow'], '66'))
     hyprland.setdefault('glassTint', alpha(palette['bg'], '22'))
+    # The Hyprglass look: "desktop" is the restrained default, "liquid" the refractive one (plugins.lua).
+    if hyprland.get('glassStyle') not in ('desktop', 'liquid'):
+        hyprland['glassStyle'] = 'desktop'
     # Window borders take the theme colours; their width and the corner rounding are user preferences.
     hyprland.setdefault('activeBorder', palette['accent'])
     hyprland.setdefault('inactiveBorder', palette['border'])
     hyprland.setdefault('rounding', 16)
     hyprland.setdefault('borderSize', 0)
+    hyprland.setdefault('gapsIn', 4)
+    hyprland.setdefault('gapsOut', 4)
     theme.setdefault('terminal', {}).setdefault('opacity', 0.94)
     # Shell options the user sets in the Theming panel; these are the defaults.
     preferences = theme.setdefault('preferences', {})
@@ -199,8 +216,35 @@ def preferences():
     return value if isinstance(value, dict) else {}
 
 
+def glass_value(option, value):
+    default, low, high, step = GLASS_OPTIONS[option]
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return default
+    value = min(high, max(low, value))
+    return int(round(value)) if step == 1 else round(value, 3)
+
+
+# The glass tuning of one theme: its saved values over the defaults, each kept in its range.
+def glass_tuning(name, chosen):
+    saved = chosen.get('glass', {}).get(name, {})
+    saved = saved if isinstance(saved, dict) else {}
+    return {option: glass_value(option, saved.get(option, GLASS_OPTIONS[option][0])) for option in GLASS_OPTIONS}
+
+
+def glass_tunable(theme):
+    return theme.get('hyprland', {}).get('glassStyle') == 'liquid'
+
+
+# Option names come from GLASS_OPTIONS and values are numbers, so the Lua table is safe to splice in.
+def lua_table(values):
+    if not values:
+        return '{}'
+    return '{ ' + ', '.join(f'{key} = {value!r}' for key, value in sorted(values.items())) + ' }'
+
+
 # Fonts, icons and the bar style are the user's, across themes; whatever is unset keeps the theme's value.
-def with_preferences(theme, chosen):
+# With the theme's name, a liquid glass theme also takes its own glass tuning.
+def with_preferences(theme, chosen, name=None):
     theme = json.loads(json.dumps(theme))
     fonts = {key: value for key, value in chosen.get('fonts', {}).items() if value not in (None, '') and key != 'unified'}
     theme.setdefault('fonts', {}).update(fonts)
@@ -212,19 +256,30 @@ def with_preferences(theme, chosen):
     for key, value in (('iconSource', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle'))):
         if value:
             theme.setdefault('preferences', {})[key] = value
-    for key in ('rounding', 'borderSize'):
+    for key in WINDOW_KEYS:
         if isinstance(chosen.get('windows', {}).get(key), int):
             theme.setdefault('hyprland', {})[key] = chosen['windows'][key]
+    if name and glass_tunable(theme):
+        theme['hyprland']['glassTuning'] = glass_tuning(name, chosen)
     return theme
 
 
 def save_preferences(chosen):
     fonts = {key: value for key, value in chosen.get('fonts', {}).items() if value not in (None, '', False)}
     windows = {key: value for key, value in chosen.get('windows', {}).items() if isinstance(value, int)}
-    dynamic = {key: value for key, value in chosen.get('dynamic', {}).items() if value}
+    # Only the mode is kept; a palette style saved by an older version is dropped.
+    dynamic = {key: value for key, value in chosen.get('dynamic', {}).items() if key == 'mode' and value}
+    # Only values that differ from the default are kept, so a reset theme leaves no entry.
+    glass = {}
+    for name, saved in chosen.get('glass', {}).items():
+        if isinstance(saved, dict):
+            values = {option: glass_value(option, value) for option, value in saved.items() if option in GLASS_OPTIONS}
+            values = {option: value for option, value in values.items() if value != GLASS_OPTIONS[option][0]}
+            if values:
+                glass[name] = values
     cleaned = {key: value for key, value in (('fonts', fonts), ('iconTheme', chosen.get('iconTheme')),
                                               ('shellIcons', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle')),
-                                              ('windows', windows), ('dynamic', dynamic))
+                                              ('windows', windows), ('dynamic', dynamic), ('glass', glass))
                if value}
     write_atomic(STATE / 'preferences.json', json.dumps(cleaned, ensure_ascii=False) + '\n')
 
@@ -478,7 +533,8 @@ def render_all(theme, templates=TEMPLATES):
     # Text the templates show (the lock screen), in the session language.
     strings = {'lockPassword': tr('lockScreen.password'), 'lockFingerprintReady': tr('lockScreen.fingerprintReady'),
                'lockFingerprintPresent': tr('lockScreen.fingerprintPresent')}
-    theme = dict(theme, paths={'state': str(STATE)}, derived={'lockRounding': round(26 * scale)}, strings=strings)
+    derived = {'lockRounding': round(26 * scale), 'glassTuning': lua_table(theme.get('hyprland', {}).get('glassTuning', {}))}
+    theme = dict(theme, paths={'state': str(STATE)}, derived=derived, strings=strings)
     outputs = {}
     for path in sorted(templates.glob('*.tpl')):
         outputs[path.stem] = render(path.read_text(encoding='utf-8'), theme, path.name)
@@ -486,7 +542,6 @@ def render_all(theme, templates=TEMPLATES):
 
 
 DYNAMIC = 'dynamic'
-SCHEMES = ('tonal-spot', 'vibrant', 'expressive', 'fidelity', 'neutral')
 MODES = {'auto': 'smart', 'dark': 'dark', 'light': 'light'}
 # GNOME accent colours by hue, for the GSettings accent of a generated theme.
 GNOME_ACCENTS = (('red', 0), ('orange', 30), ('yellow', 55), ('green', 120), ('teal', 180), ('blue', 215),
@@ -581,9 +636,9 @@ def run_matugen(image, chosen):
         raise ValueError(tr('theme.errors.matugenMissing'))
     settings = chosen.get('dynamic', {})
     mode = MODES.get(settings.get('mode', 'auto'), 'smart')
-    scheme = settings.get('scheme') if settings.get('scheme') in SCHEMES else 'tonal-spot'
+    # Tonal spot, matugen's default: the other styles mostly moved the accent and were dropped.
     result = subprocess.run(['matugen', 'image', str(image), '--json', 'hex', '--dry-run', '-m', mode, '-t',
-                             'scheme-' + scheme, '--source-color-index', '0'], capture_output=True, text=True,
+                             'scheme-tonal-spot', '--source-color-index', '0'], capture_output=True, text=True,
                             timeout=60)
     if result.returncode != 0:
         raise ValueError(tr('theme.errors.matugenFailed', [result.stderr.strip()[:300]]))
@@ -615,8 +670,7 @@ def dynamic_info():
     except (OSError, ValueError, AttributeError):
         source = None
     settings = preferences().get('dynamic', {})
-    return {'available': shutil.which('matugen') is not None, 'mode': settings.get('mode', 'auto'),
-            'scheme': settings.get('scheme', 'tonal-spot'), 'source': source}
+    return {'available': shutil.which('matugen') is not None, 'mode': settings.get('mode', 'auto'), 'source': source}
 
 
 # A destination that is still an old Stow link is replaced, never written through into the repository.
@@ -642,7 +696,7 @@ def current():
 
 # Everything is rendered before anything is written, so a template error leaves the old theme intact.
 def apply(name):
-    theme = with_preferences(load(name), preferences())
+    theme = with_preferences(load(name), preferences(), name)
     outputs = render_all(theme)
     for file, text in outputs.items():
         write_atomic(STATE / file, text)
@@ -888,11 +942,16 @@ def main():
     generator.add_argument('--image', type=Path)
     dynamic = commands.add_parser('dynamic')
     dynamic.add_argument('--mode', choices=tuple(MODES))
-    dynamic.add_argument('--scheme', choices=SCHEMES)
     windows = commands.add_parser('window-style')
     windows.add_argument('--rounding', type=int, choices=range(0, 33), metavar='0-32')
     windows.add_argument('--border', type=int, choices=range(0, 9), metavar='0-8')
+    windows.add_argument('--gaps-in', type=int, choices=range(0, 25), metavar='0-24')
+    windows.add_argument('--gaps-out', type=int, choices=range(0, 49), metavar='0-48')
     windows.add_argument('--default', action='store_true')
+    glass = commands.add_parser('glass')
+    glass.add_argument('--option', choices=tuple(GLASS_OPTIONS))
+    glass.add_argument('--value', type=float)
+    glass.add_argument('--reset', action='store_true')
     bar = commands.add_parser('bar-style')
     bar.add_argument('style', choices=('shade', 'transparent', 'toggle'))
     commands.add_parser('tone')
@@ -917,7 +976,7 @@ def main():
     # Commands that change the theme state run one at a time: the panel queue and DynamicTheme.qml can
     # overlap, and each rewrites current.json, preferences.json and the rendered files.
     if arguments.command in ('apply', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme',
-                             'shell-icons', 'bar-style'):
+                             'shell-icons', 'bar-style', 'glass'):
         STATE.mkdir(parents=True, exist_ok=True)
         lock = open(STATE / '.lock', 'a')
         fcntl.flock(lock, fcntl.LOCK_EX)
@@ -962,11 +1021,9 @@ def main():
         settings = dict(chosen.get('dynamic', {}))
         if arguments.mode:
             settings['mode'] = arguments.mode
-        if arguments.scheme:
-            settings['scheme'] = arguments.scheme
         chosen['dynamic'] = settings
         save_preferences(chosen)
-        # The new mode or style shows at once when the dynamic theme is the current one.
+        # The new mode shows at once when the dynamic theme is the current one.
         if current() == DYNAMIC:
             generate(dynamic_info()['source'])
     elif arguments.command == 'window-style':
@@ -976,10 +1033,29 @@ def main():
             windows['rounding'] = arguments.rounding
         if arguments.border is not None:
             windows['borderSize'] = arguments.border
+        if arguments.gaps_in is not None:
+            windows['gapsIn'] = arguments.gaps_in
+        if arguments.gaps_out is not None:
+            windows['gapsOut'] = arguments.gaps_out
         chosen['windows'] = windows
         save_preferences(chosen)
         apply(current())
         reload()
+    elif arguments.command == 'glass':
+        # The glass of the current theme; only Hyprland rereads it.
+        name = current()
+        if not glass_tunable(load(name)):
+            raise ValueError(tr('theme.errors.glassUntunable', [load(name).get('name', name)]))
+        chosen = preferences()
+        glass = dict(chosen.get('glass', {}))
+        if arguments.reset:
+            glass.pop(name, None)
+        elif arguments.option and arguments.value is not None:
+            glass[name] = dict(glass.get(name, {}), **{arguments.option: arguments.value})
+        chosen['glass'] = glass
+        save_preferences(chosen)
+        apply(name)
+        subprocess.run(['hyprctl', 'reload'], capture_output=True, check=False, timeout=10)
     elif arguments.command in ('shell-icons', 'bar-style'):
         chosen = preferences()
         if arguments.command == 'shell-icons':
@@ -1005,10 +1081,15 @@ def main():
             return 0
         apply_wallpaper(target)
     elif arguments.command == 'list':
-        effective = with_preferences(load(current()), preferences())['hyprland']
-        print(json.dumps({'current': current(), 'themes': themes(arguments.details),
-                          'windows': {'rounding': effective['rounding'], 'borderSize': effective['borderSize']},
-                          'dynamic': dynamic_info()},
+        name = current()
+        effective = with_preferences(load(name), preferences(), name)['hyprland']
+        glass = None
+        if 'glassTuning' in effective:
+            glass = [{'option': option, 'value': effective['glassTuning'][option], 'default': default, 'min': low,
+                      'max': high, 'step': step} for option, default, low, high, step in GLASS_TUNING]
+        print(json.dumps({'current': name, 'themes': themes(arguments.details),
+                          'windows': {key: effective[key] for key in WINDOW_KEYS},
+                          'glass': glass, 'dynamic': dynamic_info()},
                          ensure_ascii=False))
     elif arguments.command == 'fonts':
         print(json.dumps(fonts(), ensure_ascii=False))

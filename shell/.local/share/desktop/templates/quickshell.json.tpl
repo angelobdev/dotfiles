@@ -3,6 +3,7 @@
   "surface": "{{ shell.surface | qt }}",
   "raised": "{{ shell.raised | qt }}",
   "tile": "{{ shell.tile | qt }}",
+  "notice": "{{ shell.notice | qt }}",
   "accentText": "{{ shell.accentText | qt }}",
   "track": "{{ shell.track | qt }}",
   "stroke": "{{ shell.stroke | qt }}",

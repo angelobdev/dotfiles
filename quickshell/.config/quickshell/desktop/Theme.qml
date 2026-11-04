@@ -10,6 +10,8 @@ Singleton {
     readonly property color surface: colors.surface
     readonly property color raised: colors.raised
     readonly property color tile: colors.tile
+    // Background of popup notifications; the same as raised unless the theme sets it.
+    readonly property color notice: colors.notice
     readonly property color accentText: colors.accentText
     readonly property color track: colors.track
     readonly property color stroke: colors.stroke
@@ -32,10 +34,11 @@ Singleton {
     readonly property string iconSource: colors.iconSource
     // "shade" keeps the bar gradient, "transparent" drops it (bar colours then follow BarStyle).
     readonly property string barStyle: colors.barStyle
-    // Corners follow the window rounding chosen in the Theming panel; 16 is the design size, so the
-    // radii written in the components are kept as they are.
+    // Corners follow the window rounding chosen in the Theming panel. Top-level surfaces (panels, dock,
+    // OSD, popup notifications, menus) take exactly that radius, so they match the windows and the glass
+    // behind them; radii inside them scale from the design size of 16 through corner().
     readonly property real cornerScale: Math.max(0, colors.rounding) / 16
-    readonly property int radius: corner(18)
+    readonly property int radius: Math.max(0, Math.round(colors.rounding))
     // In tablet mode hit targets grow for fingers (Config.touchScale); in laptop mode every size is the
     // design one. Text sizes do not change.
     readonly property real touchScale: Tablet.active ? Config.touchScale : 1
@@ -74,6 +77,7 @@ Singleton {
             property color surface: "#d9191a1d"
             property color raised: "#e6202226"
             property color tile: "#e6292b30"
+            property color notice: "#e6202226"
             property color accentText: "#191a1d"
             property color track: "#805c6068"
             property color stroke: "#28ffffff"

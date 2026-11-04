@@ -2,9 +2,13 @@
 return {
     shadow = {{ hyprland.shadow | hypr }},
     glassTint = {{ hyprland.glassTint | hexrgba }},
+    glassStyle = "{{ hyprland.glassStyle }}",
+    glassTuning = {{ derived.glassTuning }},
     activeBorder = "rgba({{ hyprland.activeBorder | rgba }})",
     inactiveBorder = "rgba({{ hyprland.inactiveBorder | rgba }})",
     rounding = {{ hyprland.rounding }},
     borderSize = {{ hyprland.borderSize }},
+    gapsIn = {{ hyprland.gapsIn }},
+    gapsOut = {{ hyprland.gapsOut }},
     mode = "{{ mode }}",
 }

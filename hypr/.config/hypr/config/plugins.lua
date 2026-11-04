@@ -90,7 +90,18 @@ end
 if plugins.hyprglass then
     local glass = plugins.hyprglass
     -- The glass brightness follows the theme: the dynamic theme can be light.
-    glass.config({ default_theme = theme.mode == "light" and "light" or "dark", default_preset = "desktop", layers = { enabled = true } })
+    -- The theme picks the look (glassStyle): "desktop" is restrained, "liquid" refracts like macOS glass.
+    local style = theme.glassStyle == "liquid" and "liquid" or "desktop"
+    -- On 0.57.1 the glass caches never notice a window changing behind them: an open panel, the assistant
+    -- console or a translucent terminal showed a frozen copy of what was behind (verification log,
+    -- 2026-11-03). Layers re-render every frame (force_live_resample) and windows re-sample every frame
+    -- (no background_cache), at some GPU cost while glass is on screen.
+    glass.config({
+        default_theme = theme.mode == "light" and "light" or "dark",
+        default_preset = style,
+        layers = { enabled = true, force_live_resample = true },
+        windows = { background_cache = false },
+    })
     glass.preset("desktop", {
         inherits = "subtle",
         blur_strength = 1.5,
@@ -102,13 +113,56 @@ if plugins.hyprglass then
         specular_strength = 0.15,
         tint_color = theme.glassTint,
     })
+    -- A thick pane: a narrow lens rim that bends and mirrors what is around it over a flat, lightly
+    -- frosted center, a thin lit bevel and a touch of dispersion on the rim only.
+    local liquid = {
+        inherits = "subtle",
+        blur_strength = 0.45,
+        blur_iterations = 3,
+        noise_strength = 0.0,
+        refraction_strength = 1.8,
+        chromatic_aberration = 0.5,
+        lens_distortion = 0.0,
+        edge_thickness_px = 40,
+        edge_height = 60,
+        fresnel_strength = 0.45,
+        fresnel_reflection = 0.6,
+        specular_strength = 0.6,
+        bevel_strength = 0.5,
+        bevel_size = 1.5,
+        bevel_shadow = 0.25,
+        saturation = 1.05,
+        vibrancy = 0.3,
+        tint_color = theme.glassTint,
+        -- Light blur shows the lens; a darker or brighter backdrop keeps the text on top readable.
+        dark = { brightness = 0.72, adaptive_dim = 0.55 },
+        light = { brightness = 1.15, adaptive_boost = 0.5 },
+    }
+    -- The values changed in the Theming panel for this theme (theme.py keeps the same defaults).
+    for option, value in pairs(theme.glassTuning) do
+        if type(option) == "string" and type(value) == "number" then
+            liquid[option] = value
+        end
+    end
+    glass.preset("liquid", liquid)
+    -- Shell surfaces draw their own 1 px stroke at the window radius. The bevel of contour glass rounds its
+    -- corners by about 0.6 x the lens rim width instead (the contour is smoothed), which drew a second,
+    -- differently rounded border inside them; there the bevel is off. Windows keep it: their glass follows
+    -- decoration.rounding exactly.
+    glass.preset("liquid-surface", { inherits = "liquid", bevel_strength = 0.0 })
     -- Every shell surface with a background, the same list as the desktop-glass blur rule (rules.lua). The bar
     -- has none: it is left out rather than glassing its glyphs. 0.2 excludes the almost transparent
     -- fullscreen overlay dismissal area.
     for _, namespace in ipairs({ "desktop-dock", "desktop-overlay", "desktop-notifications", "desktop-osd",
         "desktop-share-picker", "desktop-tray-menu", "desktop-osk", "desktop-authentication",
         "desktop-bluetooth-auth" }) do
-        glass.layer(namespace, { preset = "desktop", mask_threshold = 0.2 })
+        -- Liquid glass follows each shape a surface draws (every card and toast gets its own rim);
+        -- the desktop look keeps the alpha mask.
+        glass.layer(namespace, {
+            preset = style == "liquid" and "liquid-surface" or "desktop",
+            mask_threshold = 0.2,
+            mask_mode = style == "liquid" and "contour" or "auto",
+        })
     end
 end
 
