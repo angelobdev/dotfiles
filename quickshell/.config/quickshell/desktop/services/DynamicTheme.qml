@@ -15,8 +15,10 @@ Singleton {
     // The current wallpaper source; the one watcher of selection.json, also read by Theming and BarStyle.
     property string wallpaper: ""
     property string source: ""
+    // The wallpaper the last failed run was for: not tried again on every reload, while the next wallpaper is.
+    property string failed: ""
     readonly property bool active: theme === "dynamic"
-    readonly property bool stale: active && wallpaper !== "" && wallpaper !== source
+    readonly property bool stale: active && wallpaper !== "" && wallpaper !== source && wallpaper !== failed
     property bool pending: false
     readonly property bool running: generator.running
     function parse(text) {
@@ -34,11 +36,15 @@ Singleton {
             pending = true;
             return;
         }
+        generator.asked = wallpaper;
         generator.running = true;
     }
     onStaleChanged: update()
+    // A new wallpaper while stale stays true (a run going on) must still be generated after it.
+    onWallpaperChanged: update()
     Process {
         id: generator
+        property string asked: ""
         command: ["python3", root.helper, "generate"]
         stderr: StdioCollector {
             onStreamFinished: {
@@ -46,7 +52,9 @@ Singleton {
                     console.warn("dynamic theme:", text.trim());
             }
         }
-        onExited: {
+        onExited: code => {
+            // A failed run leaves the old source, so stale would stay true and no later change would start one.
+            root.failed = code === 0 ? "" : generator.asked;
             dynamicFile.reload();
             if (root.pending) {
                 root.pending = false;
