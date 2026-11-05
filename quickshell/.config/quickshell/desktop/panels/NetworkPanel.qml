@@ -13,6 +13,9 @@ Overlay {
     closeOnEscape: false
     property var passwordNetwork: null
     property var detailsNetwork: null
+    // The network last asked to connect, from any page: its failure is reported even when its row is not shown
+    // (the details page, or filtered out by the search).
+    property var attempt: null
     property var hiddenDevice: null
     property bool hiddenSecure: true
     property string error: ""
@@ -32,6 +35,11 @@ Overlay {
     }
     function personal(network) {
         return [WifiSecurityType.WpaPsk, WifiSecurityType.Wpa2Psk, WifiSecurityType.Sae].includes(network.security);
+    }
+    function connectTo(network) {
+        error = "";
+        attempt = network;
+        network.connect();
     }
     function askPassword(network) {
         passwordNetwork = network;
@@ -91,6 +99,19 @@ Overlay {
     }
     onActiveNetworkChanged: if (visible)
         NetworkInfo.refreshDetails(activeDevice?.name)
+    Connections {
+        target: root.attempt
+        function onConnectionFailed(reason) {
+            root.error = I18n.tr("network.connectionFailed", [I18n.networkDescription(ConnectionFailReason.toString(reason))]);
+            // A saved password that no longer works: ask for a new one on the list page, where the prompt is.
+            if (root.personal(root.attempt) && reason === ConnectionFailReason.NoSecrets) {
+                const network = root.attempt;
+                if (root.detailsNetwork)
+                    root.closeDetails();
+                root.askPassword(network);
+            }
+        }
+    }
     contentItem.Keys.onEscapePressed: {
         if (detailsNetwork)
             closeDetails();
@@ -193,7 +214,9 @@ Overlay {
                         Layout.fillWidth: true
                         sourceComponent: NetworkDetails {
                             network: root.detailsNetwork
+                            failure: root.error
                             onForgotten: root.closeDetails()
+                            onConnectRequested: root.connectTo(root.detailsNetwork)
                         }
                     }
                     RowLayout {
@@ -307,7 +330,7 @@ Overlay {
                                                 return;
                                             }
                                             if (networkRow.modelData.known || deviceRow.wired || !networkRow.secured)
-                                                networkRow.modelData.connect();
+                                                root.connectTo(networkRow.modelData);
                                             else if (root.personal(networkRow.modelData))
                                                 root.askPassword(networkRow.modelData);
                                             else
@@ -328,14 +351,6 @@ Overlay {
                                         iconSize: 16
                                         tooltip: I18n.tr("network.details")
                                         onClicked: root.openDetails(networkRow.modelData)
-                                    }
-                                    Connections {
-                                        target: networkRow.modelData
-                                        function onConnectionFailed(reason) {
-                                            root.error = I18n.tr("network.connectionFailed", [I18n.networkDescription(ConnectionFailReason.toString(reason))]);
-                                            if (root.personal(networkRow.modelData) && reason === ConnectionFailReason.NoSecrets)
-                                                root.askPassword(networkRow.modelData);
-                                        }
                                     }
                                 }
                             }
@@ -536,6 +551,7 @@ Overlay {
                                 enabled: !!root.passwordNetwork && password.text.length > 0
                                 onClicked: if (enabled) {
                                     root.error = "";
+                                    root.attempt = root.passwordNetwork;
                                     root.passwordNetwork.connectWithPsk(password.text);
                                     password.clear();
                                 }

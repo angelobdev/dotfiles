@@ -27,7 +27,10 @@ ColumnLayout {
     }
     readonly property string band: info?.frequency ? I18n.tr("network.band", [(info.frequency / 1000).toLocaleString(I18n.locale, "f", 1), info.channel]) : ""
     readonly property var infoRows: [[I18n.tr("network.ipAddress"), (info?.ipv4 ?? []).map(a => a.split("/")[0]).join(", ")], [I18n.tr("network.gateway"), info?.gateway ?? ""], [I18n.tr("network.dnsServers"), (info?.dns ?? []).join(", ")], [I18n.tr("network.ipv6Address"), (info?.ipv6 ?? []).map(a => a.split("/")[0]).join(", ")], [I18n.tr("network.linkSpeed"), !wifi && device?.linkSpeed > 0 ? I18n.tr("network.linkSpeedValue", [device.linkSpeed]) : ""], [I18n.tr("network.hardwareAddress"), info?.mac || device?.address || ""]].filter(row => row[1] !== "")
+    // The panel message about this network (a failed connection), shown with the NetworkInfo errors.
+    property string failure: ""
     signal forgotten
+    signal connectRequested
     function reset() {
         password.reset();
         confirmForget = false;
@@ -327,9 +330,9 @@ ColumnLayout {
         }
     }
     Text {
-        visible: NetworkInfo.error !== ""
+        visible: root.failure !== "" || NetworkInfo.error !== ""
         Layout.fillWidth: true
-        text: NetworkInfo.error
+        text: root.failure || NetworkInfo.error
         color: Theme.danger
         wrapMode: Text.Wrap
         textFormat: Text.PlainText
@@ -344,7 +347,7 @@ ColumnLayout {
                 if (root.network.connected)
                     root.network.disconnect();
                 else
-                    root.network.connect();
+                    root.connectRequested();
             }
         }
         Item {
