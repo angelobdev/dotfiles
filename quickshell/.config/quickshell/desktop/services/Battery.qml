@@ -18,7 +18,8 @@ Singleton {
     readonly property bool discharging: present && UPower.onBattery
     // 0 fine, 1 low, 2 critical.
     readonly property int level: !discharging ? 0 : percent <= Config.batteryCritical ? 2 : percent <= Config.batteryLow ? 1 : 0
-    property int announced: 0
+    // Saved, so a shell restart below a threshold does not warn again in the same discharge.
+    readonly property int announced: settings.announced
     readonly property bool autoSaver: settings.autoSaver
     function setAutoSaver(on) {
         settings.autoSaver = on;
@@ -78,19 +79,26 @@ Singleton {
         const minutes = Math.max(1, Math.round(seconds / 60));
         return minutes >= 60 ? I18n.tr("battery.durationHours", [Math.floor(minutes / 60), minutes % 60]) : I18n.tr("battery.durationMinutes", [minutes]);
     }
+    function announce(value) {
+        if (settings.announced === value)
+            return;
+        settings.announced = value;
+        settingsFile.writeAdapter();
+    }
     function check() {
         if (!discharging) {
-            announced = 0;
             // Only on the charger: a battery not yet read is not a charger.
-            if (present && !UPower.onBattery)
+            if (present && !UPower.onBattery) {
+                announce(0);
                 restoreProfile();
+            }
             return;
         }
         if (level <= announced)
             return;
         // Once per discharge: a profile chosen after the switch stays.
         const switched = announced === 0 && autoSaver && enableSaver();
-        announced = level;
+        announce(level);
         const left = duration(device?.timeToEmpty ?? 0);
         const critical = level === 2;
         const body = left ? I18n.tr(critical ? "battery.alert.criticalBodyTime" : "battery.alert.lowBodyTime", [left]) : I18n.tr(critical ? "battery.alert.criticalBody" : "battery.alert.lowBody");
@@ -100,6 +108,8 @@ Singleton {
     }
     onLevelChanged: check()
     onDischargingChanged: check()
+    // UPower may be read after startup: on the charger nothing else would run check().
+    onPresentChanged: check()
     Connections {
         target: UPower
         function onOnBatteryChanged() {
@@ -118,6 +128,8 @@ Singleton {
             property bool autoSaver: true
             // The profile Power Saver replaced, until the charger brings it back (-1: none).
             property int restoreProfile: -1
+            // The warning level shown in this discharge (0 none, 1 low, 2 critical), until the charger.
+            property int announced: 0
         }
     }
     Component.onCompleted: Qt.callLater(check)
