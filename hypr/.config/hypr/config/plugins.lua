@@ -95,7 +95,10 @@ if plugins.hyprgrass then
     swipe(4, "right", hl.dsp.window.move({ workspace = "r+1" }))
     swipe(4, "down", hl.dsp.exec_cmd(shell .. " toggle notifications"))
     if plugins.overview then
-        swipe(4, "up", function() plugins.overview.toggle() end)
+        swipe(4, "up", function()
+            hl.exec_cmd(shell .. " overview")
+            plugins.overview.toggle()
+        end)
     end
 end
 

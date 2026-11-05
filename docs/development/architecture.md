@@ -40,17 +40,17 @@ Services spawn `python3 ~/.local/libexec/desktop/<helper>.py …` through Quicks
 
 | Pattern | Helpers | Protocol |
 | --- | --- | --- |
-| Long-lived watcher | `bar_visibility.py`, `brightness.py watch`, `clipboard.py watch-*`, `recording.py` | One compact JSON document per line on stdout (`flush=True`), parsed by `SplitParser` |
+| Long-lived watcher | `bar_visibility.py`, `brightness.py watch`, `privacy.py watch`, `clipboard.py watch-*`, `recording.py` | One compact JSON document per line on stdout (`flush=True`), parsed by `SplitParser` |
 | Two-way agent | `bluetooth_agent.py` | JSON lines on stdin (`pair`/`cancel`/`reply`) and stdout (`status`/`prompt`/`error`/`operation`) |
 | One-shot | `theme.py` (apply/set/list/render; see Themes below), `calendar.py`, `brightness.py read/set`, `clipboard.py list/…`, `wallpaper.py`, `xwayland.py` (apply/status, `aseprite` launcher), `network.py` (details, profile, set, set-dns, set-ipv4, set-mac, add-hidden with the password on stdin, vpn/vpn-up/vpn-down, hotspot/hotspot-on/hotspot-off, tailscale/tailscale-up/tailscale-down, extras (one poll for VPN, hotspot and Tailscale), secret, copy-secret, qr) | One JSON document collected by `StdioCollector`; errors as `{"error": …}` or translated stderr |
 
-Crashed watchers restart through a `Timer` whose `running` is `<enabled> && !process.running`. Treat argv and stdout formats as a byte-exact contract between QML and Python.
+Crashed watchers restart through a `Timer` whose `running` is `<enabled> && !process.running`. Long-lived commands start through `setpriv --pdeathsig TERM --`, so the kernel ends them with the shell even when the shell is killed or crashes (otherwise every restart left them running). Watchers wait on events where the kernel offers them: `brightness.py watch` polls `actual_brightness` for sysfs notifications, `privacy.py watch` uses inotify on `/dev/video*`. Treat argv and stdout formats as a byte-exact contract between QML and Python.
 
 ## Compositor plugins
 
 Hyprspace, Hyprgrass, Hyprglass and HyprCapture are built by hyprpm from the pinned packaging in `scripts/hyprpm/`, which patches Hyprgrass so gesture touches never reach windows. `config/plugins.lua` guards every block (`local plugins = hl.plugin or {}`; `if plugins.X then … end`) so `--verify-config` and plugin-less startup work. Actions that need a plugin (screenshots) check `hl.plugin` at press time because plugins load after `hyprland.start`. `desktop-plugins reload` loads them only when they were built from the current packaging (`scripts/hyprpm/bundle.py` digest) for the installed Hyprland; otherwise, at startup with nothing loaded, it opens a terminal running `install-hypr-plugins.py`, or after an unverified compositor update it leaves them off.
 
-Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha over Hyprland IPC; `BarVisibility.hidden(screen)` drops the bar's exclusive zone and input mask while keeping the surface mapped (it carries the idle inhibitor).
+Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha over Hyprland IPC (every 2 s at rest, every 100 ms while a bar is hidden and for 4 s after a `wake` line on stdin, which the hot corner, the assist button and `desktop-shell overview` send before opening the overview); `BarVisibility.hidden(screen)` drops the bar's exclusive zone and input mask while keeping the surface mapped (it carries the idle inhibitor).
 
 ## Stow packages
 

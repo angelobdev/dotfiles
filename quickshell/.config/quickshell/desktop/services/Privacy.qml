@@ -39,25 +39,27 @@ Singleton {
                 root.sharing = event.data.split(",")[0] === "1";
         }
     }
-    Timer {
-        interval: 3000
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: if (!cameras.running)
-            cameras.running = true
-    }
+    // privacy.py watch prints the holders whenever a camera opens or closes (inotify), nothing in between.
     Process {
         id: cameras
-        command: ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/privacy.py", "cameras"]
-        stdout: StdioCollector {
-            onStreamFinished: {
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/privacy.py", "watch"])
+        running: true
+        stdinEnabled: true
+        stdout: SplitParser {
+            onRead: data => {
                 try {
-                    const names = JSON.parse(text);
-                    if (Array.isArray(names) && JSON.stringify(names) !== JSON.stringify(root.cameraHolders))
+                    const names = JSON.parse(data);
+                    if (Array.isArray(names))
                         root.cameraHolders = names;
                 } catch (error) {}
             }
         }
+        onExited: retry.restart()
+    }
+    Timer {
+        id: retry
+        interval: 5000
+        onTriggered: cameras.running = true
     }
 }

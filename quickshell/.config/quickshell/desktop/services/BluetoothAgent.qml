@@ -45,7 +45,8 @@ Singleton {
     }
     Process {
         id: process
-        command: ["python3", root.helper]
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper])
         running: true
         stdinEnabled: true
         stdout: SplitParser {

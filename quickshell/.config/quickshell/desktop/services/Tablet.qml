@@ -107,7 +107,8 @@ Singleton {
     }
     Process {
         id: watcher
-        command: ["python3", root.helper, "watch"]
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch"])
         stdout: SplitParser {
             onRead: data => {
                 try {

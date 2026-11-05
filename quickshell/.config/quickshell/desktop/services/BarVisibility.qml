@@ -10,10 +10,17 @@ Singleton {
     function hidden(name) {
         return hiddenMonitors.indexOf(name) !== -1;
     }
+    // The overview is about to open: read the layers often for a while (bar_visibility.py).
+    function wake() {
+        if (watcher.running)
+            watcher.write("wake\n");
+    }
     Process {
         id: watcher
-        command: ["python3", root.helper]
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper])
         running: true
+        stdinEnabled: true
         stdout: SplitParser {
             onRead: data => {
                 try {

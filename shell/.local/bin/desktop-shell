@@ -126,6 +126,10 @@ case "${1:-start}" in
         echo 'Usage: desktop-shell dock {show|hide|toggle|touch|launch 1-9}' >&2
         exit 2
         ;;
+    overview)
+        # The overview is opening: the shell watches the bars closely for a while.
+        exec qs ipc -p "$config" call desktop overview
+        ;;
     zoom)
         # Screen zoom around the pointer, with an OSD.
         case "${2:-}" in in|out|reset|toggle) exec qs ipc -p "$config" call desktop zoom "$2" ;; esac
@@ -180,5 +184,5 @@ case "${1:-start}" in
         ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
 esac

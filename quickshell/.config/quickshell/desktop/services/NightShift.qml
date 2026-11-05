@@ -84,7 +84,8 @@ Singleton {
     }
     Process {
         id: sunset
-        command: ["hyprsunset", "-t", String(root.temperature)]
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["hyprsunset", "-t", String(root.temperature)])
         stderr: StdioCollector {
             onStreamFinished: {
                 if (text.trim() !== "" && root.active)

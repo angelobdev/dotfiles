@@ -714,3 +714,15 @@ From the same read-only review (four areas: uncommitted installer work, Quickshe
 - The Theming page (Icons tab, "Find online…") loads without errors; it is for the user to try.
 - The store cards overflowed into their neighbours (screenshots from the user): the file selector, Remove and Install sat on one row wider than a card, and the selector's minimum width was its longest file name. The selector has its own row now and may shrink (the name ends with an ellipsis), the buttons sit below on the right, and the card clips. Opened through the new IPC `theming store-icons` (also `store-cursors`) and captured: Candy, Papirus, Tela and the rest fit their cards.
 
+## Battery and resource use, 2026-11-05
+
+Measured on battery, desktop idle, with `upower` energy-rate averages over 60 s and per-process CPU from `/proc/PID/stat`.
+
+- Starting point about 10.4–12 W. 31 pairs of orphaned helpers (`brightness.py watch`, `bar_visibility.py`, …) and 30 pairs of `wl-paste --watch` were still running from earlier shell restarts: a killed Quickshell left its children behind. Long-lived commands now start through `setpriv --pdeathsig TERM --`; after a `desktop-shell restart` no helper of the old shell is left.
+- The biggest cost was the bar's agent dot: its pulse animation kept the bar repainting at 120 Hz while an agent was working. Quickshell went from about 12% to 0.4% CPU, Hyprland from about 15% to 9%, power from about 12 W to 6.9 W. On battery the dot now blinks (700 ms, two repaints per period); on AC it pulses as before.
+- `brightness.py watch` waits for sysfs notifications on `actual_brightness` (10 s fallback): no wake-ups at rest, brightness keys still update the OSD at once.
+- `bar_visibility.py` asks Hyprland every 2 s at rest instead of every 100 ms (about 6 → 1 requests per 20 s idle) and speeds up while a bar is hidden or after a wake-up. The hot corner still hides the bar (reserved 38 → 0 → 38).
+- Camera use: the 3 s `privacy.py` spawn (about 60 ms of CPU each) became a persistent `privacy.py watch` with inotify on `/dev/video*`; a test process holding `/dev/video0` showed up at once and went away on close.
+- Tried and left as they were: VRR raised power (reverted); blur costs about 1.8% Hyprland CPU and 0.05 W (kept). The tuned profile is already `balanced-battery`.
+- Refresh rate: 120 Hz 6.79 W, 48 Hz 5.75 W (the panel's only other mode). Not changed: switching the rate on battery would be a behavior change.
+- After the changes, at rest: Quickshell and its helpers 0.37% CPU, Hyprland about 9% (mostly the terminal used for these measurements), 6.9 W. `check.sh` passes.

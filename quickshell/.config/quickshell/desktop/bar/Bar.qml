@@ -55,7 +55,10 @@ PanelWindow {
     Timer {
         interval: 220
         running: cornerHover.hovered
-        onTriggered: Quickshell.execDetached(["hyprctl", "eval", "if desktop_overview then desktop_overview(" + JSON.stringify(bar.screen.name) + ") end"])
+        onTriggered: {
+            BarVisibility.wake();
+            Quickshell.execDetached(["hyprctl", "eval", "if desktop_overview then desktop_overview(" + JSON.stringify(bar.screen.name) + ") end"]);
+        }
     }
     TrayMenuWindow {
         id: trayMenu
@@ -335,6 +338,9 @@ PanelWindow {
                 id: agentDot
                 readonly property bool asking: Agent.state === "permission" || Agent.state === "error"
                 readonly property bool pulsing: Agent.state === "working" && !Config.reduceMotion
+                // On battery the dot blinks in two steps instead of fading: a fade redraws the bar on every frame
+                // (120 a second here) for as long as the assistant works, and Hyprland composites each one.
+                readonly property bool smooth: pulsing && !UPower.onBattery
                 property real pulse: 1
                 visible: Agent.state === "working" || asking || Agent.unseen
                 opacity: pulsing ? pulse : 1
@@ -348,8 +354,15 @@ PanelWindow {
                 height: 7
                 radius: 3.5
                 color: asking ? Theme.danger : BarStyle.accent
+                Timer {
+                    interval: 700
+                    repeat: true
+                    running: agentDot.pulsing && !agentDot.smooth
+                    onTriggered: agentDot.pulse = agentDot.pulse < 1 ? 1 : 0.35
+                    onRunningChanged: agentDot.pulse = 1
+                }
                 SequentialAnimation on pulse {
-                    running: agentDot.pulsing
+                    running: agentDot.smooth
                     loops: Animation.Infinite
                     NumberAnimation {
                         to: 0.35

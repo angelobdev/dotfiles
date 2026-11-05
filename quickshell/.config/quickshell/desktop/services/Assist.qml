@@ -249,8 +249,10 @@ Singleton {
             ShellState.toggle(name);
         else if (name === "dock")
             Dock.request(Tablet.active ? "touch" : "toggle");
-        else if (name === "overview")
+        else if (name === "overview") {
+            BarVisibility.wake();
             Quickshell.execDetached(["hyprctl", "eval", "local overview = (hl.plugin or {}).overview if overview then overview.toggle() end"]);
+        }
         else if (name === "workspacePrevious" || name === "workspaceNext")
             stepWorkspace(name === "workspaceNext" ? 1 : -1);
         else if (name === "rotationLock")

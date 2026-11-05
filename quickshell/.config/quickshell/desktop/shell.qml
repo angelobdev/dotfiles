@@ -59,6 +59,10 @@ ShellRoot {
         function rotationLock(action: string): bool {
             return Tablet.requestLock(action);
         }
+        // The overview is opening (the four-finger swipe in plugins.lua): watch the bars closely for a while.
+        function overview(): void {
+            BarVisibility.wake();
+        }
         // Screen zoom: in, out, reset, toggle.
         function zoom(action: string): bool {
             return Zoom.request(action);

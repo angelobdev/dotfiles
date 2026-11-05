@@ -3,13 +3,20 @@
 
 Hyprspace fades top layers to zero but leaves their exclusive zone and input
 region intact. Keep the surfaces mapped so its restoration of alpha is observable.
+
+Hyprspace reports nothing, so the layers are read: every 100 ms while a bar is hidden and for a few seconds after
+"wake" on stdin (the shell sends it when it or Hyprland opens the overview), every 2 s otherwise. Reading ten
+times a second all the time kept the CPU and the compositor awake for a change that happens a few times a day.
 """
 import json
 import os
 from pathlib import Path
+import select
 import socket
 import sys
 import time
+
+FAST, SLOW, AWAKE = 0.1, 2.0, 4.0
 
 
 def hidden_bars(layers):
@@ -30,6 +37,7 @@ def watch():
         return
     path = Path(runtime) / 'hypr' / instance / '.socket.sock'
     previous = None
+    awake_until = 0.0
     while True:
         try:
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
@@ -47,7 +55,13 @@ def watch():
         if state != previous:
             print(json.dumps(state), flush=True)
             previous = state
-        time.sleep(0.1)
+        interval = FAST if state or time.monotonic() < awake_until else SLOW
+        ready, _, _ = select.select([sys.stdin], [], [], interval)
+        if ready:
+            line = sys.stdin.readline()
+            if not line:
+                return  # The shell is gone.
+            awake_until = time.monotonic() + AWAKE
 
 
 if __name__ == '__main__':

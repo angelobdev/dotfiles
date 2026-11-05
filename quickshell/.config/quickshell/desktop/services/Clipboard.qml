@@ -27,12 +27,14 @@ Singleton {
     }
     Process {
         id: textWatcher
-        command: ["python3", root.helper, "watch-text", String(Config.clipboardMaxItems)]
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch-text", String(Config.clipboardMaxItems)])
         running: root.collecting
     }
     Process {
         id: imageWatcher
-        command: ["python3", root.helper, "watch-image", String(Config.clipboardMaxItems)]
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch-image", String(Config.clipboardMaxItems)])
         running: root.collecting
     }
     Timer {

@@ -25,6 +25,7 @@ Singleton {
     Process {
         running: root.keepAwake
         stdinEnabled: true
-        command: ["systemd-inhibit", "--what=idle", "--who=Desktop", "--why=" + I18n.tr("idle.keepAwake"), "--mode=block", "cat"]
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["systemd-inhibit", "--what=idle", "--who=Desktop", "--why=" + I18n.tr("idle.keepAwake"), "--mode=block", "cat"])
     }
 }

@@ -6,6 +6,7 @@ import json
 import math
 from pathlib import Path
 import re
+import select
 import shutil
 import subprocess
 import sys
@@ -112,15 +113,41 @@ def backlight_snapshot():
     return levels
 
 
+# Without a notification the levels are read again this often, for a driver that never sends one.
+FALLBACK_SECONDS = 10
+
+
+def wait_for_change(timeout):
+    # The backlight core notifies actual_brightness (sysfs_notify) on every change, from the keys or a write:
+    # waiting on it costs nothing, where reading every 150 ms woke the CPU seven times a second.
+    files, poller = [], select.poll()
+    try:
+        for device in BACKLIGHT.glob('*'):
+            try:
+                handle = open(device / 'actual_brightness', 'rb', buffering=0)
+            except OSError:
+                continue
+            handle.read()
+            files.append(handle)
+            poller.register(handle, select.POLLPRI | select.POLLERR)
+        if files:
+            poller.poll(timeout * 1000)
+        else:
+            time.sleep(timeout)
+    finally:
+        for handle in files:
+            handle.close()
+
+
 def watch_backlights():
-    # Sysfs reads only: no subprocesses or DDC requests in this fast path.
+    # Sysfs reads only: no subprocesses or DDC requests in this path.
     previous = None
     while True:
         levels = backlight_snapshot()
         if levels != previous:
             print(json.dumps(levels), flush=True)
             previous = levels
-        time.sleep(0.15)
+        wait_for_change(FALLBACK_SECONDS)
 
 
 def main():

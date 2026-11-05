@@ -139,7 +139,7 @@ The calendar weather asks GeoClue for the computer's position at city accuracy (
 
 ## Privacy indicator
 
-`services/Privacy.qml` reads microphone use from PipeWire capture streams, camera use from the processes holding a `/dev/video*` device (`privacy.py cameras`, every 3 s; PipeWire stands for apps that read the camera through it, named from its video streams), and screen sharing from Hyprland's `screencast` events. Only the user's own processes can be seen. `desktop-shell status` shows the same under `privacy`.
+`services/Privacy.qml` reads microphone use from PipeWire capture streams, camera use from the processes holding a `/dev/video*` device (`privacy.py watch`, woken by inotify when a camera device opens or closes; PipeWire stands for apps that read the camera through it, named from its video streams), and screen sharing from Hyprland's `screencast` events. Only the user's own processes can be seen. `desktop-shell status` shows the same under `privacy`.
 
 ## KDE Store
 

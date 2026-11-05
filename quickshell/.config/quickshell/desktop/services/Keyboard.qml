@@ -384,7 +384,8 @@ Singleton {
     }
     Process {
         id: process
-        command: ["python3", root.helper, "run"].concat(Config.oskAutoShow ? ["--input-method"] : [])
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "run"].concat(Config.oskAutoShow ? ["--input-method"] : []))
         stdinEnabled: true
         stdout: SplitParser {
             onRead: data => {
