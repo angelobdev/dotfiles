@@ -39,7 +39,7 @@ Scope {
     Binding {
         target: Keyboard
         property: "area"
-        value: floatingWindow.visible ? Qt.rect(floating.x, floating.y, floating.width, floating.height) : Qt.rect(0, dockedWindow.screen ? dockedWindow.screen.height - dockedWindow.height : 0, dockedWindow.width, dockedWindow.height)
+        value: floatingWindow.visible ? Qt.rect(floatingView.x, floatingView.y, floatingView.width, floatingView.height) : Qt.rect(0, dockedWindow.screen ? dockedWindow.screen.height - dockedWindow.height : 0, dockedWindow.width, dockedWindow.height)
     }
     // Long enough for the unmap to reach the compositor, so the map that follows is a new one.
     Timer {
@@ -59,32 +59,42 @@ Scope {
         screen: root.target
         // Over the lock screen the keyboard is always docked (rules.lua lets this namespace above the lock).
         visible: Keyboard.shown && (!Keyboard.floating || Keyboard.locked) && !root.raising
-        onVisibleChanged: if (!root.raising)
-            refit.restart()
+        // The keys are built the first time it shows and kept: never on a laptop, once in tablet mode.
+        property bool used: false
+        onVisibleChanged: {
+            if (visible)
+                used = true;
+            if (!root.raising)
+                refit.restart();
+        }
         anchors {
             left: true
             right: true
             bottom: true
         }
-        implicitHeight: docked.implicitHeight
+        implicitHeight: docked.item?.implicitHeight ?? 0
         color: Theme.background
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "desktop-osk"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
-        KeyboardView {
+        Loader {
             id: docked
+            active: dockedWindow.used
             anchors {
                 horizontalCenter: parent.horizontalCenter
                 bottom: parent.bottom
             }
             // Ten keys across a wide landscape screen would be too wide to type on.
             width: Math.min(parent.width, 1100)
+            sourceComponent: KeyboardView {}
         }
     }
     PanelWindow {
         id: floatingWindow
         screen: root.target
         visible: Keyboard.shown && Keyboard.floating && !Keyboard.locked && !root.raising
+        // Built the first time it shows and kept, like the docked one.
+        property bool used: false
         anchors {
             top: true
             bottom: true
@@ -97,22 +107,28 @@ Scope {
         WlrLayershell.namespace: "desktop-osk"
         WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
         mask: Region {
-            item: floating
+            item: floatingView
         }
         // Centred near the bottom each time it opens; a drag replaces these bindings until then.
         function place() {
-            floating.x = Qt.binding(() => Math.round((floatingWindow.width - floating.width) / 2));
-            floating.y = Qt.binding(() => Math.max(0, floatingWindow.height - floating.height - 24));
+            floatingView.x = Qt.binding(() => Math.round((floatingWindow.width - floatingView.width) / 2));
+            floatingView.y = Qt.binding(() => Math.max(0, floatingWindow.height - floatingView.height - 24));
         }
-        onVisibleChanged: if (visible)
-            place()
-        KeyboardView {
-            id: floating
-            floating: true
-            dragTarget: floating
+        onVisibleChanged: if (visible) {
+            used = true;
+            place();
+        }
+        // The loader is what moves (the keyboard drags it by its strip) and what the input region follows.
+        Loader {
+            id: floatingView
+            active: floatingWindow.used
             x: Math.round((floatingWindow.width - width) / 2)
             y: Math.max(0, floatingWindow.height - height - 24)
             width: Math.min(floatingWindow.width - 32, 900)
+            sourceComponent: KeyboardView {
+                floating: true
+                dragTarget: floatingView
+            }
         }
     }
 }

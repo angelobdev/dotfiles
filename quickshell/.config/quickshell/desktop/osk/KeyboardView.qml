@@ -213,13 +213,16 @@ Rectangle {
         color: down ? Theme.accent : lit ? Qt.alpha(Theme.accent, 0.3) : special ? Theme.raised : Theme.tile
         border.width: 1
         border.color: Theme.stroke
-        Icon {
+        // Only keys with an icon get one (Image + effect): letters are most of the keys.
+        Loader {
             anchors.centerIn: parent
-            visible: button.icon !== ""
-            name: button.icon
-            color: button.down ? Theme.accentText : Theme.text
-            width: 24
-            height: 24
+            active: button.icon !== ""
+            sourceComponent: Icon {
+                name: button.icon
+                color: button.down ? Theme.accentText : Theme.text
+                width: 24
+                height: 24
+            }
         }
         Text {
             anchors.centerIn: parent
