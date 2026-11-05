@@ -316,7 +316,7 @@ Overlay {
                                             Text {
                                                 x: 8
                                                 y: 28
-                                                text: "Lorem ipsum"
+                                                text: I18n.tr("theming.previewText")
                                                 color: themeCell.preview.muted
                                                 font.family: Theme.font
                                                 font.pixelSize: Theme.textSize(10)
@@ -349,7 +349,7 @@ Overlay {
                                             color: themeCell.preview.accent
                                             Text {
                                                 anchors.centerIn: parent
-                                                text: "OK"
+                                                text: I18n.tr("theming.previewButton")
                                                 color: themeCell.preview.accentFg
                                                 font.family: Theme.font
                                                 font.pixelSize: Theme.textSize(10)
@@ -708,7 +708,7 @@ Overlay {
                             }
                             Text {
                                 Layout.fillWidth: true
-                                text: "0O 1lI {} [] => fn main() { println!(\"ciao\"); }"
+                                text: "0O 1lI {} [] => fn main() { println!(\"hello\"); }"
                                 textFormat: Text.PlainText
                                 elide: Text.ElideRight
                                 color: Theme.muted
