@@ -692,3 +692,9 @@ From the same read-only review (four areas: uncommitted installer work, Quickshe
 - Accessibility: `Super + Alt + +` / `0` set `cursor:zoom_factor` to 1.25 and back to 1 (read with `hyprctl getoption`). A High Contrast theme passes the theme contrast tests. A shell-wide text scale was not done: 167 font sizes are literal in the QML.
 - Displays (`Super + P`): with a headless output, Extend placed it at x 1728, Mirror mirrored the panel, Laptop only turned it off, External only turned the panel off, and every mode came back to Extend. Two fixes on the way: a monitor rule must say `disabled = false` and `mirror = ""`, or the previous mode stays (this also kept the panel off after a clamshell); and Hyprland's `FALLBACK` output, made when the last real one goes, counted as another monitor, so unplugging the external one in External only (or in a clamshell) left the panel off. Both fixed; the unplug case now brings the panel back by itself.
 - `check.sh` passes.
+
+## CI and the bar media title, 2026-11-05
+
+- The Check workflow had failed since the plugin rebuild work: `test_plugins.py` reset a mocked cache and the installer then read the real `/usr/share/pkgconfig/hyprland.pc`, which the CI container has not got. `install-hypr-plugins.py` names it `HYPRLAND_PC` and the test points it at a temporary file.
+- The Install workflow had failed since the uninstall work: `install-container.sh` asked `systemctl get-default` before the installer brought systemd into the `fedora:45` container. Until systemctl exists it takes Fedora's default, `graphical.target`, which is what systemctl reports once installed.
+- The bar's media title kept its full width and ran over the battery: centred, `ActionButton`'s label is not limited by the button. It is left-aligned now, so it fills the button and ends with an ellipsis (seen with a Spotify title).

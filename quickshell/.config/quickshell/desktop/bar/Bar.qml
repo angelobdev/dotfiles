@@ -231,7 +231,12 @@ PanelWindow {
             iconName: player?.isPlaying ? "pause" : "play"
             text: player?.trackTitle ?? ""
             textElide: Text.ElideRight
+            // The label fills the button and is cut with an ellipsis: centred, it kept its full width and ran
+            // over the battery.
+            alignLeft: true
+            clip: true
             implicitWidth: Math.min(Theme.hit(220), implicitContentWidth + leftPadding + rightPadding)
+            Layout.maximumWidth: Theme.hit(220)
             tooltip: I18n.tr("media.barTooltip", [player?.trackTitle ?? "", player?.trackArtist || player?.identity || ""])
             onClicked: Media.control("play-pause")
             TapHandler {
