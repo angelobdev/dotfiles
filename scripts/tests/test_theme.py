@@ -202,6 +202,18 @@ class TextScaleTests(unittest.TestCase):
             self.assertEqual(json.loads((Path(folder) / 'preferences.json').read_text()), {})
 
 
+class IconThemeTests(unittest.TestCase):
+    def test_a_malformed_size_hides_no_other_theme(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            for name, size in (('Sloppy', '48px'), ('Tidy', '48')):
+                (root / name / '48/apps').mkdir(parents=True)
+                (root / name / 'index.theme').write_text(f'[Icon Theme]\nName={name}\nDirectories=48/apps\n\n[48/apps]\nSize={size}\nType=Fixed\n')
+                for icon in theme.ICON_SAMPLES:
+                    (root / name / '48/apps' / (icon + '.svg')).write_text('<svg/>')
+            self.assertEqual([listed['id'] for listed in theme.icon_themes([root])], ['Sloppy', 'Tidy'])
+
+
 class CursorTests(unittest.TestCase):
     def test_the_chosen_cursor_reaches_gsettings_and_hyprland(self):
         merged = theme.with_preferences(GRAPHITE, {'cursor': {'theme': 'Bibata', 'size': 32}})

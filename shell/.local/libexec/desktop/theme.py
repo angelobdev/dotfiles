@@ -460,6 +460,12 @@ def icon_theme_dirs(name, roots):
     return [root / name for root in roots if (root / name / 'index.theme').is_file()]
 
 
+# A Size that is not a plain number ("48px" in a downloaded pack) sorts last instead of failing the listing.
+def index_size(section):
+    size = section.get('Size', '').strip()
+    return int(size) if size.isdigit() else 0
+
+
 # Sample files resolved through the theme and its Inherits chain, so a preview shows that pack's icons.
 def icon_samples(name, roots, names=ICON_SAMPLES):
     found, chain, seen = {}, [name], set()
@@ -477,7 +483,7 @@ def icon_samples(name, roots, names=ICON_SAMPLES):
             directories = [d.strip() for d in info.get('Directories', '').split(',') if d.strip()]
             directories += [d.strip() for d in info.get('ScaledDirectories', '').split(',') if d.strip()]
             # Prefer scalable and large icons for a crisp preview.
-            directories.sort(key=lambda d: (index.get(d, {}).get('Type') != 'Scalable', -int(index.get(d, {}).get('Size', '0') or 0)))
+            directories.sort(key=lambda d: (index.get(d, {}).get('Type') != 'Scalable', -index_size(index.get(d, {}))))
             for icon in names:
                 if icon in found:
                     continue
@@ -527,7 +533,11 @@ def icon_themes(roots=None):
             # cursor-only and internal themes.
             if 'legacy' in base.name.lower():
                 continue
-            samples = icon_samples(base.name, roots)
+            # One broken pack hides only itself.
+            try:
+                samples = icon_samples(base.name, roots)
+            except (OSError, ValueError):
+                continue
             # Cursor-only themes resolve nothing beyond hicolor. Adwaita draws folders and files but leaves
             # application icons to hicolor, so two samples of its own are enough.
             if sum(1 for sample in samples if sample and '/hicolor/' not in sample) < 2:
