@@ -5,7 +5,7 @@ for script in "$repo"/shell/.local/bin/*; do bash -n "$script"; done
 bash -n "$repo/scripts/tablet-auth.sh"
 bash -n "$repo/scripts/tests/install-container.sh"
 if command -v zsh >/dev/null; then
-    for script in "$repo/zsh/.zshenv" "$repo"/zsh/.config/zsh/*; do zsh -n "$script"; done
+    for script in "$repo/zsh/.zshenv" "$repo/zsh/.config/zsh/.zshrc" "$repo"/zsh/.config/zsh/*; do zsh -n "$script"; done
 fi
 # compile() also catches errors ast.parse accepts (e.g. return outside a function); it writes no bytecode.
 python3 - "$repo/scripts/stow.py" "$repo/scripts/install-hypr-plugins.py" "$repo/scripts/install-desktop.py" "$repo/scripts/install-tui.py" "$repo"/scripts/install/*.py "$repo/scripts/check-i18n.py" "$repo/scripts/check-links.py" "$repo"/scripts/tests/test_*.py "$repo/scripts/hyprpm/build.py" "$repo/scripts/hyprpm/bundle.py" "$repo"/shell/.local/libexec/desktop/*.py "$repo/shell/.local/libexec/desktop/steamrt-ui/_v2-entry-point" <<'PY'
