@@ -89,7 +89,7 @@ ControlTile {
                     required property var modelData
                     Layout.fillWidth: true
                     alignLeft: true
-                    implicitHeight: 34
+                    implicitHeight: Theme.hit(34)
                     font.pixelSize: Theme.textSize(12)
                     text: modelData.description || modelData.name
                     textElide: Text.ElideMiddle
@@ -113,7 +113,7 @@ ControlTile {
                     required property var modelData
                     Layout.fillWidth: true
                     alignLeft: true
-                    implicitHeight: 34
+                    implicitHeight: Theme.hit(34)
                     font.pixelSize: Theme.textSize(12)
                     text: modelData.description || modelData.name
                     textElide: Text.ElideMiddle
