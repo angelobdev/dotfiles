@@ -194,6 +194,8 @@ zen-bin
 [fedora.containers]
 packages = ['moby-engine', 'docker-compose', 'tailscale']
 services = ['docker.service', 'tailscaled.service']
+# The tray icon of the Tailscale client, for every user session.
+user_services = ['tailscale-systray.service']
 groups = ['docker']
 notes = ['Connect Tailscale: sudo tailscale up']
 

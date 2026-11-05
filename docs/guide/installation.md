@@ -45,7 +45,7 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 | `hardware` | Firmware, video decoding and sensors of an Intel 2-in-1, fingerprint and [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), firewall zone, `sshd` off; on the OmniBook, HP's sensor hub firmware for rotation from `--firmware DIR` (see [Tablet and touch](../features/tablet-and-touch.md#tablet-mode-and-rotation)) |
 | `plugins` | What building the [Hyprland plugins](plugins.md) needs, from RPM Fusion too; the RPM Fusion `ffmpeg` replaces `ffmpeg-free` |
 | `apps` | Zen Browser, 1Password, VS Code, Neovim, `gh`, `glab`, `uv`, `gcc` and a few command-line tools |
-| `containers` | Docker (`moby-engine`, `docker-compose`, the `docker` group) and Tailscale |
+| `containers` | Docker (`moby-engine`, `docker-compose`, the `docker` group) and Tailscale, with its tray icon |
 | `media` | Loupe, Papers and Showtime for images, PDFs and videos |
 | `gaming` | Steam, gamescope and the 32-bit drivers games need; see [Gaming](#gaming) |
 | `steam-hidpi` | The Steam launcher that scales the client for the monitor it opens on (the optional `steam-hidpi` Stow package) |
