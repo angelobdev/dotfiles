@@ -20,6 +20,7 @@ import "services"
 
 ShellRoot {
     // Eagerly load shared services, including the notification D-Bus owner, the dynamic theme watcher, the tablet posture, Night shift, the assist button and the on-screen keyboard (raised over panels).
+    // Panels are lazy, so every service with side effects (warnings, inhibitors, power changes) must be listed here.
     property var audio: Audio
     property var notices: Notices
     property var clipboard: Clipboard
@@ -27,6 +28,8 @@ ShellRoot {
     property var dynamicTheme: DynamicTheme
     property var tablet: Tablet
     property var nightShift: NightShift
+    property var battery: Battery
+    property var idle: Idle
     // The rotation sensor and helper run for this shell only, not for other configs that load Theme.
     Binding {
         target: Tablet
