@@ -261,6 +261,7 @@ Backlog from tablet use (reported 2026-10-30):
 ### Battery (2026-11-05)
 
 - [x] Helpers end with the shell (`setpriv --pdeathsig`); agent dot blinks on battery; event-driven brightness and camera watchers; adaptive bar-visibility polling. Details in the [verification log](verification-log.md#battery-and-resource-use-2026-11-05).
+- [x] Display refresh in the battery panel: VRR (when the display supports it) or a fixed rate, the user's choice, kept across reloads; power profiles as a row of icons; the panel fits its content.
 
 ### Hardware
 

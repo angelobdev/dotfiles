@@ -134,7 +134,14 @@
     },
     "stylus": "Stylus",
     "device": "Device",
-    "devices": "Devices"
+    "devices": "Devices",
+    "display": {
+      "title": "Display refresh",
+      "vrr": "VRR",
+      "vrrHint": "Variable refresh rate: the display follows what is on screen",
+      "rate": "%1 Hz",
+      "fixedHint": "Always %1 Hz; a lower rate uses less power"
+    }
   },
   "bindings": {
     "brightnessDown": "Brightness down",

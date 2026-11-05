@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
+import Quickshell.Io
 import Quickshell.Services.UPower
 import ".."
 import "../components"
@@ -31,6 +33,72 @@ Overlay {
             return I18n.tr("battery.statusUnavailable");
         }
     }
+    // The internal display (config/tablet.lua keeps its refresh): VRR when it can, or one of its fixed rates.
+    property var monitors: []
+    property string refreshChoice: ""
+    readonly property var panelMonitor: monitors.find(m => /^(eDP|LVDS|DSI)-/.test(m.name)) ?? null
+    readonly property var refreshOptions: {
+        const monitor = panelMonitor;
+        if (!monitor)
+            return [];
+        const size = monitor.width + "x" + monitor.height + "@";
+        const options = monitor.hardwareDetails?.vrrCapable ? [{
+                value: "vrr",
+                label: I18n.tr("battery.display.vrr"),
+                tooltip: I18n.tr("battery.display.vrrHint")
+            }] : [];
+        const rates = [];
+        for (const mode of (monitor.availableModes ?? []).map(m => m.replace(/Hz$/, "")).filter(m => m.startsWith(size))) {
+            const rate = Math.round(parseFloat(mode.slice(size.length)));
+            if (rate > 0 && !rates.some(r => r.rate === rate))
+                rates.push({
+                    value: mode,
+                    rate: rate,
+                    label: I18n.tr("battery.display.rate", [rate]),
+                    tooltip: I18n.tr("battery.display.fixedHint", [rate])
+                });
+        }
+        rates.sort((a, b) => b.rate - a.rate);
+        const all = options.concat(rates);
+        return all.length > 1 ? all : [];
+    }
+    function refreshSelected(option) {
+        if (refreshChoice === "vrr")
+            return option.value === "vrr";
+        return option.value !== "vrr" && option.rate === Math.round(panelMonitor?.refreshRate ?? 0);
+    }
+    function chooseRefresh(value) {
+        refreshChoice = value;
+        Quickshell.execDetached(["hyprctl", "eval", "desktop_refresh(\"" + value + "\")"]);
+        relist.restart();
+    }
+    onOpened: {
+        lister.running = true;
+        refreshState.reload();
+    }
+    Timer {
+        id: relist
+        interval: 600
+        onTriggered: lister.running = true
+    }
+    Process {
+        id: lister
+        command: ["hyprctl", "monitors", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.monitors = JSON.parse(text);
+                } catch (failure) {}
+            }
+        }
+    }
+    FileView {
+        id: refreshState
+        path: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-session/refresh.lua"
+        printErrors: false
+        onLoaded: root.refreshChoice = (text().match(/refresh\s*=\s*"([\w@.]+)"/) ?? [])[1] ?? ""
+        onLoadFailed: root.refreshChoice = ""
+    }
     function duration(seconds) {
         if (!Number.isFinite(seconds) || seconds <= 0)
             return I18n.tr("battery.estimateUnavailable");
@@ -39,7 +107,10 @@ Overlay {
     }
 
     SidePanelCard {
+        // As tall as its content, up to the screen.
+        height: Math.min(content.implicitHeight + 2 * Theme.panelPadding, parent.height - 76)
         ColumnLayout {
+            id: content
             anchors {
                 fill: parent
                 margins: Theme.panelPadding
@@ -178,33 +249,53 @@ Overlay {
                         font.pixelSize: Theme.textSize(14)
                         Layout.topMargin: 6
                     }
-                    ActionButton {
+                    RowLayout {
                         Layout.fillWidth: true
-                        alignLeft: true
-                        leftPadding: 12
-                        iconName: "leaf"
-                        text: I18n.tr("battery.profiles.powerSaver")
-                        highlighted: PowerProfiles.profile === PowerProfile.PowerSaver
-                        onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
+                        spacing: 8
+                        ActionButton {
+                            Layout.fillWidth: true
+                            iconName: "leaf"
+                            tooltip: I18n.tr("battery.profiles.powerSaver")
+                            highlighted: PowerProfiles.profile === PowerProfile.PowerSaver
+                            onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
+                        }
+                        ActionButton {
+                            Layout.fillWidth: true
+                            iconName: "balanced"
+                            tooltip: I18n.tr("battery.profiles.balanced")
+                            highlighted: PowerProfiles.profile === PowerProfile.Balanced
+                            onClicked: PowerProfiles.profile = PowerProfile.Balanced
+                        }
+                        ActionButton {
+                            Layout.fillWidth: true
+                            iconName: "performance"
+                            tooltip: I18n.tr("battery.profiles.performance")
+                            enabled: PowerProfiles.hasPerformanceProfile
+                            highlighted: PowerProfiles.profile === PowerProfile.Performance
+                            onClicked: PowerProfiles.profile = PowerProfile.Performance
+                        }
                     }
-                    ActionButton {
-                        Layout.fillWidth: true
-                        alignLeft: true
-                        leftPadding: 12
-                        iconName: "balanced"
-                        text: I18n.tr("battery.profiles.balanced")
-                        highlighted: PowerProfiles.profile === PowerProfile.Balanced
-                        onClicked: PowerProfiles.profile = PowerProfile.Balanced
+                    Heading {
+                        visible: root.refreshOptions.length > 0
+                        text: I18n.tr("battery.display.title")
+                        font.pixelSize: Theme.textSize(14)
+                        Layout.topMargin: 6
                     }
-                    ActionButton {
+                    RowLayout {
+                        visible: root.refreshOptions.length > 0
                         Layout.fillWidth: true
-                        alignLeft: true
-                        leftPadding: 12
-                        iconName: "performance"
-                        text: I18n.tr("battery.profiles.performance")
-                        enabled: PowerProfiles.hasPerformanceProfile
-                        highlighted: PowerProfiles.profile === PowerProfile.Performance
-                        onClicked: PowerProfiles.profile = PowerProfile.Performance
+                        spacing: 8
+                        Repeater {
+                            model: root.refreshOptions
+                            ActionButton {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                text: modelData.label
+                                tooltip: modelData.tooltip
+                                highlighted: root.refreshSelected(modelData)
+                                onClicked: root.chooseRefresh(modelData.value)
+                            }
+                        }
                     }
                     Text {
                         Layout.fillWidth: true

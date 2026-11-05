@@ -7,6 +7,9 @@ local state = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/sta
 -- The display mode chosen with Super + P (panels/DisplayPanel.qml), kept across reloads and logins.
 local display_state = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")) .. "/desktop-session/display.lua"
 local MODES = { extend = true, mirror = true, external = true, internal = true }
+-- The internal display's refresh, chosen in the battery panel: "vrr" (variable, at the preferred mode) or a
+-- fixed mode such as "2880x1800@48.00". Without a choice it runs at its preferred mode, VRR off.
+local refresh_state = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")) .. "/desktop-session/refresh.lua"
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
 local panel
 -- Touch and stylus devices of the internal display; without them every touchscreen and tablet follows it.
@@ -14,6 +17,8 @@ local devices = {}
 -- Clamshell: the internal display is off while the lid is closed and another monitor is on.
 local lid = false
 local panel_off = false
+-- The transform last applied, so a refresh change keeps the rotation in effect.
+local current = 0
 
 local function saved()
     local ok, value = pcall(dofile, state)
@@ -23,12 +28,31 @@ local function saved()
     return 0
 end
 
+local function valid_refresh(choice)
+    return type(choice) == "string" and (choice == "vrr" or choice:match("^%d+x%d+@%d+%.?%d*$") ~= nil)
+end
+
+local function refresh()
+    local ok, value = pcall(dofile, refresh_state)
+    if ok and type(value) == "table" and valid_refresh(value.refresh) then
+        return value.refresh
+    end
+    return nil
+end
+
 local function apply(transform)
     local spec = {}
     for key, value in pairs(panel) do
         spec[key] = value
     end
+    current = transform
     spec.transform = transform
+    local choice = refresh()
+    if choice and choice ~= "vrr" then
+        spec.mode = choice
+    end
+    -- misc.vrr, not the monitor rule: Hyprland applies the option at once, a rule's vrr only now and then.
+    hl.config({ misc = { vrr = choice == "vrr" and 1 or 0 } })
     -- Always said: a rule without it keeps the panel off once a clamshell turned it off.
     spec.disabled = panel_off
     hl.monitor(spec)
@@ -144,6 +168,21 @@ function desktop_display_mode(mode)
         file:close()
     end
     M.arrange()
+end
+
+-- Entry point for `hyprctl eval` from the battery panel: "vrr", a fixed mode, or "" for the preferred mode.
+function desktop_refresh(choice)
+    if choice ~= "" and not valid_refresh(choice) then
+        return
+    end
+    local file = io.open(refresh_state, "w")
+    if file then
+        file:write(choice == "" and "return {}\n" or 'return { refresh = "' .. choice .. '" }\n')
+        file:close()
+    end
+    if panel then
+        apply(current)
+    end
 end
 
 -- The lid switch, by its name in `hyprctl devices` (local.lua). Bound locked: the lock screen moves too.

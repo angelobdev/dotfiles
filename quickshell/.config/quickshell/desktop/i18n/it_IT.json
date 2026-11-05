@@ -134,7 +134,14 @@
     },
     "stylus": "Stilo",
     "device": "Dispositivo",
-    "devices": "Dispositivi"
+    "devices": "Dispositivi",
+    "display": {
+      "title": "Aggiornamento display",
+      "vrr": "VRR",
+      "vrrHint": "Frequenza variabile: il display segue ciò che è sullo schermo",
+      "rate": "%1 Hz",
+      "fixedHint": "Sempre %1 Hz; una frequenza più bassa consuma meno"
+    }
   },
   "bindings": {
     "brightnessDown": "Luminosità -",
