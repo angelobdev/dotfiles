@@ -181,8 +181,25 @@ def clone_head(path):
     return result.stdout.strip() if result.returncode == 0 else ''
 
 
+def clone_clean(path):
+    result = query('git', '-C', str(path), 'status', '--porcelain')
+    return result.returncode == 0 and not result.stdout.strip()
+
+
+# A folder the user has there already is updated only when it is a clone without local changes: never a plain
+# folder or edited files (apply checks out with --force).
+def clone_ours(path):
+    return not path.exists() or path.is_dir() and not any(path.iterdir()) or (path / '.git').exists() and clone_clean(path)
+
+
 def clones_pending(plan):
-    return [item['path'] for item in merged(plan, 'clones') if clone_head(clone_path(item)) != item['commit']]
+    return [item['path'] for item in merged(plan, 'clones')
+            if clone_head(clone_path(item)) != item['commit'] and clone_ours(clone_path(item))]
+
+
+def clones_kept(plan):
+    return [item['path'] for item in merged(plan, 'clones')
+            if clone_head(clone_path(item)) != item['commit'] and not clone_ours(clone_path(item))]
 
 
 def clones_apply(plan, paths):
@@ -477,7 +494,8 @@ def stow_remember(plan, items, record):
 
 
 def clones_remember(plan, items, record):
-    keep(record, 'clones', items)
+    # Only folders apply creates are undone; one that was there before stays the user's.
+    keep(record, 'clones', [path for path in items if not (Path.home() / path).exists()])
 
 
 def flatpak_remember(plan, items, record):
@@ -623,8 +641,22 @@ def unboot_apply(plan, items):
         AUTOSTART.unlink(missing_ok=True)
 
 
+# A recorded clone is removed only while it is what apply left: a folder the manifest names, at its commit, with no
+# local changes. The record is a file in the home, so a path from it is never trusted on its own.
+def clones_undoable(plan):
+    named = {item['path']: item for item in merged(every_profile(plan), 'clones')}
+    undoable, changed = [], []
+    for path in plan.record.get('clones', ()):
+        item = named.get(path)
+        if not item or not (Path.home() / path).exists():
+            continue
+        target = clone_path(item)
+        (undoable if clone_head(target) == item['commit'] and clone_clean(target) else changed).append(path)
+    return undoable, changed
+
+
 def unclones_pending(plan):
-    return [path for path in plan.record.get('clones', ()) if (Path.home() / path).exists()]
+    return clones_undoable(plan)[0]
 
 
 def unclones_apply(plan, paths):
@@ -947,6 +979,8 @@ def preflight_warnings(plan):
         if not firmware_source(plan, item):
             where = f'{plan.firmware} has no copy of it' if plan.firmware else 'pass --firmware <directory with a copy>'
             warnings.append(f'{item["purpose"]} needs {Path(item["target"]).name} ({item["source"]}): {where}.')
+    for path in clones_kept(plan):
+        warnings.append(f'~/{path} is there already and is not a clone without local changes: it is left alone.')
     return warnings
 
 
@@ -1009,6 +1043,8 @@ def record_notes(plan):
     every = every_profile(plan)
     for path in changed_files(plan)[1]:
         notes.append(f'{path} changed since the install: it stays as it is.')
+    for path in clones_undoable(plan)[1]:
+        notes.append(f'~/{path} changed since the install: it stays as it is.')
     shell = plan.record.get('login_shell')
     if shell and login_shell() not in (shell, setting(every, 'login_shell')):
         notes.append(f'The login shell is now {login_shell()}, chosen after the install: it stays.')

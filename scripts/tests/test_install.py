@@ -221,6 +221,11 @@ class StepTests(unittest.TestCase):
             patcher = mock.patch.object(installer, target, value)
             patcher.start()
             self.addCleanup(patcher.stop)
+        # Clones are created under the home: a temporary one, never the real home.
+        (base / 'home').mkdir()
+        home = mock.patch.object(Path, 'home', return_value=base / 'home')
+        home.start()
+        self.addCleanup(home.stop)
         self.calls = []
         for name, value in (('getpass.getuser', 'angelo'), ('shutil.which', '/usr/bin/tool'), ('builtins.print', None)):
             patcher = mock.patch(name, return_value=value)
@@ -249,6 +254,8 @@ class StepTests(unittest.TestCase):
                 return reply('FedoraServer' if pending else 'Zone')
             if command[0] == 'flatpak':
                 return reply('' if pending else 'org.example.App')
+            if command[0] == 'git' and 'status' in command:
+                return reply('', 128 if pending else 0)
             if command[0] == 'git':
                 return reply('' if pending else 'c' * 40, 128 if pending else 0)
             return reply('LINK: a => b\n' if pending else 'WARNING: in simulation mode\n')
@@ -363,6 +370,44 @@ class StepTests(unittest.TestCase):
         self.assertIn(('fetch', '-q', '--depth', '1', clone['repo'], clone['commit']), [c[3:] for c in commands])
         self.assertEqual(commands[-1][-1], clone['commit'])
         self.assertFalse([c for c in commands if 'sudo' in c])
+
+    def git(self, head, clean):
+        def query(*command):
+            if 'status' in command:
+                return reply('' if clean else ' M file', 0)
+            return reply(head, 0 if head else 128)
+        return mock.patch.object(installer, 'query', side_effect=query)
+
+    def test_a_folder_of_the_user_is_never_forced_to_the_clone(self):
+        current, clone = self.clone_plan()
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, 'home', return_value=Path(home)):
+            (Path(home) / clone['path']).mkdir(parents=True)
+            (Path(home) / clone['path'] / 'mine').write_text('mine')
+            with self.git('', True):
+                self.assertEqual(installer.clones_pending(current), [])
+                self.assertEqual(installer.clones_kept(current), [clone['path']])
+            (Path(home) / clone['path'] / '.git').mkdir()
+            with self.git('b' * 40, False):
+                self.assertEqual(installer.clones_pending(current), [])
+            with self.git('b' * 40, True):
+                self.assertEqual(installer.clones_pending(current), [clone['path']])
+            # It was there before: apply does not note it, so uninstall never removes it.
+            record = {}
+            installer.clones_remember(current, [clone['path']], record)
+            self.assertEqual(record['clones'], [])
+
+    def test_only_an_unchanged_named_clone_is_undone(self):
+        current, clone = self.clone_plan()
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, 'home', return_value=Path(home)):
+            (Path(home) / clone['path']).mkdir(parents=True)
+            (Path(home) / 'other').mkdir()
+            undo = current._replace(record={'clones': [clone['path'], '', 'other', '../x']})
+            with self.git(clone['commit'], True):
+                self.assertEqual(installer.clones_undoable(undo), ([clone['path']], []))
+            with self.git(clone['commit'], False):
+                self.assertEqual(installer.clones_undoable(undo), ([], [clone['path']]))
+            with self.git('b' * 40, True):
+                self.assertEqual(installer.unclones_pending(undo), [])
 
     def test_stow_is_pending_until_it_exists(self):
         with mock.patch('shutil.which', return_value=None):
