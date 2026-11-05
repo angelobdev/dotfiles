@@ -15,13 +15,18 @@ Overlay {
     property point menuOrigin: Qt.point(0, 0)
     readonly property var appResults: DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (e.name + " " + e.genericName + " " + e.keywords.join(" ")).toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name))
     // A calculation first (Enter copies it), then apps, then files (Enter opens one).
+    // Each row has a key, so results that arrive later (files, a calculation) are inserted around the selected
+    // row instead of rebuilding the list, which moved the selection to the first row.
     readonly property var results: (LauncherSearch.calc !== "" ? [{
+                key: "calc",
                 kind: "calc",
                 text: LauncherSearch.calc
             }] : []).concat(appResults.map(entry => ({
+                key: "app:" + entry.id,
                 kind: "app",
                 entry: entry
             }))).concat(LauncherSearch.files.map(path => ({
+                key: "file:" + path,
                 kind: "file",
                 path: path
             })))
@@ -86,10 +91,10 @@ Overlay {
                 }
                 Keys.onDownPressed: apps.currentIndex = Math.min(apps.count - 1, apps.currentIndex + 1)
                 Keys.onUpPressed: apps.currentIndex = Math.max(0, apps.currentIndex - 1)
-                onAccepted: root.launch(apps.model[apps.currentIndex])
+                onAccepted: root.launch(root.results[apps.currentIndex])
                 Keys.onPressed: event => {
                     if (event.key === Qt.Key_P && event.modifiers & Qt.ControlModifier) {
-                        root.togglePin(apps.model[apps.currentIndex]?.entry);
+                        root.togglePin(root.results[apps.currentIndex]?.entry);
                         event.accepted = true;
                     }
                 }
@@ -108,7 +113,10 @@ Overlay {
                 highlightMoveDuration: Theme.motionNormal
                 highlightMoveVelocity: -1
                 highlightResizeDuration: 0
-                model: root.results
+                model: ScriptModel {
+                    values: root.results
+                    objectProp: "key"
+                }
                 delegate: ActionButton {
                     id: row
                     required property var modelData
