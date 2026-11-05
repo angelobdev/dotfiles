@@ -135,6 +135,8 @@ readonly property int osdWidth: 320
 readonly property int osdBottomMargin: 96
 ```
 
+`batteryLow: 20` and `batteryCritical: 10` are the battery warnings' thresholds in percent (`services/Battery.qml`).
+
 Dimensions and margins are in logical pixels; the timeout is in milliseconds. Disabling `osdEnabled` hides OSDs and stops the backlight watcher while retaining panel controls. Only actual changes are shown: pressing a key again at the limit does not create a new OSD.
 
 ## Persistent wallpapers

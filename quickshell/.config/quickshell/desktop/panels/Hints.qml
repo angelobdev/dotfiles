@@ -84,7 +84,7 @@ Overlay {
             return I18n.tr("hints.categories.shell");
         if (/browser|terminal|kitty|1password|calculator/.test(name))
             return I18n.tr("launcher.title");
-        if (/window|focus|floating|fullscreen|^move |tiling|split|pseudo/.test(name))
+        if (/window|focus|floating|fullscreen|^move |tiling|split|pseudo|switch windows/.test(name))
             return I18n.tr("hints.categories.windows");
         return I18n.tr("hints.categories.other");
     }

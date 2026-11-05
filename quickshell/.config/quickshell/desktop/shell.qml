@@ -72,6 +72,10 @@ ShellRoot {
             Assist.page = name;
             return Assist.request("menu");
         }
+        // Alt + Tab: next, previous, commit, cancel (binds.lua).
+        function switcher(action: string): bool {
+            return windowSwitcher.request(action);
+        }
         function windowMenu(): void {
             ShellState.requestWindowMenu();
         }
@@ -99,8 +103,10 @@ ShellRoot {
                 audioInputs: Audio.inputs.length,
                 audioOutput: Audio.sink?.description ?? "",
                 audioInput: Audio.source?.description ?? "",
+                audioApps: Audio.streams.map(node => Audio.streamName(node)),
                 batteryWatts: UPower.displayDevice?.changeRate ?? null,
                 batteryTimeToEmpty: UPower.displayDevice?.timeToEmpty ?? null,
+                batteryAlert: Battery.level,
                 hintsBindings: hints.bindings.length,
                 powerSelection: powerMenu.selectedAction,
                 powerPending: powerMenu.pending,
@@ -248,6 +254,9 @@ ShellRoot {
     WallpaperPicker {}
     ThemingPanel {
         id: themingPanel
+    }
+    WindowSwitcher {
+        id: windowSwitcher
     }
     NotificationCenter {}
     NotificationPopups {

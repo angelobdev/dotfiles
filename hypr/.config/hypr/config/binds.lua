@@ -21,6 +21,34 @@ end
 
 -- *** BINDS *** --
 
+-- Window switcher (panels/WindowSwitcher.qml). Alt + Tab opens it on the previous window and enters a submap
+-- that holds Tab, Shift + Tab, Return, Escape and the Alt release while it is open; the app keeps the keyboard.
+local function switcher(action)
+    return hl.dsp.exec_cmd(shell .. " switcher " .. action)
+end
+local function switcher_end(action)
+    return function()
+        hl.dispatch(hl.dsp.submap("reset"))
+        hl.dispatch(switcher(action))
+    end
+end
+hl.define_submap("switcher", function()
+    hl.bind("ALT + Tab", switcher("next"), { repeating = true })
+    hl.bind("ALT + SHIFT + Tab", switcher("previous"), { repeating = true })
+    hl.bind("ALT + Alt_L", switcher_end("commit"), { release = true, transparent = true })
+    hl.bind("ALT + Return", switcher_end("commit"))
+    hl.bind("ALT + Escape", switcher_end("cancel"))
+    hl.bind("Escape", switcher_end("cancel"))
+end)
+bind("ALT + Tab", function()
+    hl.dispatch(switcher("next"))
+    hl.dispatch(hl.dsp.submap("switcher"))
+end, "Switch windows")
+bind("ALT + SHIFT + Tab", function()
+    hl.dispatch(switcher("previous"))
+    hl.dispatch(hl.dsp.submap("switcher"))
+end, "Switch windows backwards")
+
 -- Applications
 bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminal")
 bind("XF86Calculator", hl.dsp.exec_cmd("gnome-calculator"), "Calculator")

@@ -39,6 +39,8 @@ var bindKeys = {
     "Dock": "dock.title",
     "Clipboard · History": "clipboard.historyTitle",
     "Screen recording": "recording.title",
+    "Switch windows": "bindings.switchWindows",
+    "Switch windows backwards": "bindings.switchWindowsBack",
     "Drag window": "bindings.dragWindow",
     "Resize window": "bindings.resizeWindow",
     "Volume up": "bindings.volumeUp",

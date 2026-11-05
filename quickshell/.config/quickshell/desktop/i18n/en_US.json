@@ -79,7 +79,10 @@
     "toggleMicrophone": "Toggle microphone",
     "toggleMute": "Toggle sound",
     "unmute": "Unmute",
-    "volume": "Volume"
+    "volume": "Volume",
+    "applications": "Applications",
+    "toggleApp": "Toggle sound of %1",
+    "appVolume": "Volume of %1"
   },
   "authentication": {
     "authenticate": "Authenticate",
@@ -146,7 +149,9 @@
     "toggleSplit": "Toggle split orientation",
     "volumeDown": "Volume down",
     "volumeUp": "Volume up",
-    "workspace": "Workspace %1"
+    "workspace": "Workspace %1",
+    "switchWindows": "Switch windows",
+    "switchWindowsBack": "Switch windows backwards"
   },
   "bluetooth": {
     "authorizeService": "Allow the device to use the requested service?",

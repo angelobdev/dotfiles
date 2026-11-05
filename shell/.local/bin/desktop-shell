@@ -75,6 +75,12 @@ sys.exit(0 if running else 1)
         echo 'The previous Quickshell instance did not exit within 5 seconds.' >&2
         exit 1
         ;;
+    switcher)
+        case "${2:-}" in next|previous|commit|cancel) ;;
+            *) echo 'Usage: desktop-shell switcher {next|previous|commit|cancel}' >&2; exit 2 ;;
+        esac
+        exec qs ipc -p "$config" call desktop switcher "$2"
+        ;;
     toggle)
         case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent|updates) ;;
             *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent|updates}' >&2; exit 2 ;;
@@ -137,5 +143,5 @@ sys.exit(0 if running else 1)
         ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|restart [theming TAB]|status|toggle PANEL|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
 esac

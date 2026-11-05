@@ -79,7 +79,10 @@
     "toggleMicrophone": "Attiva/disattiva microfono",
     "toggleMute": "Attiva/disattiva audio",
     "unmute": "Riattiva audio",
-    "volume": "Volume"
+    "volume": "Volume",
+    "applications": "Applicazioni",
+    "toggleApp": "Attiva/disattiva audio di %1",
+    "appVolume": "Volume di %1"
   },
   "authentication": {
     "authenticate": "Autentica",
@@ -146,7 +149,9 @@
     "toggleSplit": "Cambia orientamento split",
     "volumeDown": "Volume -",
     "volumeUp": "Volume +",
-    "workspace": "Workspace %1"
+    "workspace": "Workspace %1",
+    "switchWindows": "Passa tra le finestre",
+    "switchWindowsBack": "Passa tra le finestre all’indietro"
   },
   "bluetooth": {
     "authorizeService": "Consentire al dispositivo di utilizzare il servizio richiesto?",

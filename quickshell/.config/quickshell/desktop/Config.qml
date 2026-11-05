@@ -81,6 +81,9 @@ QtObject {
     ]
     // If disconnected, use the first connected screen.
     readonly property string primaryMonitor: "eDP-1"
+    // Battery warnings (percent, on battery only): low offers Power Saver, critical stays until dismissed.
+    readonly property int batteryLow: 20
+    readonly property int batteryCritical: 10
     // OSD: logical pixels and timeout in milliseconds.
     readonly property bool osdEnabled: true
     readonly property int osdTimeout: 1700

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 import ".."
 import "../components"
 import "../services"
@@ -72,6 +73,50 @@ Overlay {
                         visible: Audio.outputs.length === 0
                         text: I18n.tr("audio.noOutputs")
                         color: Theme.muted
+                    }
+                    Heading {
+                        visible: Audio.streams.length > 0
+                        text: I18n.tr("audio.applications")
+                        Layout.topMargin: 12
+                    }
+                    Repeater {
+                        model: Audio.streams
+                        RowLayout {
+                            id: stream
+                            required property var modelData
+                            readonly property string appName: Audio.streamName(modelData)
+                            Layout.fillWidth: true
+                            spacing: 8
+                            Image {
+                                Layout.preferredWidth: 22
+                                Layout.preferredHeight: 22
+                                sourceSize: Qt.size(44, 44)
+                                source: Quickshell.iconPath(Audio.streamIcon(stream.modelData), "audio-x-generic")
+                            }
+                            Text {
+                                Layout.preferredWidth: 140
+                                text: stream.appName
+                                color: Theme.text
+                                elide: Text.ElideRight
+                            }
+                            ActionButton {
+                                iconName: stream.modelData.audio?.muted ? "volume-muted" : "volume-high"
+                                tooltip: I18n.tr("audio.toggleApp", [stream.appName])
+                                highlighted: stream.modelData.audio?.muted ?? false
+                                onClicked: Audio.toggleStreamMute(stream.modelData)
+                            }
+                            ControlSlider {
+                                Layout.fillWidth: true
+                                Accessible.name: I18n.tr("audio.appVolume", [stream.appName])
+                                value: stream.modelData.audio?.volume ?? 0
+                                onMoved: Audio.setStreamVolume(stream.modelData, value)
+                            }
+                            Text {
+                                text: Math.round((stream.modelData.audio?.volume ?? 0) * 100) + "%"
+                                color: Theme.text
+                                Layout.preferredWidth: 44
+                            }
+                        }
                     }
                     Heading {
                         text: I18n.tr("audio.input")
