@@ -58,6 +58,10 @@ Overlay {
         {
             keys: I18n.tr("hints.gestures.swipeNotice"),
             name: I18n.tr("hints.gestures.dismiss")
+        },
+        {
+            keys: I18n.tr("hints.gestures.swipeTabs"),
+            name: I18n.tr("hints.gestures.nextTab")
         }
     ].map(g => Object.assign(g, {
             submap: "",

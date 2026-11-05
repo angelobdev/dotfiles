@@ -17,6 +17,7 @@ The desktop is built for a 2-in-1: fold the laptop and the shell follows, with l
 | Four fingers down | Notifications |
 | Two-finger long press, then drag | Move the window (as `Super` and the mouse) |
 | Long press on window border | Resize |
+| One finger sideways over the Theming panel or the assist menu | Next / previous tab or page (to the left for the next); lists still scroll and sliders keep the finger |
 
 Three fingers moving apart zoom the screen in around the pointer and moving together zoom it out, on the touchscreen and on the touchpad, in the steps of `Super + Alt + plus / minus` (Hyprland calls these `pinchin` and `pinchout` respectively). Three fingers do what they do on the touchpad (`input.lua`); there are no edge swipes, which were not always recognised. Apps that ignore touch altogether, Kitty among them, still respond to one finger: a drag scrolls and a tap clicks. Gestures stay away from the window under them: three or more fingers never reach an app, even when no gesture follows, and two fingers held still wait for the long press, so an app gets them once they move or lift, or after about half a second. A single finger reaches an app within 40 ms. Everything else is in the assist button. In tablet mode, Hints lists these gestures first (title "Gestures and shortcuts"), and the launcher, Session menu and Theming panel drop their keyboard-only hints. Sensitivity and actions are in `hypr/.config/hypr/config/plugins.lua`.
 

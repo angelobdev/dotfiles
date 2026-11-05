@@ -188,6 +188,13 @@ Singleton {
                         }, catalog[name]))
             })).filter(page => page.actions.length > 0)
     property string page: ""
+    // The next (1) or previous (-1) page, wrapping around: a swipe over the menu.
+    function cyclePage(step) {
+        if (pages.length < 2)
+            return;
+        const from = Math.max(0, pages.indexOf(currentPage));
+        page = pages[(from + step + pages.length) % pages.length].name;
+    }
     readonly property var currentPage: pages.find(p => p.name === page) ?? pages[0] ?? {
         name: "",
         actions: []

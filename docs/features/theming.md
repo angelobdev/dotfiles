@@ -6,7 +6,7 @@ One panel switches the whole desktop: shell, terminal, GTK and Qt apps, lock scr
 
 ## The Theming panel
 
-`Super + Ctrl + T` opens the Theming panel. `Ctrl+Tab` / `Ctrl+Shift+Tab` (or `Ctrl+PgDown` / `Ctrl+PgUp`) switch tabs, arrows move within a tab, Enter applies, and Esc closes.
+`Super + Ctrl + T` opens the Theming panel. `Ctrl+Tab` / `Ctrl+Shift+Tab` (or `Ctrl+PgDown` / `Ctrl+PgUp`) switch tabs, and so does a one-finger swipe sideways over the page by touch (to the left for the next tab); arrows move within a tab, Enter applies, and Esc closes.
 
 **Tabs**
 - **Theme:** a card per theme with a small mock-up of its surfaces, text and accent, plus its terminal colours; the current one is marked. Choosing one switches colours at once, and the theme's wallpaper follows.

@@ -389,6 +389,8 @@
       "menu": "Menu, come il tasto destro (dock, launcher, tray, titolo della finestra)",
       "swipeNotice": "Trascina di lato una notifica",
       "dismiss": "La chiude",
+      "swipeTabs": "Trascina di lato in Theming o nel menu assist",
+      "nextTab": "Scheda o pagina successiva / precedente",
       "twoHold": "Pressione lunga a due dita, poi trascina",
       "dragWindow": "Sposta la finestra"
     },

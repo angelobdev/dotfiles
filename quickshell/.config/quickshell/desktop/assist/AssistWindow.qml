@@ -114,6 +114,10 @@ PanelWindow {
                 duration: Theme.motionFast
             }
         }
+        // A swipe over the menu shows the next or previous page.
+        TabSwipe {
+            onSwiped: step => Assist.cyclePage(step)
+        }
         ChoiceChips {
             id: pageChips
             anchors {

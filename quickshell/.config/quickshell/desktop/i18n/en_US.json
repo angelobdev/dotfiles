@@ -389,6 +389,8 @@
       "menu": "Menu, like a right click (dock, launcher, tray, window title)",
       "swipeNotice": "Swipe a notification sideways",
       "dismiss": "Dismiss it",
+      "swipeTabs": "Swipe sideways in Theming or the assist menu",
+      "nextTab": "Next / previous tab or page",
       "twoHold": "Two-finger long press, then drag",
       "dragWindow": "Move the window"
     },

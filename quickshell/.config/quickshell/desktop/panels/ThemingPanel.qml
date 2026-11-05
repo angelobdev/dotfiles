@@ -122,6 +122,10 @@ Overlay {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 currentIndex: root.tabs.indexOf(root.tab)
+                // A swipe over the page switches tab, as Ctrl+Tab does.
+                TabSwipe {
+                    onSwiped: step => root.cycleTab(step)
+                }
                 // Theme: a card per theme with a small mock-up of its surfaces and accent, and its colours.
                 // Built the first time its tab shows, then kept (Theming opens on one tab).
                 Loader {
