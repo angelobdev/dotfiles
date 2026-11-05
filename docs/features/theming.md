@@ -40,7 +40,7 @@ Font, size, icon pack, cursor, shell icons and bar style are your preferences: t
 
 ## Themes
 
-The palette above is the **Graphite** theme. Six more ship with the dotfiles; all are dark except Glass Light:
+The palette above is the **Graphite** theme. Seven more ship with the dotfiles; all are dark except Glass Light:
 
 | Theme | Accent | GSettings accent | VS Code |
 | --- | --- | --- | --- |
@@ -50,8 +50,11 @@ The palette above is the **Graphite** theme. Six more ship with the dotfiles; al
 | `everforest` | green `#a7c080` | green | Everforest Dark |
 | `glass` | blue `#4da3ff` | blue | Default Dark Modern |
 | `glass-light` | blue `#006be0` | blue | Default Light Modern |
+| `high-contrast` | yellow `#ffd400` | yellow | Default High Contrast |
 
 **Glass** and **Glass Light** are the macOS-style pair. Their panels are mostly glass: the card under a panel, the dock and the OSD keep about 30% (dark) or 40% (light) of their fill instead of 85%, tiles and hover states are a thin white veil instead of a second dark layer, popup notifications get a denser fill of their own (`shell.notice`, 72% dark and 80% light, while other themes keep `raised`) so their text reads over any page, and the stroke is brighter, with an 82–85% terminal and `glassStyle = "liquid"`: Hyprglass draws a lens rim that bends and mirrors what is around each card, toast and menu, a thin lit bevel and a little dispersion on the rim, over a flat, lightly frosted center ([plugins](../guide/plugins.md#behavior)). Without Hyprglass loaded they keep Hyprland's native blur and stay readable, only flatter. Both use the local wallpaper folders, like Graphite; glass shows best over a colourful wallpaper.
+
+**High Contrast** is for reading comfort: black surfaces, white text, a yellow accent, opaque panels and terminal, a 32 px cursor, an 11 pt interface font and 2 px window borders (yellow on the active window, white on the others; a border width chosen in the panel wins). It uses the local wallpaper folders.
 
 Graphite uses VS Code's own Default Dark Modern. Their surfaces and terminal colours come from each project's published palette and Kitty port.
 

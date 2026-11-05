@@ -417,7 +417,8 @@
     "title": "Multimedia",
     "unavailable": "Nessuna riproduzione disponibile",
     "playPause": "Riproduci / pausa",
-    "stop": "Ferma"
+    "stop": "Ferma",
+    "barTooltip": "%1 — %2 · clic: riproduci/pausa, rotella: cambia brano"
   },
   "network": {
     "addressPlaceholder": "Indirizzo/prefisso, es. 192.168.1.50/24",
@@ -930,5 +931,85 @@
     "pasteHint": "Incollala nel prompt con Ctrl + V.",
     "text": "Testo da un’area dello schermo",
     "ask": "Chiedi a Claude di un’area dello schermo"
+  },
+  "privacy": {
+    "title": "Privacy",
+    "microphone": "Microfono in uso: %1",
+    "camera": "Fotocamera in uso: %1",
+    "sharing": "Schermo condiviso",
+    "unknownApp": "un’app",
+    "errors": {
+      "usage": "Uso: privacy.py cameras"
+    }
+  },
+  "emoji": {
+    "title": "Emoji",
+    "search": "Cerca emoji",
+    "recent": "Usate di recente",
+    "noRecent": "Le emoji che scegli compaiono qui.",
+    "noMatch": "Nessuna emoji trovata",
+    "loading": "Caricamento…",
+    "groups": {
+      "smileys": "Faccine ed emozioni",
+      "people": "Persone e corpo",
+      "nature": "Animali e natura",
+      "food": "Cibo e bevande",
+      "travel": "Viaggi e luoghi",
+      "activities": "Attività",
+      "objects": "Oggetti",
+      "symbols": "Simboli",
+      "flags": "Bandiere"
+    },
+    "errors": {
+      "missing": "L’elenco delle emoji richiede unicode-emoji: sudo dnf install unicode-emoji cldr-emoji-annotation",
+      "unreadable": "Impossibile leggere l’elenco delle emoji.",
+      "usage": "Uso: emoji.py list"
+    }
+  },
+  "weather": {
+    "title": "Meteo",
+    "feels": "Percepita %1°",
+    "wind": "Vento %1 km/h",
+    "updatedAt": "Aggiornato alle %1",
+    "stale": "Offline: ultima lettura alle %1",
+    "rain": "%1%",
+    "locating": "Ricerca della posizione…",
+    "conditions": {
+      "clear": "Sereno",
+      "partly": "Parzialmente nuvoloso",
+      "cloudy": "Nuvoloso",
+      "fog": "Nebbia",
+      "drizzle": "Pioviggine",
+      "rain": "Pioggia",
+      "showers": "Rovesci",
+      "snow": "Neve",
+      "storm": "Temporale"
+    },
+    "errors": {
+      "cityNotFound": "Nessun luogo chiamato %1.",
+      "unavailable": "Impossibile scaricare il meteo.",
+      "noLocation": "La posizione non è disponibile: imposta Config.weatherCity.",
+      "usage": "Uso: weather.py now [CITTÀ]"
+    }
+  },
+  "zoom": {
+    "title": "Zoom",
+    "in": "Ingrandisci",
+    "out": "Riduci",
+    "reset": "Annulla lo zoom"
+  },
+  "displays": {
+    "title": "Schermi",
+    "off": "Spento",
+    "details": "%1×%2 · %3 Hz · %4%",
+    "mirroring": "duplica il portatile",
+    "hint": "Solo portatile spegne gli altri monitor; Solo esterno spegne il pannello del portatile finché l’altro monitor resta collegato.",
+    "single": "Collega un altro monitor per scegliere come si dividono il desktop.",
+    "modes": {
+      "extend": "Estendi",
+      "mirror": "Duplica",
+      "external": "Solo esterno",
+      "internal": "Solo portatile"
+    }
   }
 }

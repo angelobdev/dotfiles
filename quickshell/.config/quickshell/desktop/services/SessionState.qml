@@ -21,6 +21,8 @@ Singleton {
     readonly property real focusUntil: state.focusUntil
     readonly property int focusMinutes: state.focusMinutes
     readonly property bool focusQuietBefore: state.focusQuietBefore === true
+    // Recently picked emoji, space separated, newest first.
+    readonly property string emojiRecent: state.emojiRecent
     function set(key, value) {
         if (state[key] === value)
             return;
@@ -62,6 +64,7 @@ Singleton {
             property real focusUntil: 0
             property int focusMinutes: 0
             property bool focusQuietBefore: false
+            property string emojiRecent: ""
         }
     }
 }

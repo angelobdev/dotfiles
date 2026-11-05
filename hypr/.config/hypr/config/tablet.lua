@@ -4,6 +4,9 @@
 local M = {}
 
 local state = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")) .. "/desktop-session/rotation.lua"
+-- The display mode chosen with Super + P (panels/DisplayPanel.qml), kept across reloads and logins.
+local display_state = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")) .. "/desktop-session/display.lua"
+local MODES = { extend = true, mirror = true, external = true, internal = true }
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
 local panel
 -- Touch and stylus devices of the internal display; without them every touchscreen and tablet follows it.
@@ -50,6 +53,19 @@ function M.monitor(spec, touch)
     panel = spec
     devices = touch or {}
     apply(saved())
+    for _, event in ipairs({ "monitor.added", "monitor.removed" }) do
+        hl.on(event, function()
+            M.arrange()
+        end)
+    end
+end
+
+local function display_mode()
+    local ok, value = pcall(dofile, display_state)
+    if ok and type(value) == "table" and MODES[value.mode] then
+        return value.mode
+    end
+    return "extend"
 end
 
 local function lid_closed()
@@ -75,17 +91,59 @@ local function other_monitor()
     return false
 end
 
--- Off with the lid closed while another monitor shows the desktop; on again once the lid opens or the last
--- other monitor goes. Without another monitor logind suspends on the lid, as before.
-local function clamshell()
+-- What each other monitor was last set to, so events caused by setting it do not set it again.
+local arranged = {}
+
+-- The other monitors as the display mode wants them: beside the panel (extend), showing it (mirror), or off
+-- (internal). The panel is off with the lid closed, or in external mode, while another monitor shows the
+-- desktop; it comes back once the lid opens, the mode changes or the last other monitor goes. Without another
+-- monitor logind suspends on the lid, as before, and every mode is the same.
+function M.arrange()
     if not panel then
         return
     end
-    local off = lid and other_monitor()
+    local mode = display_mode()
+    local present = {}
+    for _, monitor in ipairs(hl.get_monitors({ all = true })) do
+        local name = monitor.name
+        if name ~= panel.output and name ~= "FALLBACK" then
+            present[name] = true
+            if arranged[name] ~= mode then
+                arranged[name] = mode
+                if mode == "internal" then
+                    hl.monitor({ output = name, disabled = true })
+                -- disabled and mirror are always said: a rule without them keeps the previous mode's.
+                elseif mode == "mirror" then
+                    hl.monitor({ output = name, mode = "preferred", position = "auto", scale = 1, disabled = false, mirror = panel.output })
+                else
+                    hl.monitor({ output = name, mode = "preferred", position = "auto", scale = 1, disabled = false, mirror = "" })
+                end
+            end
+        end
+    end
+    for name in pairs(arranged) do
+        if not present[name] then
+            arranged[name] = nil
+        end
+    end
+    local off = (lid or mode == "external") and other_monitor()
     if off ~= panel_off then
         panel_off = off
         apply(saved())
     end
+end
+
+-- Entry point for `hyprctl eval` from the display picker.
+function desktop_display_mode(mode)
+    if not MODES[mode] then
+        return
+    end
+    local file = io.open(display_state, "w")
+    if file then
+        file:write('return { mode = "' .. mode .. '" }\n')
+        file:close()
+    end
+    M.arrange()
 end
 
 -- The lid switch, by its name in `hyprctl devices` (local.lua). Bound locked: the lock screen moves too.
@@ -93,16 +151,13 @@ function M.lid(name)
     lid = lid_closed()
     hl.bind("switch:on:" .. name, function()
         lid = true
-        clamshell()
+        M.arrange()
     end, { locked = true })
     hl.bind("switch:off:" .. name, function()
         lid = false
-        clamshell()
+        M.arrange()
     end, { locked = true })
-    for _, event in ipairs({ "monitor.added", "monitor.removed" }) do
-        hl.on(event, clamshell)
-    end
-    clamshell()
+    M.arrange()
 end
 
 -- The tablet mode switch, by its name in `hyprctl devices` (local.lua). Bound locked, so a flip while the

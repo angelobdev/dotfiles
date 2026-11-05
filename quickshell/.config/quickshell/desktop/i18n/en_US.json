@@ -417,7 +417,8 @@
     "title": "Media",
     "unavailable": "No media available",
     "playPause": "Play / pause",
-    "stop": "Stop"
+    "stop": "Stop",
+    "barTooltip": "%1 — %2 · click: play/pause, wheel: skip"
   },
   "network": {
     "addressPlaceholder": "Address/prefix, e.g. 192.168.1.50/24",
@@ -930,5 +931,85 @@
     "pasteHint": "Paste it at the prompt with Ctrl + V.",
     "text": "Text from screen area",
     "ask": "Ask Claude about a screen area"
+  },
+  "privacy": {
+    "title": "Privacy",
+    "microphone": "Microphone in use: %1",
+    "camera": "Camera in use: %1",
+    "sharing": "Screen being shared",
+    "unknownApp": "an app",
+    "errors": {
+      "usage": "Usage: privacy.py cameras"
+    }
+  },
+  "emoji": {
+    "title": "Emoji",
+    "search": "Search emoji",
+    "recent": "Recently used",
+    "noRecent": "Emoji you pick show up here.",
+    "noMatch": "No emoji found",
+    "loading": "Loading…",
+    "groups": {
+      "smileys": "Smileys & emotion",
+      "people": "People & body",
+      "nature": "Animals & nature",
+      "food": "Food & drink",
+      "travel": "Travel & places",
+      "activities": "Activities",
+      "objects": "Objects",
+      "symbols": "Symbols",
+      "flags": "Flags"
+    },
+    "errors": {
+      "missing": "The emoji list needs unicode-emoji: sudo dnf install unicode-emoji cldr-emoji-annotation",
+      "unreadable": "The emoji list could not be read.",
+      "usage": "Usage: emoji.py list"
+    }
+  },
+  "weather": {
+    "title": "Weather",
+    "feels": "Feels like %1°",
+    "wind": "Wind %1 km/h",
+    "updatedAt": "Updated at %1",
+    "stale": "Offline: last reading at %1",
+    "rain": "%1%",
+    "locating": "Finding where you are…",
+    "conditions": {
+      "clear": "Clear",
+      "partly": "Partly cloudy",
+      "cloudy": "Cloudy",
+      "fog": "Fog",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "showers": "Showers",
+      "snow": "Snow",
+      "storm": "Thunderstorm"
+    },
+    "errors": {
+      "cityNotFound": "No place called %1 was found.",
+      "unavailable": "The weather could not be fetched.",
+      "noLocation": "The location is not available: set Config.weatherCity.",
+      "usage": "Usage: weather.py now [CITY]"
+    }
+  },
+  "zoom": {
+    "title": "Zoom",
+    "in": "Zoom in",
+    "out": "Zoom out",
+    "reset": "Reset zoom"
+  },
+  "displays": {
+    "title": "Displays",
+    "off": "Off",
+    "details": "%1×%2 · %3 Hz · %4%",
+    "mirroring": "mirroring the laptop",
+    "hint": "Laptop only turns the other monitors off; External only turns the laptop panel off until the other monitor is unplugged.",
+    "single": "Connect another monitor to choose how they share the desktop.",
+    "modes": {
+      "extend": "Extend",
+      "mirror": "Mirror",
+      "external": "External only",
+      "internal": "Laptop only"
+    }
   }
 }

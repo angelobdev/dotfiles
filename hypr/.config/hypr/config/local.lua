@@ -25,7 +25,7 @@ end
 bind("SUPER + B", hl.dsp.exec_cmd("zen-browser"), "Browser")
 bind("SUPER + SHIFT + Space", hl.dsp.exec_cmd("1password --quick-access"), "1Password")
 
--- Verified Omnibook firmware actions: F1 emits Super+P; the three-diamond
+-- Verified Omnibook firmware actions: F1 (two screens) emits Super+P, the display picker; the three-diamond
 -- programmable key (F11) emits XF86Launch2. Fn/Fn Lock chooses action mode.
-bind("SUPER + P", hl.dsp.exec_cmd(shell .. " toggle controls"), "Control Center")
+bind("SUPER + P", hl.dsp.exec_cmd(shell .. " toggle displays"), "Displays")
 bind("XF86Launch2", hl.dsp.exec_cmd(shell .. " toggle controls"), "Control Center")

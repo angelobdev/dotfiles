@@ -12,6 +12,11 @@ QtObject {
     readonly property string recordingCodec: "libvpx-vp9"
     // Desktop-entry IDs the launcher leaves out: GNOME Settings (GDM needs it, it runs only in GNOME) and the
     // OpenCASCADE tool that the plugin build dependencies bring, and the uwsm unit menu.
+    // Weather in the calendar panel (Open-Meteo). An empty city means where GeoClue says the computer is.
+    readonly property bool weatherEnabled: true
+    readonly property string weatherCity: ""
+    // Bar: what plays, with play/pause on a click (MPRIS).
+    readonly property bool barMedia: true
     // Launcher: files in the home folder below the apps (fd, from three typed characters).
     readonly property bool launcherFiles: true
     readonly property var launcherHidden: ["org.gnome.Settings", "opencascade-draw", "uuctl"]
@@ -28,7 +33,7 @@ QtObject {
     readonly property var assistPages: [
         {
             name: "apps",
-            actions: ["keyboard", "assistant", "launcher", "dock", "overview", "notifications", "controls", "workspacePrevious", "workspaceNext"]
+            actions: ["keyboard", "assistant", "launcher", "dock", "overview", "notifications", "controls", "emoji", "workspacePrevious", "workspaceNext"]
         },
         {
             name: "window",
@@ -36,7 +41,7 @@ QtObject {
         },
         {
             name: "system",
-            actions: ["screenshotArea", "screenshotDisplay", "areaText", "areaAsk", "recording", "clipboard", "theming", "wallpaper", "nextWallpaper", "colorPicker", "hints", "lock", "session", "rotationLock"]
+            actions: ["screenshotArea", "screenshotDisplay", "areaText", "areaAsk", "recording", "clipboard", "theming", "wallpaper", "nextWallpaper", "colorPicker", "zoom", "hints", "lock", "session", "rotationLock"]
         }
     ]
     readonly property string assistLongPress: "keyboard"

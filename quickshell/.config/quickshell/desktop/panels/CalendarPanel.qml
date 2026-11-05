@@ -61,6 +61,7 @@ Overlay {
         month = selected.getMonth();
     }
     onOpened: {
+        Weather.refresh();
         today();
         Qt.callLater(loadEvents);
         keyboard.forceActiveFocus();
@@ -99,6 +100,84 @@ Overlay {
                 spacing: 14
                 Heading {
                     text: I18n.tr("calendar.title")
+                }
+                // Weather: now, then every two hours; the place and the time of the reading below.
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    visible: Weather.enabled && (Weather.ready || (Weather.data.error ?? "") !== "")
+                    spacing: 8
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: Weather.ready
+                        spacing: 12
+                        Icon {
+                            name: Weather.ready ? Weather.icon(Weather.data.current.code, Weather.data.current.day) : "cloud"
+                            Layout.preferredWidth: 36
+                            Layout.preferredHeight: 36
+                        }
+                        Text {
+                            text: Weather.ready ? Weather.data.current.temp + "°" : ""
+                            color: Theme.text
+                            font.family: Theme.font
+                            font.pixelSize: 30
+                        }
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 2
+                            Text {
+                                Layout.fillWidth: true
+                                text: Weather.ready ? Weather.condition(Weather.data.current.code) + (Weather.data.place ? " · " + Weather.data.place : "") : ""
+                                color: Theme.text
+                                elide: Text.ElideRight
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                text: Weather.ready ? I18n.tr("weather.feels", [Weather.data.current.feels]) + " · " + I18n.tr("weather.wind", [Weather.data.current.wind]) : ""
+                                color: Theme.muted
+                                font.pixelSize: 12
+                                elide: Text.ElideRight
+                            }
+                        }
+                    }
+                    RowLayout {
+                        Layout.fillWidth: true
+                        visible: Weather.ready
+                        spacing: 0
+                        Repeater {
+                            model: Weather.data.hours ?? []
+                            ColumnLayout {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                spacing: 2
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: modelData.time
+                                    color: Theme.muted
+                                    font.pixelSize: 11
+                                }
+                                Icon {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    name: Weather.icon(modelData.code, modelData.day)
+                                    Layout.preferredWidth: 18
+                                    Layout.preferredHeight: 18
+                                }
+                                Text {
+                                    Layout.alignment: Qt.AlignHCenter
+                                    text: modelData.temp + "°" + (modelData.rain >= 30 ? " " + I18n.tr("weather.rain", [modelData.rain]) : "")
+                                    color: Theme.text
+                                    font.pixelSize: 12
+                                }
+                            }
+                        }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        visible: (Weather.data.error ?? "") !== ""
+                        text: Weather.data.stale && Weather.ready ? I18n.tr("weather.stale", [I18n.locale.toString(new Date(Weather.data.updated * 1000), I18n.timeFormat)]) : (Weather.data.error ?? "")
+                        color: Theme.muted
+                        font.pixelSize: 11
+                        wrapMode: Text.WordWrap
+                    }
                 }
                 RowLayout {
                     PanelIconButton {

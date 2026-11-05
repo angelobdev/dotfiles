@@ -223,6 +223,46 @@ PanelWindow {
                 }
             }
         }
+        // What plays: a click plays or pauses, the wheel skips, a right click opens the Control Center.
+        BarButton {
+            id: mediaButton
+            readonly property var player: Media.player
+            visible: Config.barMedia && !!player && (player.trackTitle ?? "") !== ""
+            iconName: player?.isPlaying ? "pause" : "play"
+            text: player?.trackTitle ?? ""
+            textElide: Text.ElideRight
+            implicitWidth: Math.min(Theme.hit(220), implicitContentWidth + leftPadding + rightPadding)
+            tooltip: I18n.tr("media.barTooltip", [player?.trackTitle ?? "", player?.trackArtist || player?.identity || ""])
+            onClicked: Media.control("play-pause")
+            TapHandler {
+                acceptedButtons: Qt.RightButton
+                onTapped: ShellState.toggle("controls", bar.screen)
+            }
+            WheelHandler {
+                onWheel: event => Media.control(event.angleDelta.y < 0 ? "next" : "previous")
+            }
+        }
+        // Privacy: microphone, camera and screen sharing in use, in the accent colour; the tooltip names the apps.
+        BarButton {
+            visible: Privacy.active
+            implicitWidth: privacyIcons.implicitWidth + leftPadding + rightPadding
+            tooltip: [Privacy.microphone ? I18n.tr("privacy.microphone", [Privacy.microphoneApps.join(", ") || I18n.tr("privacy.unknownApp")]) : "", Privacy.camera ? I18n.tr("privacy.camera", [Privacy.cameraApps.join(", ") || I18n.tr("privacy.unknownApp")]) : "", Privacy.sharing ? I18n.tr("privacy.sharing") : ""].filter(line => line !== "").join("\n")
+            Accessible.name: I18n.tr("privacy.title")
+            contentItem: RowLayout {
+                id: privacyIcons
+                spacing: 4
+                Repeater {
+                    model: [Privacy.microphone ? "microphone" : "", Privacy.camera ? "camera" : "", Privacy.sharing ? "monitor" : ""].filter(name => name !== "")
+                    Icon {
+                        required property string modelData
+                        name: modelData
+                        color: Theme.accent
+                        Layout.preferredWidth: Theme.hit(16)
+                        Layout.preferredHeight: Theme.hit(16)
+                    }
+                }
+            }
+        }
         BarButton {
             visible: Recording.running
             iconName: "record"

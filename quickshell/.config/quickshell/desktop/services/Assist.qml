@@ -150,6 +150,15 @@ Singleton {
                 label: I18n.tr("assist.actions.areaAsk"),
                 exec: [Quickshell.env("HOME") + "/.local/bin/desktop-area", "ask"]
             },
+            emoji: {
+                icon: "emoji",
+                label: I18n.tr("emoji.title"),
+                panel: "emoji"
+            },
+            zoom: {
+                icon: "zoom",
+                label: I18n.tr("zoom.title")
+            },
             colorPicker: {
                 icon: "palette",
                 label: I18n.tr("assist.actions.colorPicker"),
@@ -228,7 +237,9 @@ Singleton {
             deferred.restart();
             return true;
         }
-        if (name === "keyboard")
+        if (name === "zoom")
+            Zoom.request("toggle");
+        else if (name === "keyboard")
             Keyboard.request("toggle");
         else if (name === "window")
             ShellState.requestWindowMenu();

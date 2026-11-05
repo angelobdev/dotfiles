@@ -59,6 +59,10 @@ ShellRoot {
         function rotationLock(action: string): bool {
             return Tablet.requestLock(action);
         }
+        // Screen zoom: in, out, reset, toggle.
+        function zoom(action: string): bool {
+            return Zoom.request(action);
+        }
         // A focus session: toggle, start (minutes: 0 for Config.focusMinutes), stop.
         function focus(action: string, minutes: int): bool {
             return Focus.request(action, minutes);
@@ -112,6 +116,11 @@ ShellRoot {
                 batteryTimeToEmpty: UPower.displayDevice?.timeToEmpty ?? null,
                 batteryAlert: Battery.level,
                 focusMinutesLeft: Focus.minutesLeft,
+                privacy: {
+                    microphone: Privacy.microphoneApps,
+                    camera: Privacy.cameraApps,
+                    sharing: Privacy.sharing
+                },
                 hintsBindings: hints.bindings.length,
                 powerSelection: powerMenu.selectedAction,
                 powerPending: powerMenu.pending,
@@ -260,6 +269,8 @@ ShellRoot {
     ThemingPanel {
         id: themingPanel
     }
+    EmojiPanel {}
+    DisplayPanel {}
     WindowSwitcher {
         id: windowSwitcher
     }

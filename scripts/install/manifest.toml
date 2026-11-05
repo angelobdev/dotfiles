@@ -90,6 +90,10 @@ packages = [
     # Color picker (Super + Shift + P), text from a screen area (tesseract, Italian and English), the launcher's
     # calculator and unit conversions (qalc) and its file search (fd).
     'hyprpicker', 'tesseract', 'tesseract-langpack-ita', 'tesseract-langpack-eng', 'qalculate', 'fd-find',
+    # The emoji picker: Unicode's list and CLDR's names in every language.
+    'unicode-emoji', 'cldr-emoji-annotation',
+    # What plays, for the lock screen.
+    'playerctl',
     # Drives and phones.
     # udiskie's tray icon is an AppIndicator (StatusNotifierItem) for the bar's tray.
     'udiskie', 'libayatana-appindicator-gtk3', 'udisks2', 'gvfs', 'gvfs-afc', 'gvfs-gphoto2', 'usbmuxd', 'libimobiledevice-utils',

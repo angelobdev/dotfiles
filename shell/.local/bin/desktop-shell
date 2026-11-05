@@ -88,14 +88,27 @@ case "${1:-start}" in
         exec qs ipc -p "$config" call desktop switcher "$2"
         ;;
     toggle)
-        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent|updates) ;;
-            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent|updates}' >&2; exit 2 ;;
+        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent|updates|emoji|displays) ;;
+            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent|updates|emoji|displays}' >&2; exit 2 ;;
         esac
         exec qs ipc -p "$config" call desktop toggle "$2"
         ;;
     media)
-        case "${2:-}" in play-pause|play|pause|next|previous|stop) ;;
-            *) echo 'Usage: desktop-shell media {play-pause|play|pause|next|previous|stop}' >&2; exit 2 ;;
+        case "${2:-}" in
+            play-pause|play|pause|next|previous|stop) ;;
+            now)
+                # One line for the lock screen (hyprlock): what plays, from MPRIS without the shell, Pango-escaped.
+                command -v playerctl >/dev/null || exit 0
+                title=$(playerctl -s metadata title 2>/dev/null || true)
+                [[ -n $title ]] || exit 0
+                artist=$(playerctl -s metadata artist 2>/dev/null || true)
+                [[ $(playerctl -s status 2>/dev/null) == Playing ]] && icon='▶' || icon='⏸'
+                line="$icon  ${title:0:60}${artist:+  ·  ${artist:0:40}}"
+                line=${line//&/&amp;}; line=${line//</&lt;}; line=${line//>/&gt;}
+                printf '%s\n' "$line"
+                exit 0
+                ;;
+            *) echo 'Usage: desktop-shell media {play-pause|play|pause|next|previous|stop|now}' >&2; exit 2 ;;
         esac
         exec qs ipc -p "$config" call desktop media "$2"
         ;;
@@ -111,6 +124,12 @@ case "${1:-start}" in
                 ;;
         esac
         echo 'Usage: desktop-shell dock {show|hide|toggle|touch|launch 1-9}' >&2
+        exit 2
+        ;;
+    zoom)
+        # Screen zoom around the pointer, with an OSD.
+        case "${2:-}" in in|out|reset|toggle) exec qs ipc -p "$config" call desktop zoom "$2" ;; esac
+        echo 'Usage: desktop-shell zoom {in|out|reset|toggle}' >&2
         exit 2
         ;;
     focus)
@@ -161,5 +180,5 @@ case "${1:-start}" in
         ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
 esac

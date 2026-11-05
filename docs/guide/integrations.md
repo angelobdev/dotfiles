@@ -132,3 +132,12 @@ With multiple devices, use `idevicepair -u DEVICE_ID validate` / `pair` to selec
 GVfs volumes use `afc://` URIs and appear in Files rather than `/run/media`. Use Files' unmount action when done. The currently connected iPhone was accessible after accepting its trust prompt. Pairing validation, a GVfs AFC mount, and a root metadata query succeeded without reading personal file contents; udiskie itself is not involved in that AFC connection.
 
 References: [udiskie usage](https://github.com/coldfix/udiskie/wiki/Usage), [libimobiledevice](https://github.com/libimobiledevice/libimobiledevice), [GVfs AFC backend](https://gitlab.gnome.org/GNOME/gvfs/-/tree/master/daemon).
+
+## Weather and location
+
+The calendar weather asks GeoClue for the computer's position at city accuracy (`weather.py`, as the client `desktop-weather`; Fedora's GeoClue answers it without an agent, from its IP and Wi-Fi sources), names the place through OpenStreetMap's Nominatim, and fetches the forecast from Open-Meteo. Each request carries only the coordinates and the generic client name `desktop-weather/1.0`. The place is kept 6 hours and the forecast 30 minutes in `~/.cache/desktop/`; `Config.weatherCity` replaces the position with a city looked up through Open-Meteo, and `Config.weatherEnabled: false` stops all of it.
+
+## Privacy indicator
+
+`services/Privacy.qml` reads microphone use from PipeWire capture streams, camera use from the processes holding a `/dev/video*` device (`privacy.py cameras`, every 3 s; PipeWire stands for apps that read the camera through it, named from its video streams), and screen sharing from Hyprland's `screencast` events. Only the user's own processes can be seen. `desktop-shell status` shows the same under `privacy`.
+

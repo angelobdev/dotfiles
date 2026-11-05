@@ -1,0 +1,92 @@
+{
+  "name": "High Contrast",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 11,
+    "terminalSize": 12
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 32,
+    "accentColor": "yellow"
+  },
+  "shell": {
+    "background": "#000000",
+    "surface": "#000000f7",
+    "raised": "#1a1a1a",
+    "tile": "#242424",
+    "accentText": "#000000",
+    "track": "#8a8a8a",
+    "stroke": "#ffffffb0",
+    "text": "#ffffff",
+    "muted": "#d9d9d9",
+    "accent": "#ffd400",
+    "danger": "#ff7a7a",
+    "scrim": "#00000040",
+    "scrimModal": "#000000cc",
+    "scrimStrong": "#000000dd",
+    "tooltip": "#000000",
+    "handlePressed": "#ffffff",
+    "handleFocus": "#ffd400",
+    "barShadeTop": "#000000cc",
+    "barShadeBottom": "#000000aa",
+    "shareShade": "#00000060"
+  },
+  "palette": {
+    "bg": "#000000",
+    "base": "#0d0d0d",
+    "raised": "#1a1a1a",
+    "border": "#ffffff",
+    "fg": "#ffffff",
+    "muted": "#d9d9d9",
+    "dim": "#a6a6a6",
+    "accent": "#ffd400",
+    "accentFg": "#000000",
+    "link": "#7fd4ff",
+    "danger": "#ff7a7a",
+    "success": "#7ee08a",
+    "warning": "#ffd400",
+    "light": "#bfbfbf",
+    "mid": "#4d4d4d",
+    "dark": "#000000",
+    "shadow": "#000000",
+    "brightText": "#ffffff"
+  },
+  "ansi": [
+    "#1a1a1a",
+    "#ff7a7a",
+    "#7ee08a",
+    "#ffd400",
+    "#7fb6ff",
+    "#e59bff",
+    "#7fe6e6",
+    "#e6e6e6",
+    "#a6a6a6",
+    "#ff9e9e",
+    "#a3f0ac",
+    "#ffe566",
+    "#a8ceff",
+    "#efbfff",
+    "#a8f0f0",
+    "#ffffff"
+  ],
+  "terminal": {
+    "opacity": 1.0
+  },
+  "hyprland": {
+    "shadow": "#00000099",
+    "glassTint": "#00000000",
+    "borderSize": 2
+  },
+  "vscode": {
+    "theme": "Default High Contrast"
+  },
+  "wallpaperDirectories": [
+    "~/.local/share/wallpapers",
+    "~/Pictures/Wallpapers"
+  ]
+}
