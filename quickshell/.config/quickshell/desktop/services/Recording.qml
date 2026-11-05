@@ -31,7 +31,8 @@ Singleton {
             record("");
     }
     function record(geometry) {
-        recorder.command = ["python3", helper, "--output", output, "--audio", audio, "--codec", Config.recordingCodec, "--fps", String(Config.recordingFramerate)].concat(geometry ? ["--geometry", geometry] : []);
+        // Ends with the shell, even a killed one (setpriv: the kernel signals it), so recording.py finishes the file.
+        recorder.command = ["setpriv", "--pdeathsig", "TERM", "--", "python3", helper, "--output", output, "--audio", audio, "--codec", Config.recordingCodec, "--fps", String(Config.recordingFramerate)].concat(geometry ? ["--geometry", geometry] : []);
         recorder.running = true;
     }
     function stop() {

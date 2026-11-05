@@ -74,7 +74,10 @@ def main():
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
     try:
-        child = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True, start_new_session=True)
+        # In a session of its own, and given SIGINT by the kernel if this helper dies without stopping it (killed),
+        # so it still finishes the file instead of recording on with nothing to stop it.
+        child = subprocess.Popen(['setpriv', '--pdeathsig', 'INT', '--'] + command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                                 text=True, start_new_session=True)
         if stopped: stop()
         print(json.dumps({'recording': True, 'path': str(destination)}), flush=True)
         # Drain continuously to avoid a full pipe blocking the encoder.
