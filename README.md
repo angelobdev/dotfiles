@@ -43,12 +43,13 @@ All shots use the Tokyo Night theme with a wallpaper from [Omarchy](https://gith
 ## Getting started
 
 > [!NOTE]
-> This is a personal desktop, tuned for Fedora and an HP OmniBook Ultra Flip. It should work on other hardware, with some settings to adjust, and other distributions are on the [roadmap](docs/development/roadmap.md).
+> This is a personal desktop, tuned for Fedora and an HP OmniBook Ultra Flip. It should work on other hardware, with some settings to adjust. The installer also supports Arch Linux, so far tested in containers only; other distributions are on the [roadmap](docs/development/roadmap.md).
 
-On a fresh Fedora 45, Server edition included, one script installs everything:
+On a fresh Fedora 45, Server edition included, or a base Arch Linux, one script installs everything:
 
 ```sh
-sudo dnf install -y git-core python3
+sudo dnf install -y git-core python3      # Fedora
+sudo pacman -S --needed git python        # Arch
 git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
 cd ~/.dotfiles
 ./scripts/install-tui.py              # guided: choose, review, then apply

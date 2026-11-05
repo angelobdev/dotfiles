@@ -1,4 +1,4 @@
-# Dotfiles: Hyprland + Quickshell desktop (Fedora 45)
+# Dotfiles: Hyprland + Quickshell desktop (Fedora 45, Arch Linux)
 
 Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Quickshell (QML) shell that provides every panel, small Bash wrappers and Python helpers. The repository is the source of truth; `$HOME` only holds symlinks to it.
 
@@ -22,8 +22,8 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 | `shell/.local/libexec/desktop/*.py` | Python helpers spawned by QML services and wrappers; `i18n.py` shares the QML catalogs |
 | `hypridle/ hyprlock/ hyprpaper/ gtk/ kitty/ fastfetch/ portals/ udiskie/ electron/ zsh/` | Plain config packages; `steam-hidpi/` is optional (`stow.py --with`) |
 | `docs/` | User guides (`guide/`), one page per area (`features/`), developer docs (`development/`) |
-| `scripts/` | `install-desktop.py` (and its guided front end `install-tui.py`) with `install/manifest.toml` (the only package list) and `install/fedora.py`, `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, `check-links.py`, hyprpm plugin packaging |
-| `.github/workflows/` | CI: `check.yml` runs `check.sh` on Fedora 45 on pushes to `main` and pull requests; `install.yml` runs the installer in a fresh Fedora 45 when it changes |
+| `scripts/` | `install-desktop.py` (and its guided front end `install-tui.py`) with `install/manifest.toml` (the only package list) and `install/fedora.py` / `install/arch.py`, `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, `check-links.py`, hyprpm plugin packaging |
+| `.github/workflows/` | CI: `check.yml` runs `check.sh` on Fedora 45 and Arch on pushes to `main` and pull requests; `install.yml` runs the installer in a fresh Fedora 45 and Arch when it changes |
 
 ## Commands
 
@@ -32,6 +32,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 ./scripts/stow.py dry-run       # then: ./scripts/stow.py apply (needed after ADDING files)
 ./scripts/install-desktop.py    # preview of a full install (dry-run by default; `apply` does it)
 ./scripts/install-tui.py        # the same, guided: profiles, firmware, review, then apply
+./scripts/install-desktop.py pins   # AUR commits newer than the Arch pins (--update writes them into the manifest)
 hyprctl configerrors            # live Hyprland config state
 qs log -p ~/.config/quickshell/desktop | tail   # live shell reload result
 ~/.local/bin/desktop-shell status               # JSON snapshot of every service

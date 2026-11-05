@@ -6,7 +6,7 @@ Configuration: [`plugins.lua`](../../hypr/.config/hypr/config/plugins.lua). Scre
 
 ## Installation
 
-Verified builds: **Hyprland and hyprland-devel 0.57.1-1.fc45.x86_64**, from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora. The `plugins` profile of the [installer](installation.md#automated-installation) lists the build dependencies, some from RPM Fusion, and runs this step at the first login. `hyprland-devel` has to stay installed: the check at every login reads its version.
+Verified builds: **Hyprland and hyprland-devel 0.57.1-1.fc45.x86_64**, from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora, and on Arch **hyprland 0.57.1-1** from `extra`, which also holds the headers (compiled in a container; not yet loaded in an Arch session). The `plugins` profile of the [installer](installation.md#automated-installation) lists the build dependencies, some from RPM Fusion on Fedora, and runs this step at the first login. `hyprland-devel` has to stay installed on Fedora: the check at every login reads its version.
 
 From a terminal in the Hyprland session, as a regular user:
 
@@ -28,7 +28,7 @@ Packaging in [`scripts/hyprpm`](../../scripts/hyprpm) downloads the four origina
 
 ## Fedora COPR adaptations
 
-The installer checks that the session, installed binary, and `hyprland-devel` package match, then prepares hyprpm headers by copying the actual RPM headers, preserving `version.h` and the ABI. The cache remains root-owned at `/var/cache/hyprpm/$USER`; privileged operations are limited to this cache. Unlike the previous COPR, this build reports its real Git commit, so the ABI hash changes with each Hyprland release: after an update the installer resets the cache itself, at the next login, before anything is loaded (below).
+The installer checks that the session, installed binary, and `hyprland-devel` package (`hyprland` itself on Arch) match, then prepares hyprpm headers by copying the actual packaged headers, preserving `version.h` and the ABI. The cache remains root-owned at `/var/cache/hyprpm/$USER`; privileged operations are limited to this cache. Unlike the previous COPR, this build reports its real Git commit, so the ABI hash changes with each Hyprland release: after an update the installer resets the cache itself, at the next login, before anything is loaded (below).
 
 The manifest uses runtime name **HyprCapture**, including capitalization, avoiding the upstream manifest mismatch. It installs the Qt helper `~/.local/bin/hyprcapture-ui` and licenses. It does not install the optional TensorFlow/AEC microphone runtime: capture does not require it. Quickshell recording continues to use wf-recorder.
 
@@ -52,17 +52,17 @@ hyprctl configerrors
 desktop-plugins reload
 ```
 
-`desktop-plugins reload` runs automatically at Hyprland startup, before any plugin is loaded. It compares the RPM, ABI and running binary with the last build, and the packaging in `scripts/hyprpm` with the one hyprpm built from:
+`desktop-plugins reload` runs automatically at Hyprland startup, before any plugin is loaded. It compares the package build (`rpm` on Fedora, `pacman` on Arch), ABI and running binary with the last build, and the packaging in `scripts/hyprpm` with the one hyprpm built from:
 
 - **Both match**: it loads the plugins.
 - **The packaging changed, or Hyprland was updated to a [verified build](#installation)**: it does not load the old plugins, and opens a terminal that runs `install-hypr-plugins.py`. With nothing loaded, the script replaces them whole (`hyprpm remove`, and for a new ABI a reset of `/var/cache/hyprpm/$USER`), builds, and loads them; it asks for sudo and for hyprpm's confirmations. If it stops, the session goes on without plugins and the next login tries again.
 - **A rebuild stopped halfway** (offline, the terminal closed, a plugin that failed to build): hyprpm's repository is gone or marks a plugin as failed, so it opens the terminal again, and every login does until a build finishes.
 - **Hyprland was updated to a build the pins were not verified against**: it shows a notification, and the session runs without plugins until the pins are checked and the build is added to `VERIFIED` in `scripts/hyprpm/bundle.py`.
-- **`hyprland` and `hyprland-devel` have different versions** (an update that stopped halfway): it shows a notification and loads nothing; finish the update (`sudo dnf upgrade`) and log in again.
+- **`hyprland` and `hyprland-devel` have different versions** (an update that stopped halfway, Fedora only): it shows a notification and loads nothing; finish the update (`sudo dnf upgrade`) and log in again.
 
 The guided installer shows which of these applies on its first screen.
 
-Pins are intentionally explicit in `scripts/hyprpm/build.py`, the accepted RPM builds in `scripts/hyprpm/bundle.py`. Compositor updates require compatible revisions to be checked, rebuilt, and tested in an isolated session before changing that guard. `hyprpm update` on the local packaging retains pins; it does not automatically select new upstream revisions.
+Pins are intentionally explicit in `scripts/hyprpm/build.py`, the accepted package builds (Fedora's RPM, Arch's package) in `scripts/hyprpm/bundle.py`. Arch is a rolling release: a Hyprland update arrives with the next `pacman -Syu`, and the plugins wait for it to be verified as on Fedora. Compositor updates require compatible revisions to be checked, rebuilt, and tested in an isolated session before changing that guard. `hyprpm update` on the local packaging retains pins; it does not automatically select new upstream revisions.
 
 A change to the packaging (`build.py`, `hyprpm.toml` or the patch) is rebuilt at the next login, as above. `install-hypr-plugins.py` refuses to replace plugins that are loaded, because swapping hyprgrass in a running compositor crashed it once ([troubleshooting](../development/verification-log.md#tablet-follow-ups-2026-10-30)); run in the session, it says to log in again. `bundle.py` is not part of the packaging digest, so accepting a Hyprland build rebuilds nothing by itself. To try a single plugin, replace its file with `install`, which leaves the running copy alone, and log in again.
 

@@ -4,7 +4,7 @@
 
 ## Interface
 
-- Bar height: 38 logical pixels. Fedora/app menu → occupied/active workspaces and at least two pills per monitor → window title → spacer → tray (items marked passive stay hidden) → battery (percentage + icon) → Hints → notifications → Control Center → date/time → session. Controls are 30 px, centered status icons 16 px, and the logo 18 px. Network and volume controls live in the Control Center.
+- Bar height: 38 logical pixels. Distribution logo/app menu (the icon `/etc/os-release` names, else the icon pack's `distributor-logo-<ID>`) → occupied/active workspaces and at least two pills per monitor → window title → spacer → tray (items marked passive stay hidden) → battery (percentage + icon) → Hints → notifications → Control Center → date/time → session. Controls are 30 px, centered status icons 16 px, and the logo 18 px. Network and volume controls live in the Control Center.
 - QML tray menus with rounded corners, neutral backgrounds/borders, hover, submenus, checkboxes, and disabled actions; Esc or an outside click closes the menu.
 - Panels open with a short slide from the bar (side panels) or a scale from the centre (dialogs) and close with a quicker fade; Control Center sub-panels and the network details view push sideways; notification toasts slide in and out from the right; expandable sections grow open, pressed buttons sink slightly, the launcher selection glides, and icons cross-fade when their state changes; windows pop in and out, tiling reflow glides on a spring, and workspaces slide with a fade. See [Motion](configuration.md#motion).
 - Vector icons in a filled, macOS-like style (solid shapes with knockouts, 1.8 px round lines, 24 px grid) and native tooltips below buttons, outside the bar surface. Original application icons retain their colors.
@@ -167,7 +167,7 @@ See [AI assistant](../features/ai-assistant.md).
 
 ## System updates
 
-When updates are available, an icon with their number appears in the bar (checked 5 minutes after login and every 6 hours; offline, it keeps the last list and tries again 30 minutes later) and a notification announces new ones. Its panel lists them with **Check now** and **Update**, which opens a terminal for dnf and Flatpak; a Hyprland update is flagged, since the plugins need rebuilding after it.
+When updates are available, an icon with their number appears in the bar (checked 5 minutes after login and every 6 hours; offline, it keeps the last list and tries again 30 minutes later) and a notification announces new ones. Its panel lists them with **Check now** and **Update**, which opens a terminal for dnf (pacman on Arch) and Flatpak; a Hyprland update is flagged, since the plugins need rebuilding after it.
 
 ## Assist button
 

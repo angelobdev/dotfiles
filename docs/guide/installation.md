@@ -25,10 +25,11 @@ Verified versions: Hyprland 0.57.1, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 
 ## Automated installation
 
-`scripts/install-desktop.py` turns an installed Fedora 45 into this desktop. It starts from any edition, Server included, and leaves disks and partitions alone. Other distributions and releases are refused until they are verified: [`manifest.toml`](../../scripts/install/manifest.toml) has the supported list.
+`scripts/install-desktop.py` turns an installed Fedora 45 or Arch Linux into this desktop. On Fedora it starts from any edition, Server included; on Arch, from a base system (pacstrap or archinstall) with your user in `wheel` and sudo allowed for it. It leaves disks and partitions alone. Other distributions and releases, Arch derivatives included, are refused until they are verified: [`manifest.toml`](../../scripts/install/manifest.toml) has the supported list.
 
 ```sh
-sudo dnf install -y git-core python3
+sudo dnf install -y git-core python3                         # Fedora
+sudo pacman -S --needed git python                           # Arch
 git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
 cd ~/.dotfiles
 ./scripts/install-tui.py                                     # guided, see below; or by hand:
@@ -51,6 +52,17 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 | `steam-hidpi` | The Steam launcher that scales the client for the monitor it opens on (the optional `steam-hidpi` Stow package) |
 | `codecs` | The RPM Fusion codecs: `ffmpeg` and `intel-media-driver` replace `ffmpeg-free` and `libva-intel-media-driver`, plus the GStreamer freeworld plugins, libav, OpenH264, HEIF and aptX |
 
+On Arch the profiles are the same, from the official repositories, with these differences:
+
+- Hyprland, `hyprpm`, its headers and the `hyprland-uwsm` session entry come from `extra`: no COPR, no `-devel` packages.
+- No swaps: Arch's `ffmpeg` and `intel-media-driver` are already the complete builds, so `codecs` only adds the GStreamer plugins (bad, ugly, libav).
+- `hardware` installs `fprintd` but not the [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), which is not ported yet: the fingerprint works at GDM and on the lock screen, sudo and polkit ask for the password. It sets no firewall zone and leaves `sshd` alone, since Arch enables neither. The firmware Fedora splits in several packages is in `linux-firmware-intel`; the initramfs is rebuilt with `mkinitcpio -P` (or dracut, if the system uses it).
+- `gaming` first enables the `multilib` repository in `/etc/pacman.conf`.
+- `containers` has no tray icon for Tailscale: Arch's package has no unit for it.
+- `apps` builds Zen Browser, 1Password and VS Code from the AUR: see [AUR packages](#aur-packages-arch).
+
+pacman installs with `-Syu` (a partial upgrade is not supported on Arch), never installs optional dependencies, and picks `pipewire-jack` where something needs a JACK library.
+
 The default is `core,hardware,plugins`; the others are opt-in. No Flatpak is installed: Flathub is yours to choose from. GDM needs GNOME Shell and GNOME Settings; the extras they recommend (Tour, Parental Controls, Color Profile Viewer, remote desktop, Rygel) are kept out. The manifest is the only list of packages: a new dependency goes there.
 
 After the reboot, sign in at GDM. A terminal opens by itself and runs `install-desktop.py post`, which builds the plugins (hyprpm asks for confirmation) and lists what is left by hand. If it fails it comes back at the next login; to run it yourself, press `Super + Return`.
@@ -68,9 +80,23 @@ Nothing changes before `a`. Then the installer leaves the screens and runs in th
 
 On Fedora Server the guided partitioning stops `/` at 15 GiB, which is not enough. Choose custom partitioning, or grow it afterwards: the installer warns under 30 GiB free and prints the command.
 
+### AUR packages (Arch)
+
+Zen Browser, 1Password and Visual Studio Code are not in Arch's repositories. The manifest pins each AUR PKGBUILD to a commit and names the version that commit builds. The `aur` step checks the commit out in `~/.cache/dotfiles/aur/<package>`, imports the key the sources are signed with when the manifest names one (1Password's; the PKGBUILD's `validpgpkeys` still decides which key may sign), and builds and installs the package with `makepkg` as your user, which asks sudo only for pacman. The preview needs no network: a package is pending while it is missing or at another version than the pinned one. If the commit builds another version than the manifest says, the step stops before building.
+
+To update them:
+
+```sh
+./scripts/install-desktop.py pins                 # newer AUR commits, the version each builds, a link to the PKGBUILD changes
+./scripts/install-desktop.py pins --update        # once you reviewed them: the new commits go into manifest.toml
+./scripts/install-desktop.py apply --profiles core,hardware,plugins,apps
+```
+
+`pins` reads the manifest, not the system, so it works from Fedora as well. Uninstall removes the AUR packages with the others, and the checkouts.
+
 ## Updates
 
-The [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR, which the Hyprland wiki recommends for Fedora, provides Hyprland and Quickshell. Its `hyprland-uwsm` package holds the GDM session entry.
+The [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR, which the Hyprland wiki recommends for Fedora, provides Hyprland and Quickshell. Its `hyprland-uwsm` package holds the GDM session entry. On Arch they come from `extra`, and the update icon in the bar checks with `checkupdates` (from `pacman-contrib`, as your user) and updates with `sudo pacman -Syu`; the AUR packages are updated with `pins`, above.
 
 ```sh
 cd ~/.dotfiles
@@ -100,11 +126,13 @@ Folded into tablet mode, the OmniBook screen covers the fingerprint reader, and 
 ./scripts/tablet-auth.sh install   # or: status, remove
 ```
 
+Not on Arch yet: Arch has no authselect, and editing its PAM files by hand is left for a step of its own.
+
 It installs `/usr/local/libexec/desktop-tablet-mode` (succeeds only while `$XDG_RUNTIME_DIR/desktop-shell/tablet.json` of the user says `"tablet": true`), copies the `local` authselect profile to `custom/desktop-tablet`, inserts `auth [success=1 default=ignore] pam_exec.so quiet …` right before `pam_fprintd.so` in its `system-auth`, and selects it with the same features. `remove` selects `local` again and deletes both. Without it, Ctrl+C at the fingerprint prompt of sudo goes on to the password.
 
 ## Gaming
 
-The `gaming` profile installs the RPM Steam client, gamescope, `gcc` (the C compiler used to cache the optional renderer scaling workaround) and the 32-bit Mesa Vulkan drivers and `vulkan-loader` that 32-bit Intel games need. The `steam-hidpi` profile adds the launcher that scales Steam for the monitor; by hand, `./scripts/stow.py apply --with steam-hidpi` links it and `./scripts/stow.py remove` unlinks it with the rest. See [Steam and gamescope](integrations.md#steam-and-gamescope) for the launcher and per-game launch options. Completely exit and reopen Steam after linking it.
+The `gaming` profile installs the RPM Steam client, gamescope, `gcc` (the C compiler used to cache the optional renderer scaling workaround) and the 32-bit Mesa Vulkan drivers and `vulkan-loader` that 32-bit Intel games need. The `steam-hidpi` profile adds the launcher that scales Steam for the monitor; by hand, `./scripts/stow.py apply --with steam-hidpi` links it and `./scripts/stow.py remove` unlinks it with the rest. See [Steam and gamescope](integrations.md#steam-and-gamescope) for the launcher and per-game launch options. Completely exit and reopen Steam after linking it. On Arch, Steam and the 32-bit Mesa and Vulkan drivers (Intel and AMD) come from `multilib`, which the profile enables.
 
 ## Compositor plugins
 
@@ -126,10 +154,10 @@ cd ~/.dotfiles
 1. the Hyprland plugins (hyprpm's repository, the builds, `hyprcapture-ui`), the default session, GDM and the boot target as they were, the first-login autostart;
 2. the zsh plugin clones, the Stow links (`stow.py remove`, then the files Stow had moved to `~/.local/state/dotfiles/backups` go back where they were), the GNOME interface settings saved before the first theme, and the Flatpak apps it installed;
 3. authselect (the tablet profile, then the fingerprint feature), the firewall zone, the services, the login shell and the groups, before the packages they point at;
-4. the files in `/etc` and the vendor firmware (then the initramfs), the packages the installer installed with whatever dnf removes along with them, the swaps back to the packages they replaced, and the repositories it added.
+4. the files in `/etc` and the vendor firmware (then the initramfs), the packages the installer installed with whatever dnf removes along with them (on Arch, `pacman -Rsc`: what depends on them and the dependencies nothing else needs, then what the desktop's installs brought that `-s` keeps although nothing needs it, such as Steam's `lib32-systemd`, which a bare `libudev.so` dependency of `device-mapper` seems to need; the AUR packages and their checkouts too), the swaps back to the packages they replaced, and the repositories it added (on Arch, `multilib` is commented out again).
 
-Every step checks first and leaves alone what is already back, so it is safe to run again, and the record stays, marked as undone, so a second run finds nothing to do. What you changed after the install stays as you left it, and the preview says so: a file in `/etc` you edited (a browser added to 1Password's list), a login shell, firewall zone, default session or boot target you chose since. The preview lists what dnf would remove, dependencies included. A package you installed yourself never goes as a dependent: the packages of the installer it needs stay (marked `keep`). A repository that packages staying still come from (an RPM Fusion driver, say) stays too, so they keep getting updates. A package that something staying still needs stays too: dnf refuses to break a protected package such as `systemd-udev`, and the installer leaves what it needs (for example `pkgconf-pkg-config`, which `kmod` uses). The prerequisites `python3` and `git-core` stay, and so do your preferences in `~/.config/desktop`, this repository, and the system upgrade the installer ran. Reboot afterwards: the system starts on the console, as before.
+Every step checks first and leaves alone what is already back, so it is safe to run again, and the record stays, marked as undone, so a second run finds nothing to do. What you changed after the install stays as you left it, and the preview says so: a file in `/etc` you edited (a browser added to 1Password's list), a login shell, firewall zone, default session or boot target you chose since. The preview lists what dnf would remove, dependencies included. A package you installed yourself never goes as a dependent: the packages of the installer it needs stay (marked `keep`). A repository that packages staying still come from (an RPM Fusion driver, say) stays too, so they keep getting updates. A package that something staying still needs stays too: dnf refuses to break a protected package such as `systemd-udev`, and the installer leaves what it needs (for example `pkgconf-pkg-config`, which `kmod` uses). The prerequisites `python3` and `git-core` (`python` and `git` on Arch) stay, and so do your preferences in `~/.config/desktop`, this repository, and the system upgrade the installer ran. Reboot afterwards: the system starts on the console, as before.
 
-An install made before the record existed is rebuilt from the manifest and the package history, at the uninstall or at the next `apply`, whichever comes first: only packages that arrived after the system was installed (the first transactions, before any typed command) count, the login shell goes back to `/bin/bash`, the firewall zone to the edition's default, and units the installer turned off (such as `sshd.service`) stay off. If the history does not show how the system itself was installed, as in a container image, no package from before the record is removed. Both the preview and the guided installer say when this is the case. An unreadable record is moved aside to `install.json.unreadable` and rebuilt the same way. Uninstall still runs after an upgrade to a Fedora the manifest does not list yet; installing does not.
+An install made before the record existed is rebuilt from the manifest and the package history, at the uninstall or at the next `apply`, whichever comes first: only packages that arrived after the system was installed (on Fedora the first transactions, before any typed command; on Arch, what pacman's log shows before the installer's first install) count, the login shell goes back to `/bin/bash`, the firewall zone to the edition's default, and units the installer turned off (such as `sshd.service`) stay off. If the history does not show how the system itself was installed, as in a container image, no package from before the record is removed. Both the preview and the guided installer say when this is the case. An unreadable record is moved aside to `install.json.unreadable` and rebuilt the same way. Uninstall still runs after an upgrade to a Fedora the manifest does not list yet; installing does not.
 
 By hand, `./scripts/stow.py remove` only unlinks the files; stop the shell (`desktop-shell stop`) and daemons (`pkill -x hypridle; pkill -x hyprpaper; pkill -x udiskie`) first.
