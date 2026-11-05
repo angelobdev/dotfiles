@@ -93,7 +93,8 @@ PanelWindow {
     }
     Card {
         id: menu
-        visible: Assist.menuOpen
+        // Kept while it fades, so closing animates too; input already follows the mask.
+        visible: opacity > 0
         // As wide as four buttons whatever the page; as tall as the longest page, so it does not jump.
         readonly property int rows: Math.max(...Assist.pages.map(p => Math.ceil(p.actions.length / 4)), 1)
         width: 4 * 100 + 3 * 8 + 24
