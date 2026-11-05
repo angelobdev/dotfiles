@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 import ast
 from collections import namedtuple
+import functools
 import getpass
 import grp
 import hashlib
@@ -255,9 +256,16 @@ def firmware_source(plan, item):
     # By hash, not by name: the vendor package names it differently from the kernel.
     if not plan.firmware:
         return None
-    # The size check first: only files that can match get hashed, even in a whole backup disk.
-    for path in sorted(Path(plan.firmware).expanduser().rglob('*')):
-        if path.is_file() and path.stat().st_size == item['size'] and sha256(path) == item['sha256']:
+    return found_firmware(str(Path(plan.firmware).expanduser()), item['size'], item['sha256'])
+
+
+# Searched once per run (preflight, pending and apply each ask, the guided installer more often): the directory
+# can be a whole backup disk. The guided installer forgets it at each new check.
+@functools.lru_cache(maxsize=None)
+def found_firmware(directory, size, digest):
+    # The size check first: only files that can match get hashed.
+    for path in sorted(Path(directory).rglob('*')):
+        if path.is_file() and path.stat().st_size == size and sha256(path) == digest:
             return path
     return None
 
