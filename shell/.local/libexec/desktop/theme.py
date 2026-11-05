@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Render the desktop theme into the files the shell and applications read."""
-from common import IMAGES, focused_monitor, magick, replacing, theme_name, write_atomic
+from common import IMAGES, download as download_file, focused_monitor, magick, replacing, theme_name, write_atomic
 from i18n import tr
 import argparse
 import colorsys
@@ -15,7 +15,6 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-import urllib.request
 
 HOME = Path.home()
 STATE = Path(os.environ.get('XDG_STATE_HOME') or HOME / '.local/state') / 'desktop-theme'
@@ -27,7 +26,7 @@ TEMPLATES = DATA / 'templates'
 BTOP = Path(os.environ.get('XDG_CONFIG_HOME') or HOME / '.config') / 'btop'
 # qtXct have no include: their whole config is rendered (fonts, icons, colours), like btop's theme.
 QTCT = tuple(Path(os.environ.get('XDG_CONFIG_HOME') or HOME / '.config') / f'{v}/{v}.conf' for v in ('qt5ct', 'qt6ct'))
-ICON_DIRS = [HOME / '.local/share/icons', HOME / '.icons'] + [
+ICON_DIRS = [Path(os.environ.get('XDG_DATA_HOME') or HOME / '.local/share') / 'icons', HOME / '.icons'] + [
     Path(d) / 'icons' for d in (os.environ.get('XDG_DATA_DIRS') or '/usr/local/share:/usr/share').split(':') if d]
 # Folder, terminal, browser, settings and document: enough to tell icon packs apart at a glance.
 ICON_SAMPLES = ('folder', 'utilities-terminal', 'web-browser', 'preferences-system', 'text-x-generic')
@@ -579,7 +578,6 @@ CURSOR_PACKS = {
                           'url': 'https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Ice.tar.xz',
                           'sha256': 'a68cae60c4dc706350e194ebc91c5fe48bc7bc9d59e119555834a2a7ee5078ef'},
 }
-USER_ICONS = HOME / '.local/share/icons'
 CURSOR_DOWNLOADS = Path(os.environ.get('XDG_CACHE_HOME') or HOME / '.cache') / 'desktop/cursors'
 
 
@@ -1019,14 +1017,7 @@ def apply_wallpaper(path):
 
 
 def download(entry, destination):
-    digest = hashlib.sha256()
-    with replacing(destination) as temporary:
-        with temporary.open('wb') as file, urllib.request.urlopen(entry['url'], timeout=30) as response:
-            for block in iter(lambda: response.read(1024 * 1024), b''):
-                digest.update(block)
-                file.write(block)
-        if digest.hexdigest() != entry['sha256']:
-            raise ValueError(tr('theme.errors.checksum', [entry['file']]))
+    download_file(entry['url'], destination, entry['sha256'], mismatch=tr('theme.errors.checksum', [entry['file']]))
 
 
 # Downloads what is missing, one JSON line per entry. With show, the theme's wallpaper is applied as soon
@@ -1077,7 +1068,7 @@ def reload():
             pass
 
 
-def main():
+def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('apply')
@@ -1141,145 +1132,194 @@ def main():
     preview = commands.add_parser('render')
     preview.add_argument('--theme', required=True)
     preview.add_argument('--out', required=True, type=Path)
-    arguments = parser.parse_args()
-    # Commands that change the theme state run one at a time: the panel queue and DynamicTheme.qml can
-    # overlap, and each rewrites current.json, preferences.json and the rendered files.
-    if arguments.command in ('apply', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme', 'cursor',
-                             'shell-icons', 'bar-style', 'glass', 'text-scale'):
-        STATE.mkdir(parents=True, exist_ok=True)
-        lock = open(STATE / '.lock', 'a')
-        fcntl.flock(lock, fcntl.LOCK_EX)
-    if arguments.command == 'apply':
-        apply(current())
-        if not set(CURSOR_PACKS) <= {theme['id'] for theme in cursor_themes()}:
-            spawn(['cursor-fetch'])
-    elif arguments.command == 'cursor-fetch':
-        fetch_missing_cursors()
-    elif arguments.command == 'set':
-        previous = current()
-        theme = apply(arguments.name)
-        apply_vscode(theme)
+    return parser
+
+
+# Commands that change the theme state run one at a time: the panel queue and DynamicTheme.qml can overlap,
+# and each rewrites current.json, preferences.json and the rendered files.
+LOCKED = {'apply', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme', 'cursor', 'shell-icons',
+          'bar-style', 'glass', 'text-scale'}
+
+
+# Read the preferences, change them, save them and apply the current theme with them.
+def update_preferences(change, reloading=True):
+    chosen = preferences()
+    change(chosen)
+    save_preferences(chosen)
+    apply(current())
+    if reloading:
         reload()
-        # Colours switch at once; the wallpaper (a conversion, maybe a download) follows in the background.
-        if previous != arguments.name:
-            remember(previous, wallpaper_chosen_under(previous))
-            spawn(['fetch', arguments.name, '--show'])
-    elif arguments.command == 'wallpapers':
-        name = arguments.name or current()
-        files = wallpaper_files(name, load(name))
-        print(json.dumps({'theme': name, 'remembered': memory().get(name), 'current': current_wallpaper(),
-                          'wallpapers': wallpaper_entries(name, load(name)), 'files': [str(path) for path in files],
-                          'thumbs': {str(path): str(thumb_path(path)) for path in files},
-                          'thumbsReady': {str(path): thumb_path(path).is_file() for path in files}}, ensure_ascii=False))
-    elif arguments.command == 'thumbs':
-        name = arguments.name or current()
-        make_thumbs([path for path in wallpaper_files(name, load(name)) if not thumb_path(path).is_file()])
-    elif arguments.command == 'open-folder':
-        target = USER_FONTS if arguments.kind == 'fonts' else USER_ICONS
-        target.mkdir(parents=True, exist_ok=True)
-        subprocess.Popen(['xdg-open', str(target)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                         stderr=subprocess.DEVNULL, start_new_session=True)
-    elif arguments.command == 'tone':
-        print(json.dumps(tone()))
-    elif arguments.command == 'check-font':
-        if not font_exists(arguments.family):
-            raise ValueError(tr('theming.errors.fontMissing', [arguments.family]))
-    elif arguments.command == 'check-icons':
-        if not icon_theme_exists(arguments.name):
-            raise ValueError(tr('theming.errors.iconsMissing', [arguments.name]))
-    elif arguments.command == 'generate':
-        generate(arguments.image)
-    elif arguments.command == 'dynamic':
-        chosen = preferences()
-        settings = dict(chosen.get('dynamic', {}))
-        if arguments.mode:
-            settings['mode'] = arguments.mode
-        chosen['dynamic'] = settings
-        save_preferences(chosen)
-        # The new mode shows at once when the dynamic theme is the current one.
-        if current() == DYNAMIC:
-            generate(dynamic_info()['source'])
-    elif arguments.command == 'window-style':
-        chosen = preferences()
+
+
+def command_apply(arguments):
+    apply(current())
+    if not set(CURSOR_PACKS) <= {theme['id'] for theme in cursor_themes()}:
+        spawn(['cursor-fetch'])
+
+
+def command_cursor_fetch(arguments):
+    fetch_missing_cursors()
+
+
+def command_set(arguments):
+    previous = current()
+    theme = apply(arguments.name)
+    apply_vscode(theme)
+    reload()
+    # Colours switch at once; the wallpaper (a conversion, maybe a download) follows in the background.
+    if previous != arguments.name:
+        remember(previous, wallpaper_chosen_under(previous))
+        spawn(['fetch', arguments.name, '--show'])
+
+
+def command_wallpapers(arguments):
+    name = arguments.name or current()
+    theme = load(name)
+    files = wallpaper_files(name, theme)
+    print(json.dumps({'theme': name, 'remembered': memory().get(name), 'current': current_wallpaper(),
+                      'wallpapers': wallpaper_entries(name, theme), 'files': [str(path) for path in files],
+                      'thumbs': {str(path): str(thumb_path(path)) for path in files},
+                      'thumbsReady': {str(path): thumb_path(path).is_file() for path in files}}, ensure_ascii=False))
+
+
+def command_thumbs(arguments):
+    name = arguments.name or current()
+    make_thumbs([path for path in wallpaper_files(name, load(name)) if not thumb_path(path).is_file()])
+
+
+def command_open_folder(arguments):
+    target = USER_FONTS if arguments.kind == 'fonts' else USER_ICONS
+    target.mkdir(parents=True, exist_ok=True)
+    subprocess.Popen(['xdg-open', str(target)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                     stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+def command_tone(arguments):
+    print(json.dumps(tone()))
+
+
+def command_check_font(arguments):
+    if not font_exists(arguments.family):
+        raise ValueError(tr('theming.errors.fontMissing', [arguments.family]))
+
+
+def command_check_icons(arguments):
+    if not icon_theme_exists(arguments.name):
+        raise ValueError(tr('theming.errors.iconsMissing', [arguments.name]))
+
+
+def command_generate(arguments):
+    generate(arguments.image)
+
+
+def command_dynamic(arguments):
+    chosen = preferences()
+    settings = dict(chosen.get('dynamic', {}))
+    if arguments.mode:
+        settings['mode'] = arguments.mode
+    chosen['dynamic'] = settings
+    save_preferences(chosen)
+    # The new mode shows at once when the dynamic theme is the current one.
+    if current() == DYNAMIC:
+        generate(dynamic_info()['source'])
+
+
+def command_window_style(arguments):
+    def change(chosen):
         windows = {} if arguments.default else dict(chosen.get('windows', {}))
-        if arguments.rounding is not None:
-            windows['rounding'] = arguments.rounding
-        if arguments.border is not None:
-            windows['borderSize'] = arguments.border
-        if arguments.gaps_in is not None:
-            windows['gapsIn'] = arguments.gaps_in
-        if arguments.gaps_out is not None:
-            windows['gapsOut'] = arguments.gaps_out
+        for key, value in (('rounding', arguments.rounding), ('borderSize', arguments.border),
+                           ('gapsIn', arguments.gaps_in), ('gapsOut', arguments.gaps_out)):
+            if value is not None:
+                windows[key] = value
         chosen['windows'] = windows
-        save_preferences(chosen)
-        apply(current())
-        reload()
-    elif arguments.command == 'glass':
-        # The glass of the current theme; only Hyprland rereads it.
-        name = current()
-        if not glass_tunable(load(name)):
-            raise ValueError(tr('theme.errors.glassUntunable', [load(name).get('name', name)]))
-        chosen = preferences()
-        glass = dict(chosen.get('glass', {}))
-        if arguments.reset:
-            glass.pop(name, None)
-        elif arguments.option and arguments.value is not None:
-            glass[name] = dict(glass.get(name, {}), **{arguments.option: arguments.value})
-        chosen['glass'] = glass
-        save_preferences(chosen)
-        apply(name)
-        subprocess.run(['hyprctl', 'reload'], capture_output=True, check=False, timeout=10)
-    elif arguments.command in ('shell-icons', 'bar-style', 'text-scale'):
-        chosen = preferences()
-        if arguments.command == 'text-scale':
-            chosen['textScale'] = None if arguments.scale == 1 else arguments.scale
-        elif arguments.command == 'shell-icons':
-            chosen['shellIcons'] = None if arguments.source == 'desktop' else arguments.source
-        else:
-            style = arguments.style
-            if style == 'toggle':
-                style = 'shade' if chosen.get('barStyle') == 'transparent' else 'transparent'
-            chosen['barStyle'] = None if style == 'shade' else style
-        save_preferences(chosen)
-        apply(current())
-    elif arguments.command == 'fetch':
-        name = arguments.name or current()
-        return 1 if fetch(name, load(name), arguments.show) else 0
-    elif arguments.command == 'next-wallpaper':
-        name = current()
-        theme = load(name)
-        target = next_wallpaper(wallpaper_files(name, theme), current_wallpaper())
-        if target is None:
-            spawn(['fetch', name, '--show'])
-            subprocess.run(['notify-send', tr('theme.wallpapers.title'), tr('theme.wallpapers.downloading', [theme.get('name', name)])],
-                           check=False, timeout=5)
-            return 0
-        apply_wallpaper(target)
-    elif arguments.command == 'list':
-        name = current()
-        effective = with_preferences(load(name), preferences(), name)['hyprland']
-        glass = None
-        if 'glassTuning' in effective:
-            glass = [{'option': option, 'value': effective['glassTuning'][option], 'default': default, 'min': low,
-                      'max': high, 'step': step} for option, default, low, high, step in GLASS_TUNING]
-        print(json.dumps({'current': name, 'themes': themes(arguments.details),
-                          'windows': {key: effective[key] for key in WINDOW_KEYS},
-                          'glass': glass, 'dynamic': dynamic_info()},
-                         ensure_ascii=False))
-    elif arguments.command == 'fonts':
-        print(json.dumps(fonts(), ensure_ascii=False))
-    elif arguments.command == 'icons':
-        print(json.dumps({'themes': cached_icon_themes(), 'theme': load(current()).get('system', {}).get('iconTheme'),
-                          'chosen': preferences().get('iconTheme')}, ensure_ascii=False))
-    elif arguments.command == 'cursors':
-        system = with_preferences(load(current()), preferences()).get('system', {})
-        installed = cursor_themes()
-        offered = installed + [{'id': key, 'name': pack['name'], 'download': True} for key, pack in CURSOR_PACKS.items()
-                               if key not in {theme['id'] for theme in installed}]
-        print(json.dumps({'themes': sorted(offered, key=lambda t: t['name'].lower()), 'theme': system.get('cursorTheme'), 'size': system.get('cursorSize'),
-                          'sizes': list(CURSOR_SIZES), 'chosen': preferences().get('cursor', {})}, ensure_ascii=False))
-    elif arguments.command == 'cursor':
-        chosen = preferences()
+    update_preferences(change)
+
+
+def command_glass(arguments):
+    # The glass of the current theme; only Hyprland rereads it.
+    name = current()
+    if not glass_tunable(load(name)):
+        raise ValueError(tr('theme.errors.glassUntunable', [load(name).get('name', name)]))
+    chosen = preferences()
+    glass = dict(chosen.get('glass', {}))
+    if arguments.reset:
+        glass.pop(name, None)
+    elif arguments.option and arguments.value is not None:
+        glass[name] = dict(glass.get(name, {}), **{arguments.option: arguments.value})
+    chosen['glass'] = glass
+    save_preferences(chosen)
+    apply(name)
+    subprocess.run(['hyprctl', 'reload'], capture_output=True, check=False, timeout=10)
+
+
+def command_text_scale(arguments):
+    update_preferences(lambda chosen: chosen.update(textScale=None if arguments.scale == 1 else arguments.scale), reloading=False)
+
+
+def command_shell_icons(arguments):
+    update_preferences(lambda chosen: chosen.update(shellIcons=None if arguments.source == 'desktop' else arguments.source), reloading=False)
+
+
+def command_bar_style(arguments):
+    def change(chosen):
+        style = arguments.style
+        if style == 'toggle':
+            style = 'shade' if chosen.get('barStyle') == 'transparent' else 'transparent'
+        chosen['barStyle'] = None if style == 'shade' else style
+    update_preferences(change, reloading=False)
+
+
+def command_fetch(arguments):
+    name = arguments.name or current()
+    return 1 if fetch(name, load(name), arguments.show) else 0
+
+
+def command_next_wallpaper(arguments):
+    name = current()
+    theme = load(name)
+    target = next_wallpaper(wallpaper_files(name, theme), current_wallpaper())
+    if target is None:
+        spawn(['fetch', name, '--show'])
+        subprocess.run(['notify-send', tr('theme.wallpapers.title'), tr('theme.wallpapers.downloading', [theme.get('name', name)])],
+                       check=False, timeout=5)
+        return 0
+    apply_wallpaper(target)
+
+
+def command_list(arguments):
+    name = current()
+    effective = with_preferences(load(name), preferences(), name)['hyprland']
+    glass = None
+    if 'glassTuning' in effective:
+        glass = [{'option': option, 'value': effective['glassTuning'][option], 'default': default, 'min': low,
+                  'max': high, 'step': step} for option, default, low, high, step in GLASS_TUNING]
+    print(json.dumps({'current': name, 'themes': themes(arguments.details),
+                      'windows': {key: effective[key] for key in WINDOW_KEYS},
+                      'glass': glass, 'dynamic': dynamic_info()},
+                     ensure_ascii=False))
+
+
+def command_fonts(arguments):
+    print(json.dumps(fonts(), ensure_ascii=False))
+
+
+def command_icons(arguments):
+    print(json.dumps({'themes': cached_icon_themes(), 'theme': load(current()).get('system', {}).get('iconTheme'),
+                      'chosen': preferences().get('iconTheme')}, ensure_ascii=False))
+
+
+def command_cursors(arguments):
+    chosen = preferences()
+    system = with_preferences(load(current()), chosen).get('system', {})
+    installed = cursor_themes()
+    offered = installed + [{'id': key, 'name': pack['name'], 'download': True} for key, pack in CURSOR_PACKS.items()
+                           if key not in {theme['id'] for theme in installed}]
+    print(json.dumps({'themes': sorted(offered, key=lambda t: t['name'].lower()), 'theme': system.get('cursorTheme'), 'size': system.get('cursorSize'),
+                      'sizes': list(CURSOR_SIZES), 'chosen': chosen.get('cursor', {})}, ensure_ascii=False))
+
+
+def command_cursor(arguments):
+    def change(chosen):
         cursor = {} if arguments.default else dict(chosen.get('cursor', {}))
         if arguments.theme is not None:
             if arguments.theme in CURSOR_PACKS and arguments.theme not in {t['id'] for t in cursor_themes()}:
@@ -1290,35 +1330,50 @@ def main():
         if arguments.size is not None:
             cursor['size'] = arguments.size
         chosen['cursor'] = cursor
-        save_preferences(chosen)
-        apply(current())
-        reload()
-        # X11 clients take theme and scaled size from X resources.
-        subprocess.run([str(HOME / '.local/bin/desktop-xwayland'), 'apply'], capture_output=True, check=False, timeout=15)
-    elif arguments.command in ('font', 'icon-theme'):
-        chosen = preferences()
-        if arguments.command == 'font':
-            chosen_fonts = {} if arguments.default else dict(chosen.get('fonts', {}))
-            for key, value in (('sans', arguments.sans), ('mono', arguments.mono), ('size', arguments.size)):
-                if value is not None:
-                    chosen_fonts[key] = value
-            if arguments.unified is not None:
-                chosen_fonts['unified'] = arguments.unified == 'on'
-            chosen['fonts'] = chosen_fonts
-        else:
-            if arguments.name != 'default' and not icon_theme_exists(arguments.name):
-                raise ValueError(tr('theming.errors.iconsMissing', [arguments.name]))
-            chosen['iconTheme'] = None if arguments.name == 'default' else arguments.name
-        save_preferences(chosen)
-        apply(current())
-        reload()
-    elif arguments.command == 'remember-wallpaper':
-        remember(current(), arguments.path.expanduser().resolve())
-    else:
-        for file, text in render_all(load(arguments.theme)).items():
-            write_atomic(arguments.out / file, text)
-    return 0
+    update_preferences(change)
+    # X11 clients take theme and scaled size from X resources.
+    subprocess.run([str(HOME / '.local/bin/desktop-xwayland'), 'apply'], capture_output=True, check=False, timeout=15)
 
+
+def command_font(arguments):
+    def change(chosen):
+        chosen_fonts = {} if arguments.default else dict(chosen.get('fonts', {}))
+        for key, value in (('sans', arguments.sans), ('mono', arguments.mono), ('size', arguments.size)):
+            if value is not None:
+                chosen_fonts[key] = value
+        if arguments.unified is not None:
+            chosen_fonts['unified'] = arguments.unified == 'on'
+        chosen['fonts'] = chosen_fonts
+    update_preferences(change)
+
+
+def command_icon_theme(arguments):
+    if arguments.name != 'default' and not icon_theme_exists(arguments.name):
+        raise ValueError(tr('theming.errors.iconsMissing', [arguments.name]))
+    update_preferences(lambda chosen: chosen.update(iconTheme=None if arguments.name == 'default' else arguments.name))
+
+
+def command_remember_wallpaper(arguments):
+    remember(current(), arguments.path.expanduser().resolve())
+
+
+def command_render(arguments):
+    for file, text in render_all(load(arguments.theme)).items():
+        write_atomic(arguments.out / file, text)
+
+
+# One function per command, by its name on the command line ('cursor-fetch' runs command_cursor_fetch).
+COMMANDS = {name.removeprefix('command_').replace('_', '-'): function for name, function in list(globals().items())
+            if name.startswith('command_') and callable(function)}
+
+
+def main():
+    arguments = build_parser().parse_args()
+    if arguments.command in LOCKED:
+        STATE.mkdir(parents=True, exist_ok=True)
+        lock = open(STATE / '.lock', 'a')
+        fcntl.flock(lock, fcntl.LOCK_EX)
+    return COMMANDS[arguments.command](arguments) or 0
 
 if __name__ == '__main__':
     try:

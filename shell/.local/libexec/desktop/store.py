@@ -13,9 +13,8 @@ installed: prints that list.
 
 The content is other people's: archives are size-limited, nothing is run, and only theme folders are kept.
 """
-from common import theme_name, write_atomic
+from common import download as download_file, theme_name, write_atomic
 from i18n import tr
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -72,17 +71,9 @@ def search(kind, query='', page=0):
 
 
 def download(url, destination, md5):
-    request = urllib.request.Request(url, headers={'User-Agent': AGENT})
-    digest, size = hashlib.md5(), 0
-    with urllib.request.urlopen(request, timeout=60) as response, destination.open('wb') as file:
-        for block in iter(lambda: response.read(1024 * 1024), b''):
-            size += len(block)
-            if size > MAX_DOWNLOAD:
-                raise ValueError(tr('store.errors.tooLarge'))
-            digest.update(block)
-            file.write(block)
-    if md5 and digest.hexdigest() != md5:
-        raise ValueError(tr('store.errors.checksum'))
+    # The store gives an md5 (or none) and the size is capped: a pack is unpacked right after.
+    download_file(url, destination, md5, 'md5', tr('store.errors.checksum'), MAX_DOWNLOAD, tr('store.errors.tooLarge'),
+                  {'User-Agent': AGENT}, timeout=60)
 
 
 def safe_member(member, path):

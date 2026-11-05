@@ -1,5 +1,6 @@
 """Shared by the helpers: atomic file replacement, the image types they accept, ImageMagick and Hyprland."""
 import contextlib
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -42,6 +43,25 @@ def replacing(path, follow=True, suffix='', mode=None):
     finally:
         Path(temporary).unlink(missing_ok=True)
 
+
+
+# Downloads url into destination through replacing(): a file whose digest is not expected, or that grows past
+# limit bytes, never replaces what was there. The messages are the caller's own (translated) words. urllib is
+# imported here, so helpers that never download (osk.py through predict.py) do not load it.
+def download(url, destination, expected='', algorithm='sha256', mismatch='', limit=None, too_large='', headers=None, timeout=30):
+    import urllib.request
+    digest, size = hashlib.new(algorithm), 0
+    request = urllib.request.Request(url, headers=headers or {})
+    with replacing(destination) as temporary:
+        with urllib.request.urlopen(request, timeout=timeout) as response, temporary.open('wb') as file:
+            for block in iter(lambda: response.read(1024 * 1024), b''):
+                size += len(block)
+                if limit is not None and size > limit:
+                    raise ValueError(too_large)
+                digest.update(block)
+                file.write(block)
+        if expected and digest.hexdigest() != expected:
+            raise ValueError(mismatch)
 
 def write_atomic(path, text, follow=True, mode=None):
     # mode: always this one (private files), instead of the replaced file's.

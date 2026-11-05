@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / 'shell/.local/libexec/desktop'))
@@ -57,6 +58,26 @@ class CommonTests(unittest.TestCase):
             self.assertEqual(path.read_text(), 'old')
             self.assertEqual(sorted(p.name for p in Path(directory).iterdir()), ['image.jpg'])
 
+
+    def test_a_download_that_does_not_match_keeps_the_old_file(self):
+        import hashlib
+        import io
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder) / 'list.txt'
+            target.write_text('old')
+            body = b'new words'
+            with mock.patch('urllib.request.urlopen', return_value=io.BytesIO(body)):
+                with self.assertRaisesRegex(ValueError, 'no match'):
+                    common.download('https://example.com/list', target, '0' * 64, mismatch='no match')
+            self.assertEqual(target.read_text(), 'old')
+            self.assertEqual(sorted(path.name for path in Path(folder).iterdir()), ['list.txt'])
+            with mock.patch('urllib.request.urlopen', return_value=io.BytesIO(body)):
+                with self.assertRaisesRegex(ValueError, 'too big'):
+                    common.download('https://example.com/list', target, limit=4, too_large='too big')
+            self.assertEqual(target.read_text(), 'old')
+            with mock.patch('urllib.request.urlopen', return_value=io.BytesIO(body)):
+                common.download('https://example.com/list', target, hashlib.sha256(body).hexdigest())
+            self.assertEqual(target.read_bytes(), body)
 
 if __name__ == '__main__':
     unittest.main()

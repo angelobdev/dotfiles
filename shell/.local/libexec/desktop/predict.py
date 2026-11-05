@@ -7,10 +7,9 @@ into ~/.local/share/desktop/keyboard/. Only the lists come from outside; nothing
 Words typed in ordinary fields are counted in ~/.local/state/desktop-shell/osk-words.json, readable only by the
 owner: single words and how often, with no order and no time, so no sentence can be read back from it.
 """
-from common import replacing, write_atomic
+from common import download as download_file, write_atomic
 import bisect
 import functools
-import hashlib
 import heapq
 import json
 import os
@@ -41,21 +40,12 @@ def paths():
 
 
 def fetch():
-    # Here and not at the top: osk.py imports this module, and urllib would add 8 MB to it for nothing.
-    import urllib.request
+    # common.download imports urllib only when called: osk.py imports this module, and urllib would add 8 MB to it.
     DIRECTORY.mkdir(parents=True, exist_ok=True)
     for language, expected in LISTS.items():
         path = DIRECTORY / (language + '.txt')
-        if path.exists():
-            continue
-        digest = hashlib.sha256()
-        with replacing(path) as temporary, urllib.request.urlopen(URL.format(language), timeout=30) as response:
-            with open(temporary, 'wb') as file:
-                while block := response.read(65536):
-                    digest.update(block)
-                    file.write(block)
-            if digest.hexdigest() != expected:
-                raise ValueError(language + ': unexpected word list')
+        if not path.exists():
+            download_file(URL.format(language), path, expected, mismatch=language + ': unexpected word list')
 
 
 # Subtitles often drop accents or pick the wrong one. Where a word needs its accent the accented form is
