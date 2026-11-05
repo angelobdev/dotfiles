@@ -1056,7 +1056,7 @@
       "name": "The pack holds no theme with a plain folder name that would not replace a system theme.",
       "notFromStore": "%1 was not installed from the store.",
       "unavailable": "The store could not be reached.",
-      "usage": "Usage: store.py search KIND [QUERY] [PAGE] | install KIND ID FILE | remove FOLDER | installed"
+      "usage": "Usage: store.py search KIND [QUERY] [PAGE] | install KIND ID FILE | remove FOLDER... | installed"
     }
   }
 }

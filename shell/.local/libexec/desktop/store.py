@@ -185,14 +185,17 @@ def install(kind, item_id, index):
     return {'installed': installed}
 
 
-def remove(name):
+# Every folder of an entry in one call; all are checked before any is removed.
+def remove(*names):
     record = ledger()
-    if name not in record or '/' in name:
-        raise ValueError(tr('store.errors.notFromStore', [name]))
-    shutil.rmtree(ICONS / name, ignore_errors=True)
-    del record[name]
+    for name in names:
+        if name not in record or '/' in name:
+            raise ValueError(tr('store.errors.notFromStore', [name]))
+    for name in names:
+        shutil.rmtree(ICONS / name, ignore_errors=True)
+        del record[name]
     write_atomic(LEDGER, json.dumps(record, ensure_ascii=False, indent=1))
-    return {'removed': name}
+    return {'removed': list(names)}
 
 
 def main():
@@ -202,8 +205,8 @@ def main():
             result = search(arguments[1], arguments[2] if len(arguments) > 2 else '', int(arguments[3]) if len(arguments) > 3 else 0)
         elif arguments[:1] == ['install'] and len(arguments) == 4 and arguments[1] in CATEGORIES:
             result = install(arguments[1], int(arguments[2]), int(arguments[3]))
-        elif arguments[:1] == ['remove'] and len(arguments) == 2:
-            result = remove(arguments[1])
+        elif arguments[:1] == ['remove'] and len(arguments) >= 2:
+            result = remove(*arguments[1:])
         elif arguments == ['installed']:
             result = {'installed': ledger()}
         else:

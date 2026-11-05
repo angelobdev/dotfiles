@@ -1056,7 +1056,7 @@
       "name": "Il pacchetto non contiene temi con un nome di cartella semplice che non sostituisca un tema di sistema.",
       "notFromStore": "%1 non è stato installato dallo store.",
       "unavailable": "Impossibile raggiungere lo store.",
-      "usage": "Uso: store.py search TIPO [RICERCA] [PAGINA] | install TIPO ID FILE | remove CARTELLA | installed"
+      "usage": "Uso: store.py search TIPO [RICERCA] [PAGINA] | install TIPO ID FILE | remove CARTELLA... | installed"
     }
   }
 }

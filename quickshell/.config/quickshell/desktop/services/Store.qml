@@ -22,15 +22,22 @@ Singleton {
     // Folder name -> {id, name, kind, file}.
     property var installed: ({})
     readonly property bool more: items.length < total
+    // An install or a removal is running: the next one waits for it (the panel disables its buttons).
+    readonly property bool working: worker.running
 
     signal changed
 
+    // A new search replaces one still running; an answer for an older search is dropped.
     function search(newKind, newQuery) {
         kind = newKind;
         query = newQuery.trim();
         page = 0;
         items = [];
+        searcher.running = false;
         run(searcher, ["search", kind, query, "0"]);
+    }
+    function asked() {
+        return [kind, query, page].join("\n");
     }
     function next() {
         if (searching || !more)
@@ -39,17 +46,19 @@ Singleton {
         run(searcher, ["search", kind, query, String(page)]);
     }
     function install(id, index) {
-        if (installing !== 0)
+        if (working)
             return;
         installing = id;
         error = "";
         message = "";
         run(worker, ["install", kind, String(id), String(index)]);
     }
-    function remove(folder) {
+    function remove(folders) {
+        if (working || folders.length === 0)
+            return;
         error = "";
         message = "";
-        run(worker, ["remove", folder]);
+        run(worker, ["remove"].concat(folders));
     }
     function foldersOf(id) {
         return Object.keys(installed).filter(folder => installed[folder].id === id);
@@ -59,8 +68,10 @@ Singleton {
     }
     function run(process, args) {
         process.command = ["python3", helper].concat(args);
-        if (process === searcher)
+        if (process === searcher) {
+            searcher.asked = asked();
             searching = true;
+        }
         process.running = true;
     }
     function parse(text) {
@@ -75,8 +86,11 @@ Singleton {
     }
     Process {
         id: searcher
+        property string asked: ""
         stdout: StdioCollector {
             onStreamFinished: {
+                if (searcher.asked !== root.asked())
+                    return;
                 const value = root.parse(text);
                 root.searching = false;
                 root.error = value.error ?? "";

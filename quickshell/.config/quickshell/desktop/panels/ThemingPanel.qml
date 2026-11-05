@@ -1108,11 +1108,12 @@ Overlay {
                                             visible: storeCard.folders.length > 0
                                             text: I18n.tr("store.remove")
                                             destructive: true
-                                            onClicked: storeCard.folders.forEach(folder => Store.remove(folder))
+                                            enabled: !Store.working
+                                            onClicked: Store.remove(storeCard.folders)
                                         }
                                         ActionButton {
                                             text: Store.installing === storeCard.modelData.id ? I18n.tr("store.installing") : I18n.tr("store.install")
-                                            enabled: Store.installing === 0 && storeCard.modelData.files.length > 0
+                                            enabled: !Store.working && storeCard.modelData.files.length > 0
                                             highlighted: true
                                             onClicked: Store.install(storeCard.modelData.id, storeCard.file)
                                         }

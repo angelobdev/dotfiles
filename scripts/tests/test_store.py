@@ -132,9 +132,18 @@ class InstallTests(unittest.TestCase):
         self.assertEqual(store.install('cursors', 7, 1), {'installed': ['Pointer']})
         self.assertFalse((self.root / 'icons/Adwaita').exists())
 
+    def test_remove_takes_every_folder_or_none(self):
+        self.pack('Light', 'Dark')
+        store.install('cursors', 7, 1)
+        with self.assertRaises(ValueError):
+            store.remove('Light', 'Other')
+        self.assertTrue((self.root / 'icons/Light').exists())
+        self.assertEqual(store.remove('Light', 'Dark'), {'removed': ['Light', 'Dark']})
+        self.assertEqual(json.loads((self.root / 'store.json').read_text()), {})
+
     def test_remove_takes_only_what_the_store_installed(self):
         store.install('cursors', 7, 1)
-        self.assertEqual(store.remove('Pointer'), {'removed': 'Pointer'})
+        self.assertEqual(store.remove('Pointer'), {'removed': ['Pointer']})
         self.assertFalse((self.root / 'icons/Pointer').exists())
         self.assertEqual(json.loads((self.root / 'store.json').read_text()), {})
 
