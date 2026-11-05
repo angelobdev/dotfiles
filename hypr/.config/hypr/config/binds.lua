@@ -125,6 +125,16 @@ for _, direction in ipairs({ "left", "right", "up", "down" }) do
     bind("SUPER + " .. direction, hl.dsp.focus({ direction = direction }), "Focus " .. direction)
     bind("SUPER + SHIFT + " .. direction, hl.dsp.window.move({ direction = direction }), "Move " .. direction)
 end
+-- Resize the focused window 40 px at a time, held down to keep going: wider and narrower on the sides, taller
+-- and shorter below and above (a tiled one moves its split).
+for _, step in ipairs({
+    { key = "right", x = 40, y = 0, description = "Window wider" },
+    { key = "left", x = -40, y = 0, description = "Window narrower" },
+    { key = "down", x = 0, y = 40, description = "Window taller" },
+    { key = "up", x = 0, y = -40, description = "Window shorter" },
+}) do
+    bind("SUPER + CTRL + " .. step.key, hl.dsp.window.resize({ x = step.x, y = step.y, relative = true }), step.description, { repeating = true })
+end
 
 -- Workspaces
 for i = 1, 10 do

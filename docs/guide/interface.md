@@ -64,6 +64,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + V` / `Super + Shift + F` | Floating / fullscreen |
 | `Super + Ctrl + P` / `Super + J` | Pseudotiling / split orientation |
 | `Super + arrows` / `Super + Shift + arrows` | Focus / move window |
+| `Super + Ctrl + arrows` | Resize the window 40 px at a time (hold to repeat): right/left wider/narrower, down/up taller/shorter; a tiled window moves its split |
 | `Super + 1…9,0` / `Super + Shift + 1…9,0` | Workspace / move to workspace |
 | `Super + Shift + S` / `Print` | Area screenshot with editor |
 | `Super + Shift + Alt + S` / `Alt + Print` | Monitor screenshot with editor |

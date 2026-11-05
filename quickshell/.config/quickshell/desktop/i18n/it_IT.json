@@ -165,6 +165,10 @@
     "toggleSplit": "Cambia orientamento split",
     "volumeDown": "Volume -",
     "volumeUp": "Volume +",
+    "windowNarrower": "Finestra più stretta",
+    "windowShorter": "Finestra più bassa",
+    "windowTaller": "Finestra più alta",
+    "windowWider": "Finestra più larga",
     "workspace": "Workspace %1",
     "switchWindows": "Passa tra le finestre",
     "switchWindowsBack": "Passa tra le finestre all’indietro"

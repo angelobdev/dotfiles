@@ -165,6 +165,10 @@
     "toggleSplit": "Toggle split orientation",
     "volumeDown": "Volume down",
     "volumeUp": "Volume up",
+    "windowNarrower": "Window narrower",
+    "windowShorter": "Window shorter",
+    "windowTaller": "Window taller",
+    "windowWider": "Window wider",
     "workspace": "Workspace %1",
     "switchWindows": "Switch windows",
     "switchWindowsBack": "Switch windows backwards"
