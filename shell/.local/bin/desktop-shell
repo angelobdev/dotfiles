@@ -12,6 +12,22 @@ stopped="${XDG_RUNTIME_DIR:-/tmp}/desktop-shell.stopped"
 running() {
     [[ $(qs list --json -p "$config" 2>/dev/null) == *'"pid"'* ]]
 }
+# The pid of the running shell from that list, or nothing.
+shell_pid() {
+    local list
+    list=$(qs list --json -p "$config" 2>/dev/null) || true
+    [[ $list =~ \"pid\":\ *([0-9]+) ]] && echo "${BASH_REMATCH[1]}"
+    return 0
+}
+# Sets since to the start time of PID (field 22 of /proc/PID/stat), empty once it is gone. Builtins only, no
+# subshell: with the pid it tells a reused pid apart.
+started() {
+    local line fields
+    since=''
+    { read -r line <"/proc/$1/stat"; } 2>/dev/null || return 0
+    read -r -a fields <<<"${line##*) }"
+    since=${fields[19]}
+}
 case "${1:-start}" in
     start)
         rm -f "$stopped"
@@ -28,17 +44,34 @@ case "${1:-start}" in
         exec 8>"${XDG_RUNTIME_DIR:-/tmp}/desktop-shell-supervise.lock"
         flock -n 8 || exit 0
         restarts=()
+        # Waits with the read builtin on a pipe nobody writes: no sleep process every few seconds.
+        exec 7<> <(:)
+        pid='' start='' since=''
         while :; do
-            if [[ ! -e $stopped ]] && ! running; then
+            # While the shell found last time is alive, nothing else runs: qs list (a Qt program) only after it ended.
+            if [[ -n $pid ]]; then
+                started "$pid"
+                if [[ $since == "$start" ]]; then
+                    read -r -t 3 -u 7 || true
+                    continue
+                fi
+            fi
+            pid=$(shell_pid) start=''
+            if [[ -n $pid ]]; then
+                started "$pid"
+                start=$since
+                [[ -n $start ]] || pid=''
+            fi
+            if [[ ! -e $stopped && -z $pid ]]; then
                 now=$(date +%s)
                 recent=()
                 for at in "${restarts[@]}"; do (( now - at < 300 )) && recent+=("$at"); done
                 restarts=("${recent[@]}" "$now")
                 (( ${#restarts[@]} > 1 )) && echo "desktop-shell: Quickshell is not running, starting it again." >&2
-                qs -p "$config" --no-duplicate --daemonize 8>&- || true
-                (( ${#restarts[@]} >= 5 )) && sleep 60 8>&-
+                qs -p "$config" --no-duplicate --daemonize 7>&- 8>&- || true
+                (( ${#restarts[@]} >= 5 )) && { read -r -t 60 -u 7 || true; }
             fi
-            sleep 3 8>&-  # Without the lock: a new supervisor must not wait for a sleeping child.
+            read -r -t 3 -u 7 || true
         done
         ;;
     restart)
