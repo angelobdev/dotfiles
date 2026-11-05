@@ -117,37 +117,55 @@ def backlight_snapshot():
 FALLBACK_SECONDS = 10
 
 
-def wait_for_change(timeout):
-    # The backlight core notifies actual_brightness (sysfs_notify) on every change, from the keys or a write:
-    # waiting on it costs nothing, where reading every 150 ms woke the CPU seven times a second.
-    files, poller = [], select.poll()
-    try:
-        for device in BACKLIGHT.glob('*'):
-            try:
-                handle = open(device / 'actual_brightness', 'rb', buffering=0)
-            except OSError:
-                continue
-            handle.read()
-            files.append(handle)
-            poller.register(handle, select.POLLPRI | select.POLLERR)
-        if files:
-            poller.poll(timeout * 1000)
-        else:
-            time.sleep(timeout)
-    finally:
-        for handle in files:
-            handle.close()
+# The backlight core notifies actual_brightness (sysfs_notify) on every change, from the keys or a write:
+# waiting on it costs nothing, where reading every 150 ms woke the CPU seven times a second.
+def backlight_names():
+    return {device.name for device in BACKLIGHT.glob('*')}
+
+
+def open_backlights():
+    handles, poller = {}, select.poll()
+    for device in BACKLIGHT.glob('*'):
+        try:
+            handle = open(device / 'actual_brightness', 'rb', buffering=0)
+        except OSError:
+            continue
+        handles[device.name] = handle
+        poller.register(handle, select.POLLPRI | select.POLLERR)
+    return handles, poller
 
 
 def watch_backlights():
-    # Sysfs reads only: no subprocesses or DDC requests in this path.
+    # Sysfs reads only: no subprocesses or DDC requests in this path. The files stay open, and each is read
+    # (which arms its notification) before the levels are: a change in between still wakes the wait.
     previous = None
-    while True:
-        levels = backlight_snapshot()
-        if levels != previous:
-            print(json.dumps(levels), flush=True)
-            previous = levels
-        wait_for_change(FALLBACK_SECONDS)
+    names, (handles, poller) = backlight_names(), open_backlights()
+    try:
+        while True:
+            for handle in handles.values():
+                try:
+                    handle.seek(0)
+                    handle.read()
+                except OSError:
+                    pass
+            levels = backlight_snapshot()
+            if levels != previous:
+                print(json.dumps(levels), flush=True)
+                previous = levels
+            # A backlight that came or went: watch the new set (compared by name, so one that cannot be opened is
+            # not opened again on every turn).
+            if backlight_names() != names:
+                for handle in handles.values():
+                    handle.close()
+                names, (handles, poller) = backlight_names(), open_backlights()
+                continue
+            if handles:
+                poller.poll(FALLBACK_SECONDS * 1000)
+            else:
+                time.sleep(FALLBACK_SECONDS)
+    finally:
+        for handle in handles.values():
+            handle.close()
 
 
 def main():
