@@ -22,7 +22,8 @@ target = args.target.expanduser().absolute()
 if not target.is_dir():
     parser.error(f'Target directory does not exist: {target}')
 if not shutil.which('stow'):
-    parser.error('Install GNU Stow first: sudo dnf install stow')
+    install = 'sudo pacman -S stow' if Path('/etc/arch-release').exists() else 'sudo dnf install stow'
+    parser.error('Install GNU Stow first: ' + install)
 
 command = ['stow', '--dir', str(ROOT), '--target', str(target), '--no-folding', '--verbose', r'--ignore=__pycache__|\.py[co]$']
 if args.action == 'remove':

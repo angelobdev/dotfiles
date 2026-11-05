@@ -7,6 +7,12 @@ import subprocess
 import tempfile
 
 ADMIN_GROUP = 'wheel'
+# The documented prerequisites of the installer itself: never removed.
+PROTECTED = ('python3', 'git-core')
+# The package manager, as the guided installer names it.
+MANAGER = 'dnf'
+# The boot target of an edition without a desktop (Server): what uninstall restores when it has no record.
+BASE_TARGET = 'multi-user.target'
 REPOS = Path('/etc/yum.repos.d')
 AUTH_FEATURE = 'with-fingerprint'
 AUTH_PROFILE = 'custom/desktop-tablet'

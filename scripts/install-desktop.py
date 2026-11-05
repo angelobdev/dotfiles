@@ -18,6 +18,8 @@ import shutil
 import subprocess
 import sys
 import tomllib
+import urllib.parse
+import urllib.request
 
 REPO = Path(__file__).resolve().parent.parent
 INSTALL = REPO / 'scripts/install'
@@ -32,8 +34,7 @@ ACCOUNTS = 'org.freedesktop.Accounts'
 STATE = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'dotfiles'
 # What apply changed and what was there before, for uninstall: written before each step runs.
 RECORD = STATE / 'install.json'
-# The documented prerequisites of the installer itself: never removed.
-PROTECTED = ('python3', 'git-core')
+AUR = 'https://aur.archlinux.org/'
 
 BOOT_SESSION = 'default session ' + SESSION
 BOOT_GDM = 'enable gdm.service'
@@ -140,8 +141,8 @@ def packages_pending(plan):
 
 
 def compositor_guard(plan, missing):
-    # The plugins accept only the Hyprland builds they were verified against, and dnf installs the newest one
-    # the repository has: say so before installing, not at the first login. Once the repositories are there, so
+    # The plugins accept only the Hyprland builds they were verified against, and dnf or pacman installs the newest
+    # one the repository has: say so before installing, not at the first login. Once the repositories are there, so
     # the build is the one that will come (apply adds them before this step).
     wanted = [name for name in ('hyprland', 'hyprland-devel') if name in missing]
     if 'plugins' not in plan.profiles or not wanted or repos_pending(plan):
@@ -219,17 +220,78 @@ def clones_kept(plan):
             if clone_head(clone_path(item)) != item['commit'] and not clone_ours(clone_path(item))]
 
 
+def checkout(path, repo, commit):
+    # Only that commit, fetched into path (a clone, or a new one).
+    if not (path / '.git').exists():
+        path.mkdir(parents=True, exist_ok=True)
+        subprocess.run(('git', '-C', str(path), 'init', '-q'), check=True)
+    subprocess.run(('git', '-C', str(path), 'fetch', '-q', '--depth', '1', repo, commit), check=True)
+    subprocess.run(('git', '-C', str(path), '-c', 'advice.detachedHead=false', 'checkout', '-q', '--force', commit), check=True)
+
+
 def clones_apply(plan, paths):
     # As the desktop user, into the home: pinned commits of what the distribution does not package.
     for item in merged(plan, 'clones'):
-        if item['path'] not in paths:
+        if item['path'] in paths:
+            checkout(clone_path(item), item['repo'], item['commit'])
+
+
+# The AUR (Arch only): each PKGBUILD at the commit the manifest pins, built by makepkg in a cache of the user.
+# The manifest also names the version that commit builds, so a preview needs no network.
+
+def aur_cache():
+    return Path.home() / '.cache/dotfiles/aur'
+
+
+def aur_path(item):
+    return aur_cache() / item['package']
+
+
+def aur_pending(plan):
+    # Missing, or another version than the pinned one: updating is a new pin (pins --update), then apply.
+    items = []
+    for item in merged(plan, 'aur'):
+        now = plan.distro.version(item['package'])
+        if now != item['version']:
+            items.append(f'{item["package"]} {now} -> {item["version"]}' if now else f'{item["package"]} {item["version"]}')
+    return items
+
+
+def srcinfo_version(text):
+    # The version a PKGBUILD builds, from its .SRCINFO, as pacman prints it: [EPOCH:]PKGVER-PKGREL.
+    fields = {}
+    for line in text.splitlines():
+        key, separator, value = line.strip().partition(' = ')
+        if separator and key in ('epoch', 'pkgver', 'pkgrel'):
+            fields.setdefault(key, value)
+    version = f'{fields.get("pkgver", "")}-{fields.get("pkgrel", "")}'
+    return f'{fields["epoch"]}:{version}' if fields.get('epoch') else version
+
+
+def import_key(url):
+    # Which key may sign the sources is the PKGBUILD's validpgpkeys: this only gives makepkg's gpg a copy of it.
+    with urllib.request.urlopen(url, timeout=60) as response:
+        key = response.read()
+    subprocess.run(('gpg', '--batch', '--quiet', '--import'), input=key, check=True)
+
+
+def aur_apply(plan, items):
+    # As the desktop user: makepkg refuses root, and asks sudo for pacman itself.
+    names = {item.split()[0] for item in items}
+    for item in merged(plan, 'aur'):
+        if item['package'] not in names:
             continue
-        path = clone_path(item)
-        if not (path / '.git').exists():
-            path.mkdir(parents=True, exist_ok=True)
-            subprocess.run(('git', '-C', str(path), 'init', '-q'), check=True)
-        subprocess.run(('git', '-C', str(path), 'fetch', '-q', '--depth', '1', item['repo'], item['commit']), check=True)
-        subprocess.run(('git', '-C', str(path), '-c', 'advice.detachedHead=false', 'checkout', '-q', '--force', item['commit']), check=True)
+        path = aur_path(item)
+        checkout(path, AUR + item['package'] + '.git', item['commit'])
+        built = srcinfo_version((path / '.SRCINFO').read_text(encoding='utf-8'))
+        if built != item['version']:
+            raise RuntimeError(f'{item["package"]} at {item["commit"][:12]} builds {built}, '
+                               f'not the {item["version"]} the manifest names: correct the manifest.')
+        if item.get('key'):
+            import_key(item['key'])
+        plan.distro.build_package(path)
+        # The PKGBUILD stays, for the next update; the sources and the built package go.
+        subprocess.run(('git', '-C', str(path), 'clean', '-q', '-d', '-x', '--force'), check=True)
 
 
 def dmi(field):
@@ -358,7 +420,7 @@ def plugin_guard():
 
 
 def verify_pending(plan):
-    if 'plugins' in plan.profiles and not plan.distro.missing(['hyprland', 'hyprland-devel']):
+    if 'plugins' in plan.profiles and not plan.distro.missing(list(dict.fromkeys(['hyprland', bundle.headers_package()]))):
         plugin_guard()
     return ['command not found: ' + command for command in plan.commands if not shutil.which(command)]
 
@@ -542,6 +604,11 @@ def clones_remember(plan, items, record):
     keep(record, 'clones', [path for path in items if not (Path.home() / path).exists()])
 
 
+def aur_remember(plan, items, record):
+    # With the other packages: uninstall removes them alike. One installed before, which apply updates, stays.
+    keep(record, 'packages', [name for name in (item.split()[0] for item in items) if not plan.distro.installed(name)])
+
+
 def flatpak_remember(plan, items, record):
     keep(record, 'flatpaks', items)
 
@@ -563,6 +630,8 @@ STEPS = (
     # Before packages: a package that needs the replacement would conflict with what it replaces.
     Step('swaps', swaps_pending, swaps_apply, swaps_remember),
     Step('packages', packages_pending, packages_apply, packages_remember),
+    # After the packages: makepkg needs base-devel and git.
+    Step('aur', aur_pending, aur_apply, aur_remember),
     Step('files', files_pending, files_apply, files_remember),
     Step('firmware', firmware_pending, firmware_apply, firmware_remember),
     Step('groups', groups_pending, groups_apply, groups_remember),
@@ -594,7 +663,8 @@ def reconstruct(plan):
     swapped = [[old, new] for old, new in swaps(every) if distro.installed(new) and not distro.installed(old)
                and any(name.rsplit('.', 1)[0] == old for name in base)]
     news = {new for _, new in swapped}
-    wanted = [package for package in dict.fromkeys(wanted_packages(every)) if package not in news]
+    aur = [item['package'] for item in merged(every, 'aur')]
+    wanted = [package for package in dict.fromkeys(wanted_packages(every) + aur) if package not in news]
     packages = [name for name in distro.installed_names(wanted) if name not in base] if base else []
     record = {'reconstructed': True, 'packages': packages, 'swaps': swapped,
               'repos': [name for name in merged(every, 'repos') if not distro.repo_missing(every.table['repos'][name])],
@@ -619,8 +689,8 @@ def reconstruct(plan):
     # The display manager came with the desktop: the system started on the console before it.
     if any(name.rsplit('.', 1)[0] == 'gdm' for name in packages):
         boot['gdm'] = 'disabled'
-        if default_target() == 'graphical.target':
-            boot['target'] = 'multi-user.target'
+        if default_target() == 'graphical.target' != distro.BASE_TARGET:
+            boot['target'] = distro.BASE_TARGET
     return record
 
 
@@ -706,6 +776,15 @@ def unclones_pending(plan):
 def unclones_apply(plan, paths):
     for path in paths:
         shutil.rmtree(Path.home() / path)
+
+
+def unaur_pending(plan):
+    # The PKGBUILDs; the packages built from them go with the others.
+    return [str(aur_cache())] if aur_cache().exists() else []
+
+
+def unaur_apply(plan, items):
+    shutil.rmtree(aur_cache())
 
 
 def stow_packages():
@@ -888,7 +967,7 @@ def removal_split(plan):
     # someone installed by hand would go with them as a dependent: it stays, and so does everything of ours it needs.
     news = {new for _, new in plan.record.get('swaps', ())}
     names = plan.distro.installed_names([package for package in plan.record.get('packages', ()) if package not in news])
-    names = [name for name in names if name.rsplit('.', 1)[0] not in PROTECTED + tuple(news)]
+    names = [name for name in names if name.rsplit('.', 1)[0] not in plan.distro.PROTECTED + tuple(news)]
     kept = []
     for _ in range(5):  # Each round keeps more; dnf's answer settles in one or two.
         rows = plan.distro.removal(names)
@@ -981,6 +1060,7 @@ UNSTEPS = (
     Step('plugins', unplugins_pending, unplugins_apply),
     Step('boot', unboot_pending, unboot_apply),
     Step('clones', unclones_pending, unclones_apply),
+    Step('aur', unaur_pending, unaur_apply),
     Step('stow', unstow_pending, unstow_apply),
     Step('settings', unsettings_pending, unsettings_apply),
     Step('flatpak', unflatpak_pending, unflatpak_apply),
@@ -1010,7 +1090,9 @@ def os_release(path=Path('/etc/os-release')):
 def load_plan(profiles, release=None, firmware=None, any_version=False):
     manifest = tomllib.loads((INSTALL / 'manifest.toml').read_text(encoding='utf-8'))
     release = release or os_release()
-    name, version = release.get('ID', ''), release.get('VERSION_ID', '')
+    # A rolling release has no version of its own (Arch's container image adds the date of the image).
+    name = release.get('ID', '')
+    version = 'rolling' if release.get('BUILD_ID') == 'rolling' else release.get('VERSION_ID', '')
     table = manifest.get(name)
     if name == 'verify' or table is None:
         sys.exit(f'{name or "This distribution"} is not verified yet: see docs/guide/installation.md.')
@@ -1152,20 +1234,89 @@ def post(plan):
         print('  ' + note)
 
 
+def aur_head(package):
+    result = query('git', 'ls-remote', AUR + package + '.git', 'HEAD')
+    fields = result.stdout.split()
+    return fields[0] if result.returncode == 0 and fields else ''
+
+
+def aur_srcinfo(package, commit):
+    url = f'{AUR}cgit/aur.git/plain/.SRCINFO?' + urllib.parse.urlencode({'h': package, 'id': commit})
+    with urllib.request.urlopen(url, timeout=30) as response:
+        return response.read().decode('utf-8')
+
+
+def repin(text, old, new, version):
+    # Each [[...aur]] table pinned to old, rewritten in place: its commit, and the version line of the same table.
+    lines = text.splitlines(keepends=True)
+    for index, line in enumerate(lines):
+        if line.strip() != f"commit = '{old}'":
+            continue
+        lines[index] = line.replace(old, new)
+        start, end = index, index + 1
+        while start > 0 and not lines[start].startswith('['):
+            start -= 1
+        while end < len(lines) and not lines[end].startswith('['):
+            end += 1
+        for other in range(start, end):
+            if lines[other].startswith('version = '):
+                lines[other] = f"version = '{version}'\n"
+    return ''.join(lines)
+
+
+def pins(update):
+    # The AUR pins of every distribution, not only this one: they can be moved from any machine.
+    path = INSTALL / 'manifest.toml'
+    text = path.read_text(encoding='utf-8')
+    entries = {}
+    for table in tomllib.loads(text).values():
+        for profile in PROFILES:
+            for item in table.get(profile, {}).get('aur', ()) if isinstance(table, dict) else ():
+                entries.setdefault((item['package'], item['commit']), item)
+    newer, failed = 0, 0
+    for item in entries.values():
+        head = aur_head(item['package'])
+        if not head:
+            print(f'{item["package"]}: the AUR did not answer.')
+            failed += 1
+        elif head != item['commit']:
+            version = srcinfo_version(aur_srcinfo(item['package'], head))
+            newer += 1
+            print(f'{item["package"]} {item["version"]} -> {version}')
+            print(f'  review the PKGBUILD changes: {AUR}cgit/aur.git/diff/?'
+                  + urllib.parse.urlencode({'h': item['package'], 'id': head, 'id2': item['commit']}))
+            if update:
+                text = repin(text, item['commit'], head, version)
+    if update and newer:
+        path.write_text(text, encoding='utf-8')
+        print(f'Pinned in {path.relative_to(REPO)}: install-desktop.py apply builds them.')
+    elif newer:
+        print('install-desktop.py pins --update pins them.')
+    elif not failed:
+        print('Every AUR package is pinned to its latest commit.')
+    return 1 if failed else 0
+
+
 def main(argv=None):
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument('action', nargs='?', choices=('dry-run', 'apply', 'post'), default='dry-run')
+    parser.add_argument('action', nargs='?', choices=('dry-run', 'apply', 'post', 'pins'), default='dry-run',
+                        help='pins: newer AUR commits than the manifest pins (Arch packages, checked from any distribution)')
+    parser.add_argument('--update', action='store_true', help='with pins: pin those newer commits in the manifest')
     parser.add_argument('--firmware', metavar='DIR', help='directory searched (by hash) for the vendor firmware the manifest lists')
     parser.add_argument('--profiles', default=DEFAULT_PROFILES, help=f'comma separated, from {", ".join(PROFILES)} (default: {DEFAULT_PROFILES})')
     parser.add_argument('--uninstall', action='store_true', help='undo what apply set up, from its record (dry-run shows it, apply does it)')
     args = parser.parse_args(argv)
-    if args.uninstall and args.action == 'post':
+    if args.uninstall and args.action in ('post', 'pins'):
         parser.error('--uninstall goes with dry-run or apply.')
+    if args.update and args.action != 'pins':
+        parser.error('--update goes with pins.')
     profiles = tuple(args.profiles.split(','))
     if not valid_profiles(profiles):
         parser.error(f'--profiles needs core, and takes only {", ".join(PROFILES)}.')
     if os.geteuid() == 0:
         sys.exit('Run as the desktop user: the script asks sudo for each system change.')
+    if args.action == 'pins':
+        return pins(args.update)
     plan = load_plan(profiles, firmware=args.firmware, any_version=args.uninstall)
     plan.distro.remember_answers()
     if args.uninstall:

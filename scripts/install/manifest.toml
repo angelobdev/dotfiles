@@ -2,6 +2,7 @@
 #
 # A distribution with no table here is refused as not verified. Porting one means adding a table with the same
 # profile keys and a module with the functions of fedora.py, using package names checked on that distribution.
+# versions lists the VERSION_ID values verified; a rolling release, which has none, is 'rolling' (its BUILD_ID).
 #
 # Profile keys: repos, packages, swaps, services, user_services, disable, files, groups, stow, flatpaks, firewall_zone, auth, notes.
 # swaps: [old, new] pairs; new replaces old where old is installed, and old is never installed alongside it.
@@ -11,6 +12,8 @@
 # clones: [[...]] tables of repo, commit and path (under the home), for what the distribution does not package.
 # firmware: [[...]] vendor blobs nobody may redistribute, for one DMI product_name: install-desktop.py --firmware DIR
 #   finds them by sha256 (and size) and installs them to target, then rebuilds the initramfs.
+# aur: [[...]] tables of package, commit and version (Arch only): the AUR PKGBUILD at that commit, built with makepkg.
+#   key is the URL of the PGP key its sources are signed with. install-desktop.py pins shows newer commits.
 
 # The desktop itself, whatever the distribution calls its packages.
 [verify]
@@ -220,3 +223,159 @@ packages = [
     'libheif-freeworld', 'pipewire-codec-aptx',
 ]
 swaps = [['ffmpeg-free', 'ffmpeg'], ['libva-intel-media-driver', 'intel-media-driver']]
+
+
+# Arch Linux: the official repositories (core, extra, and multilib for gaming), plus three apps from the AUR.
+# Package names checked with pacman -Si and pacman -F on 2026-11-05. Profiles as on Fedora, except: no repository
+# for Hyprland (extra has it, headers and session entry included), no swaps (Arch's ffmpeg and media drivers are the
+# full builds), no firewall zone or sshd change (Arch enables neither), and no tablet sign-in yet (it needs PAM
+# edited without authselect).
+[arch]
+versions = ['rolling']
+
+[arch.repos.multilib]
+kind = 'pacman'
+name = 'multilib'
+include = '/etc/pacman.d/mirrorlist'
+
+[arch.core]
+packages = [
+    # Session. uwsm runs the hyprland-uwsm entry that the hyprland package installs for GDM; hyprpm is a package of its own.
+    'gdm', 'accountsservice', 'hyprland', 'hyprpm', 'uwsm', 'hyprland-guiutils', 'quickshell', 'stow',
+    'hypridle', 'hyprlock', 'hyprpaper', 'hyprsunset', 'kitty', 'dbus', 'polkit', 'oo7',
+    'xorg-xwayland', 'xorg-xrdb', 'mesa', 'vulkan-intel', 'vulkan-radeon',
+    # Portals.
+    'xdg-desktop-portal', 'xdg-desktop-portal-hyprland', 'xdg-desktop-portal-gtk',
+    # Audio, network and power. pactl is in libpulse, bluetoothctl in bluez-utils. ffmpeg (for wf-recorder) needs a
+    # JACK library, and pacman would pick jack2, a second sound server: PipeWire's instead.
+    'pipewire', 'pipewire-pulse', 'pipewire-jack', 'wireplumber', 'libpulse',
+    'networkmanager', 'wpa_supplicant', 'nm-connection-editor',
+    'bluez', 'bluez-utils', 'upower', 'tuned', 'tuned-ppd', 'brightnessctl', 'ddcutil',
+    # Shell helpers. pacman-contrib has checkupdates, for the update icon and the installer, which needs fakeroot.
+    'python', 'python-gobject', 'imagemagick', 'libnotify', 'libical', 'evolution-data-server',
+    'gnome-online-accounts-gtk', 'matugen', 'jq', 'ripgrep', 'grim', 'slurp', 'wl-clipboard', 'cliphist',
+    'wf-recorder', 'btop', 'fastfetch', 'flatpak', 'xdg-user-dirs', 'xdg-utils', 'dconf', 'pacman-contrib', 'fakeroot',
+    # Color picker, text from a screen area, the launcher's calculator (qalc is in libqalculate) and file search.
+    'hyprpicker', 'tesseract', 'tesseract-data-ita', 'tesseract-data-eng', 'libqalculate', 'fd',
+    # The emoji picker: Unicode's list, CLDR's names (annotations) and those of flags and keycaps (unicode-cldr).
+    'unicode-emoji', 'unicode-cldr-annotations', 'unicode-cldr',
+    # What plays, for the lock screen.
+    'playerctl',
+    # Drives and phones.
+    'udiskie', 'libayatana-appindicator', 'udisks2', 'gvfs', 'gvfs-afc', 'gvfs-gphoto2', 'usbmuxd', 'libimobiledevice',
+    # Look. breeze-cursors alone: breeze is the whole Plasma style.
+    'qt5ct', 'qt6ct', 'qt6-svg', 'qt6-imageformats', 'papirus-icon-theme', 'adwaita-icon-theme', 'adw-gtk-theme',
+    'adwaita-cursors', 'breeze-cursors', 'fontconfig', 'adwaita-fonts', 'noto-fonts-emoji', 'inter-font',
+    'ttf-ibm-plex', 'ttf-jetbrains-mono', 'ttf-fira-code',
+    # Apps the shell opens.
+    'nautilus', 'gnome-calculator',
+    # The login shell and its plugins; Powerlevel10k and zsh-autocomplete come from clones below.
+    'zsh', 'zsh-autosuggestions', 'zsh-syntax-highlighting', 'git', 'fzf', 'zoxide', 'eza', 'bat',
+]
+login_shell = '/usr/bin/zsh'
+services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service']
+user_services = ['oo7-daemon.service']
+notes = ['Sign in to your calendars with gnome-online-accounts-gtk.']
+
+[[arch.core.clones]]
+repo = 'https://github.com/romkatv/powerlevel10k'
+commit = 'd05a1b00f9a61f9578bf9dc19b8451942dde8734'
+path = '.local/share/zsh/plugins/powerlevel10k'
+
+[[arch.core.clones]]
+repo = 'https://github.com/marlonrichert/zsh-autocomplete'
+commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
+path = '.local/share/zsh/plugins/zsh-autocomplete'
+
+# This laptop: an HP OmniBook Ultra Flip. linux-firmware-intel holds the Wi-Fi, Bluetooth, GPU, VSC, NPU and ISH
+# firmware that Fedora splits in several packages.
+[arch.hardware]
+packages = [
+    'linux-firmware-intel', 'linux-firmware-cirrus', 'sof-firmware', 'alsa-ucm-conf', 'alsa-utils',
+    'vpl-gpu-rt', 'libvpl', 'libva-utils', 'intel-media-driver',
+    'libcamera', 'libcamera-ipa', 'pipewire-libcamera',
+    'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'iio-sensor-proxy', 'libwacom', 'fprintd',
+]
+services = ['thermald.service', 'intel_lpmd.service']
+notes = ['Enroll your fingerprint: fprintd-enroll. On Arch it signs in at GDM and unlocks the lock screen; sudo and polkit still ask for the password.']
+
+[[arch.hardware.firmware]]
+product = 'HP OmniBook Ultra Flip Laptop 14-fh0xxx'
+purpose = 'Screen rotation'
+source = 'HP SoftPaq sp158489, Driver/IshHeciExtension/FWImage/0003/ishC_0207.bin'
+target = '/usr/lib/firmware/intel/ish/ish_lnlm_12128606.bin'
+sha256 = 'aafe1129e21ad0b082333e66dfbd81540c627a9f5d41f8707053362b6de7474f'
+size = 838144
+
+[[arch.hardware.files]]
+path = '/etc/modules-load.d/hid-sensors.conf'
+content = '''
+intel_ishtp_hid
+hid_sensor_hub
+'''
+
+# Building the Hyprland plugins: the hyprland package has the headers, and Arch splits no -devel packages.
+[arch.plugins]
+packages = [
+    'git', 'gcc', 'make', 'cmake', 'pkgconf', 'meson', 'ninja', 'patch', 'cpio',
+    'glm', 'lua', 'pango', 'libxcursor', 'nlohmann-json', 'libjpeg-turbo',
+    'qt6-svg', 'qt6-wayland', 'layer-shell-qt', 'opencv', 'pipewire', 'libpulse', 'fftw', 'ffmpeg', 'x265', 'libde265',
+]
+
+# Everything below is opt-in: add the profile to --profiles.
+
+# Personal apps. base-devel is what makepkg needs to build the AUR packages.
+[arch.apps]
+packages = ['base-devel', 'neovim', 'github-cli', 'glab', 'uv', 'gcc', 'xclip', 'wev', 'unrar', 'fuse2']
+notes = [
+    'Sign in to GitHub: gh auth login',
+    'Install Claude Code from its own installer: Super + A tells you when it is missing',
+]
+
+# Not in the Arch repositories. Updating one: install-desktop.py pins (review the PKGBUILD changes it links),
+# install-desktop.py pins --update, then install-desktop.py apply.
+[[arch.apps.aur]]
+package = 'zen-browser-bin'
+commit = '12bff888a8299aedcef68cca18378cfac24474d8'
+version = '1.24b-1'
+
+[[arch.apps.aur]]
+package = '1password'
+commit = 'a01e3b048ebbe341d6e6b500304a315a342a7d84'
+version = '8.12.44-33'
+key = 'https://downloads.1password.com/linux/keys/1password.asc'
+
+[[arch.apps.aur]]
+package = 'visual-studio-code-bin'
+commit = 'a2c863ea6e8fcfb1395e1f7f61d9e7e85d0466aa'
+version = '1.145.0-1'
+
+[[arch.apps.files]]
+path = '/etc/1password/custom_allowed_browsers'
+content = '''
+zen-bin
+'''
+
+# Docker and Tailscale. Arch's tailscale has no tray unit: the tray icon is not set up.
+[arch.containers]
+packages = ['docker', 'docker-compose', 'tailscale']
+services = ['docker.service', 'tailscaled.service']
+groups = ['docker']
+notes = ['Connect Tailscale: sudo tailscale up']
+
+# GNOME viewers for images, PDFs and videos.
+[arch.media]
+packages = ['loupe', 'papers', 'showtime']
+
+# Steam, gamescope, and the 32-bit drivers games need, from multilib. gcc caches the optional renderer scaling workaround.
+[arch.gaming]
+repos = ['multilib']
+packages = ['steam', 'gamescope', 'gcc', 'lib32-mesa', 'lib32-vulkan-intel', 'lib32-vulkan-radeon']
+
+# A Steam launcher that scales the client for the monitor it opens on (desktop-steam).
+[arch.steam-hidpi]
+stow = ['steam-hidpi']
+
+# Arch's ffmpeg and media drivers already have every codec: the GStreamer plugins that use them (OpenH264 is in bad).
+[arch.codecs]
+packages = ['gst-plugins-bad', 'gst-plugins-ugly', 'gst-libav', 'libheif']

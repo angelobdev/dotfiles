@@ -152,6 +152,15 @@ class StatusTests(unittest.TestCase):
         self.assertEqual(self.status([], swapped=True), tui.Status([], 3))
         self.assertEqual(self.status(['c']), tui.Status(['c', 'old -> new'], 3))
 
+    def test_aur_packages_count_until_they_are_at_their_pinned_version(self):
+        table = {**TABLE, 'apps': {'packages': ['base-devel'], 'aur': [{'package': 'zen', 'commit': 'c' * 40, 'version': '2-1'}]}}
+        distro = mock.Mock()
+        distro.missing.return_value = []
+        for installed, missing in (('', ['zen']), ('1-1', ['zen']), ('2-1', [])):
+            distro.version.return_value = installed
+            self.assertEqual(tui.profile_status(installer.Plan(distro, 'rolling', table, [], ('core',)), 'apps'), tui.Status(missing, 2))
+        self.assertEqual(tui.summary(table, 'apps'), '1 packages; from the AUR: zen.')
+
     def test_stow_links_count_once_they_point_into_the_repository(self):
         with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, 'home', return_value=Path(home)):
             files = tui.stow_files('steam-hidpi')

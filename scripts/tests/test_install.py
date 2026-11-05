@@ -43,7 +43,8 @@ def reply(stdout='', returncode=0):
 
 
 def fake_distro(pending=True):
-    distro = mock.Mock(ADMIN_GROUP='wheel', AUTH_PROFILE='custom/desktop-tablet')
+    distro = mock.Mock(ADMIN_GROUP='wheel', AUTH_PROFILE='custom/desktop-tablet', PROTECTED=('python3', 'git-core'), MANAGER='dnf',
+                       BASE_TARGET='multi-user.target')
     distro.repo_missing.return_value = pending
     distro.upgrades_pending.return_value = pending
     # Still to do: every package is missing but the one a swap replaces. Done: that one is gone, the rest is there.
@@ -280,8 +281,8 @@ class StepTests(unittest.TestCase):
         distro = fake_distro()
         with mock.patch('subprocess.run') as run:
             done = installer.run_steps(plan(distro), True)
-        # All but verify (its commands are found here) and firmware (FirmwareTests covers it).
-        self.assertEqual(done, len(installer.STEPS) - 2)
+        # All but verify (its commands are found here), firmware (FirmwareTests covers it) and aur (test_install_arch.py).
+        self.assertEqual(done, len(installer.STEPS) - 3)
         run.assert_not_called()
         for change in (distro.sudo, distro.add_repo, distro.upgrade, distro.install, distro.write_file, distro.auth_apply):
             change.assert_not_called()

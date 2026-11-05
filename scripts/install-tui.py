@@ -73,13 +73,14 @@ def linked(package, path):
 
 
 def profile_status(plan, name):
-    # Only what can be seen without sudo: its packages, its swaps and its Stow links.
+    # Only what can be seen without sudo: its packages, its swaps, its AUR packages and its Stow links.
     one = plan._replace(profiles=(name,))
     wanted = list(dict.fromkeys(installer.wanted_packages(one)))
     missing = (installer.packages_pending(one) if wanted else []) + installer.swaps_pending(one)
+    missing += [item.split()[0] for item in installer.aur_pending(one)]
     links = [(package, path) for package in plan.table[name].get('stow', ()) for path in stow_files(package)]
     missing += [str(path.relative_to(REPO)) for package, path in links if not linked(package, path)]
-    return Status(missing, len(wanted) + len(installer.swaps(one)) + len(links))
+    return Status(missing, len(wanted) + len(installer.swaps(one)) + len(installer.merged(one, 'aur')) + len(links))
 
 
 def installed(status):
@@ -124,6 +125,8 @@ def summary(table, name):
     for key, label in (('repos', 'repositories'), ('services', 'services'), ('groups', 'groups'), ('stow', 'links')):
         if profile.get(key):
             parts.append(f'{label}: {", ".join(profile[key])}')
+    if profile.get('aur'):
+        parts.append('from the AUR: ' + ', '.join(item['package'] for item in profile['aur']))
     if profile.get('swaps'):
         parts.append('replaces ' + ', '.join(f'{old} with {new}' for old, new in profile['swaps']))
     return '; '.join(parts) + '.' if parts else ''
@@ -495,7 +498,7 @@ def review(ui, plan):
         work = [entry for entry in reviews if entry.items or entry.error]
         if removing(plan):
             ui.put(row, 2, 'Removing', ui.style('dim'))
-            ui.put(row, 14, 'what the installer set up' + (', as the dnf history tells' if plan.record.get('reconstructed') else ', from its record'))
+            ui.put(row, 14, 'what the installer set up' + (f', as the {plan.distro.MANAGER} history tells' if plan.record.get('reconstructed') else ', from its record'))
         else:
             ui.put(row, 2, 'Profiles', ui.style('dim'))
             ui.put(row, 14, ', '.join(plan.profiles))
