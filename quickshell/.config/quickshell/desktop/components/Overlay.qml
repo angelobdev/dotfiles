@@ -18,8 +18,9 @@ PanelWindow {
     // panel created open (LazyPanel) still animates in.
     property real reveal: 0
     property Scale motionScale: Scale {
-        origin.x: root.dialog ? root.width / 2 : root.width - 12 - Config.controlCenterWidth / 2
-        origin.y: root.dialog ? root.height / 2 : 58
+        // Side panels grow from the top of their card (SidePanelCard: 20 px under the bar, 12 from the edge).
+        origin.x: root.dialog ? root.width / 2 : root.width - 12 - Math.min(Config.controlCenterWidth, root.width - 24) / 2
+        origin.y: root.dialog ? root.height / 2 : Theme.barHeight + 20
         xScale: ShellState.navigation !== 0 ? 1 : 0.97 + 0.03 * root.reveal
         yScale: xScale
     }
@@ -43,7 +44,10 @@ PanelWindow {
         }
         height: parent.height - Keyboard.reservedOn(root.screen?.name ?? "")
     }
-    screen: ShellState.activeScreen || Quickshell.screens[0]
+    // The screen it opened on, kept while it closes: show() moves activeScreen first, also when it closes this
+    // panel from another monitor, and the fading panel would be rebuilt there. A screen that went away is not kept.
+    property var shownOn: null
+    screen: (Quickshell.screens.includes(shownOn) ? shownOn : ShellState.activeScreen) || Quickshell.screens[0]
     visible: open || reveal > 0
     anchors {
         top: true
@@ -68,6 +72,7 @@ PanelWindow {
         }
     }
     onOpenChanged: if (open) {
+        shownOn = ShellState.activeScreen;
         contentItem.forceActiveFocus();
         opened();
     }
@@ -75,6 +80,7 @@ PanelWindow {
         reveal = Qt.binding(() => open ? 1 : 0);
         // Created open: the opening a panel gets when it was already there.
         if (open) {
+            shownOn = ShellState.activeScreen;
             contentItem.forceActiveFocus();
             opened();
         }

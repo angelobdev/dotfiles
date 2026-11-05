@@ -18,7 +18,8 @@ PanelWindow {
     // the top card is not clipped on its way.
     readonly property int travel: 24
     margins {
-        top: 54 - root.travel
+        // 16 px under the bar, whose height grows in tablet mode.
+        top: Theme.barHeight + 16 - root.travel
         right: 12
     }
     readonly property int count: Notices.popups.length
