@@ -26,7 +26,8 @@ local function apply(transform)
         spec[key] = value
     end
     spec.transform = transform
-    spec.disabled = panel_off or nil
+    -- Always said: a rule without it keeps the panel off once a clamshell turned it off.
+    spec.disabled = panel_off
     hl.monitor(spec)
     if #devices > 0 then
         for _, name in ipairs(devices) do
@@ -66,7 +67,8 @@ end
 
 local function other_monitor()
     for _, monitor in ipairs(hl.get_monitors()) do
-        if monitor.name ~= panel.output and monitor.enabled then
+        -- FALLBACK is the virtual output Hyprland makes when no real one is on: it shows nothing.
+        if monitor.name ~= panel.output and monitor.name ~= "FALLBACK" and monitor.enabled then
             return true
         end
     end
