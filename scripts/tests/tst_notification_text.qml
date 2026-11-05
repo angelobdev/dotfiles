@@ -19,6 +19,14 @@ TestCase {
         compare(NotificationText.styled("<3 -> ok"), "&lt;3 -&gt; ok");
     }
 
+    // An & that starts no entity is escaped; real entities pass through.
+    function test_bare_ampersands_are_shown() {
+        compare(NotificationText.styled("Q&A with AT&T"), "Q&amp;A with AT&amp;T");
+        compare(NotificationText.styled("https://x.com/?a=1&b=2"), "https://x.com/?a=1&amp;b=2");
+        compare(NotificationText.styled("Tom & Jerry"), "Tom &amp; Jerry");
+        compare(NotificationText.styled("&amp; &#39; &#x27; &eacute;"), "&amp; &#39; &#x27; &eacute;");
+    }
+
     function test_long_bodies_are_cut() {
         const body = "x".repeat(NotificationText.MAX_LENGTH + 100);
         compare(NotificationText.styled(body).length, NotificationText.MAX_LENGTH + 1);
