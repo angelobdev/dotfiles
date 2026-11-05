@@ -224,6 +224,7 @@ PanelWindow {
                         objectProp: "key"
                     }
                     DockItem {
+                        onScreen: root.shown
                         pointerOffset: root.pointerOffset
                         zoomAmount: root.zoomAmount
                         count: Dock.items.length

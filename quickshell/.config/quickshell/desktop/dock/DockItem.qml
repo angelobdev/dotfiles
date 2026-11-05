@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Services.UPower
 import ".."
 import "../components"
 import "../services"
@@ -22,6 +23,13 @@ Row {
     property bool dragged: false
     // Keyboard selection (Super+D): the window draws the ring, the item shows its tooltip.
     property bool selected: false
+    // Whether the dock is shown: a hidden dock stays mapped, so an urgent pulse would still redraw it.
+    property bool onScreen: true
+    // Urgent windows pulse until they are focused or the hint clears. On battery the icon blinks in two steps
+    // instead of fading, like the assistant dot: a fade redraws the dock on every frame.
+    readonly property bool pulsing: modelData.urgent && onScreen && Theme.motionSlow > 0
+    readonly property bool fading: pulsing && !UPower.onBattery
+    property real pulse: 1
     // Where the window anchors the selection ring and the context menu.
     readonly property Item anchorItem: cell
     readonly property int size: Theme.hit(Config.dockIconSize)
@@ -163,7 +171,7 @@ Row {
             // Rendered once at the largest size so magnifying never reloads the image.
             sourceSize: Qt.size(root.size * 2 * Math.max(1, Config.dockMagnification), root.size * 2 * Math.max(1, Config.dockMagnification))
             fillMode: Image.PreserveAspectFit
-            opacity: root.dragged ? 0 : 1
+            opacity: root.dragged ? 0 : root.pulsing ? root.pulse : 1
             scale: mouse.pressed && !mouse.moved ? 0.92 : 1
             Behavior on scale {
                 NumberAnimation {
@@ -173,22 +181,26 @@ Row {
                 }
             }
         }
-        // Urgent windows pulse until they are focused or the hint clears.
+        Timer {
+            interval: Theme.motionSlow * 2
+            repeat: true
+            running: root.pulsing && !root.fading
+            onTriggered: root.pulse = root.pulse < 1 ? 1 : 0.35
+            onRunningChanged: root.pulse = 1
+        }
         SequentialAnimation {
-            running: root.modelData.urgent && Theme.motionSlow > 0
+            running: root.fading
             loops: Animation.Infinite
-            onRunningChanged: if (!running)
-                icon.opacity = 1
             NumberAnimation {
-                target: icon
-                property: "opacity"
+                target: root
+                property: "pulse"
                 to: 0.35
                 duration: Theme.motionSlow * 2
                 easing.type: Easing.InOutSine
             }
             NumberAnimation {
-                target: icon
-                property: "opacity"
+                target: root
+                property: "pulse"
                 to: 1
                 duration: Theme.motionSlow * 2
                 easing.type: Easing.InOutSine
