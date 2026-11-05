@@ -141,3 +141,7 @@ The calendar weather asks GeoClue for the computer's position at city accuracy (
 
 `services/Privacy.qml` reads microphone use from PipeWire capture streams, camera use from the processes holding a `/dev/video*` device (`privacy.py cameras`, every 3 s; PipeWire stands for apps that read the camera through it, named from its video streams), and screen sharing from Hyprland's `screencast` events. Only the user's own processes can be seen. `desktop-shell status` shows the same under `privacy`.
 
+## KDE Store
+
+The Theming panel's **Find online…** reads store.kde.org through its public OCS API (`https://api.kde-look.org/ocs/v1/`, the provider Plasma uses), with the generic client name `desktop-theming/1.0` and no account. Searches send the query and the category (cursors 107, icon themes 132); installing downloads the chosen file from the store's CDN. The themes are other people's work: see `docs/features/theming.md` for what is kept of an archive.
+

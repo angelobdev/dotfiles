@@ -1014,5 +1014,34 @@
       "external": "Solo esterno",
       "internal": "Solo portatile"
     }
+  },
+  "store": {
+    "title": "KDE Store",
+    "searchCursors": "Cerca temi cursore",
+    "searchIcons": "Cerca temi icone",
+    "getMore": "Cerca online…",
+    "install": "Installa",
+    "installing": "Installazione…",
+    "installed": "Installato",
+    "remove": "Rimuovi",
+    "downloads": "%1 download",
+    "by": "di %1",
+    "more": "Altri",
+    "empty": "Nessun risultato",
+    "loading": "Ricerca…",
+    "hint": "Temi da store.kde.org, creati da altre persone: si tengono solo le cartelle dei temi, in ~/.local/share/icons.",
+    "done": "Installato: %1",
+    "errors": {
+      "tooLarge": "Il download è troppo grande.",
+      "checksum": "Il download non corrisponde al suo checksum.",
+      "unsafe": "L’archivio contiene percorsi esterni: non installato.",
+      "format": "Non è un archivio che si possa estrarre.",
+      "missing": "Quel file non è più nello store.",
+      "noTheme": "L’archivio non contiene temi di questo tipo.",
+      "exists": "È già installato un tema con la stessa cartella.",
+      "notFromStore": "%1 non è stato installato dallo store.",
+      "unavailable": "Impossibile raggiungere lo store.",
+      "usage": "Uso: store.py search TIPO [RICERCA] [PAGINA] | install TIPO ID FILE | remove CARTELLA | installed"
+    }
   }
 }

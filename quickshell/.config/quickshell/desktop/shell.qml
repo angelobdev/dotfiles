@@ -94,10 +94,14 @@ ShellRoot {
             ShellState.close();
         }
         // Opens the Theming panel on a tab; desktop-shell uses it to come back after a restart.
+        // A tab, or store-icons / store-cursors for the KDE Store page.
         function theming(tab: string): void {
-            themingPanel.tab = ["theme", "wallpaper", "font", "icons"].includes(tab) ? tab : "theme";
             if (ShellState.panel !== "theming")
                 ShellState.toggle("theming");
+            if (tab === "store-icons" || tab === "store-cursors")
+                themingPanel.openStore(tab.slice(6));
+            else
+                themingPanel.tab = ["theme", "wallpaper", "font", "icons"].includes(tab) ? tab : "theme";
         }
         function status(): string {
             return JSON.stringify({

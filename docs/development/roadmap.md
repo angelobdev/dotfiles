@@ -308,4 +308,6 @@ Found during the October 27, 2026 repository review. Checked items were approved
   - [ ] Try the pinch zoom and the emoji page by touch.
 - [x] Cursor customization (requested 2026-11-05): theme and size from the Theming panel, applied everywhere the cursor is set today (Hyprland/hyprcursor and `HYPRCURSOR_SIZE`, GSettings `cursor-theme` from `theme.py`, the GTK `settings.ini` files that pin Adwaita 24, XWayland through `xwayland.py`, Qt). Done the same day in the Icons tab.
   - [x] Cursor themes: Breeze in the manifest, Bibata and Phinger on demand.
+- [x] Cursor and icon themes from the KDE Store, searched and installed from the Theming panel (2026-11-05).
+  - [ ] Try it from the panel.
 - [ ] Multi-distro installation support (add Debian and Arch): a manifest table and a module with the functions of `install/fedora.py`, with names checked on that distribution. Other Fedora-specific code to adapt: `rpm` in `scripts/hyprpm/build.py`, `install-hypr-plugins.py` and `plugins.py`; `dnf` in `desktop-updates` and `updates.py`; `authselect` in `tablet-auth.sh`; `/usr/lib64/qt6` in `check.sh`; `/usr/share/pkgconfig/hyprland.pc`; the `dnf` hints in `stow.py` and `gaming.py`.

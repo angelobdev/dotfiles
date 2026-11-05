@@ -1014,5 +1014,34 @@
       "external": "External only",
       "internal": "Laptop only"
     }
+  },
+  "store": {
+    "title": "KDE Store",
+    "searchCursors": "Search cursor themes",
+    "searchIcons": "Search icon themes",
+    "getMore": "Find online…",
+    "install": "Install",
+    "installing": "Installing…",
+    "installed": "Installed",
+    "remove": "Remove",
+    "downloads": "%1 downloads",
+    "by": "by %1",
+    "more": "More",
+    "empty": "Nothing found",
+    "loading": "Searching…",
+    "hint": "Themes from store.kde.org, made by other people: only their theme folders are kept, in ~/.local/share/icons.",
+    "done": "Installed: %1",
+    "errors": {
+      "tooLarge": "The download is too large.",
+      "checksum": "The download does not match its checksum.",
+      "unsafe": "The archive has paths outside itself: not installed.",
+      "format": "Not an archive this can unpack.",
+      "missing": "That file is no longer in the store.",
+      "noTheme": "The archive holds no theme of this kind.",
+      "exists": "A theme with the same folder name is already installed.",
+      "notFromStore": "%1 was not installed from the store.",
+      "unavailable": "The store could not be reached.",
+      "usage": "Usage: store.py search KIND [QUERY] [PAGE] | install KIND ID FILE | remove FOLDER | installed"
+    }
   }
 }

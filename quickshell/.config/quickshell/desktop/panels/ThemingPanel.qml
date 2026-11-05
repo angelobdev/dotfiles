@@ -12,7 +12,8 @@ Overlay {
     dialog: true
     property string tab: "theme"
     // "glass" is a page of the Theme tab, reached from the card of a theme with liquid glass.
-    readonly property var tabs: ["theme", "wallpaper", "font", "icons", "glass"]
+    // "store" is a page of the Icons tab: the KDE Store, for cursor or icon themes (Store.kind).
+    readonly property var tabs: ["theme", "wallpaper", "font", "icons", "glass", "store"]
     readonly property var cycle: ["theme", "wallpaper", "font", "icons"]
     readonly property Item sansList: sansProxy.list ?? themeGrid
     function fileUrl(path) {
@@ -23,12 +24,18 @@ Overlay {
         if (name === "wallpaper")
             Theming.makeThumbs();
         Qt.callLater(() => {
-            const view = [themeGrid, wallpaperGrid, sansList, iconList, glassBack][tabs.indexOf(name)];
+            const view = [themeGrid, wallpaperGrid, sansList, iconList, glassBack, storeSearch][tabs.indexOf(name)];
             view.forceActiveFocus();
         });
     }
+    function openStore(kind) {
+        if (Store.kind !== kind || Store.items.length === 0)
+            Store.search(kind, "");
+        Store.refreshInstalled();
+        showTab("store");
+    }
     function cycleTab(step) {
-        const from = Math.max(0, cycle.indexOf(tab === "glass" ? "theme" : tab));
+        const from = Math.max(0, cycle.indexOf(tab === "glass" ? "theme" : tab === "store" ? "icons" : tab));
         showTab(cycle[(from + step + cycle.length) % cycle.length]);
     }
     // Labels of the glass options theme.py offers (GLASS_TUNING); an unknown one shows its own name.
@@ -108,7 +115,7 @@ Overlay {
                             label: I18n.tr("theming.tabs.icons")
                         }
                     ]
-                    current: root.tab === "glass" ? "theme" : root.tab
+                    current: root.tab === "glass" ? "theme" : root.tab === "store" ? "icons" : root.tab
                     onChosen: name => root.showTab(name)
                 }
             }
@@ -749,6 +756,10 @@ Overlay {
                         Item {
                             Layout.fillWidth: true
                         }
+                        ActionButton {
+                            text: I18n.tr("store.getMore")
+                            onClicked: root.openStore("cursors")
+                        }
                     }
                     RowLayout {
                         Layout.fillWidth: true
@@ -776,6 +787,10 @@ Overlay {
                         }
                         Item {
                             Layout.fillWidth: true
+                        }
+                        ActionButton {
+                            text: I18n.tr("store.getMore")
+                            onClicked: root.openStore("icons")
                         }
                         ActionButton {
                             text: I18n.tr("theming.openIcons")
@@ -979,6 +994,143 @@ Overlay {
                             }
                         }
                         ScrollBar.vertical: ScrollBar {}
+                    }
+                }
+                // Store: cursor or icon themes from store.kde.org, most downloaded first; each card installs one of
+                // its files, and removes what it installed.
+                ColumnLayout {
+                    spacing: 10
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        ActionButton {
+                            iconName: "arrow-left"
+                            text: I18n.tr("theming.tabs.icons")
+                            onClicked: root.showTab("icons")
+                        }
+                        InputField {
+                            id: storeSearch
+                            Layout.fillWidth: true
+                            placeholderText: Store.kind === "cursors" ? I18n.tr("store.searchCursors") : I18n.tr("store.searchIcons")
+                            onAccepted: Store.search(Store.kind, text)
+                        }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        visible: Store.error !== "" || Store.message !== ""
+                        text: Store.error || Store.message
+                        color: Store.error !== "" ? Theme.danger : Theme.muted
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(12)
+                        wrapMode: Text.Wrap
+                    }
+                    GridView {
+                        id: storeGrid
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        clip: true
+                        cellWidth: Math.floor(width / Math.max(1, Math.floor(width / 260)))
+                        cellHeight: Theme.hit(292)
+                        model: Store.items
+                        onAtYEndChanged: if (atYEnd && count > 0)
+                            Store.next()
+                        delegate: Item {
+                            id: storeCard
+                            required property var modelData
+                            readonly property var folders: Store.foldersOf(modelData.id)
+                            property int file: modelData.files[0]?.index ?? 1
+                            width: storeGrid.cellWidth
+                            height: storeGrid.cellHeight
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.margins: 5
+                                radius: Theme.corner(12)
+                                color: Theme.tile
+                                clip: true
+                                ColumnLayout {
+                                    anchors.fill: parent
+                                    anchors.margins: 8
+                                    spacing: 4
+                                    Image {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 110
+                                        source: storeCard.modelData.preview
+                                        fillMode: Image.PreserveAspectFit
+                                        asynchronous: true
+                                        sourceSize: Qt.size(440, 220)
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: storeCard.modelData.name
+                                        color: Theme.text
+                                        elide: Text.ElideRight
+                                        font.family: Theme.font
+                                        font.pixelSize: Theme.textSize(13)
+                                        font.bold: true
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: I18n.tr("store.by", [storeCard.modelData.author]) + " · " + I18n.tr("store.downloads", [storeCard.modelData.downloads.toLocaleString(I18n.locale, "f", 0)])
+                                        color: Theme.muted
+                                        elide: Text.ElideRight
+                                        font.family: Theme.font
+                                        font.pixelSize: Theme.textSize(11)
+                                    }
+                                    Item {
+                                        Layout.fillHeight: true
+                                    }
+                                    // The file on its own row (names are long), the buttons below it on the right.
+                                    ChoiceCombo {
+                                        Layout.fillWidth: true
+                                        // Narrower than its longest file name: the shown name ends with an ellipsis.
+                                        Layout.minimumWidth: 0
+                                        Layout.maximumWidth: parent.width
+                                        visible: storeCard.modelData.files.length > 1
+                                        Accessible.name: storeCard.modelData.name
+                                        options: storeCard.modelData.files.map(f => ({
+                                                    name: String(f.index),
+                                                    label: f.name
+                                                }))
+                                        current: String(storeCard.file)
+                                        onChosen: name => storeCard.file = Number(name)
+                                    }
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 6
+                                        Item {
+                                            Layout.fillWidth: true
+                                        }
+                                        ActionButton {
+                                            visible: storeCard.folders.length > 0
+                                            text: I18n.tr("store.remove")
+                                            destructive: true
+                                            onClicked: storeCard.folders.forEach(folder => Store.remove(folder))
+                                        }
+                                        ActionButton {
+                                            text: Store.installing === storeCard.modelData.id ? I18n.tr("store.installing") : I18n.tr("store.install")
+                                            enabled: Store.installing === 0 && storeCard.modelData.files.length > 0
+                                            highlighted: true
+                                            onClicked: Store.install(storeCard.modelData.id, storeCard.file)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        ScrollBar.vertical: ScrollBar {}
+                        Text {
+                            anchors.centerIn: parent
+                            visible: storeGrid.count === 0
+                            text: Store.searching ? I18n.tr("store.loading") : I18n.tr("store.empty")
+                            color: Theme.muted
+                        }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: I18n.tr("store.hint")
+                        color: Theme.muted
+                        wrapMode: Text.Wrap
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(11)
                     }
                 }
             }
