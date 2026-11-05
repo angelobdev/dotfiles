@@ -153,7 +153,10 @@ def install(kind, item_id, index):
     if not item or not item.get(f'downloadlink{index}'):
         raise ValueError(tr('store.errors.missing'))
     installed, refused = [], False
-    with tempfile.TemporaryDirectory(prefix='desktop-store-') as folder:
+    # Unpacked next to the icon folders, not in /tmp (memory here): installing is then a rename, not a copy.
+    # The leading dot keeps it out of the theme lists.
+    ICONS.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix='.desktop-store-', dir=ICONS) as folder:
         work = Path(folder)
         archive = work / 'download'
         download(item[f'downloadlink{index}'], archive, item.get(f'downloadmd5sum{index}') or '')
