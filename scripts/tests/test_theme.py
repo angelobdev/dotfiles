@@ -226,6 +226,20 @@ class IconThemeTests(unittest.TestCase):
             self.assertEqual([listed['id'] for listed in theme.icon_themes([root])], ['Sloppy', 'Tidy'])
 
 
+class GsettingsTests(unittest.TestCase):
+    def test_only_values_that_differ_are_set(self):
+        listing = ("org.gnome.desktop.interface color-scheme 'prefer-dark'\n"
+                   "org.gnome.desktop.interface cursor-size 24\n"
+                   "org.gnome.desktop.interface font-name 'Sans 10'\n")
+        def run(command, **_):
+            return mock.Mock(stdout=listing) if command[1] == 'list-recursively' else mock.Mock()
+        merged = dict(GRAPHITE, mode='dark', fonts={'sans': 'Sans', 'size': 11}, system={'cursorSize': 24})
+        with mock.patch('subprocess.run', side_effect=run) as called:
+            theme.apply_gsettings(merged)
+        sets = [call.args[0][3:] for call in called.call_args_list if call.args[0][1] == 'set']
+        self.assertEqual(sets, [['font-name', 'Sans 11']])
+
+
 class CursorTests(unittest.TestCase):
     def test_the_chosen_cursor_reaches_gsettings_and_hyprland(self):
         merged = theme.with_preferences(GRAPHITE, {'cursor': {'theme': 'Bibata', 'size': 32}})

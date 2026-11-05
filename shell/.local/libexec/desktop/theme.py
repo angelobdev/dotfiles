@@ -899,10 +899,25 @@ def apply_vscode(theme):
         write_atomic(VSCODE, updated)
 
 
+# The keys of the schema with their values as gsettings prints them: a string without its quotes.
+def gsettings_values(text):
+    current = {}
+    for line in text.splitlines():
+        parts = line.split(' ', 2)
+        if len(parts) == 3:
+            value = parts[2]
+            if len(value) >= 2 and value[0] == value[-1] == "'":
+                value = value[1:-1].replace("\\'", "'")
+            current[parts[1]] = value
+    return current
+
+
 def apply_gsettings(theme):
+    # One call for the keys and their values; only a value that differs is set, so an apply that changes one
+    # setting writes one key (each write makes running GTK apps re-read their settings).
     try:
-        keys = set(subprocess.run(['gsettings', 'list-keys', SCHEMA], capture_output=True, text=True,
-                                  check=True, timeout=5).stdout.split())
+        current = gsettings_values(subprocess.run(['gsettings', 'list-recursively', SCHEMA], capture_output=True, text=True,
+                                                  check=True, timeout=5).stdout)
     except (OSError, subprocess.SubprocessError):
         return
     fonts = theme.get('fonts', {})
@@ -918,7 +933,7 @@ def apply_gsettings(theme):
         'accent-color': system.get('accentColor'),
     }
     for key, value in values.items():
-        if key in keys and value not in (None, ''):
+        if key in current and value not in (None, '') and current[key] != str(value):
             subprocess.run(['gsettings', 'set', SCHEMA, key, str(value)], check=False, timeout=5)
 
 
