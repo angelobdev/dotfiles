@@ -64,7 +64,8 @@ def apply():
     # Under force_zero_scaling X clients draw in physical pixels, so DPI and cursor size carry the scale.
     resources = {'Xft.dpi': round(96 * scale), 'Xcursor.theme': cursor_theme(), 'Xcursor.size': round(cursor_size() * scale)}
     data = ''.join(f'{key}: {value}\n' for key, value in resources.items())
-    subprocess.run(['xrdb', '-merge'], input=data, text=True, check=True, timeout=10)
+    # No C preprocessor: it rewrites names such as breeze-linux (linux is defined).
+    subprocess.run(['xrdb', '-nocpp', '-merge'], input=data, text=True, check=True, timeout=10)
     result = {'monitor': name, 'scale': scale, **resources}
     # Keep Aseprite in step too, so it fits however it is started (a running Aseprite rewrites its
     # own value when it quits, and the next apply or desktop-aseprite launch corrects it).
