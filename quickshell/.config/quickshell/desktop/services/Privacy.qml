@@ -42,6 +42,10 @@ Singleton {
     // privacy.py watch prints the holders whenever a camera opens or closes (inotify), nothing in between.
     Process {
         id: cameras
+        // What a watcher that keeps failing says reaches qs log instead of nowhere.
+        stderr: SplitParser {
+            onRead: line => console.warn("privacy.py:", line)
+        }
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/privacy.py", "watch"])
         running: true

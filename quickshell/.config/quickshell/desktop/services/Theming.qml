@@ -102,11 +102,12 @@ Singleton {
         query();
     }
     function query() {
-        listing.running = true;
+        // Asked again while they run (a store install, a rescan), they run once more with the new state.
+        listing.request();
         root.refreshPack();
-        fontQuery.running = true;
-        iconQuery.running = true;
-        cursorQuery.running = true;
+        fontQuery.request();
+        iconQuery.request();
+        cursorQuery.request();
     }
     // Commands run one after another, so a wallpaper is applied before it is remembered.
     function run(commands) {
@@ -270,7 +271,7 @@ Singleton {
         }
         onExited: root.refreshPack()
     }
-    Process {
+    CoalescedProcess {
         id: listing
         command: ["python3", root.helper, "list", "--details"]
         stdout: StdioCollector {
@@ -286,43 +287,32 @@ Singleton {
             }
         }
     }
-    // A refresh asked for while one runs is run once more afterwards: the last thumbnails or downloads would
-    // otherwise be missed (setting running on a running Process does nothing).
+    // Asked for again while it runs, it runs once more: the last thumbnails or downloads would otherwise be missed.
     function refreshPack() {
-        if (packQuery.running)
-            packQuery.again = true;
-        else
-            packQuery.running = true;
+        packQuery.request();
     }
-    Process {
+    CoalescedProcess {
         id: packQuery
-        property bool again: false
         command: ["python3", root.helper, "wallpapers"]
         stdout: StdioCollector {
             onStreamFinished: root.pack = root.parse(text, root.pack)
         }
-        onExited: {
-            if (again) {
-                again = false;
-                running = true;
-            }
-        }
     }
-    Process {
+    CoalescedProcess {
         id: fontQuery
         command: ["python3", root.helper, "fonts"]
         stdout: StdioCollector {
             onStreamFinished: root.fonts = root.parse(text, root.fonts)
         }
     }
-    Process {
+    CoalescedProcess {
         id: cursorQuery
         command: ["python3", root.helper, "cursors"]
         stdout: StdioCollector {
             onStreamFinished: root.cursors = root.parse(text, root.cursors)
         }
     }
-    Process {
+    CoalescedProcess {
         id: iconQuery
         command: ["python3", root.helper, "icons"]
         stdout: StdioCollector {

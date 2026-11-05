@@ -144,6 +144,10 @@ Singleton {
     }
     Process {
         id: watcher
+        // What a watcher that keeps failing says reaches qs log instead of nowhere.
+        stderr: SplitParser {
+            onRead: line => console.warn("brightness.py watch:", line)
+        }
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch"])
         running: Config.osdEnabled

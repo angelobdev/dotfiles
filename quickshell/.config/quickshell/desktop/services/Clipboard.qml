@@ -27,12 +27,20 @@ Singleton {
     }
     Process {
         id: textWatcher
+        // What a watcher that keeps failing says reaches qs log instead of nowhere.
+        stderr: SplitParser {
+            onRead: line => console.warn("clipboard.py watch-text:", line)
+        }
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch-text", String(Config.clipboardMaxItems)])
         running: root.collecting
     }
     Process {
         id: imageWatcher
+        // What a watcher that keeps failing says reaches qs log instead of nowhere.
+        stderr: SplitParser {
+            onRead: line => console.warn("clipboard.py watch-image:", line)
+        }
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch-image", String(Config.clipboardMaxItems)])
         running: root.collecting

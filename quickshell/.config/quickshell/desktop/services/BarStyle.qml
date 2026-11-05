@@ -16,29 +16,18 @@ Singleton {
     readonly property color muted: darkText ? Qt.alpha(Theme.accentText, 0.72) : Theme.muted
     readonly property color accent: darkText ? Theme.accentText : Theme.accent
     // A wallpaper change during a measurement is measured again after it (two quick Next wallpaper).
-    property bool pending: false
     function measure() {
-        if (!transparent)
-            return;
-        if (tone.running)
-            pending = true;
-        else
-            tone.running = true;
+        if (transparent)
+            tone.request();
     }
     function toggle() {
         Quickshell.execDetached(["python3", helper, "bar-style", "toggle"]);
     }
     onTransparentChanged: measure()
     Component.onCompleted: measure()
-    Process {
+    CoalescedProcess {
         id: tone
         command: ["python3", root.helper, "tone"]
-        onExited: {
-            if (root.pending) {
-                root.pending = false;
-                root.measure();
-            }
-        }
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
