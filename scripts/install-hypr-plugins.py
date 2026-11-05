@@ -16,6 +16,8 @@ sys.path.insert(0, str(PACKAGING))
 import bundle  # noqa: E402
 from build import PLUGINS, run  # noqa: E402
 
+# The headers' pkg-config file, copied into the hyprpm cache with its prefix pointed there.
+HYPRLAND_PC = Path('/usr/share/pkgconfig/hyprland.pc')
 # Swapping a loaded plugin crashed Hyprland once (dlclose leaves hyprgrass mapped): only a session without them changes them.
 AT_LOGIN = 'The plugins in use come from another build. They are rebuilt at the next login, before they load: log out and back in.'
 
@@ -82,7 +84,7 @@ def main():
     if not (headers / 'share/pkgconfig/hyprland.pc').exists():
         with tempfile.TemporaryDirectory(prefix='dotfiles-hyprpm-') as staging:
             stage = Path(staging)
-            pc = Path('/usr/share/pkgconfig/hyprland.pc').read_text()
+            pc = HYPRLAND_PC.read_text()
             if 'prefix=/usr/include' not in pc:
                 sys.exit('The pkg-config layout differs from the verified layout.')
             (stage / 'hyprland.pc').write_text(pc.replace('prefix=/usr/include', 'prefix=' + str(headers / 'include')))

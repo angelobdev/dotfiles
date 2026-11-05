@@ -40,7 +40,9 @@ packages() { rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort -u; }
 packages >/tmp/packages-before
 before_shell=$(getent passwd "$user" | cut -d: -f7)
 before_auth=$(authselect current --raw)
-before_target=$(systemctl get-default)
+# The container starts without systemd, which the installer brings: until then the target is Fedora's default,
+# the one systemctl reports once it is there (the container has no default.target link of its own).
+before_target=$(command -v systemctl >/dev/null && systemctl get-default || echo graphical.target)
 
 section 'Preview changes nothing'
 before=$(rpm -qa | sort | sha256sum)

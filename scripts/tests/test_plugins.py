@@ -186,6 +186,9 @@ class InstallTests(Home):
         loaded = iter([set(NAMES) if in_use else set(), set(NAMES)])
         (self.cache / 'headersRoot/share/pkgconfig').mkdir(parents=True, exist_ok=True)
         (self.cache / 'headersRoot/share/pkgconfig/hyprland.pc').write_text('')
+        # A reset cache seeds its headers again from the system's pkg-config file, which CI does not have.
+        pc = self.root / 'hyprland.pc'
+        pc.write_text('prefix=/usr/include\n')
         with mock.patch.dict(os.environ, {'HYPRLAND_INSTANCE_SIGNATURE': 'sig'}), mock.patch('os.geteuid', return_value=1000), \
                 mock.patch.object(bundle, 'verify'), mock.patch.object(bundle, 'rpm_version', return_value=RPM), \
                 mock.patch.object(bundle, 'status', return_value=status), \
@@ -193,6 +196,7 @@ class InstallTests(Home):
                 mock.patch.object(installer, 'loaded', side_effect=lambda: next(loaded)), \
                 mock.patch('os.path.samefile', side_effect=lambda a, b: str(a).startswith('/proc/') or SAMEFILE(a, b)), mock.patch('shutil.which', return_value='/usr/bin/Hyprland'), \
                 mock.patch.object(installer, 'run', side_effect=run), mock.patch('subprocess.check_output', return_value=''), \
+                mock.patch.object(installer, 'HYPRLAND_PC', pc), \
                 mock.patch('builtins.print'):
             try:
                 installer.main()
