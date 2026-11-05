@@ -58,6 +58,9 @@ Overlay {
         showDotAndDotDot: false
         showHidden: false
         showOnlyReadable: true
+        // A recreated picker brings back its selection: the row is highlighted again, so Enter opens it.
+        onStatusChanged: if (status === FolderListModel.Ready && root.selectedUrl.toString() !== "" && files.currentIndex < 0)
+            files.currentIndex = indexOf(root.selectedUrl)
     }
     Process {
         id: operation

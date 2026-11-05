@@ -1018,6 +1018,8 @@ Overlay {
                         InputField {
                             id: storeSearch
                             Layout.fillWidth: true
+                            // A recreated panel shows the search its results are for.
+                            text: Store.query
                             placeholderText: Store.kind === "cursors" ? I18n.tr("store.searchCursors") : I18n.tr("store.searchIcons")
                             onAccepted: Store.search(Store.kind, text)
                         }
