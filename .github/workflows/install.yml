@@ -8,6 +8,10 @@ on:
       - scripts/install-desktop.py
       - scripts/install-tui.py
       - scripts/install/**
+      - scripts/install-hypr-plugins.py
+      - scripts/hyprpm/bundle.py
+      - scripts/stow.py
+      - scripts/tablet-auth.sh
       - scripts/tests/install-container.sh
   pull_request:
     paths:
@@ -15,6 +19,10 @@ on:
       - scripts/install-desktop.py
       - scripts/install-tui.py
       - scripts/install/**
+      - scripts/install-hypr-plugins.py
+      - scripts/hyprpm/bundle.py
+      - scripts/stow.py
+      - scripts/tablet-auth.sh
       - scripts/tests/install-container.sh
   workflow_dispatch:
 
