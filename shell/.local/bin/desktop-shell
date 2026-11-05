@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 config="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/desktop"
+# Quickshell's crash handler relaunches a crashed shell by itself and opens a report window. It crashed on exit
+# (teardown bugs of 0.3.2), so every restart raced its relaunch for the polkit agent and the notification
+# server. The supervisor below restarts the shell instead; core dumps stay in coredumpctl.
+export QS_DISABLE_CRASH_HANDLER=1
 # Present after `stop`: the supervisor leaves the shell off until `start` or `restart`.
 stopped="${XDG_RUNTIME_DIR:-/tmp}/desktop-shell.stopped"
 # Quickshell's own instance list: after a crash its handler relaunches the shell under another command line,

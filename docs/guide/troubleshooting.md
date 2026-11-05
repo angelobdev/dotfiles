@@ -26,6 +26,8 @@ journalctl --user -b -t desktop-shell   # the shell's supervisor and the lock
 
 **The desktop comes back bare after a crash.** `start-hyprland` restarts Hyprland with `--safe-mode`: no user config, no plugins, no shell. Save anything open and log in again. Reports are in `~/.cache/hyprland/` and `coredumpctl list`.
 
+**The bar disappears for a moment.** The shell stopped and its supervisor (`desktop-shell supervise`) started it again within a few seconds. Quickshell's own crash handler is off (`QS_DISABLE_CRASH_HANDLER`): it relaunched the shell by itself, racing the supervisor and `desktop-shell restart` for the polkit agent and the notification server, and opened a report window. `coredumpctl list quickshell` keeps the crashes, `journalctl --user -b -t desktop-shell` the restarts.
+
 **Do not swap a plugin inside a running session.** `hyprctl plugin unload` and `load` crashed the compositor here. To try a build, replace its file with `install`, which leaves the running copy alone, and log in again; [the verification log](../development/verification-log.md#tablet-follow-ups-2026-10-30) has the details.
 
 **A QML edit does not show up.** Look for "Reloading configuration" in `qs log -p ~/.config/quickshell/desktop`. If it is missing, make an in-place change to `shell.qml`, as [Conventions](../development/conventions.md) describes.

@@ -22,29 +22,47 @@ end
 -- *** BINDS *** --
 
 -- Window switcher (panels/WindowSwitcher.qml). Alt + Tab opens it on the previous window and enters a submap
--- that holds Tab, Shift + Tab, Return, Escape and the Alt release while it is open; the app keeps the keyboard.
+-- that holds the keys while it is open; the app keeps the keyboard. Tab / Shift + Tab or the arrows move,
+-- releasing Alt or Return picks, Escape cancels, and any other key closes it too, so the submap can never stay.
+-- A release bind on Alt_L never fired (Alt is no longer a modifier by then), so the release is read from the
+-- key events: keycode 64 is the left Alt (XKB keycodes are evdev + 8; the right one is AltGr here).
+local switching = false
 local function switcher(action)
     return hl.dsp.exec_cmd(shell .. " switcher " .. action)
 end
 local function switcher_end(action)
     return function()
+        switching = false
         hl.dispatch(hl.dsp.submap("reset"))
         hl.dispatch(switcher(action))
     end
 end
+local commit_on_release = switcher_end("commit")
+hl.on("input.keyboard.key", function(keycode, _, state)
+    if switching and keycode == 64 and state == 0 then
+        commit_on_release()
+    end
+end)
 hl.define_submap("switcher", function()
     hl.bind("ALT + Tab", switcher("next"), { repeating = true })
     hl.bind("ALT + SHIFT + Tab", switcher("previous"), { repeating = true })
-    hl.bind("ALT + Alt_L", switcher_end("commit"), { release = true, transparent = true })
-    hl.bind("ALT + Return", switcher_end("commit"))
-    hl.bind("ALT + Escape", switcher_end("cancel"))
-    hl.bind("Escape", switcher_end("cancel"))
+    hl.bind("Right", switcher("next"), { repeating = true, ignore_mods = true })
+    hl.bind("Left", switcher("previous"), { repeating = true, ignore_mods = true })
+    hl.bind("Return", switcher_end("commit"), { ignore_mods = true })
+    hl.bind("Escape", switcher_end("cancel"), { ignore_mods = true })
+    -- Modifiers pressed on the way (Shift for Shift + Tab) are not "any other key".
+    for _, key in ipairs({ "Shift_L", "Shift_R", "Alt_L", "Control_L", "Control_R", "Super_L" }) do
+        hl.bind(key, hl.dsp.no_op(), { ignore_mods = true })
+    end
+    hl.bind("catchall", switcher_end("cancel"))
 end)
 bind("ALT + Tab", function()
+    switching = true
     hl.dispatch(switcher("next"))
     hl.dispatch(hl.dsp.submap("switcher"))
 end, "Switch windows")
 bind("ALT + SHIFT + Tab", function()
+    switching = true
     hl.dispatch(switcher("previous"))
     hl.dispatch(hl.dsp.submap("switcher"))
 end, "Switch windows backwards")

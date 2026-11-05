@@ -31,7 +31,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + B` | Browser (`zen-browser`, from the opt-in `apps` profile; bound in `local.lua`) |
 | `Super + Shift + Space` | 1Password quick access (local override) |
 | `Super + Enter` | Kitty |
-| `Alt + Tab` / `Alt + Shift + Tab` | Window switcher: thumbnails of the windows from the most recently used, on the focused monitor; Tab moves on, releasing `Alt` (or `Return`) focuses the selected one, `Esc` or a click outside cancels, a click on a thumbnail picks it. Windows on special workspaces (the assistant console) are left out |
+| `Alt + Tab` / `Alt + Shift + Tab` | Window switcher: thumbnails of the windows from the most recently used, on the focused monitor; Tab, Shift + Tab or the arrows move, releasing the left `Alt` (or `Return`) focuses the selected one and moves the pointer onto it, `Esc`, any other key or a click outside cancels, a click on a thumbnail picks it. Windows on special workspaces (the assistant console) are left out |
 | `Super + A` | AI assistant: the drop-down console with Claude Code (hold `Space` to dictate); a click or tap outside closes it |
 | `Super + Shift + A` | Move the active window into the assistant console, or back out |
 | `Super + Q` | Close window |

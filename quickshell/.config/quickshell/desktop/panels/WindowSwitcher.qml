@@ -69,12 +69,16 @@ PanelWindow {
         }
         return false;
     }
+    // Focused through Hyprland once the switcher surface is gone: unmapping it makes Hyprland refocus the
+    // window under the pointer (follow_mouse), which took the keyboard back from a window activated before.
+    // The dispatcher also moves the pointer onto the window, so that refocus agrees with it.
     function commit(index) {
         const target = windows[index];
         close();
-        if (!target?.wayland)
+        if (!target?.address)
             return false;
-        target.wayland.activate();
+        focusLater.address = target.address.startsWith("0x") ? target.address : "0x" + target.address;
+        focusLater.restart();
         return true;
     }
     function close() {
@@ -104,6 +108,12 @@ PanelWindow {
             if (address)
                 root.recent = [address].concat(root.recent.filter(a => a !== address)).slice(0, 64);
         }
+    }
+    Timer {
+        id: focusLater
+        property string address: ""
+        interval: 60
+        onTriggered: Hyprland.dispatch("hl.dsp.focus({ window = \"address:" + address + "\" })")
     }
     // A switcher left open (the Alt release lost to a lock screen, say) commits by itself instead of staying up.
     Timer {
