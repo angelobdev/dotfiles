@@ -49,7 +49,7 @@ local function refresh_choices()
 end
 
 -- On battery when a battery-powered machine has no mains supply online; anything else counts as mains.
-local function on_battery()
+local function scan_battery()
     local list = io.popen("ls /sys/class/power_supply 2>/dev/null")
     if not list then
         return false
@@ -72,6 +72,17 @@ local function on_battery()
     end
     list:close()
     return mains and not online
+end
+
+-- The power source, read once (a popen blocks the compositor) and then told by the shell on every change, so
+-- rotations and monitor changes read no files.
+local battery = nil
+
+local function on_battery()
+    if battery == nil then
+        battery = scan_battery()
+    end
+    return battery
 end
 
 local function refresh()
@@ -235,8 +246,14 @@ function desktop_refresh(source, choice)
     end
 end
 
--- Called by the shell when the power source changes: the other source's choice, if it differs.
-function desktop_refresh_power()
+-- Called by the shell when the power source changes ("battery" or "ac"; read again without one): the other
+-- source's choice, if it differs.
+function desktop_refresh_power(source)
+    if source == "battery" or source == "ac" then
+        battery = source == "battery"
+    else
+        battery = scan_battery()
+    end
     if panel and (refresh() or "") ~= applied_refresh then
         apply(current)
     end

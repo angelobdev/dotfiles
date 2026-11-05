@@ -113,7 +113,8 @@ Singleton {
     Connections {
         target: UPower
         function onOnBatteryChanged() {
-            Quickshell.execDetached(["hyprctl", "eval", "desktop_refresh_power()"]);
+            // The source itself, so tablet.lua reads no files on the compositor thread.
+            Quickshell.execDetached(["hyprctl", "eval", "desktop_refresh_power(\"" + (UPower.onBattery ? "battery" : "ac") + "\")"]);
         }
     }
     FileView {
