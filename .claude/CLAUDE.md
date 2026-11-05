@@ -31,8 +31,9 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 ./scripts/check.sh              # bash -n, Python compile, i18n tests, doc links, cc, desktop-file-validate, qmllint, Lua tests, Hyprland --verify-config
 ./scripts/stow.py dry-run       # then: ./scripts/stow.py apply (needed after ADDING files)
 ./scripts/install-desktop.py    # preview of a full install (dry-run by default; `apply` does it)
-./scripts/install-tui.py        # the same, guided: profiles, firmware, review, then apply
-./scripts/install-desktop.py pins   # AUR commits newer than the Arch pins (--update writes them into the manifest)
+./scripts/install-tui.py        # the same, guided: profiles, firmware, review, then apply; --updates: the updates screen
+desktop-manager [updates]      # that guided installer from any terminal (shell/.local/bin)
+./scripts/install-desktop.py pins   # commits newer than the pins, AUR packages and zsh clones (--update writes them into the manifest)
 hyprctl configerrors            # live Hyprland config state
 qs log -p ~/.config/quickshell/desktop | tail   # live shell reload result
 ~/.local/bin/desktop-shell status               # JSON snapshot of every service

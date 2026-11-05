@@ -10,7 +10,7 @@ Verified versions: Hyprland 0.57.1, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 | --- | --- |
 | `hypr` | `~/.config/hypr/hyprland.lua` and Lua modules |
 | `quickshell` | Bar, launcher, controls, notifications, power menu, Polkit agent, and `i18n/it_IT.json` / `i18n/en_US.json` catalogs |
-| `shell` | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper,electron,portal-picker,steam,gamescope,ai,updates}`, the `desktop-updates` systemd user timer, and Python helpers for wallpapers, brightness, clipboard, recording, Bluetooth, EDS calendars, and shared translations (`i18n.py`) |
+| `shell` | `~/.local/bin/desktop-{shell,session,power,theme,wallpaper,electron,portal-picker,steam,gamescope,ai,updates,manager}`, the `desktop-updates` systemd user timer, and Python helpers for wallpapers, brightness, clipboard, recording, Bluetooth, EDS calendars, and shared translations (`i18n.py`) |
 | `hypridle` | Timers and lock/suspend coordination |
 | `hyprlock` | Wayland lock screen with PAM and fprintd fingerprints |
 | `hyprpaper` | Fedora 44 night wallpaper on every monitor |
@@ -69,9 +69,9 @@ After the reboot, sign in at GDM. A terminal opens by itself and runs `install-d
 
 ### Guided installation
 
-`scripts/install-tui.py` runs the same steps behind a few terminal screens; it needs nothing beyond Python, so it also works on the console of a fresh Server install.
+`scripts/install-tui.py` runs the same steps behind a few terminal screens; it needs nothing beyond Python, so it also works on the console of a fresh Server install. Once the desktop is there, it also [keeps it updated](#checking-for-updates), and `desktop-manager` opens it from any terminal (`desktop-manager updates` on the updates screen; other arguments, such as `--profiles`, go to it as they are).
 
-1. **Welcome**: the system, the model, the free space and the state of the [Hyprland plugins](plugins.md#verification-and-updates). Inside Hyprland, while the first login after an install has not finished, it also offers to finish it (`post`). **Remove the desktop** goes straight to a review of the [removal](#removal).
+1. **Welcome**: the system, the model, the free space and the state of the [Hyprland plugins](plugins.md#verification-and-updates). Inside Hyprland, while the first login after an install has not finished, it also offers to finish it (`post`). **Check for updates** opens the [updates screen](#checking-for-updates); **Remove the desktop** goes straight to a review of the [removal](#removal).
 2. **Profiles**: each one says whether it is `installed`, partly installed (`3/12`, with what is missing) or not, from its packages, swaps and Stow links. On a desktop already set up the installed profiles start on, on a fresh system the defaults do, and `--profiles` wins over both. `Space` toggles one, `d` picks the defaults, `i` the installed ones; `core` always stays on. Turning off an installed profile removes nothing. The bottom shows what the highlighted profile adds, read from the manifest.
 3. **Vendor firmware**: only on a model whose firmware is still missing (see `--firmware` above). Type the directory with a copy (`Tab` completes it) or leave it empty to go on without.
 4. **Review**: the preview of every step, the warnings, and the equivalent `install-desktop.py` command. `Enter` opens a step's list, `r` checks again, `a` applies after a confirmation.
@@ -80,6 +80,22 @@ Nothing changes before `a`. Then the installer leaves the screens and runs in th
 
 On Fedora Server the guided partitioning stops `/` at 15 GiB, which is not enough. Choose custom partitioning, or grow it afterwards: the installer warns under 30 GiB free and prints the command.
 
+### Checking for updates
+
+**Check for updates** in the guided installer (or `desktop-manager updates`, which opens it directly) shows what is newer than the desktop, one line per source, for the profiles the installer applied (from its record; without one, the installed profiles):
+
+| Line | What it checks | What applying it does |
+| --- | --- | --- |
+| System packages | dnf, or `checkupdates` on Arch: the same list as the update icon in the bar | the installer's `upgrade` step |
+| Flatpak apps | `flatpak remote-ls --updates` | `flatpak update`: the system apps with sudo, your own as you |
+| AUR packages (Arch) | the AUR's latest commit of each pinned PKGBUILD, and the version it builds | the new commit and version go into the manifest, then the `aur` step builds them |
+| zsh plugins | each clone's latest release tag (`track = 'tags'` in the manifest, as zsh-autocomplete) or the head of its branch (Powerlevel10k, whose releases stopped) | the new commit goes into the manifest, then the `clones` step checks it out |
+| Repository | how far this repository is behind its upstream branch, after a `git fetch` that never asks for a password | `git merge --ff-only`, then the installer starts again on this screen, from the new version |
+| Desktop | what the installed profiles still need from the manifest (after a pull, say) | nothing here: **Install or update the desktop** applies it, after its own review |
+| Hyprland plugins | the state of the plugin builds | nothing: they are replaced at a login, before they load |
+
+`Space` checks a line, `Enter` shows its details (the packages, the new commits and the links to review their changes), `r` checks again, `a` applies the checked lines after a confirmation, with one sudo prompt for the whole run. Everything there is to apply starts checked but the repository: a pull goes alone and first, because it can move the pins, and the rest is checked again after it. The repository is offered only for a fast-forward, on a clean tree with no commits of its own; a clone with local changes keeps its pin, and the details say which files to look at. New pins change `scripts/install/manifest.toml`, which stays for you to commit, so the other machines get the same ones. From the command line, `./scripts/install-desktop.py pins` lists the newer pins of every distribution with their links, and `pins --update` writes them into the manifest.
+
 ### AUR packages (Arch)
 
 Zen Browser, 1Password and Visual Studio Code are not in Arch's repositories. The manifest pins each AUR PKGBUILD to a commit and names the version that commit builds. The `aur` step checks the commit out in `~/.cache/dotfiles/aur/<package>`, imports the key the sources are signed with when the manifest names one (1Password's; the PKGBUILD's `validpgpkeys` still decides which key may sign), and builds and installs the package with `makepkg` as your user, which asks sudo only for pacman. The preview needs no network: a package is pending while it is missing or at another version than the pinned one. If the commit builds another version than the manifest says, the step stops before building.
@@ -87,12 +103,13 @@ Zen Browser, 1Password and Visual Studio Code are not in Arch's repositories. Th
 To update them:
 
 ```sh
+./scripts/install-tui.py --updates                # the AUR packages line of the updates screen, or by hand:
 ./scripts/install-desktop.py pins                 # newer AUR commits, the version each builds, a link to the PKGBUILD changes
 ./scripts/install-desktop.py pins --update        # once you reviewed them: the new commits go into manifest.toml
 ./scripts/install-desktop.py apply --profiles core,hardware,plugins,apps
 ```
 
-`pins` reads the manifest, not the system, so it works from Fedora as well. Uninstall removes the AUR packages with the others, and the checkouts.
+`pins` reads the manifest, not the system, so it works from Fedora as well; it covers the [zsh plugin clones](../features/shell.md) too. Uninstall removes the AUR packages with the others, and the checkouts.
 
 ## Updates
 
