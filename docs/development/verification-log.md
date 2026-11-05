@@ -736,3 +736,17 @@ Measured on battery, desktop idle, with `upower` energy-rate averages over 60 s 
 - Refresh per power source: the old single choice is read as both; `desktop_refresh("ac", …)` on battery saved the choice without touching the display, and `desktop_refresh_power()` applies only a choice that differs. The shell calls it when UPower's on-battery state changes; the user plugged and unplugged the charger and the display followed.
 - Power Saver below 20%: on by default; it switches once per discharge (also after a shell restart, it does not switch again once it did), the notification then says so instead of offering the button, and the charger brings the previous profile back if Power Saver is still on. The real discharge is for the user to see.
 - Fixed while there: the agent dot's `smooth` property overrode `Item.smooth` (qmllint `property-override`); renamed `animated`.
+
+## Code review issues, 2026-11-05
+
+Sixty findings of a code review, tracked as issues on the GitLab mirror; 59 fixed, one per commit (`Closes #N`), the VRR one (#40) waits for an external monitor.
+
+- Checks: `check.sh` passes (Python suites, 78 QML tests, the new `test_tablet.lua`, `test_binds.py`, `test_panels.py`, `test_network.py`); every new test was run against the code before its fix and failed.
+- Battery and Idle are created at startup again (the Keep awake inhibitor ran right after a restart without opening a panel).
+- Theme names: a cursor name carrying Lua renders as one quoted string (`lua` loads it, `glassStyle` keeps its value); the eight files rendered for the current theme are byte-identical before and after.
+- `theme.py` split into commands: `list`, `fonts`, `icons`, `cursors`, `wallpapers`, `tone`, `render`, the checks and every `--help` print the same; `apply` writes identical state files.
+- Installer: `dry-run --uninstall` went from 48 dnf/rpm runs (15 s) to 21 (5 s) with the same output; the autostart line for `~/.dotfiles` is unchanged, an odd path passes `desktop-file-validate`.
+- `ScriptModel` lists, checked in an isolated offscreen Quickshell: a reorder with an insert created one delegate and updated the others, a scrolled grid kept its position after an append.
+- `tablet.lua` reads the power source once (popen count with a stub `hl`: 1 instead of one per rotation).
+- Not seen on screen yet: the panels changed or split (Theming pages, Network sections, launcher, store, clipboard, polkit prompt on another monitor), the on-screen keyboard built on first show, a screen share, a real discharge.
+- Shell restarts from Claude's sandbox gave the shell `NoNewPrivs`, so polkit refused to authenticate ("needs to be setuid root"); restarts now go through Hyprland (`hyprctl eval "hl.dispatch(hl.dsp.exec_cmd(...))"`). One restart left the shell down about 6 s when a new file missed an import; the supervisor brought it back.
