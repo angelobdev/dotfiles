@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import platform
 import pwd
+import re
 import shutil
 import subprocess
 import sys
@@ -379,10 +380,21 @@ def boot_pending(plan):
     return items
 
 
+# One Exec= argument, by the Desktop Entry rules: plain ones as they are; others quoted, with ", `, $ and \ escaped
+# by a backslash that the string escaping doubles again, and % doubled (it starts a field code).
+def exec_argument(text):
+    if re.fullmatch(r'[A-Za-z0-9_./,:=+-]+', text):
+        return text
+    # The quoting rule first, then the string escaping, which doubles every backslash.
+    quoted = ''.join('\\' + char if char in '"`$\\' else char for char in text).replace('\\', '\\\\')
+    return '"' + quoted.replace('%', '%%') + '"'
+
+
 def autostart_entry(plan):
     profiles = ','.join(plan.profiles)
+    command = ['kitty', '--hold', str(REPO / 'scripts/install-desktop.py'), 'post', '--profiles', profiles]
     return ('[Desktop Entry]\nType=Application\nName=Finish the desktop installation\n'
-            f'Exec=kitty --hold {REPO / "scripts/install-desktop.py"} post --profiles {profiles}\n')
+            f'Exec={" ".join(exec_argument(part) for part in command)}\n')
 
 
 def boot_apply(plan, items):

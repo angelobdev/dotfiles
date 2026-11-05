@@ -1043,6 +1043,18 @@ class RemovalTests(unittest.TestCase):
         self.assertEqual(fedora.base_packages(later), {'a.x86_64', 'b.noarch'})
 
 
+class AutostartTests(unittest.TestCase):
+    def test_exec_arguments_follow_the_desktop_entry_rules(self):
+        self.assertEqual(installer.exec_argument('/home/a/.dotfiles/scripts/x.py'), '/home/a/.dotfiles/scripts/x.py')
+        # Quoting escapes " ` $ \\ with a backslash, the string escaping doubles every backslash, % is doubled.
+        self.assertEqual(installer.exec_argument('/my "dots" $x 100%\\'), '"/my \\\\"dots\\\\" \\\\$x 100%%\\\\\\\\"')
+
+    def test_the_entry_names_the_repository(self):
+        current = installer.Plan(fake_distro(), '45', TABLE, [], ('core', 'plugins'))
+        self.assertIn(f'Exec=kitty --hold {installer.REPO}/scripts/install-desktop.py post --profiles core,plugins\n',
+                      installer.autostart_entry(current))
+
+
 class CompositorGuardTests(unittest.TestCase):
     def warnings(self, candidates, profiles=('core', 'plugins'), repos_missing=False):
         distro = fake_distro()
