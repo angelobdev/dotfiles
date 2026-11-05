@@ -287,12 +287,39 @@ class CursorTests(unittest.TestCase):
                 self.assertEqual((root / 'icons/pack-light/cursors/left_ptr').read_bytes(), b'light')
                 self.assertFalse((root / 'icons/pack-dark').exists())
                 self.assertEqual(theme.cursor_themes([root / 'icons']), [{'id': 'pack-light', 'name': 'Pack Light'}])
+                # Installed meanwhile (the other of two fetches): nothing more to do.
+                theme.fetch_cursor('pack-light')
+                self.assertEqual(fetched.call_count, 1)
+                import shutil
+                shutil.rmtree(root / 'icons/pack-light')
                 theme.fetch_cursor('pack-light')
                 self.assertEqual(fetched.call_count, 1)  # The archive is kept.
                 # A kept archive that no longer matches is fetched again (download() checks the new one).
+                shutil.rmtree(root / 'icons/pack-light')
                 packs['pack-light']['sha256'] = '0' * 64
                 theme.fetch_cursor('pack-light')
                 self.assertEqual(fetched.call_count, 2)
+                self.assertEqual(sorted(path.name for path in (root / 'icons').iterdir()), ['pack-light'])
+
+    def test_a_second_fetch_waits_for_the_first_and_finds_it_done(self):
+        import fcntl
+        import threading
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            packs = {'pack': {'name': 'Pack', 'file': 'p.tar', 'member': 'pack', 'url': 'https://example.com/p.tar', 'sha256': '0' * 64}}
+            with mock.patch.object(theme, 'CURSOR_PACKS', packs), mock.patch.object(theme, 'USER_ICONS', root / 'icons'), \
+                    mock.patch.object(theme, 'CURSOR_DOWNLOADS', root / 'cache'), mock.patch.object(theme, 'download') as fetched:
+                (root / 'cache').mkdir()
+                with open(root / 'cache/.lock', 'a') as first:
+                    fcntl.flock(first, fcntl.LOCK_EX)
+                    second = threading.Thread(target=theme.fetch_cursor, args=('pack',))
+                    second.start()
+                    second.join(0.3)
+                    self.assertTrue(second.is_alive())  # Waiting for the first.
+                    (root / 'icons/pack/cursors').mkdir(parents=True)
+                second.join(5)
+                self.assertFalse(second.is_alive())
+                fetched.assert_not_called()
 
     def test_only_valid_cursor_choices_are_saved(self):
         with tempfile.TemporaryDirectory() as folder, mock.patch.object(theme, 'STATE', Path(folder)):

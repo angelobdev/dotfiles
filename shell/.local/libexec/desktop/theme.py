@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import urllib.request
 
 HOME = Path.home()
@@ -583,16 +584,26 @@ CURSOR_DOWNLOADS = Path(os.environ.get('XDG_CACHE_HOME') or HOME / '.cache') / '
 
 
 def fetch_cursor(name):
-    # The archive is kept, so the second Phinger variant needs no download. Only the pack's own folder is
-    # unpacked, with tarfile's data filter: no links out of it, no devices, no absolute paths.
+    # One fetch at a time: the one apply starts at login and one from the panel would share the archive.
+    CURSOR_DOWNLOADS.mkdir(parents=True, exist_ok=True)
+    with open(CURSOR_DOWNLOADS / '.lock', 'a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        # Installed by the other one while this one waited.
+        if (USER_ICONS / name / 'cursors').is_dir():
+            return
+        unpack_cursor(name)
+
+
+def unpack_cursor(name):
+    # The archive is kept, so the other variant of a pack (macOS, macOS White) needs no download. Only the pack's
+    # own folder is unpacked, with tarfile's data filter: no links out of it, no devices, no absolute paths.
     pack = CURSOR_PACKS[name]
     archive = CURSOR_DOWNLOADS / pack['file']
     if not archive.is_file() or hashlib.sha256(archive.read_bytes()).hexdigest() != pack['sha256']:
-        archive.parent.mkdir(parents=True, exist_ok=True)
         download(pack, archive)
-    staging = USER_ICONS / f'.{name}.unpacking'
-    shutil.rmtree(staging, ignore_errors=True)
-    staging.mkdir(parents=True)
+    # A folder of its own, hidden from the theme lists (a name starting with a dot is no theme name).
+    USER_ICONS.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(dir=USER_ICONS, prefix=f'.{name}.'))
     try:
         with tarfile.open(archive) as source:
             prefix = pack['member'].strip('/')
