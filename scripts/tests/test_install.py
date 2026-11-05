@@ -528,7 +528,20 @@ class RecordTests(unittest.TestCase):
         with mock.patch.object(installer, 'login_shell', return_value='/usr/bin/zsh'):
             installer.shell_remember(plan(fake_distro()), ['/usr/bin/zsh'], record)
         installer.files_remember(plan(fake_distro()), ['/etc/x'], record)
-        self.assertEqual(record, {'login_shell': '/bin/bash', 'files': {'/etc/x': None}})
+        self.assertEqual({key: record[key] for key in ('login_shell', 'files')}, {'login_shell': '/bin/bash', 'files': {'/etc/x': None}})
+        # What apply writes now, so a later manifest change does not make it look edited.
+        self.assertEqual(record['written'], {'/etc/x': installer.text_digest('x\n')})
+
+    def test_a_file_from_an_older_manifest_is_still_ours(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'x'
+            path.write_text('old content\n')
+            table = {**TABLE, 'core': {**TABLE['core'], 'files': [{'path': str(path), 'content': 'new content\n'}]}}
+            record = {'files': {str(path): None}, 'written': {str(path): installer.text_digest('old content\n')}}
+            current = installer.Plan(fake_distro(), '45', table, [], ('core',), None, record)
+            self.assertEqual(installer.changed_files(current), ([str(path)], []))
+            path.write_text('edited by hand\n')
+            self.assertEqual(installer.changed_files(current), ([], [str(path)]))
 
     def test_the_record_is_written_before_the_step_runs(self):
         self.system(True)
@@ -817,6 +830,18 @@ class FirmwareTests(unittest.TestCase):
 
     def plan(self, firmware=None):
         return installer.Plan(fake_distro(), '45', {'hardware': {'firmware': [self.item]}}, [], ('hardware',), firmware)
+
+    def test_only_the_blob_apply_put_there_is_removed(self):
+        self.target.parent.mkdir(parents=True)
+        self.target.write_bytes(self.blob)
+        current = self.plan()._replace(record={'firmware': {str(self.target): False, str(self.base / 'gone.bin'): False}})
+        current.distro.owned.return_value = False
+        self.assertEqual(installer.unfirmware_pending(current), [str(self.target)])
+        current.distro.owned.return_value = True  # A package ships it now.
+        self.assertEqual(installer.unfirmware_pending(current), [])
+        current.distro.owned.return_value = False
+        self.target.write_bytes(b'replaced since')
+        self.assertEqual(installer.unfirmware_pending(current), [])
 
     def test_the_vendor_file_is_found_by_hash_whatever_its_name(self):
         self.assertEqual(installer.firmware_source(self.plan(str(self.base)), self.item), self.vendor)

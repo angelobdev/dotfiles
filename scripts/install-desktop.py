@@ -473,7 +473,16 @@ def packages_remember(plan, items, record):
     keep(record, 'packages', items)
 
 
+def text_digest(text):
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+
 def files_remember(plan, items, record):
+    # What apply is about to write, by digest: a later manifest change must not make it look edited by hand.
+    written = record.setdefault('written', {})
+    for item in merged(plan, 'files'):
+        if item['path'] in items:
+            written[item['path']] = text_digest(item['content'].lstrip())
     files = record.setdefault('files', {})
     for path in items:
         if path not in files:
@@ -817,14 +826,16 @@ def written_files(plan):
 
 def changed_files(plan):
     # Recorded files apply would undo, split by whether they still hold what apply wrote or were edited since.
-    written, ours, edited = written_files(plan), [], []
+    # What apply wrote is told by its digest in the record; records from before it compare with the manifest.
+    written, digests, ours, edited = written_files(plan), plan.record.get('written', {}), [], []
     for path, before in plan.record.get('files', {}).items():
         try:
             now = read_or_none(path)
         except OSError:
             continue
         if now != before:
-            (ours if now == written.get(path) else edited).append(path)
+            mine = now is not None and (text_digest(now) == digests[path] if path in digests else now == written.get(path))
+            (ours if mine else edited).append(path)
     return ours, edited
 
 
@@ -842,7 +853,11 @@ def unfiles_apply(plan, paths):
 
 
 def unfirmware_pending(plan):
-    return [target for target, existed in plan.record.get('firmware', {}).items() if not existed and Path(target).exists()]
+    # Only a blob still as apply put it: the manifest's file, by hash, that no package has taken over since.
+    named = {item['target']: item for item in merged(every_profile(plan), 'firmware')}
+    return [target for target, existed in plan.record.get('firmware', {}).items()
+            if not existed and target in named and Path(target).is_file()
+            and sha256(target) == named[target]['sha256'] and not plan.distro.owned(target)]
 
 
 def unfirmware_apply(plan, targets):
