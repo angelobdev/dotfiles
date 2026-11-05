@@ -126,8 +126,10 @@ Singleton {
                 stop();
         }
     }
+    // Every 3 s while the controls are shown. At rest only DDC monitors are read (for changes made with their own
+    // buttons), every 30 s: each read starts python3 and ddcutil and holds the I2C bus for up to seconds.
     Timer {
-        interval: 3000
+        interval: root.active ? 3000 : 30000
         repeat: true
         running: root.active || (Config.osdEnabled && root.monitors.some(m => m.available && m.backend?.type === "ddc"))
         onTriggered: root.refresh()
