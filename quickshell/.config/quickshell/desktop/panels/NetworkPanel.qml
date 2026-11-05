@@ -309,7 +309,11 @@ Overlay {
                                 elide: Text.ElideRight
                             }
                             Repeater {
-                                model: deviceRow.modelData.networks.values.filter(n => n.name.toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
+                                // Rows follow their network: a reorder while scanning moves them instead of recreating
+                                // every row, which lost the keyboard focus and a press in progress.
+                                model: ScriptModel {
+                                    values: deviceRow.modelData.networks.values.filter(n => n.name.toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
+                                }
                                 RowLayout {
                                     id: networkRow
                                     required property var modelData

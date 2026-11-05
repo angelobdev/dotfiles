@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 import ".."
 import "../components"
 import "../services"
@@ -10,6 +11,7 @@ Overlay {
     panelName: "clipboard"
     dialog: true
     property bool confirmClear: false
+    readonly property var shown: Clipboard.entries.filter(e => e.preview.toLowerCase().includes(search.text.toLowerCase()))
     onOpened: {
         confirmClear = false;
         search.clear();
@@ -70,8 +72,8 @@ Overlay {
                 onTextChanged: clips.currentIndex = 0
                 Keys.onDownPressed: clips.currentIndex = Math.min(clips.count - 1, clips.currentIndex + 1)
                 Keys.onUpPressed: clips.currentIndex = Math.max(0, clips.currentIndex - 1)
-                onAccepted: if (clips.model[clips.currentIndex])
-                    Clipboard.act("copy", clips.model[clips.currentIndex].id)
+                onAccepted: if (root.shown[clips.currentIndex])
+                    Clipboard.act("copy", root.shown[clips.currentIndex].id)
             }
             ListView {
                 id: clips
@@ -79,7 +81,11 @@ Overlay {
                 Layout.fillHeight: true
                 clip: true
                 spacing: 4
-                model: Clipboard.entries.filter(e => e.preview.toLowerCase().includes(search.text.toLowerCase()))
+                // Keyed by entry: a new clip or a deleted one keeps the list where it is.
+                model: ScriptModel {
+                    values: root.shown
+                    objectProp: "id"
+                }
                 delegate: RowLayout {
                     required property var modelData
                     required property int index

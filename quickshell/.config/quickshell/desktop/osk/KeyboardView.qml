@@ -419,11 +419,17 @@ Rectangle {
             }
             // Emoji: recently used first, then all of them; a tap types one into the focused field.
             ColumnLayout {
+                id: emojiPage
+                // The recent ones as the page opened: a tap moves its emoji to the front, which rebuilt the grid
+                // and sent it back to the top after every emoji typed from further down.
+                property var recent: []
                 anchors.fill: parent
                 visible: Keyboard.page === "emoji"
                 spacing: root.spacing
-                onVisibleChanged: if (visible)
-                    Emoji.load()
+                onVisibleChanged: if (visible) {
+                    Emoji.load();
+                    recent = Emoji.recent.slice();
+                }
                 GridView {
                     id: emojiGrid
                     Layout.fillWidth: true
@@ -431,7 +437,7 @@ Rectangle {
                     clip: true
                     cellWidth: Math.floor(width / Math.max(1, Math.floor(width / 64)))
                     cellHeight: 56
-                    model: Emoji.recent.concat(Emoji.emoji.map(e => e.e).filter(e => !Emoji.recent.includes(e)))
+                    model: emojiPage.recent.concat(Emoji.emoji.map(e => e.e).filter(e => !emojiPage.recent.includes(e)))
                     delegate: Item {
                         required property string modelData
                         width: emojiGrid.cellWidth

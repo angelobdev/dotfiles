@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import ".."
 
 // A context menu built from plain entries: { kind: "item" | "heading" | "separator", text, icon, checked,
@@ -63,7 +64,14 @@ Rectangle {
         }
         interactive: false
         currentIndex: -1
-        model: root.entries
+        // Rows keyed by position: entries rebuilt with new text (a window retitled, one opened) update the rows in
+        // place instead of recreating them, which lost a press in progress and the hover.
+        model: ScriptModel {
+            values: root.entries.map((entry, index) => Object.assign({
+                    row: String(index)
+                }, entry))
+            objectProp: "row"
+        }
         delegate: Item {
             id: row
             required property var modelData

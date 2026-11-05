@@ -453,7 +453,11 @@ Overlay {
                         clip: true
                         cellWidth: Math.floor(width / Math.max(1, Math.floor(width / 230)))
                         cellHeight: Math.round(cellWidth * 0.62)
-                        model: Theming.wallpaperItems
+                        // Keyed by file: a thumbnail or a download that lands updates its cell, not the whole grid.
+                        model: ScriptModel {
+                            values: Theming.wallpaperItems
+                            objectProp: "path"
+                        }
                         keyNavigationEnabled: true
                         function choose(item) {
                             if (!item)

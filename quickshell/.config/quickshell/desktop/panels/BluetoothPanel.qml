@@ -72,7 +72,10 @@ Overlay {
                                 font.pixelSize: Theme.textSize(12)
                             }
                             Repeater {
-                                model: adapterGroup.paired
+                                // Rows follow their device: a reorder or a new one does not recreate every row.
+                                model: ScriptModel {
+                                    values: adapterGroup.paired
+                                }
                                 ColumnLayout {
                                     required property var modelData
                                     Layout.fillWidth: true
@@ -102,7 +105,9 @@ Overlay {
                                 font.pixelSize: Theme.textSize(12)
                             }
                             Repeater {
-                                model: adapterGroup.discovered
+                                model: ScriptModel {
+                                    values: adapterGroup.discovered
+                                }
                                 RowLayout {
                                     required property var modelData
                                     readonly property bool pairing: modelData.pairing || BluetoothAgent.pairing.includes(modelData.dbusPath)
