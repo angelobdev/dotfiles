@@ -76,7 +76,7 @@ The repository is the source of the files; Stow creates symlinks without directo
 
 Multilingual support uses the existing Qt and Python installations, with no additional dependencies. The shell language comes from `/etc/locale.conf`; see [Interface language](configuration.md#interface-language) for details and catalogs.
 
-Packages use standard XDG paths under `$HOME`, and nothing names a user: desktop entries call `desktop-*` commands by name, found through the `PATH` that `hypr/config/session.lua` extends with `~/.local/bin`. The Fedora night wallpaper is included as JPEG in `hyprpaper/.local/share/wallpapers`, converted from the JPEG XL image of Fedora's `f44-backgrounds-base` because this hyprpaper build cannot decode it; the CC BY-SA 4.0 license and Fedora attribution are included next to it.
+Packages use standard XDG paths under `$HOME`, and nothing names a user: desktop entries call `desktop-*` commands by name, found through the `PATH` that `hypr/.config/hypr/config/session.lua` extends with `~/.local/bin`. The Fedora night wallpaper is included as JPEG in `hyprpaper/.local/share/wallpapers`, converted from the JPEG XL image of Fedora's `f44-backgrounds-base` because this hyprpaper build cannot decode it; the CC BY-SA 4.0 license and Fedora attribution are included next to it.
 
 Removable drives use udiskie; iPhone access uses GVfs/AFC and usbmuxd. See [Removable drives and iPhone](integrations.md#removable-drives-and-iphone). The usbmuxd system service is activated by device discovery; no manual service enablement is required.
 

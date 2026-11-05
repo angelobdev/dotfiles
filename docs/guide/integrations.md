@@ -32,7 +32,7 @@ X11 has one scale for all windows. With a mixed setup (built-in panel at 1.667, 
 
 The reported ChatGPT and Nautilus windows were both XWayland on the eDP monitor at scale 1.667. Nautilus had `GDK_BACKEND=x11`; ChatGPT had started without Wayland display variables. Scaling X11 surfaces can blur text ([Hyprland documentation](https://wiki.hypr.land/configuring/extra/xwayland/)). Isolated instances of both applications were verified as native Wayland without changing CSS, fonts, or monitor scale.
 
-`hypr/config/session.lua` sets `GDK_BACKEND=wayland,x11,*`, and `desktop-session start` exports it with `QT_QPA_PLATFORM` to the service and D-Bus activation environment, so Nautilus starts native from its own desktop entry, D-Bus activation included (the former `org.gnome.Nautilus.desktop` override was dropped on 2026-11-04). These overrides require a Wayland session.
+`hypr/.config/hypr/config/session.lua` sets `GDK_BACKEND=wayland,x11,*`, and `desktop-session start` exports it with `QT_QPA_PLATFORM` to the service and D-Bus activation environment, so Nautilus starts native from its own desktop entry, D-Bus activation included (the former `org.gnome.Nautilus.desktop` override was dropped on 2026-11-04). These overrides require a Wayland session.
 
 **Completely close and reopen applications** to apply the backend: opening a new window from an existing X11 process is insufficient. User instances were not terminated during verification. Check the `xwayland` field in `hyprctl -j clients`: `false` indicates a native window. XWayland surfaces now use 1:1 rendering; native Wayland windows retain per-monitor scaling. Inactive window opacity remains 0.92 and can reduce contrast even with native rendering.
 
