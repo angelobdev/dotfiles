@@ -14,7 +14,12 @@ Singleton {
     readonly property var recorders: Pipewire.nodes.values.filter(n => n.audio && n.isStream && !n.isSink)
     readonly property var videoStreams: Pipewire.nodes.values.filter(n => !n.audio && n.isStream)
     property var cameraHolders: []
-    property bool sharing: false
+    // Screen sharing: the screencast event says on or off but not which share, so a share that ends while another
+    // runs turned the indicator off, and after a reload during a share it stayed off. XDPH also makes a PipeWire
+    // stream for every share, which is there from the start and counts each one.
+    property bool screencast: false
+    readonly property var shareStreams: Pipewire.nodes.values.filter(n => (n.name ?? "").startsWith("xdph-streaming-"))
+    readonly property bool sharing: screencast || shareStreams.length > 0
     readonly property var microphoneApps: unique(recorders.map(n => appName(n)))
     readonly property var cameraApps: unique(Array.from(cameraHolders).reduce((names, name) => names.concat(name === "pipewire" || name === "wireplumber" ? videoStreams.map(n => appName(n)) : [name]), []))
     readonly property bool microphone: recorders.length > 0
@@ -36,7 +41,7 @@ Singleton {
         // screencast>>STATE,OWNER: 1 when a share starts, 0 when it stops.
         function onRawEvent(event) {
             if (event.name === "screencast")
-                root.sharing = event.data.split(",")[0] === "1";
+                root.screencast = event.data.split(",")[0] === "1";
         }
     }
     // privacy.py watch prints the holders whenever a camera opens or closes (inotify), nothing in between.
