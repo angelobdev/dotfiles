@@ -63,6 +63,19 @@ def system_updates():
     return None, tr('updates.errors.dnf', [result.stderr.strip()[:200]])
 
 
+def flatpak_listing():
+    # (updates, error) of Flatpak, like system_updates; without Flatpak installed there is nothing to update.
+    try:
+        result = run(['flatpak', 'remote-ls', '--updates', '--columns=application,version,origin'], 300)
+    except FileNotFoundError:
+        return [], None
+    except (OSError, subprocess.SubprocessError) as error:
+        return None, tr('updates.errors.flatpak', [str(error)])
+    if result.returncode == 0:
+        return flatpak_updates(result.stdout), None
+    return None, tr('updates.errors.flatpak', [result.stderr.strip()[:200]])
+
+
 def flatpak_updates(output):
     updates = []
     for line in output.splitlines():
@@ -96,16 +109,11 @@ def check(before=None):
     else:
         packages = listed
     apps = before.get('flatpaks', []) if isinstance(before.get('flatpaks'), list) else []
-    try:
-        result = run(['flatpak', 'remote-ls', '--updates', '--columns=application,version,origin'], 300)
-        if result.returncode == 0:
-            apps = flatpak_updates(result.stdout)
-        else:
-            errors.append(tr('updates.errors.flatpak', [result.stderr.strip()[:200]]))
-    except FileNotFoundError:
-        apps = []
-    except (OSError, subprocess.SubprocessError) as error:
-        errors.append(tr('updates.errors.flatpak', [str(error)]))
+    listed, error = flatpak_listing()
+    if error:
+        errors.append(error)
+    else:
+        apps = listed
     # The time of the last check that reached at least one source.
     checked = before.get('checked') if len(errors) == 2 else round(time.time(), 3)
     return {'checked': checked, 'packages': packages, 'flatpaks': apps,
