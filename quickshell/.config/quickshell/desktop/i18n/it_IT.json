@@ -93,6 +93,7 @@
     "desktop": "Desktop"
   },
   "battery": {
+    "autoSaver": "Risparmio energetico sotto il %1%",
     "availableEnergy": "Energia disponibile",
     "charging": "In carica",
     "chargingPower": "Potenza di ricarica",
@@ -130,12 +131,15 @@
       "criticalBody": "Collega subito il caricatore, o salva il tuo lavoro.",
       "criticalBodyTime": "Restano circa %1. Collega subito il caricatore, o salva il tuo lavoro.",
       "peripheralTitle": "%1: batteria scarica (%2%)",
-      "peripheralBody": "Ricaricalo presto."
+      "peripheralBody": "Ricaricalo presto.",
+      "saverOn": "Risparmio energetico attivato."
     },
     "stylus": "Stilo",
     "device": "Dispositivo",
     "devices": "Dispositivi",
     "display": {
+      "onBattery": "A batteria",
+      "onMains": "Con alimentatore",
       "title": "Aggiornamento display",
       "vrr": "VRR",
       "vrrHint": "Frequenza variabile: il display segue ciò che è sullo schermo",

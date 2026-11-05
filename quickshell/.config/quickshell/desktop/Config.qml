@@ -88,9 +88,10 @@ QtObject {
     ]
     // If disconnected, use the first connected screen.
     readonly property string primaryMonitor: "eDP-1"
-    // Battery warnings (percent, on battery only): low offers Power Saver, critical stays until dismissed.
     // Length of a focus session (Do Not Disturb for a while), in minutes.
     readonly property int focusMinutes: 25
+    // Battery warnings (percent, on battery only): low turns Power Saver on (or offers it), critical stays
+    // until dismissed.
     readonly property int batteryLow: 20
     readonly property int batteryCritical: 10
     // Peripheral batteries (stylus, mouse, headset) warn once below this.

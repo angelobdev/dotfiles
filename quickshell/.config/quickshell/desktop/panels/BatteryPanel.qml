@@ -33,9 +33,13 @@ Overlay {
             return I18n.tr("battery.statusUnavailable");
         }
     }
-    // The internal display (config/tablet.lua keeps its refresh): VRR when it can, or one of its fixed rates.
+    // The internal display (config/tablet.lua keeps its refresh, one for battery and one for mains power): VRR
+    // when it can, or one of its fixed rates; "" is its preferred mode.
     property var monitors: []
-    property string refreshChoice: ""
+    property var refreshChoices: ({
+            battery: "",
+            ac: ""
+        })
     readonly property var panelMonitor: monitors.find(m => /^(eDP|LVDS|DSI)-/.test(m.name)) ?? null
     readonly property var refreshOptions: {
         const monitor = panelMonitor;
@@ -62,15 +66,28 @@ Overlay {
         const all = options.concat(rates);
         return all.length > 1 ? all : [];
     }
-    function refreshSelected(option) {
-        if (refreshChoice === "vrr")
-            return option.value === "vrr";
-        return option.value !== "vrr" && option.rate === Math.round(panelMonitor?.refreshRate ?? 0);
+    // The display lists its preferred mode first.
+    readonly property int preferredRate: Math.round(parseFloat(((panelMonitor?.availableModes ?? [])[0] ?? "").split("@")[1] ?? "0"))
+    function refreshSelected(source, option) {
+        const choice = refreshChoices[source] ?? "";
+        if (choice === "vrr" || option.value === "vrr")
+            return choice === option.value;
+        return option.rate === (choice ? Math.round(parseFloat(choice.split("@")[1])) : preferredRate);
     }
-    function chooseRefresh(value) {
-        refreshChoice = value;
-        Quickshell.execDetached(["hyprctl", "eval", "desktop_refresh(\"" + value + "\")"]);
+    function chooseRefresh(source, value) {
+        const choices = Object.assign({}, refreshChoices);
+        choices[source] = value;
+        refreshChoices = choices;
+        Quickshell.execDetached(["hyprctl", "eval", "desktop_refresh(\"" + source + "\", \"" + value + "\")"]);
         relist.restart();
+    }
+    function readChoices(text) {
+        // `refresh` is the single choice saved before there was one per power source.
+        const single = (text.match(/refresh\s*=\s*"([\w@.]+)"/) ?? [])[1] ?? "";
+        refreshChoices = {
+            battery: (text.match(/battery\s*=\s*"([\w@.]+)"/) ?? [])[1] ?? single,
+            ac: (text.match(/ac\s*=\s*"([\w@.]+)"/) ?? [])[1] ?? single
+        };
     }
     onOpened: {
         lister.running = true;
@@ -96,8 +113,8 @@ Overlay {
         id: refreshState
         path: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-session/refresh.lua"
         printErrors: false
-        onLoaded: root.refreshChoice = (text().match(/refresh\s*=\s*"([\w@.]+)"/) ?? [])[1] ?? ""
-        onLoadFailed: root.refreshChoice = ""
+        onLoaded: root.readChoices(text())
+        onLoadFailed: root.readChoices("")
     }
     function duration(seconds) {
         if (!Number.isFinite(seconds) || seconds <= 0)
@@ -275,25 +292,63 @@ Overlay {
                             onClicked: PowerProfiles.profile = PowerProfile.Performance
                         }
                     }
+                    RowLayout {
+                        visible: root.available
+                        Layout.fillWidth: true
+                        Text {
+                            Layout.fillWidth: true
+                            text: I18n.tr("battery.autoSaver", [Config.batteryLow])
+                            wrapMode: Text.Wrap
+                            color: Theme.text
+                            font.pixelSize: Theme.textSize(13)
+                        }
+                        ControlSwitch {
+                            checked: Battery.autoSaver
+                            onToggled: Battery.setAutoSaver(checked)
+                            Accessible.name: I18n.tr("battery.autoSaver", [Config.batteryLow])
+                        }
+                    }
                     Heading {
                         visible: root.refreshOptions.length > 0
                         text: I18n.tr("battery.display.title")
                         font.pixelSize: Theme.textSize(14)
                         Layout.topMargin: 6
                     }
-                    RowLayout {
-                        visible: root.refreshOptions.length > 0
-                        Layout.fillWidth: true
-                        spacing: 8
-                        Repeater {
-                            model: root.refreshOptions
-                            ActionButton {
-                                required property var modelData
+                    Repeater {
+                        model: root.refreshOptions.length > 0 ? [
+                            {
+                                source: "battery",
+                                label: I18n.tr("battery.display.onBattery")
+                            },
+                            {
+                                source: "ac",
+                                label: I18n.tr("battery.display.onMains")
+                            }
+                        ] : []
+                        ColumnLayout {
+                            id: refreshRow
+                            required property var modelData
+                            Layout.fillWidth: true
+                            spacing: 6
+                            Text {
+                                text: refreshRow.modelData.label
+                                color: Theme.muted
+                                font.pixelSize: Theme.textSize(12)
+                            }
+                            RowLayout {
                                 Layout.fillWidth: true
-                                text: modelData.label
-                                tooltip: modelData.tooltip
-                                highlighted: root.refreshSelected(modelData)
-                                onClicked: root.chooseRefresh(modelData.value)
+                                spacing: 8
+                                Repeater {
+                                    model: root.refreshOptions
+                                    ActionButton {
+                                        required property var modelData
+                                        Layout.fillWidth: true
+                                        text: modelData.label
+                                        tooltip: modelData.tooltip
+                                        highlighted: root.refreshSelected(refreshRow.modelData.source, modelData)
+                                        onClicked: root.chooseRefresh(refreshRow.modelData.source, modelData.value)
+                                    }
+                                }
                             }
                         }
                     }

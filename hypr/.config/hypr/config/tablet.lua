@@ -7,8 +7,9 @@ local state = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/sta
 -- The display mode chosen with Super + P (panels/DisplayPanel.qml), kept across reloads and logins.
 local display_state = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")) .. "/desktop-session/display.lua"
 local MODES = { extend = true, mirror = true, external = true, internal = true }
--- The internal display's refresh, chosen in the battery panel: "vrr" (variable, at the preferred mode) or a
--- fixed mode such as "2880x1800@48.00". Without a choice it runs at its preferred mode, VRR off.
+-- The internal display's refresh, chosen in the battery panel for battery and for mains power: "vrr" (variable,
+-- at the preferred mode) or a fixed mode such as "2880x1800@48.00". Without a choice it runs at its preferred
+-- mode, VRR off.
 local refresh_state = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")) .. "/desktop-session/refresh.lua"
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
 local panel
@@ -32,13 +33,52 @@ local function valid_refresh(choice)
     return type(choice) == "string" and (choice == "vrr" or choice:match("^%d+x%d+@%d+%.?%d*$") ~= nil)
 end
 
-local function refresh()
+local function refresh_choices()
     local ok, value = pcall(dofile, refresh_state)
-    if ok and type(value) == "table" and valid_refresh(value.refresh) then
-        return value.refresh
+    local choices = {}
+    if ok and type(value) == "table" then
+        for _, source in ipairs({ "battery", "ac" }) do
+            -- `refresh` is the single choice saved before there was one per power source.
+            local choice = value[source] or value.refresh
+            if valid_refresh(choice) then
+                choices[source] = choice
+            end
+        end
     end
-    return nil
+    return choices
 end
+
+-- On battery when a battery-powered machine has no mains supply online; anything else counts as mains.
+local function on_battery()
+    local list = io.popen("ls /sys/class/power_supply 2>/dev/null")
+    if not list then
+        return false
+    end
+    local mains, online = false, false
+    for name in list:lines() do
+        local kind = io.open("/sys/class/power_supply/" .. name .. "/type")
+        if kind then
+            local text = kind:read("l") or ""
+            kind:close()
+            if text == "Mains" or text == "USB" then
+                mains = true
+                local state = io.open("/sys/class/power_supply/" .. name .. "/online")
+                if state then
+                    online = online or (state:read("l") or "") == "1"
+                    state:close()
+                end
+            end
+        end
+    end
+    list:close()
+    return mains and not online
+end
+
+local function refresh()
+    return refresh_choices()[on_battery() and "battery" or "ac"]
+end
+-- The choice last applied, so a power change that keeps it does not set the mode again.
+local applied_refresh = false
 
 local function apply(transform)
     local spec = {}
@@ -48,6 +88,7 @@ local function apply(transform)
     current = transform
     spec.transform = transform
     local choice = refresh()
+    applied_refresh = choice or ""
     if choice and choice ~= "vrr" then
         spec.mode = choice
     end
@@ -170,17 +211,33 @@ function desktop_display_mode(mode)
     M.arrange()
 end
 
--- Entry point for `hyprctl eval` from the battery panel: "vrr", a fixed mode, or "" for the preferred mode.
-function desktop_refresh(choice)
-    if choice ~= "" and not valid_refresh(choice) then
+-- Entry point for `hyprctl eval` from the battery panel: the power source ("battery" or "ac") and its choice,
+-- "vrr", a fixed mode, or "" for the preferred mode.
+function desktop_refresh(source, choice)
+    if (source ~= "battery" and source ~= "ac") or (choice ~= "" and not valid_refresh(choice)) then
         return
     end
+    local choices = refresh_choices()
+    choices[source] = choice ~= "" and choice or nil
     local file = io.open(refresh_state, "w")
     if file then
-        file:write(choice == "" and "return {}\n" or 'return { refresh = "' .. choice .. '" }\n')
+        local fields = {}
+        for _, key in ipairs({ "battery", "ac" }) do
+            if choices[key] then
+                table.insert(fields, key .. ' = "' .. choices[key] .. '"')
+            end
+        end
+        file:write("return { " .. table.concat(fields, ", ") .. " }\n")
         file:close()
     end
     if panel then
+        apply(current)
+    end
+end
+
+-- Called by the shell when the power source changes: the other source's choice, if it differs.
+function desktop_refresh_power()
+    if panel and (refresh() or "") ~= applied_refresh then
         apply(current)
     end
 end

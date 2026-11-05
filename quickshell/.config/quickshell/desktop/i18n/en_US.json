@@ -93,6 +93,7 @@
     "desktop": "Desktop"
   },
   "battery": {
+    "autoSaver": "Power Saver below %1%",
     "availableEnergy": "Available energy",
     "charging": "Charging",
     "chargingPower": "Charging power",
@@ -130,12 +131,15 @@
       "criticalBody": "Plug in the charger now, or save your work.",
       "criticalBodyTime": "About %1 left. Plug in the charger now, or save your work.",
       "peripheralTitle": "%1: battery low (%2%)",
-      "peripheralBody": "Charge it soon."
+      "peripheralBody": "Charge it soon.",
+      "saverOn": "Power Saver is on."
     },
     "stylus": "Stylus",
     "device": "Device",
     "devices": "Devices",
     "display": {
+      "onBattery": "On battery",
+      "onMains": "Plugged in",
       "title": "Display refresh",
       "vrr": "VRR",
       "vrrHint": "Variable refresh rate: the display follows what is on screen",
