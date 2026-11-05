@@ -132,7 +132,22 @@ def swaps_apply(plan, items):
 
 
 def packages_pending(plan):
-    return plan.distro.missing(list(dict.fromkeys(wanted_packages(plan))))
+    missing = plan.distro.missing(list(dict.fromkeys(wanted_packages(plan))))
+    compositor_guard(plan, missing)
+    return missing
+
+
+def compositor_guard(plan, missing):
+    # The plugins accept only the Hyprland builds they were verified against, and dnf installs the newest one
+    # the repository has: say so before installing, not at the first login. Once the repositories are there, so
+    # the build is the one that will come (apply adds them before this step).
+    wanted = [name for name in ('hyprland', 'hyprland-devel') if name in missing]
+    if 'plugins' not in plan.profiles or not wanted or repos_pending(plan):
+        return
+    for name, build in sorted(plan.distro.candidates(wanted).items()):
+        if build not in bundle.VERIFIED:
+            print(f'Warning: {name} {build} is newer than the build the plugins were verified against '
+                  f'({", ".join(bundle.VERIFIED)}): they will not be built at the first login until it is verified.')
 
 
 def packages_apply(plan, packages):

@@ -54,6 +54,7 @@ def fake_distro(pending=True):
     distro.auth_base.return_value = 'local'
     distro.requirements.return_value = set()
     distro.packages_from.return_value = set()
+    distro.candidates.return_value = {}
     return distro
 
 
@@ -988,6 +989,27 @@ class RemovalTests(unittest.TestCase):
         # PackageKit leaves no command line either: it comes after the system install, and is not part of it.
         later = transactions + [{'id': 4, 'command_line': '', 'packages': [{'nevra': 'd-0:1-1.fc45.x86_64', 'action': 'Install'}]}]
         self.assertEqual(fedora.base_packages(later), {'a.x86_64', 'b.noarch'})
+
+
+class CompositorGuardTests(unittest.TestCase):
+    def warnings(self, candidates, profiles=('core', 'plugins'), repos_missing=False):
+        distro = fake_distro()
+        distro.repo_missing.return_value = repos_missing
+        distro.candidates.return_value = candidates
+        with mock.patch('builtins.print') as shown:
+            installer.compositor_guard(plan(distro, profiles=profiles), ['hyprland', 'hyprland-devel', 'kitty'])
+        return [call.args[0] for call in shown.call_args_list]
+
+    def test_an_unverified_build_is_named_before_the_install(self):
+        verified = installer.bundle.VERIFIED[0]
+        self.assertEqual(self.warnings({'hyprland': verified, 'hyprland-devel': verified}), [])
+        shown = self.warnings({'hyprland': '9.9.9-1.fc45.x86_64', 'hyprland-devel': verified})
+        self.assertEqual(len(shown), 1)
+        self.assertIn('hyprland 9.9.9-1.fc45.x86_64', shown[0])
+
+    def test_no_warning_without_plugins_or_before_the_repository(self):
+        self.assertEqual(self.warnings({'hyprland': '9.9.9-1.fc45.x86_64'}, profiles=('core',)), [])
+        self.assertEqual(self.warnings({'hyprland': '9.9.9-1.fc45.x86_64'}, repos_missing=True), [])
 
 
 class FedoraTests(unittest.TestCase):

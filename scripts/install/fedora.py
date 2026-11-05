@@ -27,6 +27,12 @@ def missing(packages):
     return [line.removeprefix(prefix) for line in lines if line.startswith(prefix)]
 
 
+def candidates(packages):
+    # The build dnf would install now of each package, from the enabled repositories: {name: VERSION-RELEASE.ARCH}.
+    lines = query('dnf', 'repoquery', '--latest-limit', '1', '--qf', '%{name} %{version}-%{release}.%{arch}\n', *packages).stdout.splitlines()
+    return {name: build for name, _, build in (line.partition(' ') for line in lines) if build and not build.endswith('.src')}
+
+
 def installed(package):
     # By name, not --whatprovides: a replacement often provides the name of what it replaces.
     return query('rpm', '-q', package).returncode == 0
