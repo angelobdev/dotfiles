@@ -320,6 +320,232 @@ class ApplyTests(unittest.TestCase):
         run.assert_called_once_with(('sudo', '-n', '-v'), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
+def reply(stdout='', returncode=0, stderr=''):
+    return subprocess.CompletedProcess((), returncode, stdout, stderr)
+
+
+PIN = installer.Pin('clones', 'zsh-autocomplete', 'a' * 40, 'b' * 40, '26.08.04 -> 26.09.01', 'https://x/compare', '', '26.09.01')
+
+
+def source(key, selectable=True, pins=()):
+    return tui.Source(key, key.title(), 'summary', ['detail'], 'note', selectable, pins)
+
+
+class UpdateSourceTests(unittest.TestCase):
+    def test_everything_to_apply_is_checked_but_the_repository(self):
+        sources = [source('system'), source('flatpak', False), source('repository'), source('plugins', False)]
+        self.assertEqual(tui.default_choice(sources), {'system'})
+
+    def test_the_repository_goes_alone(self):
+        sources = [source('system'), source('clones'), source('repository')]
+        self.assertEqual(tui.picked_sources(sources, {'system', 'repository'}), ('pull', [sources[2]]))
+        self.assertEqual(tui.picked_sources(sources, {'system', 'clones'}), ('apply', sources[:2]))
+        self.assertEqual(tui.picked_sources(sources, {'flatpak'}), ('apply', []))
+
+    def test_rows_show_what_can_be_checked_and_fold(self):
+        sources = [source('system'), source('plugins', False)]
+        rows = tui.update_rows(sources, {'system'}, set())
+        self.assertEqual([text for _, text, _ in rows], ['+ [x] System            summary', '+     Plugins           summary'])
+        self.assertEqual(tui.update_rows(sources, set(), {0})[0][1], '- [ ] System            summary')
+        self.assertEqual(tui.update_rows(sources, set(), {0})[1], (0, '        detail', 'dim'))
+
+    def test_counts_read_well(self):
+        self.assertEqual((tui.counted(1, 'update'), tui.counted(3, 'step')), ('1 update', '3 steps'))
+
+    def test_system_packages_come_from_the_bar_s_own_check(self):
+        updates = mock.Mock(COMPOSITOR=('hyprland',))
+        updates.system_updates.return_value = ([{'name': 'hyprland', 'version': '0.58.0-1', 'repo': ''}], None)
+        current = installer.Plan(mock.Mock(MANAGER='dnf'), '45', TABLE, [], ('core',))
+        found = tui.package_source(current, updates)
+        self.assertEqual((found.summary, found.details, found.selectable), ('1 update (dnf)', ['hyprland 0.58.0-1'], True))
+        self.assertIn('plugins rebuild', found.note)
+        updates.system_updates.return_value = (None, 'offline')
+        self.assertEqual(tui.package_source(current, updates).error, 'offline')
+
+    def test_flatpak_apps(self):
+        updates = mock.Mock()
+        updates.flatpak_listing.return_value = ([], None)
+        self.assertEqual(tui.flatpak_source(updates).summary, 'up to date')
+        self.assertFalse(tui.flatpak_source(updates).selectable)
+
+    def pins(self, newer, ours=True):
+        table = {**TABLE, 'core': {**TABLE['core'], 'clones': [{'repo': 'https://github.com/a/b', 'commit': 'a' * 40, 'path': '.p/zsh-autocomplete'}]}}
+        with mock.patch.object(installer, 'newer_pin', return_value=newer), mock.patch.object(installer, 'clone_ours', return_value=ours):
+            return tui.pin_source(installer.Plan(mock.Mock(), '45', table, [], ('core',)), 'clones', 'zsh plugins')
+
+    def test_a_newer_pin_can_be_applied(self):
+        found = self.pins(PIN)
+        self.assertEqual((found.summary, found.pins, found.selectable), ('zsh-autocomplete 26.08.04 -> 26.09.01', (PIN,), True))
+
+    def test_a_changed_clone_holds_its_pin(self):
+        found = self.pins(PIN, ours=False)
+        self.assertFalse(found.selectable)
+        self.assertEqual(found.summary, 'zsh-autocomplete: newer, but changed here')
+        self.assertIn('has local changes', found.details[0])
+
+    def test_a_remote_that_does_not_answer_is_an_error(self):
+        found = self.pins(False)
+        self.assertEqual((found.summary, found.selectable), ('check failed', False))
+        self.assertIn('did not answer', found.error)
+        self.assertEqual(self.pins(None).summary, 'at their latest commits')
+
+    def test_no_pins_no_line(self):
+        self.assertIsNone(tui.pin_source(plan(), 'aur', 'AUR packages'))
+
+    def repository(self, behind='3', ahead='0', dirty='', upstream=reply('homelab/main\n'), fetch=reply()):
+        answers = {'rev-parse': upstream, 'fetch': fetch, 'status': reply(dirty), 'log': reply('abc1234 docs: x\n')}
+
+        def git(*arguments):
+            if arguments[0] == 'rev-list':
+                return reply(behind if arguments[-1] == 'HEAD..@{u}' else ahead)
+            return answers[arguments[0]]
+        with mock.patch.object(tui, 'git', side_effect=git):
+            return tui.repository_source()
+
+    def test_a_clean_tree_behind_its_upstream_can_fast_forward(self):
+        found = self.repository()
+        self.assertEqual((found.summary, found.details, found.selectable), ('3 commits behind homelab/main', ['abc1234 docs: x'], True))
+
+    def test_local_changes_or_commits_stop_the_fast_forward(self):
+        self.assertFalse(self.repository(dirty=' M x').selectable)
+        self.assertIn('local changes', self.repository(dirty=' M x').summary)
+        self.assertFalse(self.repository(ahead='1').selectable)
+        self.assertIn('merge it by hand', self.repository(ahead='1').summary)
+
+    def test_up_to_date_or_nothing_to_compare_with(self):
+        self.assertEqual(self.repository(behind='0').summary, 'up to date with homelab/main')
+        self.assertEqual(self.repository(upstream=reply('', 128)).summary, 'no upstream branch to compare with')
+        self.assertIn('git fetch failed', self.repository(fetch=reply('', 128, 'Permission denied')).error)
+
+    def test_git_never_prompts(self):
+        with mock.patch.dict('os.environ', {}, clear=False), mock.patch.object(installer, 'query', return_value=reply('')), \
+                mock.patch('subprocess.run', return_value=reply()) as run:
+            tui.os.environ.pop('GIT_SSH_COMMAND', None)
+            tui.git('fetch', '--quiet', 'homelab')
+        environment = run.call_args.kwargs['env']
+        self.assertEqual((environment['GIT_TERMINAL_PROMPT'], environment['GIT_SSH_COMMAND']), ('0', 'ssh -o BatchMode=yes'))
+
+    def test_a_check_that_fails_is_a_line_not_a_crash(self):
+        ui = mock.Mock()
+        ui.frame.return_value = None
+        with mock.patch.object(tui, 'shell_helper'), mock.patch.object(tui, 'package_source', side_effect=RuntimeError('no network')), \
+                mock.patch.object(tui, 'flatpak_source', return_value=None), mock.patch.object(tui, 'pin_source', return_value=None), \
+                mock.patch.object(tui, 'repository_source', return_value=None), mock.patch.object(tui, 'desktop_source', return_value=None), \
+                mock.patch.object(tui, 'plugins_source', return_value=None):
+            found = tui.check_updates(ui, plan())
+        self.assertEqual([(entry.key, entry.error) for entry in found], [('system', 'no network')])
+
+    def test_the_shell_helpers_never_hide_the_standard_library(self):
+        updates = tui.shell_helper('updates')
+        self.assertEqual(sys.path[-1], str(tui.HELPERS))
+        import calendar
+        self.assertNotEqual(Path(calendar.__file__).parent, tui.HELPERS)
+        self.assertTrue(callable(updates.flatpak_listing))
+
+    def test_updates_are_offered_once_the_desktop_is_there(self):
+        for present in (True, False):
+            with mock.patch.object(installer, 'desktop_present', return_value=present), mock.patch.object(tui, 'post_pending', return_value=False):
+                self.assertEqual('updates' in [key for key, _, _ in tui.menu_entries()], present)
+
+
+class UpdateFlowTests(unittest.TestCase):
+    def interface(self, outcome, recorded=('core', 'gaming'), present=True, statuses=ALL, start='menu'):
+        menus = iter(['updates', 'quit'])
+        with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', side_effect=lambda ui: next(menus)), \
+                mock.patch.object(installer, 'desktop_present', return_value=present), \
+                mock.patch.object(tui, 'recorded_profiles', return_value=recorded), \
+                mock.patch.object(tui, 'detect', return_value=statuses) as detected, mock.patch.object(tui, 'notice') as noticed, \
+                mock.patch.object(tui, 'updates_screen', return_value=outcome) as screen:
+            return tui.interface(None, plan(('core', 'media')), True, start), noticed, screen, detected
+
+    def test_updates_cover_the_recorded_profiles_whatever_was_given(self):
+        (action, chosen, picked), _, screen, detected = self.interface(('apply', ['s']))
+        self.assertEqual((action, chosen.profiles, picked), ('updates', ('core', 'gaming'), ['s']))
+        detected.assert_not_called()
+
+    def test_without_a_record_the_installed_profiles(self):
+        (_, chosen, _), _, _, detected = self.interface(('apply', ['s']), recorded=(), statuses={**FRESH, 'media': tui.Status([], 2)})
+        self.assertEqual(chosen.profiles, ('core', 'media'))
+        detected.assert_called_once()
+
+    def test_the_repository_comes_back_as_a_pull(self):
+        self.assertEqual(self.interface(('pull', ['r']))[0][0], 'pull')
+
+    def test_without_a_desktop_there_is_nothing_to_update(self):
+        result, noticed, screen, _ = self.interface(('apply', ['s']), present=False)
+        self.assertIsNone(result)
+        noticed.assert_called_once()
+        screen.assert_not_called()
+
+    def test_updates_can_be_the_first_screen_and_go_back_to_the_menu(self):
+        with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', return_value='quit') as shown, \
+                mock.patch.object(installer, 'desktop_present', return_value=True), mock.patch.object(tui, 'recorded_profiles', return_value=('core',)), \
+                mock.patch.object(tui, 'updates_screen', return_value=('back', None)):
+            self.assertIsNone(tui.interface(None, plan(), False, 'updates'))
+        shown.assert_called_once()
+
+    def test_the_record_names_the_profiles_unless_the_desktop_was_removed(self):
+        for record, expected in (({'profiles': ['gaming', 'core', 'apps']}, ('core', 'apps', 'gaming')), ({'profiles': ['media']}, ('core', 'media')),
+                                 ({}, ()), ({'profiles': ['core'], 'uninstalled': True}, ())):
+            with mock.patch.object(installer, 'load_record', return_value=record):
+                self.assertEqual(tui.recorded_profiles(), expected)
+
+    def test_the_flag_opens_the_updates_screen(self):
+        with mock.patch('os.geteuid', return_value=1000), mock.patch('sys.stdin'), mock.patch('sys.stdout'), \
+                mock.patch.object(installer, 'load_plan', return_value=plan()), mock.patch.object(installer, 'refuse'), \
+                mock.patch('curses.wrapper', return_value=None) as wrapper, mock.patch('builtins.print'):
+            tui.main(['--updates'])
+        self.assertEqual(wrapper.call_args.args[-1], 'updates')
+
+
+class ApplyUpdatesTests(unittest.TestCase):
+    MANIFEST = "[[fedora.core.clones]]\nrepo = 'https://github.com/a/zsh-autocomplete'\ncommit = '" + 'a' * 40 + "'  # 26.08.04\n"
+
+    def apply(self, picked):
+        calls = []
+        with tempfile.TemporaryDirectory() as folder:
+            manifest = Path(folder) / 'manifest.toml'
+            manifest.write_text(self.MANIFEST)
+            with mock.patch.object(tui, 'MANIFEST', manifest), mock.patch.object(tui, 'REPO', Path(folder)), \
+                    mock.patch('subprocess.run', side_effect=lambda command, **_: calls.append(command)), \
+                    mock.patch.object(installer, 'query', return_value=reply('')), \
+                    mock.patch.object(installer, 'load_plan', side_effect=lambda profiles, firmware=None: plan(profiles)) as loaded, \
+                    mock.patch.object(installer, 'run_steps', side_effect=lambda current, preview, steps: calls.append([step.title for step in steps])), \
+                    mock.patch.object(tui, 'keep_sudo'), mock.patch.object(tui, 'refresh_bar', side_effect=lambda: calls.append('bar')), \
+                    mock.patch.object(bundle_module(), 'status', return_value='current'), mock.patch('builtins.print'):
+                self.assertEqual(tui.apply_updates(plan(), picked), 0)
+            return calls, manifest.read_text(), loaded
+
+    def test_pins_go_into_the_manifest_and_their_steps_run_in_order(self):
+        calls, text, loaded = self.apply([source('clones', pins=(PIN,)), source('system')])
+        self.assertEqual(calls[0], ('sudo', '-v'))
+        self.assertIn(f"commit = '{'b' * 40}'  # 26.09.01", text)
+        loaded.assert_called_once()
+        self.assertIn(['upgrade', 'clones'], calls)
+        self.assertEqual(calls[-1], 'bar')
+
+    def test_flatpak_alone_runs_no_installer_step(self):
+        calls, text, loaded = self.apply([source('flatpak')])
+        self.assertEqual(calls[1], ('sudo', 'flatpak', 'update', '--system', '-y', '--noninteractive'))
+        self.assertFalse([call for call in calls if isinstance(call, list)])
+        loaded.assert_not_called()
+        self.assertEqual(text, self.MANIFEST)
+
+    def test_no_bar_refresh_for_pins_alone(self):
+        calls, _, _ = self.apply([source('clones', pins=(PIN,))])
+        self.assertNotIn('bar', calls)
+
+    def test_a_pull_fast_forwards_and_starts_again_on_the_updates_screen(self):
+        with mock.patch('subprocess.run') as run, mock.patch('os.execv') as execv, mock.patch('builtins.print'):
+            tui.pull()
+        run.assert_called_once_with(('git', '-C', str(tui.REPO), 'merge', '--ff-only', '@{u}'), check=True)
+        self.assertEqual(execv.call_args.args[1][-2:], [str(tui.REPO / 'scripts/install-tui.py'), '--updates'])
+
+
+def bundle_module():
+    return tui.bundle
+
+
 class RefusalTests(unittest.TestCase):
     def test_root(self):
         with mock.patch('os.geteuid', return_value=0), self.assertRaises(SystemExit) as caught:

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Guided install-desktop.py: pick the profiles and the firmware, review what is left to do, then apply it."""
+"""Guided install-desktop.py: install the desktop, keep it updated, or remove it, reviewing each change first."""
 from argparse import ArgumentParser
 from collections import namedtuple
 from contextlib import redirect_stderr, redirect_stdout
@@ -303,13 +303,22 @@ def post_pending():
     return bool(os.environ.get('HYPRLAND_INSTANCE_SIGNATURE')) and installer.AUTOSTART.exists()
 
 
-def menu(ui):
+def menu_entries():
+    # Updates only once there is a desktop to update.
     entries = [('install', 'Install or update the desktop', 'Choose the profiles, review what is left to do, then apply it.')]
+    if installer.desktop_present():
+        entries.append(('updates', 'Check for updates', 'System packages, Flatpak apps, AUR packages and zsh plugins newer '
+                        'than their pins, and this repository: see what is new, check what to take, apply it.'))
     if post_pending():
         entries.append(('post', 'Finish the installation', 'Build the Hyprland plugins and list what is left to do by hand.'))
     entries.append(('uninstall', 'Remove the desktop', 'Undo what the installer set up: plugins, login, links and settings, '
                     'then the packages and repositories it added. From a console, with Hyprland logged out.'))
     entries.append(('quit', 'Quit', 'Leave without changing anything.'))
+    return entries
+
+
+def menu(ui):
+    entries = menu_entries()
     lines = system_lines()
     cursor = 0
     while True:
@@ -565,17 +574,293 @@ def notice(ui, title, text):
             return
 
 
-def interface(window, plan, preset=False):
+# Updates: what is newer than the installed desktop, from each source, to pick and apply. The repository goes
+# alone and first: what it brings can move the pins, so the rest is checked again after it.
+# selectable: there is something to apply. pins: what applying it writes into the manifest.
+Source = namedtuple('Source', 'key title summary details note selectable pins error', defaults=(False, (), ''))
+MANIFEST = REPO / 'scripts/install/manifest.toml'
+HELPERS = REPO / 'shell/.local/libexec/desktop'
+# The installer step that applies each source; Flatpak and the repository are done here.
+STEP_OF = {'system': 'upgrade', 'aur': 'aur', 'clones': 'clones'}
+
+
+def shell_helper(name):
+    # A helper of the shell, from this repository. Its folder goes last on the path: it holds a calendar.py, which
+    # must not hide the standard library's.
+    if str(HELPERS) not in sys.path:
+        sys.path.append(str(HELPERS))
+    spec = importlib.util.spec_from_file_location('desktop_' + name, HELPERS / f'{name}.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def counted(number, word):
+    return f'{number} {word}' + ('' if number == 1 else 's')
+
+
+def failed_source(key, title, error):
+    return Source(key, title, 'check failed', str(error).splitlines(), '', error=str(error))
+
+
+def package_source(plan, updates):
+    # The same listing as the update icon in the bar.
+    listed, error = updates.system_updates()
+    if error:
+        return failed_source('system', 'System packages', error)
+    note = f'Applied as the installer applies it: {plan.distro.MANAGER}, every update at once.'
+    if any(package['name'] in updates.COMPOSITOR for package in listed):
+        note += ' Hyprland is among them: log out and back in afterwards, and the plugins rebuild at that login.'
+    summary = f'{counted(len(listed), "update")} ({plan.distro.MANAGER})' if listed else 'up to date'
+    return Source('system', 'System packages', summary, [f'{package["name"]} {package["version"]}' for package in listed],
+                  note, bool(listed))
+
+
+def flatpak_source(updates):
+    listed, error = updates.flatpak_listing()
+    if error:
+        return failed_source('flatpak', 'Flatpak apps', error)
+    details = [f'{app["id"]} {app["version"]}'.strip() for app in listed]
+    return Source('flatpak', 'Flatpak apps', counted(len(listed), 'update') if listed else 'up to date', details,
+                  'flatpak update: the system apps with sudo, your own as you.', bool(listed))
+
+
+PIN_NOTES = {
+    'aur': 'Review the PKGBUILD changes first (Enter shows the links). The new commits go into '
+           'scripts/install/manifest.toml, for you to commit, and makepkg builds them.',
+    'clones': "Each clone follows its release tags (track = 'tags' in the manifest) or else the head of its branch. "
+              'The new commits go into scripts/install/manifest.toml, for you to commit, and the clones step checks them out.',
+}
+
+
+def pin_source(plan, kind, title):
+    # The pins of the installed profiles with a newer commit upstream; None when the profiles pin nothing of kind.
+    items = installer.merged(plan, kind)
+    if not items:
+        return None
+    pins, held, details, failed = [], [], [], []
+    for item in items:
+        try:
+            pin = installer.newer_pin(kind, item)
+        except OSError as error:
+            pin, details = False, details + [f'{installer.pin_name(kind, item)}: {error}']
+        if pin is False:
+            failed.append(installer.pin_name(kind, item))
+        elif pin and kind == 'clones' and not installer.clone_ours(installer.clone_path(item)):
+            # The clones step leaves a changed clone alone: the pin would move without it.
+            held.append(pin.name)
+            details += [f'{pin.name} {pin.label}: ~/{item["path"]} has local changes, so it stays as it is '
+                        f'(git -C ~/{item["path"]} status shows them).']
+        elif pin:
+            pins.append(pin)
+            details += [f'{pin.name} {pin.label}', '  changes: ' + pin.url]
+    error = f'{", ".join(failed)}: the remote did not answer.' if failed else ''
+    summary = (', '.join(f'{pin.name} {pin.label}' for pin in pins) or (f'{", ".join(held)}: newer, but changed here' if held else '')
+               or ('check failed' if failed else 'at their latest commits'))
+    return Source(kind, title, summary, details + ([error] if error else []), PIN_NOTES[kind], bool(pins), tuple(pins), error)
+
+
+def git(*arguments):
+    # Never a password or passphrase prompt over the screen: ssh fails instead, unless the user set their own command.
+    environment = dict(os.environ, GIT_TERMINAL_PROMPT='0', LC_ALL='C')
+    if 'GIT_SSH_COMMAND' not in environment and not installer.query('git', '-C', str(REPO), 'config', 'core.sshCommand').stdout.strip():
+        environment['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes'
+    return subprocess.run(('git', '-C', str(REPO), *arguments), capture_output=True, text=True, env=environment, timeout=120)
+
+
+def repository_source():
+    # Only a fast-forward: a clean tree whose branch has nothing its upstream lacks.
+    upstream = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}')
+    if upstream.returncode:
+        return Source('repository', 'Repository', 'no upstream branch to compare with', [], 'git branch --set-upstream-to sets one.')
+    upstream = upstream.stdout.strip()
+    fetched = git('fetch', '--quiet', upstream.split('/', 1)[0])
+    if fetched.returncode:
+        return failed_source('repository', 'Repository', 'git fetch failed: ' + (fetched.stderr or fetched.stdout).strip()[-300:])
+    behind = int(git('rev-list', '--count', 'HEAD..@{u}').stdout.strip() or 0)
+    ahead = int(git('rev-list', '--count', '@{u}..HEAD').stdout.strip() or 0)
+    log = git('log', '--format=%h %s', 'HEAD..@{u}').stdout.splitlines()
+    dirty = bool(git('status', '--porcelain', '--untracked-files=no').stdout.strip())
+    note = f'git merge --ff-only {upstream}: it changes the running desktop at once, as editing the files does.'
+    if not behind:
+        summary = f'up to date with {upstream}' + (f', {ahead} commits ahead' if ahead else '')
+        return Source('repository', 'Repository', summary, [], note)
+    if ahead:
+        return Source('repository', 'Repository', f'{behind} behind and {ahead} ahead of {upstream}: merge it by hand', log, note)
+    if dirty:
+        return Source('repository', 'Repository', f'{behind} commits behind {upstream}, with local changes: commit or stash them first',
+                      log, note)
+    return Source('repository', 'Repository', f'{behind} commits behind {upstream}', log, note, True)
+
+
+def desktop_source(plan):
+    # What the installed profiles still need from the manifest, after a pull for instance. The upgrade is the
+    # System packages line.
+    work = [review for review in (review_step(plan, step) for step in installer.STEPS if step.title != 'upgrade')
+            if review.items or review.error]
+    details = []
+    for review in work:
+        details.append(f'{review.title}: ' + (f'check failed: {review.error.splitlines()[0]}' if review.error else f'{len(review.items)} to do'))
+        details += ['  ' + item for item in review.items[:5]] + (['  ...'] if len(review.items) > 5 else [])
+    summary = f'{counted(len(work), "step")} to do' if work else 'matches the installed profiles'
+    return Source('desktop', 'Desktop', summary, details, 'Install or update the desktop, in the menu, applies this, after its own review.')
+
+
+def plugins_source():
+    return Source('plugins', 'Hyprland plugins', PLUGIN_STATES[bundle.status()], [],
+                  'Built for one Hyprland build, and replaced only at a login, before they load.')
+
+
+def check_updates(ui, plan):
+    plan.distro.remember_answers()
+    updates = shell_helper('updates')
+    checks = (
+        ('system', 'System packages', lambda: package_source(plan, updates)),
+        ('flatpak', 'Flatpak apps', lambda: flatpak_source(updates)),
+        ('aur', 'AUR packages', lambda: pin_source(plan, 'aur', 'AUR packages')),
+        ('clones', 'zsh plugins', lambda: pin_source(plan, 'clones', 'zsh plugins')),
+        ('repository', 'Repository', repository_source),
+        ('desktop', 'Desktop', lambda: desktop_source(plan)),
+        ('plugins', 'Hyprland plugins', plugins_source),
+    )
+    sources = []
+    for index, (key, title, check) in enumerate(checks):
+        row = ui.frame('Updates', 'Ctrl+C quits')
+        if row is not None:
+            ui.wrap(row, f'Looking for updates ({index + 1}/{len(checks)}): {title}')
+            ui.window.refresh()
+        try:
+            source = check()
+        except (subprocess.SubprocessError, RuntimeError, OSError, ValueError) as error:
+            source = failed_source(key, title, error)
+        if source:
+            sources.append(source)
+    return sources
+
+
+def recorded_profiles():
+    # The profiles the installer applied here, from its record; a missing package does not make one less of them.
+    # Quiet: an unreadable record says so on stderr, over the screen.
+    with redirect_stderr(io.StringIO()):
+        record = installer.load_record()
+    if record.get('uninstalled'):
+        return ()
+    return tuple(name for name in installer.PROFILES if name in record.get('profiles', ()) or name == 'core' and record.get('profiles'))
+
+
+def default_choice(sources):
+    # Everything there is to apply, but the repository, which goes alone.
+    return {source.key for source in sources if source.selectable and source.key != 'repository'}
+
+
+def update_rows(sources, chosen, expanded):
+    rows = []
+    for index, source in enumerate(sources):
+        box = ('[x]' if source.key in chosen else '[ ]') if source.selectable else '   '
+        style = 'accent' if source.selectable else 'error' if source.error else 'dim'
+        mark = ('-' if index in expanded else '+') if source.details else ' '
+        rows.append((index, f'{mark} {box} {source.title:<17} {source.summary}', style))
+        if index in expanded:
+            rows += [(index, '        ' + line, 'dim') for line in source.details]
+    return rows
+
+
+def picked_sources(sources, chosen):
+    # What a confirmed apply does: the repository alone when it is checked, else every checked source.
+    picked = [source for source in sources if source.selectable and source.key in chosen]
+    repository = [source for source in picked if source.key == 'repository']
+    return ('pull', repository) if repository else ('apply', picked)
+
+
+def updates_screen(ui, plan):
+    sources = check_updates(ui, plan)
+    chosen, expanded = default_choice(sources), set()
+    cursor, top = 0, 0
+    while True:
+        row = ui.frame('Updates', 'Up/Down move   Space toggle   Enter details   a apply   r check again   Esc back   q quit')
+        if row is None:
+            ui.key()
+            continue
+        height = ui.size()[0]
+        row = ui.wrap(row, 'What is newer than this desktop. The checked lines are applied together; the repository goes '
+                      'alone and first, and the rest is checked again after it.', ui.style('dim')) + 1
+        rows = update_rows(sources, chosen, expanded)
+        cursor = min(cursor, len(rows) - 1)
+        source = sources[rows[cursor][0]]
+        # Room for the note of the highlighted line at the bottom.
+        visible = max(height - 1 - row - 4, 1)
+        top = min(max(top, cursor - visible + 1), cursor)
+        for offset, (_, text, style) in enumerate(rows[top:top + visible]):
+            selected = top + offset == cursor
+            ui.put(row + offset, 2, clip(('> ' if selected else '  ') + text, ui.size()[1] - 4),
+                   ui.style(style) | (curses.A_REVERSE if selected else 0))
+        ui.wrap(row + len(rows[top:top + visible]) + 1, source.note, ui.style('dim'))
+        key = ui.key()
+        if key in UP:
+            cursor = max(cursor - 1, 0)
+        elif key in DOWN:
+            cursor = min(cursor + 1, len(rows) - 1)
+        elif key == curses.KEY_PPAGE:
+            cursor = max(cursor - visible, 0)
+        elif key == curses.KEY_NPAGE:
+            cursor = min(cursor + visible, len(rows) - 1)
+        elif key in ENTER:
+            index = rows[cursor][0]
+            expanded ^= {index}
+            cursor = next(position for position, entry in enumerate(update_rows(sources, chosen, expanded)) if entry[0] == index)
+        elif key == ' ' and source.selectable:
+            chosen ^= {source.key}
+        elif key == 'r':
+            sources = check_updates(ui, plan)
+            chosen, expanded = default_choice(sources), set()
+            cursor, top = 0, 0
+        elif key == 'a':
+            action, picked = picked_sources(sources, chosen)
+            if not picked:
+                ui.footer('Nothing is checked: Space checks a line.', 'warn')
+                ui.key()
+            elif action == 'pull':
+                ui.footer('Update the repository now? The rest is checked again after it. [y/N]', 'warn')
+                if ui.key() in ('y', 'Y'):
+                    return action, picked
+            else:
+                ui.footer(f'Apply {len(picked)} now? sudo asks for your password once. [y/N]', 'warn')
+                if ui.key() in ('y', 'Y'):
+                    return action, picked
+        elif key in BACK:
+            return 'back', None
+        elif key == 'q':
+            return 'quit', None
+
+
+def interface(window, plan, preset=False, start='menu'):
     # A state machine over the screens; what comes back is run after curses has given the terminal back.
-    # preset: --profiles was given, and wins over what is found on the system.
+    # preset: --profiles was given, and wins over what is found on the system. start: menu, or updates.
     ui = Screen(window)
-    stage, mode, statuses = 'menu', 'install', None
+    stage, mode, statuses = start, 'install', None
     while True:
         if stage == 'menu':
             mode = menu(ui)
             if mode == 'quit':
                 return None
-            stage = 'uninstall' if mode == 'uninstall' else 'profiles'
+            stage = mode if mode in ('uninstall', 'updates') else 'profiles'
+        elif stage == 'updates':
+            # Of the profiles of this desktop, whatever --profiles says.
+            stage = 'menu'
+            if not installer.desktop_present():
+                notice(ui, 'Updates', 'The desktop is not installed yet: Install or update the desktop comes first.')
+                continue
+            profiles = recorded_profiles()
+            if not profiles:
+                if statuses is None:
+                    statuses = detect(ui, plan)
+                profiles = tuple(name for name in installer.PROFILES if name == 'core' or installed(statuses[name]))
+            current = plan._replace(profiles=profiles)
+            outcome, picked = updates_screen(ui, current)
+            if outcome == 'quit':
+                return None
+            if outcome in ('pull', 'apply'):
+                return 'pull' if outcome == 'pull' else 'updates', current, picked
         elif stage == 'uninstall':
             # Back to the menu whatever the answer, unless the removal is confirmed.
             stage = 'menu'
@@ -661,11 +946,69 @@ def apply(plan):
     return 0
 
 
+def pull():
+    # Then this program starts again from the new version, on the updates screen: the pins may have moved.
+    print('Running: git merge --ff-only @{u}', flush=True)
+    subprocess.run(('git', '-C', str(REPO), 'merge', '--ff-only', '@{u}'), check=True)
+    print('Checking again with the new version...', flush=True)
+    os.execv(sys.executable, [sys.executable, str(REPO / 'scripts/install-tui.py'), '--updates'])
+
+
+def update_flatpaks():
+    # The system's apps with sudo, as the installer installs them; your own as you.
+    subprocess.run(('sudo', 'flatpak', 'update', '--system', '-y', '--noninteractive'), check=True)
+    if installer.query('flatpak', 'list', '--user', '--app', '--columns=application').stdout.strip():
+        subprocess.run(('flatpak', 'update', '--user', '-y', '--noninteractive'), check=True)
+
+
+def refresh_bar():
+    # The update icon shows what updates.py found last: check again, as the update terminal does.
+    command = Path.home() / '.local/bin/desktop-updates'
+    if command.exists():
+        subprocess.run((str(command), 'check'), check=False)
+
+
+def apply_updates(plan, picked):
+    keys = {source.key for source in picked}
+    print('Updating: ' + ', '.join(source.title for source in picked), flush=True)
+    subprocess.run(('sudo', '-v'), check=True)
+    stop = threading.Event()
+    threading.Thread(target=keep_sudo, args=(stop,), daemon=True).start()
+    pins = [pin for source in picked for pin in source.pins]
+    try:
+        if pins:
+            text = MANIFEST.read_text(encoding='utf-8')
+            for pin in pins:
+                text = installer.repin(text, pin.old, pin.new, pin.version, pin.tag)
+            MANIFEST.write_text(text, encoding='utf-8')
+            print(f'Pinned in {MANIFEST.relative_to(REPO)}: ' + ', '.join(f'{pin.name} {pin.label}' for pin in pins), flush=True)
+            # Read again: the steps below build and check out what it pins now.
+            plan = installer.load_plan(plan.profiles, firmware=plan.firmware)
+        titles = {STEP_OF[key] for key in keys if key in STEP_OF}
+        steps = tuple(step for step in installer.STEPS if step.title in titles)
+        if steps:
+            installer.run_steps(plan, False, steps)
+        if 'flatpak' in keys:
+            update_flatpaks()
+    finally:
+        stop.set()
+    if keys & {'system', 'flatpak'}:
+        refresh_bar()
+    if pins:
+        print(f'{MANIFEST.relative_to(REPO)} changed: commit it, so the other machines get the same pins.')
+    state = bundle.status()
+    if state not in (bundle.CURRENT, bundle.MISSING):
+        print('Hyprland plugins: ' + PLUGIN_STATES[state] + '.')
+    print('Done.')
+    return 0
+
+
 def main(argv=None):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--firmware', metavar='DIR', help='directory the firmware screen starts with')
     parser.add_argument('--profiles', help='profiles chosen at the start (default: the ones installed, or on a fresh system '
                         f'{installer.DEFAULT_PROFILES})')
+    parser.add_argument('--updates', action='store_true', help='start on the updates screen')
     args = parser.parse_args(argv)
     profiles = tuple((args.profiles or installer.DEFAULT_PROFILES).split(','))
     if not installer.valid_profiles(profiles):
@@ -679,16 +1022,20 @@ def main(argv=None):
     locale.setlocale(locale.LC_ALL, '')
     os.environ.setdefault('ESCDELAY', '25')
     try:
-        choice = curses.wrapper(interface, plan, bool(args.profiles))
+        choice = curses.wrapper(interface, plan, bool(args.profiles), 'updates' if args.updates else 'menu')
     except curses.error as error:
         sys.exit(f'This terminal cannot draw the installer ({error}): use install-desktop.py.')
     if choice is None:
         print('Nothing changed.')
         return 0
-    action, plan = choice
+    action, plan, *picked = choice
     if action == 'post':
         installer.post(plan)
         return 0
+    if action == 'pull':
+        return pull()
+    if action == 'updates':
+        return apply_updates(plan, picked[0])
     return apply(plan)
 
 

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# The guided installer of this desktop, from anywhere: install or update it, check for updates, remove it.
+#   desktop-manager            the menu
+#   desktop-manager updates    straight to the updates screen
+# Other arguments go to scripts/install-tui.py as they are (--profiles, --firmware).
+set -euo pipefail
+repo="$(cd -- "$(dirname -- "$(readlink -f -- "$0")")/../../.." && pwd)"
+if [[ ${1:-} == updates ]]; then
+    shift
+    set -- --updates "$@"
+fi
+exec "$repo/scripts/install-tui.py" "$@"
