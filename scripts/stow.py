@@ -57,7 +57,8 @@ backup = None
 moved = []
 try:
     if conflicts:
-        state = Path(os.environ.get('XDG_STATE_HOME', str(target / '.local/state')))
+        # An empty XDG_STATE_HOME counts as unset, as in the installer: backups never land in the working directory.
+        state = Path(os.environ.get('XDG_STATE_HOME') or str(target / '.local/state'))
         backup = state / 'dotfiles/backups' / datetime.now().strftime('%Y%m%d-%H%M%S-%f')
         for path in conflicts:
             saved = backup / path.relative_to(target)

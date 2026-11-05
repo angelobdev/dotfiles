@@ -701,6 +701,20 @@ class UninstallTests(unittest.TestCase):
             for step in (installer.unshell_pending, installer.unfirewall_pending, installer.ungroups_pending, installer.unboot_pending):
                 self.assertEqual(step(current), [], step.__name__)
 
+    def test_the_preview_counts_backups_behind_our_links(self):
+        home = self.sandbox()
+        folder = home / 'backups/1'
+        for name in ('.zshrc', '.bashrc', '.profile'):
+            (folder / name).parent.mkdir(parents=True, exist_ok=True)
+            (folder / name).write_text('mine')
+        (home / '.zshrc').symlink_to(home / 'etc-x')  # A Stow link, unlinked first.
+        (home / '.bashrc').write_text('written since')  # A file of the user's: it stays.
+        backups = [(folder, folder / name) for name in ('.zshrc', '.bashrc', '.profile')]
+        with mock.patch.object(installer, 'linked_files', return_value=[home / '.zshrc']), \
+                mock.patch.object(installer, 'backups', return_value=backups):
+            items = installer.unstow_pending(self.removal({}))
+        self.assertIn(f'put back 2 files Stow had moved to {installer.STATE / "backups"}', items)
+
     def test_the_record_stays_marked_as_undone(self):
         current = self.removal({})
         installer.unstate_apply(current, installer.unstate_pending(current))

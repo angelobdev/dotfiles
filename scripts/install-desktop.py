@@ -725,9 +725,14 @@ def backups():
 
 def unstow_pending(plan):
     items = []
-    if linked_files():
-        items.append(f'unlink {len(linked_files())} files linked into {REPO}')
-    restorable = [path for folder, path in backups() if not (Path.home() / path.relative_to(folder)).exists()]
+    links = linked_files()
+    if links:
+        items.append(f'unlink {len(links)} files linked into {REPO}')
+    # Put back where nothing is, or where a link of ours is that the unlinking removes first; the newest copy of
+    # each file counts once.
+    linked = set(links)
+    restorable = {Path.home() / path.relative_to(folder) for folder, path in backups()}
+    restorable = [target for target in restorable if target in linked or not (target.exists() or target.is_symlink())]
     if restorable:
         items.append(f'put back {len(restorable)} files Stow had moved to {STATE / "backups"}')
     return items
