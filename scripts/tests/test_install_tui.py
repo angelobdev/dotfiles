@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """install-tui.py: the choices it offers map onto install-desktop.py, and nothing runs before the plan is confirmed."""
+import atexit
 import importlib.util
 from pathlib import Path
 import subprocess
@@ -14,6 +15,11 @@ spec = importlib.util.spec_from_file_location('install_tui', REPO / 'scripts/ins
 tui = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(tui)
 installer = tui.installer
+# Never the real state: apply writes its record there.
+SANDBOX = tempfile.TemporaryDirectory()
+atexit.register(SANDBOX.cleanup)
+installer.STATE = Path(SANDBOX.name)
+installer.RECORD = installer.STATE / 'install.json'
 
 TABLE = {
     'core': {'packages': ['a', 'b'], 'repos': ['one'], 'services': ['s.service']},
@@ -47,6 +53,23 @@ class ChoiceTests(unittest.TestCase):
     def test_the_same_command_without_the_interface(self):
         self.assertEqual(tui.command(plan()), './scripts/install-desktop.py apply --profiles core,plugins')
         self.assertEqual(tui.command(plan(firmware='~/HP pack')), "./scripts/install-desktop.py apply --profiles core,plugins --firmware '~/HP pack'")
+
+    def test_every_plugin_state_is_described(self):
+        states = {value for name, value in vars(tui.bundle).items() if name.isupper() and name not in ('FILES', 'REPOSITORY', 'VERIFIED', 'CACHE', 'STAMP', 'PACKAGING', 'PLUGINS')}
+        self.assertEqual(set(tui.PLUGIN_STATES), states)
+
+    def test_finish_only_while_the_first_login_has_not(self):
+        with tempfile.TemporaryDirectory() as folder, mock.patch.dict('os.environ', {'HYPRLAND_INSTANCE_SIGNATURE': 'sig'}):
+            autostart = Path(folder) / 'desktop-finish-install.desktop'
+            with mock.patch.object(installer, 'AUTOSTART', autostart):
+                self.assertFalse(tui.post_pending())
+                autostart.write_text('')
+                self.assertTrue(tui.post_pending())
+                with mock.patch.dict('os.environ', {'HYPRLAND_INSTANCE_SIGNATURE': ''}):
+                    self.assertFalse(tui.post_pending())
+
+    def test_the_removal_command(self):
+        self.assertEqual(tui.command(plan()._replace(record={})), './scripts/install-desktop.py apply --uninstall')
 
     def test_long_descriptions_are_cut_visibly(self):
         self.assertEqual(tui.clip('abcdefgh', 6), 'abc...')
@@ -114,9 +137,64 @@ class CompletionTests(unittest.TestCase):
         self.assertEqual(tui.complete('/no/such/place/x'), '/no/such/place/x')
 
 
+ALL = {name: tui.Status([], 2) for name in installer.PROFILES}
+FRESH = {name: tui.Status(['a', 'b'], 2) for name in installer.PROFILES}
+
+
+class StatusTests(unittest.TestCase):
+    def status(self, missing, swapped=False, name='plugins'):
+        distro = mock.Mock()
+        distro.missing.side_effect = lambda packages: [package for package in packages if package in missing]
+        distro.installed.side_effect = lambda package: package == 'old' and not swapped
+        return tui.profile_status(installer.Plan(distro, '45', TABLE, [], ('core',)), name)
+
+    def test_a_profile_counts_its_packages_and_swaps(self):
+        self.assertEqual(self.status([], swapped=True), tui.Status([], 3))
+        self.assertEqual(self.status(['c']), tui.Status(['c', 'old -> new'], 3))
+
+    def test_stow_links_count_once_they_point_into_the_repository(self):
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, 'home', return_value=Path(home)):
+            files = tui.stow_files('steam-hidpi')
+            self.assertTrue(files)
+            self.assertEqual(self.status([], name='steam-hidpi').total, len(files))
+            self.assertEqual(len(self.status([], name='steam-hidpi').missing), len(files))
+            for path in files:
+                target = Path(home) / path.relative_to(REPO / 'steam-hidpi')
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.symlink_to(path)
+            self.assertEqual(self.status([], name='steam-hidpi').missing, [])
+
+    def test_a_plain_file_is_not_a_link(self):
+        with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, 'home', return_value=Path(home)):
+            path = tui.stow_files('steam-hidpi')[0]
+            target = Path(home) / path.relative_to(REPO / 'steam-hidpi')
+            target.parent.mkdir(parents=True)
+            target.write_text(path.read_text())
+            self.assertFalse(tui.linked('steam-hidpi', path))
+
+    def test_labels(self):
+        self.assertEqual(tui.status_label(tui.Status([], 3)), 'installed')
+        self.assertEqual(tui.status_label(tui.Status(['a'], 3)), '2/3')
+        self.assertEqual(tui.status_label(tui.Status(['a', 'b', 'c'], 3)), '')
+        self.assertEqual(tui.status_label(tui.Status([], 0)), '')
+
+    def test_an_installed_desktop_starts_from_what_it_has(self):
+        statuses = {**FRESH, 'core': tui.Status([], 2), 'apps': tui.Status([], 2), 'gaming': tui.Status(['x'], 2)}
+        self.assertEqual(tui.preselected(statuses), ('core', 'apps'))
+        self.assertEqual(tui.preselected(ALL), installer.PROFILES)
+
+    def test_a_fresh_system_starts_from_the_defaults(self):
+        self.assertEqual(tui.preselected({**FRESH, 'apps': tui.Status([], 2)}), tuple(installer.DEFAULT_PROFILES.split(',')))
+
+    def test_a_partial_profile_names_what_is_missing(self):
+        self.assertEqual(tui.status_text(tui.Status(['a', 'b'], 5)), 'Partly installed (3/5); missing: a, b.')
+        self.assertIn('removes nothing', tui.status_text(tui.Status([], 5)))
+
+
 class FlowTests(unittest.TestCase):
     def run_interface(self, profiles, firmware_needed, review='apply', firmware=('next', '~/pack')):
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', return_value='install'), \
+                mock.patch.object(tui, 'detect', return_value=FRESH), \
                 mock.patch.object(tui, 'choose_profiles', return_value=('next', profiles)), \
                 mock.patch.object(tui, 'choose_firmware', return_value=firmware) as asked, \
                 mock.patch.object(tui, 'firmware_items', side_effect=lambda chosen: [FIRMWARE] if firmware_needed and 'hardware' in chosen.profiles else []), \
@@ -136,8 +214,56 @@ class FlowTests(unittest.TestCase):
     def test_quitting_the_review_runs_nothing(self):
         self.assertIsNone(self.run_interface(('core',), False, review='quit')[0])
 
+    def first_choice(self, statuses, preset):
+        with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', return_value='install'), \
+                mock.patch.object(tui, 'detect', return_value=statuses) as detected, \
+                mock.patch.object(tui, 'choose_profiles', return_value=('quit', ())) as chosen:
+            tui.interface(None, plan(('core', 'media')), preset)
+        detected.assert_called_once()
+        return chosen.call_args.args[1].profiles
+
+    def test_the_installed_profiles_start_on(self):
+        self.assertEqual(self.first_choice(ALL, False), installer.PROFILES)
+
+    def test_given_profiles_win_over_what_is_found(self):
+        self.assertEqual(self.first_choice(ALL, True), ('core', 'media'))
+
+    def test_the_system_is_looked_at_once(self):
+        answers = iter([('back', ('core',)), ('quit', ('core',))])
+        with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', return_value='install'), \
+                mock.patch.object(tui, 'detect', return_value=ALL) as detected, \
+                mock.patch.object(tui, 'choose_profiles', side_effect=lambda *_: next(answers)):
+            tui.interface(None, plan())
+        detected.assert_called_once()
+
+    def removal_flow(self, running, outcome='apply'):
+        menus = iter(['uninstall', 'quit'])
+        with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', side_effect=lambda ui: next(menus)), \
+                mock.patch.object(installer, 'hyprland_running', return_value=running), \
+                mock.patch.object(installer, 'uninstall_plan', side_effect=lambda chosen: chosen._replace(record={'packages': []})), \
+                mock.patch.object(tui, 'notice') as noticed, mock.patch.object(tui, 'review', return_value=outcome) as reviewed, \
+                mock.patch.object(tui, 'detect') as detected:
+            result = tui.interface(None, plan())
+        detected.assert_not_called()
+        return result, noticed, reviewed
+
+    def test_removal_is_refused_while_hyprland_runs(self):
+        result, noticed, reviewed = self.removal_flow(running=True)
+        self.assertIsNone(result)
+        noticed.assert_called_once()
+        reviewed.assert_not_called()
+
+    def test_a_confirmed_removal_comes_back_with_its_record(self):
+        (action, chosen), noticed, _ = self.removal_flow(running=False)
+        self.assertEqual((action, chosen.record), ('uninstall', {'packages': []}))
+        noticed.assert_not_called()
+
+    def test_leaving_the_removal_review_goes_back_to_the_menu(self):
+        self.assertIsNone(self.removal_flow(running=False, outcome='back')[0])
+
     def test_post_skips_the_review(self):
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', return_value='post'), \
+                mock.patch.object(tui, 'detect', return_value=ALL), \
                 mock.patch.object(tui, 'choose_profiles', return_value=('next', ('core', 'plugins'))), \
                 mock.patch.object(tui, 'review') as reviewed:
             action, chosen = tui.interface(None, plan())
@@ -153,8 +279,18 @@ class ApplyTests(unittest.TestCase):
                 mock.patch.object(installer, 'next_steps'), mock.patch.object(installer, 'booted', return_value=booted), \
                 mock.patch.object(tui, 'keep_sudo'), mock.patch('builtins.input', return_value=answer), mock.patch('builtins.print'):
             self.assertEqual(tui.apply(plan()), 0)
-        steps.assert_called_once_with(mock.ANY, False)
+        steps.assert_called_once_with(mock.ANY, False, installer.STEPS)
         return calls
+
+    def test_a_removal_runs_the_uninstall_steps_after_checking_for_hyprland(self):
+        removal = plan()._replace(record={'packages': ['a']})
+        with mock.patch('subprocess.run'), mock.patch.object(installer, 'run_steps', return_value=0) as steps, \
+                mock.patch.object(installer, 'refuse_uninstall') as refused, mock.patch.object(installer, 'after_uninstall') as after, \
+                mock.patch.object(tui, 'keep_sudo'), mock.patch('builtins.print'):
+            tui.apply(removal)
+        refused.assert_called_once()
+        steps.assert_called_once_with(removal, False, installer.UNSTEPS)
+        after.assert_called_once_with(removal, 0)
 
     def test_sudo_asks_once_before_the_first_step(self):
         self.assertEqual(self.apply(3, 'n')[:2], [('sudo', '-v'), 'steps'])

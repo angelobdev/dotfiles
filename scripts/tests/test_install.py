@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """install-desktop.py must preview without changing anything, repeat safely, and refuse what it does not know."""
+import atexit
 import importlib.util
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -16,6 +18,13 @@ spec = importlib.util.spec_from_file_location('install_desktop', REPO / 'scripts
 installer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(installer)
 import fedora  # noqa: E402
+
+# Never the real state: apply writes its record there.
+SANDBOX = tempfile.TemporaryDirectory()
+atexit.register(SANDBOX.cleanup)
+installer.STATE = Path(SANDBOX.name)
+installer.RECORD = installer.STATE / 'install.json'
+installer.INTERFACE = installer.STATE / 'interface-before-theme.ini'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
 PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'firmware', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes'}
@@ -43,6 +52,8 @@ def fake_distro(pending=True):
     distro.file_differs.return_value = pending
     distro.auth_pending.return_value = ['with-fingerprint'] if pending else []
     distro.auth_base.return_value = 'local'
+    distro.requirements.return_value = set()
+    distro.packages_from.return_value = set()
     return distro
 
 
@@ -201,7 +212,8 @@ class StepTests(unittest.TestCase):
         base = Path(folder.name)
         self.autostart = base / 'autostart/finish.desktop'
         self.stamp = base / 'stamp.json'
-        for target, value in (('AUTOSTART', self.autostart), ('STAMP', self.stamp)):
+        self.record = base / 'state/install.json'
+        for target, value in (('AUTOSTART', self.autostart), ('STAMP', self.stamp), ('RECORD', self.record), ('STATE', base / 'state')):
             patcher = mock.patch.object(installer, target, value)
             patcher.start()
             self.addCleanup(patcher.stop)
@@ -210,9 +222,11 @@ class StepTests(unittest.TestCase):
             patcher = mock.patch(name, return_value=value)
             patcher.start()
             self.addCleanup(patcher.stop)
-        patcher = mock.patch.object(installer, 'plugin_guard')
-        patcher.start()
-        self.addCleanup(patcher.stop)
+        # No desktop from before: the real links in this home would make apply rebuild a record from the history.
+        for name in ('plugin_guard', 'linked_files'):
+            patcher = mock.patch.object(installer, name, return_value=[])
+            patcher.start()
+            self.addCleanup(patcher.stop)
 
     def system(self, pending, booted=True):
         """The answers of a machine with everything still to do, or with everything done."""
@@ -270,6 +284,7 @@ class StepTests(unittest.TestCase):
         self.system(False)
         distro = fake_distro(pending=False)
         self.stamp.write_text('{}')
+        installer.save_record({'packages': ['a']})  # The first run's.
         with mock.patch('subprocess.run') as run:
             self.assertEqual(installer.run_steps(plan(distro), False), 0)
         run.assert_not_called()
@@ -435,6 +450,303 @@ class StepTests(unittest.TestCase):
         self.assertNotIn(installer.BOOT_AUTOSTART, installer.boot_pending(plan(fake_distro(), profiles=('core',))))
 
 
+class RecordTests(unittest.TestCase):
+    setUp = StepTests.setUp
+    system = StepTests.system
+
+    def saved(self):
+        return json.loads(installer.RECORD.read_text())
+
+    def test_apply_notes_what_it_changes_and_what_was_there(self):
+        self.system(True)
+        with mock.patch('subprocess.run'):
+            installer.run_steps(plan(fake_distro()), False)
+        record = self.saved()
+        self.assertEqual(record['packages'], ['a', 'b', 'c', 'new'])
+        self.assertEqual(record['swaps'], [['old', 'new']])
+        self.assertEqual(record['repos'], ['one'])
+        self.assertEqual(record['files'], {'/etc/x': None})
+        self.assertEqual(record['login_shell'], '/bin/bash')
+        self.assertEqual(record['firewall_zone'], 'FedoraServer')
+        self.assertEqual(record['services'], {'enabled': ['s.service'], 'disabled': ['d.socket'], 'global': ['u.service']})
+        self.assertEqual(record['boot'], {'session': 'other', 'gdm': 'disabled', 'target': 'multi-user.target'})
+        self.assertEqual((record['groups'], record['clones'], record['auth']), (['g'], ['.local/p'], ['with-fingerprint']))
+        self.assertEqual(record['profiles'], ['core', 'plugins'])
+
+    def test_what_was_there_first_wins(self):
+        record = {'login_shell': '/bin/bash', 'files': {'/etc/x': None}}
+        with mock.patch.object(installer, 'login_shell', return_value='/usr/bin/zsh'):
+            installer.shell_remember(plan(fake_distro()), ['/usr/bin/zsh'], record)
+        installer.files_remember(plan(fake_distro()), ['/etc/x'], record)
+        self.assertEqual(record, {'login_shell': '/bin/bash', 'files': {'/etc/x': None}})
+
+    def test_the_record_is_written_before_the_step_runs(self):
+        self.system(True)
+        seen = []
+        failing = installer.Step('packages', lambda current: ['a'], lambda current, items: seen.append(self.saved()['packages']),
+                                 installer.packages_remember)
+        installer.run_steps(plan(fake_distro()), False, (failing,))
+        self.assertEqual(seen, [['a']])
+
+    def test_a_preview_writes_no_record(self):
+        self.system(True)
+        installer.run_steps(plan(fake_distro()), True)
+        self.assertFalse(installer.RECORD.exists())
+
+
+class UninstallTests(unittest.TestCase):
+    setUp = StepTests.setUp
+    system = StepTests.system
+
+    def sandbox(self):
+        # Uninstall deletes files: everything it may touch lives in a temporary home.
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        home = Path(folder.name)
+        self.plugin_files = [home / 'bundles', home / 'stamp.json']
+        for path in self.plugin_files:
+            path.write_text('')
+        patches = [mock.patch.object(Path, 'home', return_value=home), mock.patch.object(installer, 'plugin_paths', return_value=self.plugin_files),
+                   mock.patch.object(installer.bundle, 'CACHE', home / 'cache'), mock.patch.object(installer, 'linked_files', return_value=[]),
+                   mock.patch.object(installer, 'backups', return_value=[])]
+        for patcher in patches:
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        (home / '.local/p').mkdir(parents=True)
+        self.file = home / 'etc-x'
+        self.file.write_text('x\n')
+        return home
+
+    def removal(self, record):
+        distro = fake_distro(pending=False)
+        distro.installed_names.side_effect = lambda specs: [spec + '.x86_64' for spec in specs]
+        distro.removal.side_effect = lambda names: names + ['dependency.x86_64', 'mine.x86_64'] if names else []
+        distro.installed_by_hand.side_effect = lambda names: {'mine.x86_64'} & set(names)
+        distro.installed.side_effect = lambda package: package == 'new'
+        # The manifest writes the sandbox file, as it writes /etc/x.
+        table = {**TABLE, 'core': {**TABLE['core'], 'files': [{'path': str(getattr(self, 'file', '/etc/x')), 'content': '\nx\n'}]}}
+        return installer.Plan(distro, '45', table, [], ('core',), None, record)
+
+    def full_record(self):
+        return {'packages': ['a', 'python3', 'new'], 'swaps': [['old', 'new']], 'repos': ['one'], 'files': {str(self.file): None},
+                'login_shell': '/bin/bash', 'firewall_zone': 'FedoraServer', 'groups': ['g'], 'clones': ['.local/p'],
+                'services': {'enabled': ['s.service'], 'disabled': ['d.socket'], 'global': ['u.service']}, 'auth': ['with-fingerprint'],
+                'boot': {'session': 'other', 'gdm': 'disabled', 'target': 'multi-user.target'}}
+
+    def test_everything_recorded_is_undone(self):
+        self.system(False)
+        home = self.sandbox()
+        current = self.removal(self.full_record())
+        with mock.patch('subprocess.run'), mock.patch.object(installer, 'login_shell', return_value='/usr/bin/zsh'):
+            installer.run_steps(current, False, installer.UNSTEPS)
+        distro = current.distro
+        commands = [call.args for call in distro.sudo.call_args_list]
+        self.assertEqual(commands[0][-3:], ('SetSession', 's', 'other'))
+        for command in (('systemctl', 'disable', 'gdm.service'), ('systemctl', 'set-default', 'multi-user.target'),
+                        ('systemctl', 'disable', 's.service'), ('systemctl', 'enable', 'd.socket'), ('systemctl', 'disable', '--global', 'u.service'),
+                        ('firewall-cmd', '--set-default-zone=FedoraServer'), ('usermod', '--shell', '/bin/bash', 'angelo'),
+                        ('gpasswd', '-d', 'angelo', 'g'), ('rm', '-f', '--', str(self.file))):
+            self.assertIn(command, commands)
+        distro.auth_revert.assert_called_once_with(['with-fingerprint'], REPO / 'scripts/tablet-auth.sh')
+        # python3 is a prerequisite and new goes back by swap: neither is removed.
+        distro.remove.assert_called_once_with(['a.x86_64'])
+        distro.swap.assert_called_once_with('new', 'old')
+        distro.remove_repo.assert_called_once_with(TABLE['repos']['one'])
+        self.assertFalse((home / '.local/p').exists())
+        self.assertFalse([path for path in self.plugin_files if path.exists()])
+
+    def test_the_preview_shows_what_dnf_would_take_and_changes_nothing(self):
+        self.system(False)
+        self.sandbox()
+        current = self.removal(self.full_record())
+        with mock.patch('subprocess.run') as run, mock.patch.object(installer, 'login_shell', return_value='/usr/bin/zsh'):
+            installer.run_steps(current, True, installer.UNSTEPS)
+            self.assertEqual(installer.unpackages_pending(current),
+                             ['a.x86_64', 'dependency.x86_64', 'mine.x86_64  (installed by hand: it needs one of the others)'])
+        run.assert_not_called()
+        current.distro.sudo.assert_not_called()
+        current.distro.remove.assert_not_called()
+        self.assertTrue(self.file.exists())
+
+    def test_a_file_that_was_there_gets_its_content_back(self):
+        self.sandbox()
+        current = self.removal({'files': {str(self.file): 'before\n'}})
+        installer.unfiles_apply(current, installer.unfiles_pending(current))
+        current.distro.write_file.assert_called_once_with(str(self.file), 'before\n')
+
+    def test_a_file_edited_since_the_install_stays(self):
+        self.system(False)
+        self.sandbox()
+        self.file.write_text('x\nmy browser\n')
+        current = self.removal({'files': {str(self.file): None}})
+        self.assertEqual(installer.unfiles_pending(current), [])
+        self.assertIn(f'{self.file} changed since the install: it stays as it is.', installer.record_notes(current))
+
+    def test_choices_made_since_the_install_stay(self):
+        self.system(False)
+        self.sandbox()
+        current = self.removal({'login_shell': '/bin/bash', 'firewall_zone': 'FedoraServer'})
+        with mock.patch.object(installer, 'login_shell', return_value='/usr/bin/fish'), \
+                mock.patch.object(installer, 'default_zone_now', return_value='home'):
+            self.assertEqual((installer.unshell_pending(current), installer.unfirewall_pending(current)), ([], []))
+            notes = installer.record_notes(current)
+        self.assertTrue(any('/usr/bin/fish' in note for note in notes))
+        self.assertTrue(any('home' in note for note in notes))
+
+    def test_a_package_installed_by_hand_keeps_what_it_needs(self):
+        self.sandbox()
+        current = self.removal({'packages': ['a', 'b']})
+        current.distro.removal.side_effect = lambda names: names + (['mine.x86_64'] if 'a.x86_64' in names else [])
+        current.distro.requirements.side_effect = lambda names: {'a.x86_64', 'glibc.x86_64'}
+        self.assertEqual(installer.unpackages_pending(current), ['b.x86_64', 'keep a.x86_64  (a package installed by hand needs it)'])
+        installer.unpackages_apply(current, [])
+        current.distro.remove.assert_called_once_with(['b.x86_64'])
+
+    def test_a_repository_packages_still_come_from_stays(self):
+        self.sandbox()
+        current = self.removal({'packages': ['a'], 'repos': ['one']})
+        current.distro.repo_missing.return_value = False
+        current.distro.packages_from.return_value = {'a.x86_64', 'akmod-nvidia.x86_64'}
+        self.assertEqual(installer.unrepos_pending(current), [])
+        self.assertIn('The one repository stays: it still provides akmod-nvidia.x86_64.', installer.record_notes(current))
+        current.distro.packages_from.return_value = {'a.x86_64'}
+        self.assertEqual(installer.unrepos_pending(current), ['one'])
+
+    def test_a_record_that_knows_only_the_profiles_is_rebuilt(self):
+        installer.save_record({'profiles': ['core']})
+        with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True}) as rebuilt:
+            current = installer.uninstall_plan(plan(fake_distro()))
+        rebuilt.assert_called_once()
+        self.assertEqual(current.record, {'reconstructed': True})
+
+    def test_an_unreadable_record_is_set_aside_and_rebuilt(self):
+        installer.RECORD.parent.mkdir(parents=True, exist_ok=True)
+        installer.RECORD.write_text('{"packages": [')
+        with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True}), mock.patch('sys.stderr'):
+            installer.uninstall_plan(plan(fake_distro()))
+            self.assertTrue(installer.RECORD.exists())
+            installer.uninstall_plan(plan(fake_distro()), preview=False)
+        self.assertFalse(installer.RECORD.exists())
+        self.assertEqual(installer.RECORD.with_name('install.json.unreadable').read_text(), '{"packages": [')
+
+    def test_what_is_already_back_is_left_alone(self):
+        self.system(True)
+        self.sandbox()
+        current = self.removal({'login_shell': '/bin/bash', 'firewall_zone': 'FedoraServer', 'groups': ['g'],
+                                'boot': {'session': 'other', 'target': 'multi-user.target'}})
+        with mock.patch.object(installer, 'login_shell', return_value='/bin/bash'):
+            for step in (installer.unshell_pending, installer.unfirewall_pending, installer.ungroups_pending, installer.unboot_pending):
+                self.assertEqual(step(current), [], step.__name__)
+
+    def test_the_record_stays_marked_as_undone(self):
+        current = self.removal({})
+        installer.unstate_apply(current, installer.unstate_pending(current))
+        self.assertEqual(installer.load_record(), {'uninstalled': True})
+        again = installer.uninstall_plan(installer.Plan(fake_distro(), '45', TABLE, [], ('core',)))
+        self.assertEqual(installer.unstate_pending(again), [])
+        current.distro.history.assert_not_called()
+
+    def test_an_apply_on_a_desktop_from_before_the_record_starts_from_the_history(self):
+        self.system(False)
+        installer.save_record({'profiles': ['core']})
+        self.stamp.write_text('{}')
+        with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True, 'packages': ['a.x86_64']}), \
+                mock.patch('subprocess.run'):
+            installer.run_steps(plan(fake_distro(pending=False)), False)
+        self.assertEqual(installer.load_record(), {'reconstructed': True, 'packages': ['a.x86_64'], 'profiles': ['core', 'plugins']})
+
+    def test_a_new_install_after_an_uninstall_starts_a_new_record(self):
+        self.system(True)
+        installer.save_record({'uninstalled': True})
+        with mock.patch('subprocess.run'):
+            installer.run_steps(plan(fake_distro()), False)
+        self.assertNotIn('uninstalled', installer.load_record())
+
+    def test_the_order_keeps_the_system_usable(self):
+        titles = [step.title for step in installer.UNSTEPS]
+        # PAM and the login shell before the packages they point at; stow while it is installed.
+        for title in ('auth', 'shell', 'stow', 'plugins', 'boot', 'services'):
+            self.assertLess(titles.index(title), titles.index('packages'), title)
+        self.assertLess(titles.index('packages'), titles.index('swaps'))
+        self.assertLess(titles.index('swaps'), titles.index('repos'))
+        self.assertEqual(titles[-1], 'record')
+
+    def test_uninstall_waits_until_hyprland_is_gone(self):
+        with mock.patch.object(installer, 'query', return_value=reply('1234')), self.assertRaises(SystemExit) as caught:
+            installer.refuse_uninstall()
+        self.assertIn('Ctrl+Alt+F3', str(caught.exception))
+        with mock.patch.object(installer, 'query', return_value=reply('', 1)):
+            installer.refuse_uninstall()
+
+    def test_the_preview_is_allowed_inside_hyprland(self):
+        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(installer, 'load_plan', return_value=plan(fake_distro())), \
+                mock.patch.object(installer, 'refuse'), mock.patch.object(installer, 'refuse_uninstall') as refused, \
+                mock.patch.object(installer, 'uninstall_plan', side_effect=lambda current, preview: current._replace(record={})), \
+                mock.patch.object(installer, 'run_steps', return_value=0) as steps, mock.patch('builtins.print'):
+            installer.main(['dry-run', '--uninstall'])
+            refused.assert_not_called()
+            self.assertIs(steps.call_args.args[2], installer.UNSTEPS)
+            installer.main(['apply', '--uninstall'])
+            refused.assert_called_once()
+
+    def test_uninstall_does_not_go_with_post(self):
+        with mock.patch('sys.stderr'), self.assertRaises(SystemExit) as caught:
+            installer.main(['post', '--uninstall'])
+        self.assertEqual(caught.exception.code, 2)
+
+
+class ReconstructTests(unittest.TestCase):
+    def reconstruct(self, base, installed, shell='/usr/bin/zsh', zone='Zone', session='s "hyprland-uwsm"', target='graphical.target'):
+        distro = fake_distro(pending=False)
+        distro.history.return_value = []
+        distro.base_packages.return_value = set(base)
+        distro.installed_names.side_effect = lambda specs: [spec + '.x86_64' for spec in specs if spec in installed]
+        distro.installed.side_effect = lambda package: package in installed
+        distro.default_zone.return_value = 'public'
+        distro.owned.return_value = False
+        distro.auth_reconstruct.return_value = []
+        table = {**TABLE, 'core': {**TABLE['core'], 'packages': ['a', 'b', 'gdm']}}
+        current = installer.Plan(distro, '45', table, [], ('core',))
+
+        def query(*command):
+            answers = {'firewall-cmd': zone, 'busctl': session, 'systemctl': target}
+            return reply(answers.get(command[0], ''))
+        with mock.patch.object(installer, 'PROFILES', ('core', 'plugins')), mock.patch.object(installer, 'query', side_effect=query), \
+                mock.patch.object(installer, 'login_shell', return_value=shell), mock.patch.object(installer, 'booted', return_value=True), \
+                mock.patch('shutil.which', return_value='/usr/bin/firewall-cmd'), mock.patch('grp.getgrnam', return_value=mock.Mock(gr_mem=[])):
+            return installer.reconstruct(current)
+
+    def test_only_what_came_after_the_system_install(self):
+        record = self.reconstruct(base={'b.x86_64'}, installed={'a', 'b', 'gdm', 'c'})
+        self.assertEqual(record['packages'], ['a.x86_64', 'gdm.x86_64', 'c.x86_64'])
+        self.assertTrue(record['reconstructed'])
+
+    def test_a_swap_only_when_the_old_package_came_with_the_system(self):
+        self.assertEqual(self.reconstruct(base={'old.x86_64'}, installed={'new'})['swaps'], [['old', 'new']])
+        record = self.reconstruct(base={'kernel.x86_64'}, installed={'new'})
+        self.assertEqual(record['swaps'], [])
+        self.assertIn('new.x86_64', record['packages'])
+
+    def test_values_from_before_that_the_system_tells(self):
+        record = self.reconstruct(base={'kernel.x86_64'}, installed={'gdm'})
+        self.assertEqual(record['login_shell'], '/bin/bash')
+        self.assertEqual(record['firewall_zone'], 'public')
+        self.assertEqual(record['boot'], {'session': '', 'gdm': 'disabled', 'target': 'multi-user.target'})
+        self.assertNotIn('services', record)
+
+    def test_without_the_system_install_in_the_history_no_package_goes(self):
+        record = self.reconstruct(base=set(), installed={'a', 'gdm', 'new'})
+        self.assertEqual((record['packages'], record['swaps'], record['base_unknown']), ([], [], True))
+        notes = installer.record_notes(plan(fake_distro())._replace(record={'base_unknown': True}))
+        self.assertTrue(any('no package from before the record is removed' in note for note in notes))
+
+    def test_a_display_manager_from_before_stays(self):
+        record = self.reconstruct(base={'gdm.x86_64'}, installed={'gdm'}, shell='/bin/bash', zone='public')
+        self.assertEqual(record['boot'], {'session': ''})
+        self.assertNotIn('login_shell', record)
+        self.assertNotIn('firewall_zone', record)
+
+
 class FirmwareTests(unittest.TestCase):
     def setUp(self):
         folder = tempfile.TemporaryDirectory()
@@ -560,6 +872,73 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(fields['ID'], 'fedora')
         self.assertEqual(fields['VERSION_ID'], '45')
         self.assertEqual(fields['PRETTY_NAME'], 'Fedora Linux 45 (Server Edition)')
+
+
+REFUSED = """Failed to resolve the transaction:
+Problem 1: The operation would result in broken dependencies for the following protected packages: systemd-udev
+Problem 2: installed package kmod-34.2-6.fc45.x86_64 requires /usr/bin/pkg-config, but none of the providers can be installed
+  - installed package systemd-udev-262.1-1.fc45.x86_64 requires kmod >= 18-4, but none of the providers can be installed
+  - conflicting requests
+"""
+REMOVED = """Package     Arch   Version         Repository      Size
+Removing:
+ udisks2     x86_64 0:2.11.2-1.fc45 fedora      3.0 MiB
+Removing unused dependencies:
+ libblockdev x86_64 0:3.5.0-5.fc45  fedora    385.2 KiB
+
+Transaction Summary:
+ Removing:           2 packages
+Operation aborted by the user.
+"""
+
+
+class RemovalTests(unittest.TestCase):
+    def answers(self, asked):
+        def query(*command):
+            asked.append(command)
+            if command[:2] == ('dnf', 'remove'):
+                if 'pkgconf-pkg-config.x86_64' in command:
+                    return subprocess.CompletedProcess(command, 1, '', REFUSED)
+                return reply(REMOVED, 1)
+            if command[:3] == ('rpm', '-q', '--whatprovides'):
+                names = {'/usr/bin/pkg-config': 'pkgconf-pkg-config.x86_64', 'kmod': 'kmod.x86_64'}
+                return reply(''.join(names[capability] + '\n' for capability in command[5:]))
+            return reply('')
+        return query
+
+    def test_what_a_package_that_stays_still_needs_stays_too(self):
+        asked = []
+        with mock.patch.object(fedora, 'query', side_effect=self.answers(asked)):
+            names, rows = fedora.removable(['pkgconf-pkg-config.x86_64', 'udisks2.x86_64'])
+        self.assertEqual(names, ['udisks2.x86_64'])
+        self.assertEqual(rows, ['udisks2.x86_64', 'libblockdev.x86_64'])
+        self.assertIn(('rpm', '-q', '--whatprovides', '--qf', '%{NAME}.%{ARCH}\n', '/usr/bin/pkg-config', 'kmod'), asked)
+
+    def test_the_removal_only_takes_what_can_go(self):
+        with mock.patch.object(fedora, 'query', side_effect=self.answers([])), mock.patch.object(fedora, 'sudo') as sudo:
+            fedora.remove(['pkgconf-pkg-config.x86_64', 'udisks2.x86_64'])
+        sudo.assert_called_once_with('dnf', 'remove', '-y', 'udisks2.x86_64')
+
+    def test_a_refusal_it_cannot_explain_stops(self):
+        with mock.patch.object(fedora, 'query', return_value=subprocess.CompletedProcess((), 1, '', 'Problem: something else')):
+            with self.assertRaises(RuntimeError):
+                fedora.removable(['a.x86_64'])
+
+    def test_nothing_to_remove(self):
+        with mock.patch.object(fedora, 'query', return_value=reply('Nothing to do.\n')):
+            self.assertEqual(fedora.removable(['a.x86_64']), (['a.x86_64'], []))
+        self.assertEqual(fedora.removable([]), ([], []))
+
+    def test_history_names(self):
+        self.assertEqual(fedora.nevra_name('libva-intel-media-driver-0:26.3.5-1.fc45.x86_64'), 'libva-intel-media-driver.x86_64')
+        transactions = [{'id': 1, 'command_line': '', 'packages': [{'nevra': 'a-0:1-1.fc45.x86_64', 'action': 'Install'}]},
+                        {'id': 2, 'command_line': 'dnf --installroot=/mnt/sysroot install b', 'packages': [{'nevra': 'b-0:1-1.fc45.noarch', 'action': 'Install'}]},
+                        {'id': 3, 'command_line': 'dnf install -y c', 'packages': [{'nevra': 'c-0:1-1.fc45.x86_64', 'action': 'Install'}]}]
+        self.assertEqual(fedora.base_packages(transactions), {'a.x86_64', 'b.noarch'})
+        self.assertEqual(fedora.base_packages(transactions[2:]), set())
+        # PackageKit leaves no command line either: it comes after the system install, and is not part of it.
+        later = transactions + [{'id': 4, 'command_line': '', 'packages': [{'nevra': 'd-0:1-1.fc45.x86_64', 'action': 'Install'}]}]
+        self.assertEqual(fedora.base_packages(later), {'a.x86_64', 'b.noarch'})
 
 
 class FedoraTests(unittest.TestCase):

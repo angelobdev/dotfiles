@@ -28,7 +28,7 @@ Packaging in [`scripts/hyprpm`](../../scripts/hyprpm) downloads the four origina
 
 ## Fedora COPR adaptations
 
-The installer checks that the session, installed binary, and `hyprland-devel` package match, then prepares hyprpm headers by copying the actual RPM headers, preserving `version.h` and the ABI. The cache remains root-owned at `/var/cache/hyprpm/$USER`; privileged operations are limited to this cache. Unlike the previous COPR, this build reports its real Git commit, so the ABI hash changes with each Hyprland release: after an update the cache has to be reset (`sudo rm -rf /var/cache/hyprpm/$USER`, then the installer).
+The installer checks that the session, installed binary, and `hyprland-devel` package match, then prepares hyprpm headers by copying the actual RPM headers, preserving `version.h` and the ABI. The cache remains root-owned at `/var/cache/hyprpm/$USER`; privileged operations are limited to this cache. Unlike the previous COPR, this build reports its real Git commit, so the ABI hash changes with each Hyprland release: after an update the installer resets the cache itself, at the next login, before anything is loaded (below).
 
 The manifest uses runtime name **HyprCapture**, including capitalization, avoiding the upstream manifest mismatch. It installs the Qt helper `~/.local/bin/hyprcapture-ui` and licenses. It does not install the optional TensorFlow/AEC microphone runtime: capture does not require it. Quickshell recording continues to use wf-recorder.
 
@@ -52,13 +52,21 @@ hyprctl configerrors
 desktop-plugins reload
 ```
 
-`desktop-plugins reload` runs automatically at Hyprland startup. Before loading, it compares the RPM, ABI, and running binary against installer state. After a COPR update it suspends autoload and shows a notification, so the next login runs without plugins until they are rebuilt.
+`desktop-plugins reload` runs automatically at Hyprland startup, before any plugin is loaded. It compares the RPM, ABI and running binary with the last build, and the packaging in `scripts/hyprpm` with the one hyprpm built from:
 
-Pins and the accepted RPM build are intentionally explicit in `scripts/hyprpm/build.py`. Compositor updates require compatible revisions to be checked, rebuilt, and tested in an isolated session before changing that guard. `hyprpm update` on the local packaging retains pins; it does not automatically select new upstream revisions.
+- **Both match**: it loads the plugins.
+- **The packaging changed, or Hyprland was updated to a [verified build](#installation)**: it does not load the old plugins, and opens a terminal that runs `install-hypr-plugins.py`. With nothing loaded, the script replaces them whole (`hyprpm remove`, and for a new ABI a reset of `/var/cache/hyprpm/$USER`), builds, and loads them; it asks for sudo and for hyprpm's confirmations. If it stops, the session goes on without plugins and the next login tries again.
+- **A rebuild stopped halfway** (offline, the terminal closed, a plugin that failed to build): hyprpm's repository is gone or marks a plugin as failed, so it opens the terminal again, and every login does until a build finishes.
+- **Hyprland was updated to a build the pins were not verified against**: it shows a notification, and the session runs without plugins until the pins are checked and the build is added to `VERIFIED` in `scripts/hyprpm/bundle.py`.
+- **`hyprland` and `hyprland-devel` have different versions** (an update that stopped halfway): it shows a notification and loads nothing; finish the update (`sudo dnf upgrade`) and log in again.
 
-To change packaging on the same build, run `hyprpm remove dotfiles-desktop`, then rerun the installer. Both steps change plugins inside the running compositor: save your work first, since swapping hyprgrass by hand crashed it once ([troubleshooting](../development/verification-log.md#tablet-follow-ups-2026-10-30)). To try a single plugin, replace its file with `install`, which leaves the running copy alone, and log in again.
+The guided installer shows which of these applies on its first screen.
 
-`build.py` applies `scripts/hyprpm/hyprgrass-hold-touches.patch` to Hyprgrass. A new touch on a window waits up to 40 ms for more fingers: three or more claim the sequence and the window sees nothing, while one or two are replayed as soon as they lift, move past 12 px or, for two fingers, outlast the long press. Touches on Overlay and Top layer surfaces and on the lock screen are not held. On a window whose client never asked for `wl_touch`, one finger stands in for the pointer: past 12 px it sends axis events (source `finger`), otherwise its lift is a left click; a second finger ends this. The patch is part of the bundle and of its digest, so when the Hyprgrass pin moves it must be rebased or removed with it. To change ABI/headers, first check other registered repositories: the installer rejects a cache with a different ABI rather than overwriting it. Resetting the cache requires rebuilding all plugins that use it.
+Pins are intentionally explicit in `scripts/hyprpm/build.py`, the accepted RPM builds in `scripts/hyprpm/bundle.py`. Compositor updates require compatible revisions to be checked, rebuilt, and tested in an isolated session before changing that guard. `hyprpm update` on the local packaging retains pins; it does not automatically select new upstream revisions.
+
+A change to the packaging (`build.py`, `hyprpm.toml` or the patch) is rebuilt at the next login, as above. `install-hypr-plugins.py` refuses to replace plugins that are loaded, because swapping hyprgrass in a running compositor crashed it once ([troubleshooting](../development/verification-log.md#tablet-follow-ups-2026-10-30)); run in the session, it says to log in again. `bundle.py` is not part of the packaging digest, so accepting a Hyprland build rebuilds nothing by itself. To try a single plugin, replace its file with `install`, which leaves the running copy alone, and log in again.
+
+`build.py` applies `scripts/hyprpm/hyprgrass-hold-touches.patch` to Hyprgrass. A new touch on a window waits up to 40 ms for more fingers: three or more claim the sequence and the window sees nothing, while one or two are replayed as soon as they lift, move past 12 px or, for two fingers, outlast the long press. Touches on Overlay and Top layer surfaces and on the lock screen are not held. On a window whose client never asked for `wl_touch`, one finger stands in for the pointer: past 12 px it sends axis events (source `finger`), otherwise its lift is a left click; a second finger ends this. The patch is part of the bundle and of its digest, so when the Hyprgrass pin moves it must be rebased or removed with it. The cache belongs to one ABI: with nothing loaded, the installer resets a cache built for another one, unless it also holds other hyprpm repositories, which would need their own rebuild; then it stops and names them.
 
 To temporarily disable a plugin, for example:
 

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 """Install the tested plugin set with hyprpm, using matching Fedora RPM headers."""
-import getpass
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -13,10 +11,13 @@ import tomllib
 
 REPO = Path(__file__).resolve().parent.parent
 PACKAGING = REPO / 'scripts/hyprpm'
-BUNDLE = ('build.py', 'hyprpm.toml', 'hyprgrass-hold-touches.patch')
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(PACKAGING))
-from build import PLUGINS, fingerprint, rpm_version, run
+import bundle  # noqa: E402
+from build import PLUGINS, run  # noqa: E402
+
+# Swapping a loaded plugin crashed Hyprland once (dlclose leaves hyprgrass mapped): only a session without them changes them.
+AT_LOGIN = 'The plugins in use come from another build. They are rebuilt at the next login, before they load: log out and back in.'
 
 
 # JSON from hyprctl or Hyprland, with the command and the start of its output when it is not JSON.
@@ -28,13 +29,31 @@ def json_of(*command):
         sys.exit(f'{" ".join(command)} did not return JSON: {output.strip()[:200] or "(no output)"}')
 
 
+def loaded():
+    # With nothing loaded, hyprctl answers in words, not JSON.
+    output = subprocess.check_output(('hyprctl', '-j', 'plugin', 'list'), text=True)
+    try:
+        return {plugin['name'] for plugin in json.loads(output)} & set(PLUGINS)
+    except (ValueError, TypeError, KeyError):
+        return set()
+
+
+def reset_cache(cache):
+    # The cache belongs to one ABI. Only this repository may be lost with it: others would need their own rebuild.
+    others = sorted(path.name for path in cache.iterdir() if path.is_dir() and path.name not in ('headersRoot', bundle.REPOSITORY))
+    if others:
+        sys.exit(f'The hyprpm cache is for another Hyprland and also holds {", ".join(others)}: '
+                 f'rebuild those after resetting it with sudo rm -rf {cache}, then run this again.')
+    run('sudo', 'rm', '-rf', '--', str(cache))
+
+
 def main():
     if os.geteuid() == 0:
         sys.exit('Run as a regular user: the script requests sudo only for the hyprpm cache.')
     signature = os.environ.get('HYPRLAND_INSTANCE_SIGNATURE')
     if not signature:
         sys.exit('Run this from inside the Hyprland session: HYPRLAND_INSTANCE_SIGNATURE is not set.')
-    fingerprint()  # Refuse unreviewed compositor builds and mismatched headers.
+    bundle.verify()
     running = json_of('hyprctl', '-j', 'version')
     installed = json_of('Hyprland', '--version-json')
     for key in ('version', 'commit', 'abiHash'):
@@ -47,12 +66,18 @@ def main():
         sys.exit('hyprctl does not list the running Hyprland instance: log out and back in, then retry.')
     if not os.path.samefile('/proc/' + str(instance['pid']) + '/exe', shutil.which('Hyprland')):
         sys.exit('The running compositor uses the old binary: log in again.')
-    cache = Path('/var/cache/hyprpm') / getpass.getuser()
+    in_use = loaded()
+    if bundle.status() == bundle.CURRENT and in_use == set(PLUGINS):
+        print('The plugins are built from this packaging for this Hyprland, and loaded: nothing to do.')
+        return
+    cache = bundle.CACHE
     headers = cache / 'headersRoot'
     if cache.exists():
         state = cache / 'state.toml'
         if state.exists() and tomllib.loads(state.read_text()).get('state', {}).get('hash') != running['abiHash']:
-            sys.exit('The hyprpm cache uses a different ABI: verify/rebuild existing plugins first.')
+            if in_use:
+                sys.exit(AT_LOGIN)
+            reset_cache(cache)
     # Preserve any existing repositories; seed only a missing matching-RPM header cache.
     if not (headers / 'share/pkgconfig/hyprland.pc').exists():
         with tempfile.TemporaryDirectory(prefix='dotfiles-hyprpm-') as staging:
@@ -71,39 +96,37 @@ def main():
             run('sudo', 'install', '-m644', str(state_file), str(cache / 'state.toml'))
     # A local packaging repository keeps upstream pins and the Lua compatibility
     # patch reproducible. hyprpm still builds, installs, enables and loads each plugin.
-    digest = hashlib.sha256(b''.join((PACKAGING / f).read_bytes() for f in BUNDLE)).hexdigest()[:16]
-    bundle = Path.home() / '.local/share/dotfiles/hyprpm' / digest
-    if not (bundle / '.git').exists():
-        bundle.mkdir(parents=True, exist_ok=True)
-        for name in BUNDLE:
-            shutil.copy2(PACKAGING / name, bundle / name)
-        run('git', 'init', '-q', str(bundle))
-        run('git', '-C', str(bundle), 'add', *BUNDLE)
-        run('git', '-C', str(bundle), '-c', 'user.name=Dotfiles packaging', '-c', 'user.email=dotfiles@localhost', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'Package tested Hyprland plugins')
-    repo_state = cache / 'dotfiles-desktop/state.toml'
+    source = Path.home() / '.local/share/dotfiles/hyprpm' / bundle.digest()
+    if not (source / '.git').exists():
+        source.mkdir(parents=True, exist_ok=True)
+        for name in bundle.FILES:
+            shutil.copy2(PACKAGING / name, source / name)
+        run('git', 'init', '-q', str(source))
+        run('git', '-C', str(source), 'add', *bundle.FILES)
+        run('git', '-C', str(source), '-c', 'user.name=Dotfiles packaging', '-c', 'user.email=dotfiles@localhost', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'Package tested Hyprland plugins')
+    repo_state = cache / bundle.REPOSITORY / 'state.toml'
     if repo_state.exists():
         existing = tomllib.loads(repo_state.read_text())
-        if existing['repository']['url'] != bundle.as_uri():
-            sys.exit('Packaging has changed. Run hyprpm remove dotfiles-desktop and rerun this script.')
-        if any(existing.get(name, {}).get('failed', True) for name in PLUGINS):
-            sys.exit('The previous build is incomplete. Run hyprpm remove dotfiles-desktop and rerun this script.')
-    else:
-        run('hyprpm', 'add', bundle.as_uri())
+        # Another packaging, or a build that stopped halfway: replaced whole, while nothing of it is loaded.
+        if existing['repository']['url'] != source.as_uri() or any(existing.get(name, {}).get('failed', True) for name in PLUGINS):
+            if in_use:
+                sys.exit(AT_LOGIN)
+            run('hyprpm', 'remove', bundle.REPOSITORY)
+    if not repo_state.exists():
+        run('hyprpm', 'add', source.as_uri())
     existing = tomllib.loads(repo_state.read_text())
     if any(existing.get(name, {}).get('failed', True) for name in PLUGINS):
         sys.exit('One or more plugins failed to build: check the log before enabling them.')
     for name in PLUGINS:
         run('hyprpm', 'enable', name)
     # Autoload refuses stale COPR builds, even though their Git hash is "unknown".
-    stamp = {'rpm': rpm_version('hyprland'), 'version': running['version'], 'abiHash': running['abiHash']}
-    stamp_dir = Path.home() / '.local/state/dotfiles'
-    stamp_dir.mkdir(parents=True, exist_ok=True)
-    (stamp_dir / 'hypr-plugins.json').write_text(json.dumps(stamp) + '\n')
+    stamp = {'rpm': bundle.rpm_version('hyprland'), 'version': running['version'], 'abiHash': running['abiHash']}
+    bundle.STAMP.parent.mkdir(parents=True, exist_ok=True)
+    bundle.STAMP.write_text(json.dumps(stamp) + '\n')
     run(str(REPO / 'scripts/stow.py'), 'apply')
     run(str(REPO / 'shell/.local/bin/desktop-plugins'), 'reload')
     run('hyprctl', 'reload')
-    loaded = json_of('hyprctl', '-j', 'plugin', 'list')
-    missing = set(PLUGINS) - {plugin['name'] for plugin in loaded}
+    missing = set(PLUGINS) - loaded()
     if missing:
         sys.exit('Plugins not loaded: ' + ', '.join(sorted(missing)))
     run('hyprctl', 'plugin', 'list')

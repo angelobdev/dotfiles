@@ -522,10 +522,17 @@
   },
   "plugins": {
     "errors": {
-      "rebuildRequired": "Hyprland è cambiato. Verificare i pin e ricompilare: docs/guide/plugins.md.",
-      "unverifiedBuild": "Build diversa da quella verificata: autoload sospeso."
+      "rebuildRequired": "Questa build di Hyprland non è ancora verificata per i plugin: restano spenti finché i pin non vengono controllati (docs/guide/plugins.md).",
+      "unverifiedBuild": "Build diversa da quella verificata: autoload sospeso.",
+      "headersMismatch": "hyprland e hyprland-devel hanno versioni diverse: completa l'aggiornamento (sudo dnf upgrade), poi accedi di nuovo."
     },
-    "notificationTitle": "Plugin Hyprland non caricati"
+    "notificationTitle": "Plugin Hyprland non caricati",
+    "rebuildTitle": "Ricompilazione dei plugin Hyprland",
+    "rebuild": {
+      "incomplete": "L'ultima ricompilazione non è finita: riparte nel terminale appena aperto e si caricano quando finisce.",
+      "packaging": "Il loro pacchetto è cambiato: vengono ricompilati nel terminale appena aperto e si caricano quando finisce.",
+      "compositor": "Hyprland è stato aggiornato: vengono ricompilati nel terminale appena aperto e si caricano quando finisce."
+    }
   },
   "recording": {
     "area": "Area",
@@ -830,7 +837,7 @@
       "other": "%1 aggiornamenti disponibili"
     },
     "noticeBody": "Apri il pannello dalla barra per installarli.",
-    "compositor": "Tra questi c’è Hyprland: dopo l’aggiornamento esci e rientra, poi ricompila i plugin.",
+    "compositor": "Tra questi c’è Hyprland: dopo l’aggiornamento esci e rientra, e i plugin vengono ricompilati a quel login.",
     "checkedAt": "Controllato alle %1",
     "checkedOn": "Controllato %1",
     "never": "Non ancora controllato",
@@ -842,7 +849,7 @@
     "terminal": {
       "dnf": "Pacchetti di sistema (dnf):",
       "flatpak": "App Flatpak:",
-      "plugins": "Hyprland è stato aggiornato: esci e rientra, poi lancia %1 per ricompilare i plugin.",
+      "plugins": "Hyprland è stato aggiornato: esci e rientra, e i plugin vengono ricompilati a quel login (a mano: %1).",
       "done": "Fatto. Premi Invio per chiudere.",
       "failed": "Qualcosa non è andato (vedi sopra). Premi Invio per chiudere."
     },

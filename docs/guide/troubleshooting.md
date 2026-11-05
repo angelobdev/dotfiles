@@ -20,14 +20,7 @@ cat ~/.local/state/desktop-session/udiskie.log
 
 ## Common problems
 
-**A login comes up without plugins after a Hyprland update.** No gestures, overview or glass, and a notification asks for a rebuild. This is on purpose: plugins are built for one exact Hyprland. Reset the cache and rebuild, from a terminal in that session:
-
-```sh
-sudo rm -rf /var/cache/hyprpm/$USER
-./scripts/install-hypr-plugins.py
-```
-
-`scripts/hyprpm/build.py` accepts only the Hyprland builds it lists, so a new version needs new pins first: see [Hyprland plugins](plugins.md#verification-and-updates). The installer warns about this before you reboot.
+**A login comes up without plugins after a Hyprland update.** No gestures, overview or glass. This is on purpose: plugins are built for one exact Hyprland. For a [verified build](plugins.md#verification-and-updates) the login opens a terminal that rebuilds them; if it stopped (offline, closed), the next login tries again. A notification instead means the build is not verified yet (`scripts/hyprpm/bundle.py` accepts only the builds it lists, so a new version needs new pins first), or that `hyprland` and `hyprland-devel` came from different updates: finish it with `sudo dnf upgrade` and log in again.
 
 **The installer stops on a full disk.** Fedora Server's guided partitioning gives `/` only 15 GiB on LVM. Grow it with the command the installer printed, `sudo lvextend -r -l +100%FREE /dev/mapper/<root volume>`, then run `./scripts/install-desktop.py apply` (or `./scripts/install-tui.py`) again: it picks up where it stopped.
 

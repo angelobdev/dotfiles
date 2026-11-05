@@ -14,8 +14,7 @@ PLUGINS = {
 }
 # Keeps the fingers of a gesture from reaching the window under them.
 HYPRGRASS_PATCH = Path(__file__).resolve().with_name('hyprgrass-hold-touches.patch')
-# RPM builds of hyprland and hyprland-devel these pins were verified against.
-VERIFIED = ('0.57.1-1.fc45.x86_64',)
+# The Hyprland builds these pins were verified against are in bundle.py, outside the bundle and its digest.
 
 
 def run(*args, **kwargs):
@@ -26,18 +25,15 @@ def rpm_version(package):
     return subprocess.check_output(['rpm', '-q', '--qf', '%{VERSION}-%{RELEASE}.%{ARCH}', package], text=True)
 
 
-def fingerprint():
+def cache_key():
+    # Sources built for another Hyprland, or by another build.py or patch, are never reused.
     version = rpm_version('hyprland')
-    if version != rpm_version('hyprland-devel'):
-        raise RuntimeError('hyprland and hyprland-devel must have the same RPM version')
-    if version not in VERIFIED:
-        raise RuntimeError('Hyprland build differs from the verified version: update and verify pins before building')
     return hashlib.sha256((version + Path(__file__).read_text() + HYPRGRASS_PATCH.read_text()).encode()).hexdigest()[:20]
 
 
 def build(name):
     repo, revision, artifact = PLUGINS[name]
-    cache = Path.home() / '.cache/dotfiles/hyprpm-build' / fingerprint() / name
+    cache = Path.home() / '.cache/dotfiles/hyprpm-build' / cache_key() / name
     cache.parent.mkdir(parents=True, exist_ok=True)
     stamp = cache / '.dotfiles-built'
     if not stamp.exists() or not (cache / artifact).is_file():

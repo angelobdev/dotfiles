@@ -5,7 +5,8 @@
 #   git ls-files -co --exclude-standard -z | tar --null -T - -c | docker run -i --rm fedora:45 \
 #       bash -c 'mkdir /src && tar -x -C /src && exec bash /src/scripts/tests/install-container.sh'
 #
-# Environment: PROFILES (default core,hardware,plugins), COMPILE=1 also builds the plugins (slow). The container
+# Environment: PROFILES (default core,hardware,plugins), COMPILE=1 also builds the plugins (slow), BASE_EXTRA lists
+# packages the system has before the installer (ffmpeg-free makes the swaps run, and their undoing). The container
 # has no systemd, so the firewall, Flatpak and login steps skip themselves: only a VM covers those.
 set -euo pipefail
 
@@ -27,6 +28,7 @@ dnf -y -q install sudo shadow-utils util-linux git-core python3 authselect
 # Prove the manifest is explicit: nothing may depend on a weak dependency being installed.
 install -d /etc/dnf/libdnf5.conf.d
 printf '[main]\ninstall_weak_deps=False\n' >/etc/dnf/libdnf5.conf.d/90-install-test.conf
+[[ -z ${BASE_EXTRA:-} ]] || dnf -y -q install $BASE_EXTRA
 useradd --create-home --groups wheel "$user"
 printf '%s ALL=(ALL) NOPASSWD: ALL\n' "$user" >/etc/sudoers.d/$user
 install -d -m 700 -o "$user" /tmp/runtime
@@ -34,6 +36,11 @@ cp -a "$source/." "$repo"
 chown -R "$user:" "$repo"
 authselect select local --force >/dev/null
 cd "$repo"
+packages() { rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort -u; }
+packages >/tmp/packages-before
+before_shell=$(getent passwd "$user" | cut -d: -f7)
+before_auth=$(authselect current --raw)
+before_target=$(systemctl get-default)
 
 section 'Preview changes nothing'
 before=$(rpm -qa | sort | sha256sum)
@@ -76,10 +83,8 @@ dnf -y -q install desktop-file-utils python3-cmarkgfm qt6-qtdeclarative-devel
 as_user ./scripts/check.sh
 
 if [[ ${COMPILE:-} == 1 ]]; then
-    # On this copy only: the guard accepts a build once it has compiled here.
+    # build.py compiles whatever Hyprland is installed: the guard of verified builds is in bundle.py.
     section 'Compile the plugins against this release'
-    version=$(rpm -q --qf '%{VERSION}-%{RELEASE}.%{ARCH}' hyprland)
-    sed -i "s/^VERIFIED = .*/VERIFIED = ('$version',)/" scripts/hyprpm/build.py
     build=$(as_user mktemp -d)
     for plugin in Hyprspace hyprgrass hyprglass HyprCapture; do
         echo "-- $plugin"
@@ -92,5 +97,34 @@ if [[ ${COMPILE:-} == 1 ]]; then
         ls -l "$build/out/$plugin.so"
     done
 fi
+
+section 'Uninstall: preview, then the system as it was'
+as_user ./scripts/install-desktop.py dry-run --uninstall | grep -E '^[a-z]+: '
+as_user ./scripts/install-desktop.py apply --uninstall | grep -vE '^  '
+packages >/tmp/packages-after
+gone=$(comm -23 /tmp/packages-before /tmp/packages-after)
+[[ -z $gone ]] || { printf 'Removed with the desktop but there before it:\n%s\n' "$gone" >&2; exit 1; }
+# Not undone: the upgrade step and the tools check.sh needed. Nothing the manifest names may stay.
+extra=$(comm -13 /tmp/packages-before /tmp/packages-after)
+printf 'Left by the upgrade and check.sh: %s\n' "$(echo $extra)"
+manifest=$(python3 -c 'import tomllib; t = tomllib.load(open("scripts/install/manifest.toml", "rb"))["fedora"]
+print("\n".join(p.split("(")[0] for profile in t.values() if isinstance(profile, dict) for p in profile.get("packages", ())))' | sort -u)
+[[ $(getent passwd "$user" | cut -d: -f7) == "$before_shell" ]] || { echo 'login shell not restored' >&2; exit 1; }
+[[ $(authselect current --raw) == "$before_auth" ]] || { echo "authselect not restored: $(authselect current --raw)" >&2; exit 1; }
+[[ $(systemctl get-default) == "$before_target" ]] || { echo 'default target not restored' >&2; exit 1; }
+links=$(find "$home" -type l -lname "*.dotfiles/*" | head)
+[[ -z $links ]] || { printf 'Links left:\n%s\n' "$links" >&2; exit 1; }
+grep -q '"uninstalled": true' "$home/.local/state/dotfiles/install.json" || { echo 'install record not marked as undone' >&2; exit 1; }
+again=$(as_user ./scripts/install-desktop.py apply --uninstall)
+grep -qx 'Nothing to do.' <<<"$again" || { printf '%s\n' "$again" >&2; exit 1; }
+# A package of the manifest may stay only while something that stays needs it: then dnf refuses to remove it.
+left=$(comm -12 <(sed 's/\.[^.]*$//' <<<"$extra" | sort -u) <(grep -vxE 'python3|git-core' <<<"$manifest") || true)
+for package in $left; do
+    if dnf remove --assumeno "$package" >/tmp/left.log 2>&1 || ! grep -q 'Problem' /tmp/left.log; then
+        printf 'Still installed after uninstall, and nothing needs it: %s\n' "$package" >&2
+        exit 1
+    fi
+    echo "Kept, still needed: $package ($(grep -m1 -o 'installed package [^ ]*' /tmp/left.log))"
+done
 
 section 'All good'

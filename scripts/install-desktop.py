@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Turn an installed distribution into this desktop: dry-run shows the work, apply does it, post ends it after login."""
+"""Turn an installed distribution into this desktop, or back: dry-run shows the work, apply does it, post ends it after login."""
 from argparse import ArgumentParser
+import ast
 from collections import namedtuple
 import getpass
 import grp
 import hashlib
 import importlib
+import json
 import os
 from pathlib import Path
 import platform
@@ -25,6 +27,11 @@ FLATHUB = 'https://dl.flathub.org/repo/flathub.flatpakrepo'
 AUTOSTART = Path.home() / '.config/autostart/desktop-finish-install.desktop'
 STAMP = Path.home() / '.local/state/dotfiles/hypr-plugins.json'
 ACCOUNTS = 'org.freedesktop.Accounts'
+STATE = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'dotfiles'
+# What apply changed and what was there before, for uninstall: written before each step runs.
+RECORD = STATE / 'install.json'
+# The documented prerequisites of the installer itself: never removed.
+PROTECTED = ('python3', 'git-core')
 
 BOOT_SESSION = 'default session ' + SESSION
 BOOT_GDM = 'enable gdm.service'
@@ -32,9 +39,13 @@ BOOT_TARGET = 'boot into graphical.target'
 BOOT_AUTOSTART = 'finish the plugins at the first login'
 
 # firmware: the directory --firmware names, searched for the blobs the manifest lists; None when not given.
-Plan = namedtuple('Plan', 'distro release table commands profiles firmware', defaults=(None,))
-Step = namedtuple('Step', 'title pending apply')
+# record: what an earlier apply changed (RECORD, or rebuilt from the package history), for uninstall.
+Plan = namedtuple('Plan', 'distro release table commands profiles firmware record', defaults=(None, None))
+# remember(plan, items, record) notes in the record what apply is about to change, and what was there before.
+Step = namedtuple('Step', 'title pending apply remember', defaults=(None,))
 sys.dont_write_bytecode = True
+sys.path.insert(0, str(REPO / 'scripts/hyprpm'))
+import bundle  # noqa: E402
 
 
 def query(*command):
@@ -299,10 +310,8 @@ def flatpak_apply(plan, apps):
 
 def plugin_guard():
     # Early warning: post would refuse this Hyprland build, after a reboot.
-    sys.path.insert(0, str(REPO / 'scripts/hyprpm'))
-    from build import fingerprint
     try:
-        fingerprint()
+        bundle.verify()
     except RuntimeError as error:
         print(f'Warning: {error}')
 
@@ -348,25 +357,544 @@ def boot_apply(plan, items):
         AUTOSTART.write_text(autostart_entry(plan), encoding='utf-8')
 
 
+# The record: for each step, what it is about to change and the value it replaces. The first value seen wins, so a
+# second apply never mistakes its own work for what was there before.
+
+def load_record(set_aside=False):
+    # Missing: an empty record. Unreadable: empty too, said out loud, and moved aside before anything replaces it.
+    try:
+        record = json.loads(RECORD.read_text(encoding='utf-8'))
+    except FileNotFoundError:
+        return {}
+    except (OSError, ValueError):
+        record = None
+    if isinstance(record, dict):
+        return record
+    aside = RECORD.with_name(RECORD.name + '.unreadable')
+    if set_aside:
+        RECORD.replace(aside)
+    print(f'Warning: {RECORD} cannot be read' + (f', moved to {aside.name}' if set_aside else '') +
+          ': what the installer changed comes from the manifest and the package history instead.', file=sys.stderr)
+    return {}
+
+
+def knows_changes(record):
+    # Only profiles: an apply that found nothing to do on an install made before there was a record.
+    return bool(set(record) - {'profiles'})
+
+
+def desktop_present():
+    # Installed before: Stow links into this repository, or plugins already built.
+    return bool(linked_files()) or STAMP.exists()
+
+
+def save_record(record):
+    RECORD.parent.mkdir(parents=True, exist_ok=True)
+    temporary = RECORD.with_name(RECORD.name + '.tmp')
+    temporary.write_text(json.dumps(record, indent=1, sort_keys=True) + '\n', encoding='utf-8')
+    temporary.replace(RECORD)
+
+
+def keep(record, key, values):
+    items = record.setdefault(key, [])
+    items += [value for value in values if value not in items]
+
+
+def current_session():
+    # busctl prints 's "hyprland-uwsm"': the last quoted string.
+    parts = session().split('"')
+    return parts[-2] if len(parts) > 2 else ''
+
+
+def default_target():
+    return query('systemctl', 'get-default').stdout.strip()
+
+
+def default_zone_now():
+    return query('firewall-cmd', '--get-default-zone').stdout.strip()
+
+
+def read_or_none(path):
+    try:
+        return Path(path).read_text(encoding='utf-8')
+    except FileNotFoundError:
+        return None
+
+
+def repos_remember(plan, items, record):
+    keep(record, 'repos', items)
+
+
+def swaps_remember(plan, items, record):
+    keep(record, 'swaps', [[old, new] for old, new in swaps(plan) if f'{old} -> {new}' in items])
+
+
+def packages_remember(plan, items, record):
+    keep(record, 'packages', items)
+
+
+def files_remember(plan, items, record):
+    files = record.setdefault('files', {})
+    for path in items:
+        if path not in files:
+            try:
+                files[path] = read_or_none(path)
+            except OSError:
+                pass  # There but unreadable: uninstall leaves it alone.
+
+
+def firmware_remember(plan, items, record):
+    firmware = record.setdefault('firmware', {})
+    for target in items:
+        firmware.setdefault(target, Path(target).exists())
+
+
+def groups_remember(plan, items, record):
+    keep(record, 'groups', items)
+
+
+def shell_remember(plan, items, record):
+    record.setdefault('login_shell', login_shell())
+
+
+def services_remember(plan, items, record):
+    services = record.setdefault('services', {})
+    for item in items:
+        words = item.split()
+        keep(services, 'global' if '--global' in words else words[0] + 'd', [words[-1]])
+
+
+def firewall_remember(plan, items, record):
+    record.setdefault('firewall_zone', default_zone_now())
+
+
+def auth_remember(plan, items, record):
+    keep(record, 'auth', items)
+
+
+def stow_remember(plan, items, record):
+    keep(record, 'stow', merged(plan, 'stow'))
+
+
+def clones_remember(plan, items, record):
+    keep(record, 'clones', items)
+
+
+def flatpak_remember(plan, items, record):
+    keep(record, 'flatpaks', items)
+
+
+def boot_remember(plan, items, record):
+    boot = record.setdefault('boot', {})
+    if BOOT_SESSION in items:
+        boot.setdefault('session', current_session())
+    if BOOT_GDM in items:
+        boot.setdefault('gdm', unit_state('gdm.service') or 'disabled')
+    if BOOT_TARGET in items:
+        boot.setdefault('target', default_target())
+
+
 # In order. boot stays last: a run that stops earlier leaves a system that still starts on the console.
 STEPS = (
-    Step('repos', repos_pending, repos_apply),
+    Step('repos', repos_pending, repos_apply, repos_remember),
     Step('upgrade', upgrade_pending, upgrade_apply),
     # Before packages: a package that needs the replacement would conflict with what it replaces.
-    Step('swaps', swaps_pending, swaps_apply),
-    Step('packages', packages_pending, packages_apply),
-    Step('files', files_pending, files_apply),
-    Step('firmware', firmware_pending, firmware_apply),
-    Step('groups', groups_pending, groups_apply),
-    Step('shell', shell_pending, shell_apply),
-    Step('services', services_pending, services_apply),
-    Step('firewall', firewall_pending, firewall_apply),
-    Step('auth', auth_pending, auth_apply),
-    Step('stow', stow_pending, stow_apply),
-    Step('clones', clones_pending, clones_apply),
-    Step('flatpak', flatpak_pending, flatpak_apply),
+    Step('swaps', swaps_pending, swaps_apply, swaps_remember),
+    Step('packages', packages_pending, packages_apply, packages_remember),
+    Step('files', files_pending, files_apply, files_remember),
+    Step('firmware', firmware_pending, firmware_apply, firmware_remember),
+    Step('groups', groups_pending, groups_apply, groups_remember),
+    Step('shell', shell_pending, shell_apply, shell_remember),
+    Step('services', services_pending, services_apply, services_remember),
+    Step('firewall', firewall_pending, firewall_apply, firewall_remember),
+    Step('auth', auth_pending, auth_apply, auth_remember),
+    Step('stow', stow_pending, stow_apply, stow_remember),
+    Step('clones', clones_pending, clones_apply, clones_remember),
+    Step('flatpak', flatpak_pending, flatpak_apply, flatpak_remember),
     Step('verify', verify_pending, verify_apply),
-    Step('boot', boot_pending, boot_apply),
+    Step('boot', boot_pending, boot_apply, boot_remember),
+)
+
+
+# Uninstall: the steps above backwards, from the record. Each one undoes only what is still the way apply left it.
+
+def every_profile(plan):
+    return plan._replace(profiles=tuple(profile for profile in PROFILES if profile in plan.table))
+
+
+def reconstruct(plan):
+    # No record: an install made before there was one. Only what the manifest names and the package history shows
+    # arrived after the system was installed; values from before that the system cannot tell are left alone.
+    every = every_profile(plan)
+    distro = plan.distro
+    base = distro.base_packages(distro.history())
+    # Without the transactions that installed the system, nobody can tell its packages from the desktop's: they stay.
+    swapped = [[old, new] for old, new in swaps(every) if distro.installed(new) and not distro.installed(old)
+               and any(name.rsplit('.', 1)[0] == old for name in base)]
+    news = {new for _, new in swapped}
+    wanted = [package for package in dict.fromkeys(wanted_packages(every)) if package not in news]
+    packages = [name for name in distro.installed_names(wanted) if name not in base] if base else []
+    record = {'reconstructed': True, 'packages': packages, 'swaps': swapped,
+              'repos': [name for name in merged(every, 'repos') if not distro.repo_missing(every.table['repos'][name])],
+              'files': {item['path']: None for item in merged(every, 'files')
+                        if not distro.file_differs(item['path'], item['content'].lstrip()) and not distro.owned(item['path'])},
+              'firmware': {item['target']: False for item in merged(every, 'firmware') if Path(item['target']).is_file()
+                           and sha256(item['target']) == item['sha256'] and not distro.owned(item['target'])},
+              'groups': [group for group in merged(every, 'groups') if member(getpass.getuser(), group)],
+              'clones': [item['path'] for item in merged(every, 'clones') if (clone_path(item) / '.git').exists()],
+              'stow': merged(every, 'stow'), 'auth': distro.auth_reconstruct(packages)}
+    shell = setting(every, 'login_shell')
+    if shell and login_shell() == shell:
+        record['login_shell'] = '/bin/bash'
+    zone = setting(every, 'firewall_zone')
+    if zone and booted() and shutil.which('firewall-cmd') and default_zone_now() == zone != distro.default_zone():
+        record['firewall_zone'] = distro.default_zone()
+    if not base:
+        record['base_unknown'] = True
+    boot = record['boot'] = {}
+    if booted() and current_session() == SESSION:
+        boot['session'] = ''
+    # The display manager came with the desktop: the system started on the console before it.
+    if any(name.rsplit('.', 1)[0] == 'gdm' for name in packages):
+        boot['gdm'] = 'disabled'
+        if default_target() == 'graphical.target':
+            boot['target'] = 'multi-user.target'
+    return record
+
+
+def uninstall_plan(plan, preview=True):
+    record = load_record(set_aside=not preview)
+    return plan._replace(record=record if knows_changes(record) else reconstruct(plan))
+
+
+def hyprland_running():
+    return query('pgrep', '-u', str(os.getuid()), '-x', 'Hyprland').returncode == 0
+
+
+def plugin_paths():
+    home = Path.home()
+    return [home / '.local/share/dotfiles/hyprpm', home / '.cache/dotfiles/hyprpm-build', home / '.local/bin/hyprcapture-ui',
+            home / '.local/share/licenses/hyprcapture', bundle.STAMP]
+
+
+def unplugins_pending(plan):
+    repository = bundle.CACHE / bundle.REPOSITORY
+    return ([str(repository)] if repository.exists() else []) + [str(path) for path in plugin_paths() if path.exists() or path.is_symlink()]
+
+
+def unplugins_apply(plan, items):
+    # Files only: no Hyprland runs, so nothing is unloaded. The cache goes whole unless it holds other repositories.
+    if str(bundle.CACHE / bundle.REPOSITORY) in items:
+        others = [path for path in bundle.CACHE.iterdir() if path.is_dir() and path.name not in ('headersRoot', bundle.REPOSITORY)]
+        plan.distro.sudo('rm', '-rf', '--', str(bundle.CACHE / bundle.REPOSITORY) if others else str(bundle.CACHE))
+    for path in plugin_paths():
+        if path.is_dir() and not path.is_symlink():
+            shutil.rmtree(path)
+        elif path.exists() or path.is_symlink():
+            path.unlink()
+
+
+UNBOOT_AUTOSTART = 'remove the first-login autostart'
+
+
+def unboot_pending(plan):
+    boot, items = plan.record.get('boot', {}), []
+    # Only what is still the way apply left it: a session or target chosen since then stays.
+    if 'session' in boot and booted() and current_session() == SESSION != boot['session']:
+        items.append('default session ' + (boot['session'] or 'chosen by GDM'))
+    if boot.get('gdm', 'enabled') != 'enabled' and unit_state('gdm.service') == 'enabled':
+        items.append('disable gdm.service')
+    if 'target' in boot and default_target() == 'graphical.target' != boot['target']:
+        items.append('boot into ' + boot['target'])
+    if AUTOSTART.exists():
+        items.append(UNBOOT_AUTOSTART)
+    return items
+
+
+def unboot_apply(plan, items):
+    boot = plan.record.get('boot', {})
+    if any(item.startswith('default session ') for item in items):
+        plan.distro.sudo('busctl', 'call', ACCOUNTS, user_object(), ACCOUNTS + '.User', 'SetSession', 's', boot['session'])
+    if 'disable gdm.service' in items:
+        plan.distro.sudo('systemctl', 'disable', 'gdm.service')
+    if any(item.startswith('boot into ') for item in items):
+        plan.distro.sudo('systemctl', 'set-default', boot['target'])
+    if UNBOOT_AUTOSTART in items:
+        AUTOSTART.unlink(missing_ok=True)
+
+
+def unclones_pending(plan):
+    return [path for path in plan.record.get('clones', ()) if (Path.home() / path).exists()]
+
+
+def unclones_apply(plan, paths):
+    for path in paths:
+        shutil.rmtree(Path.home() / path)
+
+
+def stow_packages():
+    # The lists of stow.py, read without running it.
+    values = {}
+    for node in ast.parse((REPO / 'scripts/stow.py').read_text(encoding='utf-8')).body:
+        if isinstance(node, ast.Assign) and getattr(node.targets[0], 'id', '') in ('PACKAGES', 'OPTIONAL'):
+            values[node.targets[0].id] = ast.literal_eval(node.value)
+    return values['PACKAGES'] + values['OPTIONAL']
+
+
+def linked_files():
+    links = []
+    for package in stow_packages():
+        root = REPO / package
+        for source in sorted(root.rglob('*')):
+            target = Path.home() / source.relative_to(root)
+            if source.is_file() and target.is_symlink() and target.resolve() == source.resolve():
+                links.append(target)
+    return links
+
+
+def backups():
+    # Files Stow moved aside, newest backup first: the latest copy of a file wins.
+    root = STATE / 'backups'
+    return [(folder, path) for folder in sorted(root.iterdir(), reverse=True) if folder.is_dir()
+            for path in sorted(folder.rglob('*')) if path.is_file() or path.is_symlink()] if root.is_dir() else []
+
+
+def unstow_pending(plan):
+    items = []
+    if linked_files():
+        items.append(f'unlink {len(linked_files())} files linked into {REPO}')
+    restorable = [path for folder, path in backups() if not (Path.home() / path.relative_to(folder)).exists()]
+    if restorable:
+        items.append(f'put back {len(restorable)} files Stow had moved to {STATE / "backups"}')
+    return items
+
+
+def unstow_apply(plan, items):
+    if linked_files():
+        # Never with sudo, as apply. stow.py --delete unlinks every package, the optional ones too.
+        subprocess.run((str(REPO / 'scripts/stow.py'), 'remove'), check=True)
+    for folder, path in backups():
+        target = Path.home() / path.relative_to(folder)
+        if not target.exists() and not target.is_symlink():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(path), str(target))
+
+
+INTERFACE = STATE / 'interface-before-theme.ini'
+
+
+def unsettings_pending(plan):
+    return [f'GNOME interface settings saved in {INTERFACE.name}'] if INTERFACE.exists() and booted() else []
+
+
+def unsettings_apply(plan, items):
+    # Saved by theme.py before its first change: one "schema key value" per line, in GVariant text.
+    environment = dict(os.environ)
+    environment.setdefault('DBUS_SESSION_BUS_ADDRESS', f'unix:path=/run/user/{os.getuid()}/bus')
+    for line in INTERFACE.read_text(encoding='utf-8').splitlines():
+        schema, key, value = (line.split(' ', 2) + ['', ''])[:3]
+        if schema and key:
+            subprocess.run(('gsettings', 'set', schema, key, value), env=environment, check=False)
+    INTERFACE.unlink()
+
+
+def unflatpak_pending(plan):
+    apps = plan.record.get('flatpaks', [])
+    present = query('flatpak', 'list', '--app', '--columns=application').stdout.split() if apps and shutil.which('flatpak') else []
+    return [app for app in apps if app in present]
+
+
+def unflatpak_apply(plan, apps):
+    plan.distro.sudo('flatpak', 'uninstall', '-y', '--noninteractive', *apps)
+
+
+def unauth_pending(plan):
+    # Before the packages: PAM would point at modules that are gone.
+    recorded = plan.record.get('auth', [])
+    return [item for item in recorded if item not in plan.distro.auth_pending()] if recorded else []
+
+
+def unauth_apply(plan, items):
+    plan.distro.auth_revert(items, REPO / 'scripts/tablet-auth.sh')
+
+
+def unfirewall_pending(plan):
+    zone = plan.record.get('firewall_zone')
+    if not zone or not booted() or not shutil.which('firewall-cmd'):
+        return []
+    now = default_zone_now()
+    return [] if now == zone or now != setting(every_profile(plan), 'firewall_zone') else [zone]
+
+
+def unfirewall_apply(plan, zones):
+    plan.distro.sudo('firewall-cmd', '--set-default-zone=' + zones[0])
+
+
+def unservices_pending(plan):
+    # Units apply turned off come back only with a record: without one, nobody knows they were ever on.
+    services = plan.record.get('services', {})
+    disable = [unit for unit in services.get('enabled', ()) if unit_state(unit) == 'enabled']
+    enable = [unit for unit in services.get('disabled', ()) if unit_state(unit) == 'disabled']
+    users = [unit for unit in services.get('global', ()) if query('systemctl', '--global', 'is-enabled', unit).stdout.strip() == 'enabled']
+    return ['disable ' + unit for unit in disable] + ['enable ' + unit for unit in enable] + ['disable --global ' + unit for unit in users]
+
+
+def unshell_pending(plan):
+    # Before the packages: a login shell that is gone locks the user out. One chosen since the install stays.
+    shell = plan.record.get('login_shell')
+    if not shell or login_shell() == shell or login_shell() != setting(every_profile(plan), 'login_shell'):
+        return []
+    return [shell if Path(shell).exists() else '/bin/bash']
+
+
+def ungroups_pending(plan):
+    return [group for group in plan.record.get('groups', ()) if member(getpass.getuser(), group)]
+
+
+def ungroups_apply(plan, groups):
+    for group in groups:
+        plan.distro.sudo('gpasswd', '-d', getpass.getuser(), group)
+
+
+def written_files(plan):
+    return {item['path']: item['content'].lstrip() for item in merged(every_profile(plan), 'files')}
+
+
+def changed_files(plan):
+    # Recorded files apply would undo, split by whether they still hold what apply wrote or were edited since.
+    written, ours, edited = written_files(plan), [], []
+    for path, before in plan.record.get('files', {}).items():
+        try:
+            now = read_or_none(path)
+        except OSError:
+            continue
+        if now != before:
+            (ours if now == written.get(path) else edited).append(path)
+    return ours, edited
+
+
+def unfiles_pending(plan):
+    return changed_files(plan)[0]
+
+
+def unfiles_apply(plan, paths):
+    for path in paths:
+        before = plan.record['files'][path]
+        if before is None:
+            plan.distro.sudo('rm', '-f', '--', path)
+        else:
+            plan.distro.write_file(path, before)
+
+
+def unfirmware_pending(plan):
+    return [target for target, existed in plan.record.get('firmware', {}).items() if not existed and Path(target).exists()]
+
+
+def unfirmware_apply(plan, targets):
+    for target in targets:
+        plan.distro.sudo('rm', '-f', '--', target)
+    plan.distro.rebuild_initramfs()
+
+
+def removal_split(plan):
+    # What apply installed and is still there: swapped packages go back by swap, prerequisites stay. A package
+    # someone installed by hand would go with them as a dependent: it stays, and so does everything of ours it needs.
+    news = {new for _, new in plan.record.get('swaps', ())}
+    names = plan.distro.installed_names([package for package in plan.record.get('packages', ()) if package not in news])
+    names = [name for name in names if name.rsplit('.', 1)[0] not in PROTECTED + tuple(news)]
+    kept = []
+    for _ in range(5):  # Each round keeps more; dnf's answer settles in one or two.
+        rows = plan.distro.removal(names)
+        theirs = plan.distro.installed_by_hand([row for row in rows if row not in names])
+        needed = plan.distro.requirements(sorted(theirs)) if theirs else set()
+        if not needed & set(names):
+            return names, kept, rows, theirs
+        kept += [name for name in names if name in needed]
+        names = [name for name in names if name not in needed]
+    return names, kept, rows, theirs
+
+
+def removed_names(plan):
+    return removal_split(plan)[0]
+
+
+def unpackages_pending(plan):
+    # dnf's own answer: what depends on them goes too, and so do the dependencies nothing else needs. A package
+    # installed by hand that still goes needs one of them in a way dnf did not tell: it is marked, for the review.
+    names, kept, rows, theirs = removal_split(plan)
+    marked = [row + ('  (installed by hand: it needs one of the others)' if row in theirs else '') for row in rows]
+    return marked + [f'keep {name}  (a package installed by hand needs it)' for name in kept]
+
+
+def unpackages_apply(plan, items):
+    plan.distro.remove(removed_names(plan))
+
+
+def unswaps_pending(plan):
+    return [f'{new} -> {old}' for old, new in plan.record.get('swaps', ()) if plan.distro.installed(new) and not plan.distro.installed(old)]
+
+
+def unswaps_apply(plan, items):
+    for old, new in plan.record.get('swaps', ()):
+        if f'{new} -> {old}' in items:
+            plan.distro.swap(new, old)
+
+
+def repos_in_use(plan, names):
+    # Of these repositories, the ones packages that stay still come from: removing them would stop their updates.
+    sources = {name: plan.distro.packages_from(plan.table['repos'][name]) for name in names}
+    if not any(sources.values()):
+        return {}
+    going = {row.rsplit('.', 1)[0] for row in plan.distro.removal(removed_names(plan))}
+    going |= {new for old, new in plan.record.get('swaps', ()) if plan.distro.installed(new) and not plan.distro.installed(old)}
+    staying = {name: sorted(package for package in packages if package.rsplit('.', 1)[0] not in going) for name, packages in sources.items()}
+    return {name: packages for name, packages in staying.items() if packages}
+
+
+def recorded_repos(plan):
+    return [name for name in plan.record.get('repos', ()) if name in plan.table['repos'] and not plan.distro.repo_missing(plan.table['repos'][name])]
+
+
+def unrepos_pending(plan):
+    names = recorded_repos(plan)
+    in_use = repos_in_use(plan, names)
+    return [name for name in names if name not in in_use]
+
+
+def unrepos_apply(plan, names):
+    for name in names:
+        plan.distro.remove_repo(plan.table['repos'][name])
+
+
+def unstate_pending(plan):
+    return [] if plan.record.get('uninstalled') else [f'mark {RECORD} as undone']
+
+
+def unstate_apply(plan, items):
+    # Kept, emptied: a second uninstall finds nothing to do, instead of rebuilding a record from the history.
+    save_record({'uninstalled': True})
+
+
+# In order: the plugins, the login and the links while their tools are installed; PAM and the login shell before
+# the packages they point at; the packages before the swaps and repositories they came from; the record last.
+UNSTEPS = (
+    Step('plugins', unplugins_pending, unplugins_apply),
+    Step('boot', unboot_pending, unboot_apply),
+    Step('clones', unclones_pending, unclones_apply),
+    Step('stow', unstow_pending, unstow_apply),
+    Step('settings', unsettings_pending, unsettings_apply),
+    Step('flatpak', unflatpak_pending, unflatpak_apply),
+    Step('auth', unauth_pending, unauth_apply),
+    Step('firewall', unfirewall_pending, unfirewall_apply),
+    Step('services', unservices_pending, services_apply),
+    Step('shell', unshell_pending, shell_apply),
+    Step('groups', ungroups_pending, ungroups_apply),
+    Step('files', unfiles_pending, unfiles_apply),
+    Step('firmware', unfirmware_pending, unfirmware_apply),
+    Step('packages', unpackages_pending, unpackages_apply),
+    Step('swaps', unswaps_pending, unswaps_apply),
+    Step('repos', unrepos_pending, unrepos_apply),
+    Step('record', unstate_pending, unstate_apply),
 )
 
 
@@ -379,7 +907,7 @@ def os_release(path=Path('/etc/os-release')):
     return fields
 
 
-def load_plan(profiles, release=None, firmware=None):
+def load_plan(profiles, release=None, firmware=None, any_version=False):
     manifest = tomllib.loads((INSTALL / 'manifest.toml').read_text(encoding='utf-8'))
     release = release or os_release()
     name, version = release.get('ID', ''), release.get('VERSION_ID', '')
@@ -387,7 +915,10 @@ def load_plan(profiles, release=None, firmware=None):
     if name == 'verify' or table is None:
         sys.exit(f'{name or "This distribution"} is not verified yet: see docs/guide/installation.md.')
     if version not in table['versions']:
-        sys.exit(f'{name} {version} is not verified: supported versions are {", ".join(table["versions"])}.')
+        if not any_version:
+            sys.exit(f'{name} {version} is not verified: supported versions are {", ".join(table["versions"])}. '
+                     'Removing the desktop still works: install-desktop.py dry-run --uninstall.')
+        print(f'Note: {name} {version} is not verified; the uninstall reads the manifest of {table["versions"][-1]}.')
     sys.path.insert(0, str(INSTALL))
     return Plan(importlib.import_module(name), version, table, manifest['verify']['commands'], profiles, firmware)
 
@@ -425,9 +956,18 @@ def preflight(plan):
         print('Warning: ' + warning)
 
 
-def run_steps(plan, preview):
+def run_steps(plan, preview, steps=STEPS):
     done = 0
-    for step in STEPS:
+    record = None if preview else load_record(set_aside=steps is STEPS)
+    if record and record.get('uninstalled'):
+        record = {}  # A new install after an uninstall starts its own record.
+    if record is not None and steps is STEPS:
+        if not knows_changes(record) and desktop_present():
+            # Installed before there was a record: what came then is told by the history, or uninstall would miss it.
+            record = {**reconstruct(plan), **record}
+        keep(record, 'profiles', plan.profiles)
+        save_record(record)
+    for step in steps:
         items = step.pending(plan)
         if not items:
             continue
@@ -436,8 +976,49 @@ def run_steps(plan, preview):
         # Flushed: what runs next writes straight to the terminal or the log.
         print('\n'.join('  ' + item for item in items), flush=True)
         if not preview:
+            # Saved before the change: a step that stops halfway is still undone by uninstall.
+            if step.remember:
+                step.remember(plan, items, record)
+                save_record(record)
             step.apply(plan, items)
     return done
+
+
+def refuse_uninstall():
+    if hyprland_running():
+        sys.exit('Hyprland is running: uninstalling removes the configuration it runs on. '
+                 'Log out, switch to a console (Ctrl+Alt+F3), sign in there and run this again.')
+
+
+def after_uninstall(plan, done):
+    if not done:
+        print('Nothing to do.')
+        return
+    print('Done. Not undone: the system upgrade, and what you changed by hand.')
+    print(f'Left in place: your preferences in ~/.config/desktop, and this repository ({REPO}).')
+
+
+def record_notes(plan):
+    # What an uninstall without a record cannot know, said before it starts.
+    notes = []
+    if plan.record.get('reconstructed'):
+        notes.append('The desktop was installed before there was an install record: what came then is read from the manifest '
+                     'and the package history, and units apply turned off then (such as sshd.service) stay off.')
+    if plan.record.get('base_unknown'):
+        notes.append('The package history does not show how the system was installed: no package from before the record is removed.')
+    every = every_profile(plan)
+    for path in changed_files(plan)[1]:
+        notes.append(f'{path} changed since the install: it stays as it is.')
+    shell = plan.record.get('login_shell')
+    if shell and login_shell() not in (shell, setting(every, 'login_shell')):
+        notes.append(f'The login shell is now {login_shell()}, chosen after the install: it stays.')
+    zone = plan.record.get('firewall_zone')
+    if zone and booted() and shutil.which('firewall-cmd') and default_zone_now() not in (zone, setting(every, 'firewall_zone')):
+        notes.append(f'The firewall zone is now {default_zone_now()}, chosen after the install: it stays.')
+    for name, packages in repos_in_use(plan, recorded_repos(plan)).items():
+        shown = ', '.join(packages[:3]) + (f' and {len(packages) - 3} more' if len(packages) > 3 else '')
+        notes.append(f'The {name} repository stays: it still provides {shown}.')
+    return notes
 
 
 def next_steps(plan, done):
@@ -472,13 +1053,29 @@ def main(argv=None):
     parser.add_argument('action', nargs='?', choices=('dry-run', 'apply', 'post'), default='dry-run')
     parser.add_argument('--firmware', metavar='DIR', help='directory searched (by hash) for the vendor firmware the manifest lists')
     parser.add_argument('--profiles', default=DEFAULT_PROFILES, help=f'comma separated, from {", ".join(PROFILES)} (default: {DEFAULT_PROFILES})')
+    parser.add_argument('--uninstall', action='store_true', help='undo what apply set up, from its record (dry-run shows it, apply does it)')
     args = parser.parse_args(argv)
+    if args.uninstall and args.action == 'post':
+        parser.error('--uninstall goes with dry-run or apply.')
     profiles = tuple(args.profiles.split(','))
     if not valid_profiles(profiles):
         parser.error(f'--profiles needs core, and takes only {", ".join(PROFILES)}.')
     if os.geteuid() == 0:
         sys.exit('Run as the desktop user: the script asks sudo for each system change.')
-    plan = load_plan(profiles, firmware=args.firmware)
+    plan = load_plan(profiles, firmware=args.firmware, any_version=args.uninstall)
+    if args.uninstall:
+        refuse(plan)
+        if args.action == 'apply':
+            refuse_uninstall()
+        plan = uninstall_plan(plan, preview=args.action == 'dry-run')
+        for note in record_notes(plan):
+            print('Note: ' + note)
+        done = run_steps(plan, args.action == 'dry-run', UNSTEPS)
+        if args.action == 'apply':
+            after_uninstall(plan, done)
+        elif not done:
+            print('Nothing to do.')
+        return 0
     preflight(plan)
     if args.action == 'post':
         post(plan)

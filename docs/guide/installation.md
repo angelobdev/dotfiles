@@ -59,12 +59,12 @@ After the reboot, sign in at GDM. A terminal opens by itself and runs `install-d
 
 `scripts/install-tui.py` runs the same steps behind a few terminal screens; it needs nothing beyond Python, so it also works on the console of a fresh Server install.
 
-1. **Welcome**: the system, the model, the free space, and the choice between installing and, inside Hyprland, finishing the installation (`post`).
-2. **Profiles**: `Space` toggles one, `d` goes back to the defaults; `core` always stays on. The bottom shows what the highlighted profile adds, read from the manifest.
+1. **Welcome**: the system, the model, the free space and the state of the [Hyprland plugins](plugins.md#verification-and-updates). Inside Hyprland, while the first login after an install has not finished, it also offers to finish it (`post`). **Remove the desktop** goes straight to a review of the [removal](#removal).
+2. **Profiles**: each one says whether it is `installed`, partly installed (`3/12`, with what is missing) or not, from its packages, swaps and Stow links. On a desktop already set up the installed profiles start on, on a fresh system the defaults do, and `--profiles` wins over both. `Space` toggles one, `d` picks the defaults, `i` the installed ones; `core` always stays on. Turning off an installed profile removes nothing. The bottom shows what the highlighted profile adds, read from the manifest.
 3. **Vendor firmware**: only on a model whose firmware is still missing (see `--firmware` above). Type the directory with a copy (`Tab` completes it) or leave it empty to go on without.
 4. **Review**: the preview of every step, the warnings, and the equivalent `install-desktop.py` command. `Enter` opens a step's list, `r` checks again, `a` applies after a confirmation.
 
-Nothing changes before `a`. Then the installer leaves the screens and runs in the terminal: sudo asks for the password once and stays valid for the whole run, each step prints what it does, and at the end it offers to reboot. `--profiles` and `--firmware` preselect the choices. Without a terminal, or on one that cannot draw, use `install-desktop.py`.
+Nothing changes before `a`. Then the installer leaves the screens and runs in the terminal: sudo asks for the password once and stays valid for the whole run, each step prints what it does, and at the end it offers to reboot. `--profiles` and `--firmware` preset the choices. Without a terminal, or on one that cannot draw, use `install-desktop.py`.
 
 On Fedora Server the guided partitioning stops `/` at 15 GiB, which is not enough. Choose custom partitioning, or grow it afterwards: the installer warns under 30 GiB free and prints the command.
 
@@ -112,4 +112,24 @@ Hyprspace, Hyprgrass, Hyprglass, and HyprCapture are managed through hyprpm. The
 
 ## Removal
 
-First stop the shell (`desktop-shell stop`) and daemons (`pkill -x hypridle; pkill -x hyprpaper; pkill -x udiskie`), then run `./scripts/stow.py remove`. Removal unlinks the files, preserves the repository, and does not automatically restore backups. Copy the desired files from the backup and reload Hyprland. GSettings preferences remain: restore them using the values in `interface-before-theme.ini` with `gsettings set org.gnome.desktop.interface KEY VALUE`. Log in again to change the Qt environment.
+The installer takes the desktop away as it set it up. Log out of Hyprland first: removing the configuration a running Hyprland reads breaks it, so the installer refuses while one runs. Switch to a console (`Ctrl + Alt + F3`), sign in, and run:
+
+```sh
+cd ~/.dotfiles
+./scripts/install-tui.py                          # Remove the desktop, review, a
+./scripts/install-desktop.py dry-run --uninstall  # or by hand: the preview
+./scripts/install-desktop.py apply --uninstall
+```
+
+`apply` writes down what each step is about to change, and the value it replaces, in `~/.local/state/dotfiles/install.json`. Uninstall reads it and undoes, in this order:
+
+1. the Hyprland plugins (hyprpm's repository, the builds, `hyprcapture-ui`), the default session, GDM and the boot target as they were, the first-login autostart;
+2. the zsh plugin clones, the Stow links (`stow.py remove`, then the files Stow had moved to `~/.local/state/dotfiles/backups` go back where they were), the GNOME interface settings saved before the first theme, and the Flatpak apps it installed;
+3. authselect (the tablet profile, then the fingerprint feature), the firewall zone, the services, the login shell and the groups, before the packages they point at;
+4. the files in `/etc` and the vendor firmware (then the initramfs), the packages the installer installed with whatever dnf removes along with them, the swaps back to the packages they replaced, and the repositories it added.
+
+Every step checks first and leaves alone what is already back, so it is safe to run again, and the record stays, marked as undone, so a second run finds nothing to do. What you changed after the install stays as you left it, and the preview says so: a file in `/etc` you edited (a browser added to 1Password's list), a login shell, firewall zone, default session or boot target you chose since. The preview lists what dnf would remove, dependencies included. A package you installed yourself never goes as a dependent: the packages of the installer it needs stay (marked `keep`). A repository that packages staying still come from (an RPM Fusion driver, say) stays too, so they keep getting updates. A package that something staying still needs stays too: dnf refuses to break a protected package such as `systemd-udev`, and the installer leaves what it needs (for example `pkgconf-pkg-config`, which `kmod` uses). The prerequisites `python3` and `git-core` stay, and so do your preferences in `~/.config/desktop`, this repository, and the system upgrade the installer ran. Reboot afterwards: the system starts on the console, as before.
+
+An install made before the record existed is rebuilt from the manifest and the package history, at the uninstall or at the next `apply`, whichever comes first: only packages that arrived after the system was installed (the first transactions, before any typed command) count, the login shell goes back to `/bin/bash`, the firewall zone to the edition's default, and units the installer turned off (such as `sshd.service`) stay off. If the history does not show how the system itself was installed, as in a container image, no package from before the record is removed. Both the preview and the guided installer say when this is the case. An unreadable record is moved aside to `install.json.unreadable` and rebuilt the same way. Uninstall still runs after an upgrade to a Fedora the manifest does not list yet; installing does not.
+
+By hand, `./scripts/stow.py remove` only unlinks the files; stop the shell (`desktop-shell stop`) and daemons (`pkill -x hypridle; pkill -x hyprpaper; pkill -x udiskie`) first.

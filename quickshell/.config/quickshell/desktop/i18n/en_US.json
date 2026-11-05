@@ -522,10 +522,17 @@
   },
   "plugins": {
     "errors": {
-      "rebuildRequired": "Hyprland has changed. Verify pins and rebuild: docs/guide/plugins.md.",
-      "unverifiedBuild": "Build differs from the verified version: autoload suspended."
+      "rebuildRequired": "This Hyprland build is not verified for the plugins yet: they stay off until the pins are checked (docs/guide/plugins.md).",
+      "unverifiedBuild": "Build differs from the verified version: autoload suspended.",
+      "headersMismatch": "hyprland and hyprland-devel have different versions: finish the update (sudo dnf upgrade), then log in again."
     },
-    "notificationTitle": "Hyprland plugins not loaded"
+    "notificationTitle": "Hyprland plugins not loaded",
+    "rebuildTitle": "Rebuilding the Hyprland plugins",
+    "rebuild": {
+      "incomplete": "The last rebuild did not finish: it runs again in the terminal that just opened, and they load when it finishes.",
+      "packaging": "Their packaging changed: they are rebuilt in the terminal that just opened, and load when it finishes.",
+      "compositor": "Hyprland was updated: they are rebuilt in the terminal that just opened, and load when it finishes."
+    }
   },
   "recording": {
     "area": "Area",
@@ -830,7 +837,7 @@
       "other": "%1 updates available"
     },
     "noticeBody": "Open the panel from the bar to install them.",
-    "compositor": "Hyprland is among them: after updating, log out and back in, then rebuild the plugins.",
+    "compositor": "Hyprland is among them: after updating, log out and back in, and the plugins are rebuilt at that login.",
     "checkedAt": "Checked at %1",
     "checkedOn": "Checked %1",
     "never": "Not checked yet",
@@ -842,7 +849,7 @@
     "terminal": {
       "dnf": "System packages (dnf):",
       "flatpak": "Flatpak apps:",
-      "plugins": "Hyprland was updated: log out and back in, then run %1 to rebuild the plugins.",
+      "plugins": "Hyprland was updated: log out and back in, and the plugins are rebuilt at that login (by hand: %1).",
       "done": "Done. Press Enter to close.",
       "failed": "Something went wrong (see above). Press Enter to close."
     },

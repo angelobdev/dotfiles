@@ -23,11 +23,11 @@ The running desktop reads files through symlinks into this repository:
 | New user-visible string | Both `en_US.json` and `it_IT.json`, same path and placeholders |
 | New helper or argv/stdout change | The QML service that parses it (byte-exact contract) |
 | New Stow package | `PACKAGES` in `scripts/stow.py`, package table in `docs/guide/installation.md` |
-| Anything in `scripts/hyprpm/` | Changes the bundle digest: requires `hyprpm remove dotfiles-desktop` and a reinstall; new files also go in `BUNDLE` in `install-hypr-plugins.py` |
+| `build.py`, `hyprpm.toml` or the patch in `scripts/hyprpm/` | Changes the bundle digest: the plugins are rebuilt at the next login, which opens a terminal for it; new files of the build also go in `FILES` in `bundle.py`. `bundle.py` itself (the accepted builds) is outside the digest |
 | Moved docs | Links in `README.md`, `docs/**`, `.claude/CLAUDE.md` (`scripts/check-links.py` finds the broken ones), and the doc paths quoted in the `assistant.errors.claudeMissing`, `capture.errors.pluginMissing` and `plugins.errors.rebuildRequired` catalog strings |
 | Tool needed by `check.sh` | The package list in `.github/workflows/check.yml`, and its list of required tools when `check.sh` skips that tool if missing |
 | New runtime dependency | `scripts/install/manifest.toml`, the only list of packages; `[verify]` too if the desktop cannot start without it |
-| New Fedora release | `versions` in the manifest, the accepted builds in `scripts/hyprpm/build.py`, the matrix in `check.yml`, the image in `install.yml` |
+| New Fedora release | `versions` in the manifest, the accepted builds in `scripts/hyprpm/bundle.py`, the matrix in `check.yml`, the image in `install.yml` |
 
 ## Verification
 

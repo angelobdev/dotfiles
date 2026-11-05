@@ -2,7 +2,7 @@
 """Guided install-desktop.py: pick the profiles and the firmware, review what is left to do, then apply it."""
 from argparse import ArgumentParser
 from collections import namedtuple
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 import curses
 import getpass
 import importlib.util
@@ -23,6 +23,8 @@ sys.dont_write_bytecode = True
 _spec = importlib.util.spec_from_file_location('install_desktop', REPO / 'scripts/install-desktop.py')
 installer = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(installer)
+sys.path.insert(0, str(REPO / 'scripts/hyprpm'))
+import bundle  # noqa: E402
 
 # One line each; docs/guide/installation.md has the long version.
 DESCRIPTIONS = {
@@ -36,6 +38,15 @@ DESCRIPTIONS = {
     'steam-hidpi': 'The Steam launcher that scales the client for the monitor it opens on.',
     'codecs': 'The RPM Fusion codecs in place of the free builds: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX.',
 }
+PLUGIN_STATES = {
+    bundle.CURRENT: 'built for this Hyprland and up to date',
+    bundle.MISSING: 'not built yet',
+    bundle.INCOMPLETE: 'a rebuild stopped halfway: it runs again at the next login',
+    bundle.PACKAGING_CHANGED: 'their packaging changed: rebuilt at the next login, before they load',
+    bundle.COMPOSITOR_CHANGED: 'Hyprland was updated: rebuilt at the next login, before they load',
+    bundle.UNVERIFIED: 'this Hyprland build is not verified for them yet: they stay off',
+    bundle.MISMATCHED: 'hyprland and hyprland-devel differ: finish the update, they stay off until then',
+}
 MIN_SIZE = (16, 60)
 PALETTE = (('accent', curses.COLOR_CYAN), ('warn', curses.COLOR_YELLOW), ('error', curses.COLOR_RED), ('ok', curses.COLOR_GREEN))
 UP = (curses.KEY_UP, 'k')
@@ -47,6 +58,56 @@ SUDO_REFRESH = 60
 
 # One step as the review found it: error is why its check failed, output what the check printed.
 Review = namedtuple('Review', 'title items error output')
+# What of one profile is on this system: missing names what is not, out of total things it sets up.
+Status = namedtuple('Status', 'missing total')
+
+
+def stow_files(package):
+    root = REPO / package
+    return [path for path in sorted(root.rglob('*')) if path.is_file()] if root.is_dir() else []
+
+
+def linked(package, path):
+    target = Path.home() / path.relative_to(REPO / package)
+    return target.is_symlink() and target.resolve() == path.resolve()
+
+
+def profile_status(plan, name):
+    # Only what can be seen without sudo: its packages, its swaps and its Stow links.
+    one = plan._replace(profiles=(name,))
+    wanted = list(dict.fromkeys(installer.wanted_packages(one)))
+    missing = (installer.packages_pending(one) if wanted else []) + installer.swaps_pending(one)
+    links = [(package, path) for package in plan.table[name].get('stow', ()) for path in stow_files(package)]
+    missing += [str(path.relative_to(REPO)) for package, path in links if not linked(package, path)]
+    return Status(missing, len(wanted) + len(installer.swaps(one)) + len(links))
+
+
+def installed(status):
+    return bool(status.total) and not status.missing
+
+
+def status_label(status):
+    if installed(status):
+        return 'installed'
+    if status.total and len(status.missing) < status.total:
+        return f'{status.total - len(status.missing)}/{status.total}'
+    return ''
+
+
+def preselected(statuses):
+    # On a desktop already set up, what it has; on a fresh system, the defaults.
+    if not installed(statuses['core']):
+        return tuple(installer.DEFAULT_PROFILES.split(','))
+    return tuple(name for name in installer.PROFILES if name == 'core' or installed(statuses[name]))
+
+
+def status_text(status):
+    if installed(status):
+        return 'Installed. Turning it off removes nothing: the installer never uninstalls.'
+    if status_label(status):
+        shown = ', '.join(status.missing[:6]) + (', ...' if len(status.missing) > 6 else '')
+        return f'Partly installed ({status_label(status)}); missing: {shown}.'
+    return 'Not installed.'
 
 
 def toggled(profiles, name):
@@ -68,7 +129,14 @@ def summary(table, name):
     return '; '.join(parts) + '.' if parts else ''
 
 
+def removing(plan):
+    # An uninstall plan carries the record of what to undo.
+    return plan.record is not None
+
+
 def command(plan, action='apply'):
+    if removing(plan):
+        return f'./scripts/install-desktop.py {action} --uninstall'
     words = ['./scripts/install-desktop.py', action, '--profiles', ','.join(plan.profiles)]
     if plan.firmware:
         words += ['--firmware', shlex.quote(plan.firmware)]
@@ -97,10 +165,13 @@ def review_step(plan, step):
 
 
 def review_warnings(plan, reviews):
-    try:
-        warnings = installer.preflight_warnings(plan)
-    except OSError as error:
-        warnings = [str(error)]
+    if removing(plan):
+        warnings = installer.record_notes(plan)
+    else:
+        try:
+            warnings = installer.preflight_warnings(plan)
+        except OSError as error:
+            warnings = [str(error)]
     for review in reviews:
         warnings += [line.removeprefix('Warning: ') for line in review.output.splitlines() if line.strip()]
     return warnings
@@ -220,13 +291,21 @@ def system_lines():
         ('User', getpass.getuser()),
         ('Free on /', f'{shutil.disk_usage("/").free // 2**30} GiB'),
         ('Repository', str(REPO)),
+        ('Plugins', PLUGIN_STATES[bundle.status()]),
     )
+
+
+def post_pending():
+    # The first login of a new install opens a terminal for this; once it has finished, there is nothing to finish.
+    return bool(os.environ.get('HYPRLAND_INSTANCE_SIGNATURE')) and installer.AUTOSTART.exists()
 
 
 def menu(ui):
     entries = [('install', 'Install or update the desktop', 'Choose the profiles, review what is left to do, then apply it.')]
-    if os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
+    if post_pending():
         entries.append(('post', 'Finish the installation', 'Build the Hyprland plugins and list what is left to do by hand.'))
+    entries.append(('uninstall', 'Remove the desktop', 'Undo what the installer set up: plugins, login, links and settings, '
+                    'then the packages and repositories it added. From a console, with Hyprland logged out.'))
     entries.append(('quit', 'Quit', 'Leave without changing anything.'))
     lines = system_lines()
     cursor = 0
@@ -256,16 +335,33 @@ def menu(ui):
             return 'quit'
 
 
-def choose_profiles(ui, plan, mode):
+def detect(ui, plan):
+    statuses = {}
+    for index, name in enumerate(installer.PROFILES):
+        row = ui.frame('Profiles', 'Ctrl+C quits')
+        if row is not None:
+            ui.wrap(row, f'Looking for the profiles already on this system ({index + 1}/{len(installer.PROFILES)}): {name}')
+            ui.window.refresh()
+        statuses[name] = profile_status(plan, name)
+    return statuses
+
+
+def choose_profiles(ui, plan, mode, statuses, preset=False):
     profiles = tuple(plan.profiles)
     cursor = 0
+    found = installed(statuses['core'])
     if mode == 'post':
-        title, intro = 'Profiles', 'Choose the profiles you installed: plugins builds the Hyprland plugins.'
+        intro = 'Choose the profiles you installed: plugins builds the Hyprland plugins.'
+    elif preset:
+        intro = 'The profiles given with --profiles start on' + ('; i chooses the installed ones' if found else '') + '. core always stays on.'
+    elif found:
+        intro = 'The profiles found on this system start on. core is the desktop itself and always stays on.'
     else:
-        title, intro = 'Profiles', 'Choose what to install. core is the desktop itself and always stays on.'
+        intro = 'Choose what to install. core is the desktop itself and always stays on.'
     defaults = tuple(installer.DEFAULT_PROFILES.split(','))
+    keys = 'Up/Down move   Space toggle   d defaults   ' + ('i installed   ' if found else '') + 'Enter continue   Esc back   q quit'
     while True:
-        row = ui.frame(title, 'Up/Down move   Space toggle   d defaults   Enter continue   Esc back   q quit')
+        row = ui.frame('Profiles', keys)
         if row is None:
             ui.key()
             continue
@@ -274,13 +370,15 @@ def choose_profiles(ui, plan, mode):
             selected = index == cursor
             box = '[*]' if name == 'core' else '[x]' if name in profiles else '[ ]'
             ui.put(row, 2, ('> ' if selected else '  ') + f'{box} {name}', curses.A_REVERSE if selected else 0)
-            ui.put(row, 22, clip(DESCRIPTIONS[name], ui.size()[1] - 24), ui.style('dim'))
+            ui.put(row, 21, status_label(statuses[name]), ui.style('ok' if installed(statuses[name]) else 'warn'))
+            ui.put(row, 33, clip(DESCRIPTIONS[name], ui.size()[1] - 35), ui.style('dim'))
             row += 1
         name = installer.PROFILES[cursor]
         row += 1
         ui.put(row, 2, name + ('  (default)' if name in defaults else '  (opt-in)'), ui.style('accent') | curses.A_BOLD)
         row = ui.wrap(row + 1, DESCRIPTIONS[name])
-        ui.wrap(row, summary(plan.table, name), ui.style('dim'))
+        row = ui.wrap(row, summary(plan.table, name), ui.style('dim'))
+        ui.wrap(row, status_text(statuses[name]), ui.style('ok' if installed(statuses[name]) else 'dim'))
         key = ui.key()
         if key in UP:
             cursor = (cursor - 1) % len(installer.PROFILES)
@@ -290,6 +388,8 @@ def choose_profiles(ui, plan, mode):
             profiles = toggled(profiles, name)
         elif key == 'd':
             profiles = defaults
+        elif key == 'i' and found:
+            profiles = preselected(statuses)
         elif key in ENTER:
             return 'next', profiles
         elif key in BACK:
@@ -364,10 +464,11 @@ def choose_firmware(ui, plan, items):
 
 def collect(ui, plan):
     reviews = []
-    for index, step in enumerate(installer.STEPS):
+    steps = installer.UNSTEPS if removing(plan) else installer.STEPS
+    for index, step in enumerate(steps):
         row = ui.frame('Checking', 'Ctrl+C quits')
         if row is not None:
-            row = ui.wrap(row, f'Checking what is left to do ({index + 1}/{len(installer.STEPS)}): {step.title}') + 1
+            row = ui.wrap(row, f'Checking what is left to do ({index + 1}/{len(steps)}): {step.title}') + 1
             for review in reviews[-(ui.size()[0] - row - 2):]:
                 done = 'check failed' if review.error else f'{len(review.items)} to do' if review.items else 'nothing to do'
                 ui.put(row, 4, f'{review.title:<10} {done}', ui.style('dim'))
@@ -389,8 +490,12 @@ def review(ui, plan):
             continue
         height = ui.size()[0]
         work = [entry for entry in reviews if entry.items or entry.error]
-        ui.put(row, 2, 'Profiles', ui.style('dim'))
-        ui.put(row, 14, ', '.join(plan.profiles))
+        if removing(plan):
+            ui.put(row, 2, 'Removing', ui.style('dim'))
+            ui.put(row, 14, 'what the installer set up' + (', as the dnf history tells' if plan.record.get('reconstructed') else ', from its record'))
+        else:
+            ui.put(row, 2, 'Profiles', ui.style('dim'))
+            ui.put(row, 14, ', '.join(plan.profiles))
         row += 1
         if plan.firmware:
             ui.put(row, 2, 'Firmware', ui.style('dim'))
@@ -402,7 +507,8 @@ def review(ui, plan):
         for warning in warnings:
             row = ui.wrap(row, '! ' + warning, ui.style('warn'))
         if not work:
-            row = ui.wrap(row, 'Nothing to do: this system already matches the chosen profiles.', ui.style('ok'))
+            done = 'nothing of the desktop is left.' if removing(plan) else 'this system already matches the chosen profiles.'
+            row = ui.wrap(row, 'Nothing to do: ' + done, ui.style('ok'))
         else:
             steps = '1 step has' if len(work) == 1 else f'{len(work)} steps have'
             row = ui.wrap(row, f'{steps} work. Each one checks again right before it runs, so the counts can change.', ui.style('dim'))
@@ -434,7 +540,8 @@ def review(ui, plan):
             expanded.clear()
             cursor, top = first_work(reviews), 0
         elif key == 'a' and work:
-            ui.footer(f'Apply {steps.split()[0]} {"step" if len(work) == 1 else "steps"} now? sudo asks for your password once. [y/N]', 'warn')
+            verb = 'Remove the desktop in' if removing(plan) else 'Apply'
+            ui.footer(f'{verb} {steps.split()[0]} {"step" if len(work) == 1 else "steps"} now? sudo asks for your password once. [y/N]', 'warn')
             if ui.key() in ('y', 'Y'):
                 return 'apply'
         elif key in BACK:
@@ -443,18 +550,53 @@ def review(ui, plan):
             return 'quit'
 
 
-def interface(window, plan):
+def notice(ui, title, text):
+    while True:
+        row = ui.frame(title, 'Enter back')
+        if row is not None:
+            ui.wrap(row, text)
+        if ui.key() in ENTER + BACK:
+            return
+
+
+def interface(window, plan, preset=False):
     # A state machine over the screens; what comes back is run after curses has given the terminal back.
+    # preset: --profiles was given, and wins over what is found on the system.
     ui = Screen(window)
-    stage, mode = 'menu', 'install'
+    stage, mode, statuses = 'menu', 'install', None
     while True:
         if stage == 'menu':
             mode = menu(ui)
             if mode == 'quit':
                 return None
-            stage = 'profiles'
+            stage = 'uninstall' if mode == 'uninstall' else 'profiles'
+        elif stage == 'uninstall':
+            # Back to the menu whatever the answer, unless the removal is confirmed.
+            stage = 'menu'
+            if installer.hyprland_running():
+                notice(ui, 'Remove the desktop', 'Hyprland is running, and removing the desktop takes away the configuration '
+                       'it runs on. Log out, switch to a console with Ctrl+Alt+F3, sign in there and start this again.')
+                continue
+            if ui.frame('Remove the desktop', 'Ctrl+C quits') is not None:
+                ui.wrap(2, 'Reading what the installer set up...')
+                ui.window.refresh()
+            try:
+                with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                    removal = installer.uninstall_plan(plan)
+            except (subprocess.CalledProcessError, RuntimeError, OSError) as error:
+                notice(ui, 'Remove the desktop', f'What the installer set up could not be read: {error}')
+                continue
+            outcome = review(ui, removal)
+            if outcome == 'quit':
+                return None
+            if outcome == 'apply':
+                return 'uninstall', removal
         elif stage == 'profiles':
-            outcome, profiles = choose_profiles(ui, plan, mode)
+            if statuses is None:
+                statuses = detect(ui, plan)
+                if not preset:
+                    plan = plan._replace(profiles=preselected(statuses))
+            outcome, profiles = choose_profiles(ui, plan, mode, statuses, preset)
             plan = plan._replace(profiles=profiles)
             if outcome == 'quit':
                 return None
@@ -493,15 +635,21 @@ def confirm(question):
 
 
 def apply(plan):
+    if removing(plan):
+        installer.refuse_uninstall()
+        installer.load_record(set_aside=True)  # An unreadable record is kept aside before uninstall marks it undone.
     print(f'Running: {command(plan)}', flush=True)
     subprocess.run(('sudo', '-v'), check=True)
     stop = threading.Event()
     threading.Thread(target=keep_sudo, args=(stop,), daemon=True).start()
     try:
-        done = installer.run_steps(plan, False)
+        done = installer.run_steps(plan, False, installer.UNSTEPS if removing(plan) else installer.STEPS)
     finally:
         stop.set()
-    installer.next_steps(plan, done)
+    if removing(plan):
+        installer.after_uninstall(plan, done)
+    else:
+        installer.next_steps(plan, done)
     if done and installer.booted() and confirm('Reboot now? [y/N] '):
         subprocess.run(('sudo', 'systemctl', 'reboot'), check=True)
     return 0
@@ -510,9 +658,10 @@ def apply(plan):
 def main(argv=None):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--firmware', metavar='DIR', help='directory the firmware screen starts with')
-    parser.add_argument('--profiles', default=installer.DEFAULT_PROFILES, help=f'profiles chosen at the start (default: {installer.DEFAULT_PROFILES})')
+    parser.add_argument('--profiles', help='profiles chosen at the start (default: the ones installed, or on a fresh system '
+                        f'{installer.DEFAULT_PROFILES})')
     args = parser.parse_args(argv)
-    profiles = tuple(args.profiles.split(','))
+    profiles = tuple((args.profiles or installer.DEFAULT_PROFILES).split(','))
     if not installer.valid_profiles(profiles):
         parser.error(f'--profiles needs core, and takes only {", ".join(installer.PROFILES)}.')
     if os.geteuid() == 0:
@@ -524,7 +673,7 @@ def main(argv=None):
     locale.setlocale(locale.LC_ALL, '')
     os.environ.setdefault('ESCDELAY', '25')
     try:
-        choice = curses.wrapper(interface, plan)
+        choice = curses.wrapper(interface, plan, bool(args.profiles))
     except curses.error as error:
         sys.exit(f'This terminal cannot draw the installer ({error}): use install-desktop.py.')
     if choice is None:

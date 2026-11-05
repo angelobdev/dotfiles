@@ -8,7 +8,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 - **The live session runs from this repo.** Hyprland and Quickshell hot-reload symlinked files on save. A broken edit breaks the running desktop immediately; see [workflow](../docs/development/workflow.md#live-reload).
 - **English everywhere** (code, comments, docs, default labels). Italian text lives only in `quickshell/.config/quickshell/desktop/i18n/it_IT.json`.
 - **Every user-visible string goes through i18n**: `I18n.tr()` / `I18n.plural()` in QML, `tr()` in Python helpers, with the key added to *both* catalogs.
-- **Never run Stow with sudo**, never `git add -A` blindly (state and backups live outside the repo but check `git status`), never edit `scripts/hyprpm/` casually (it changes the plugin bundle digest and forces a rebuild).
+- **Never run Stow with sudo**, never `git add -A` blindly (state and backups live outside the repo but check `git status`), never edit `build.py`, `hyprpm.toml` or the patch in `scripts/hyprpm/` casually (it changes the plugin bundle digest: the plugins rebuild at the next login), and never replace loaded plugins in the live session.
 - Commit only when asked; message style is `type: summary` (`chore:`, `fix:`, …).
 
 ## Map
