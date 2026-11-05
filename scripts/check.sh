@@ -4,6 +4,7 @@ repo=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 for script in "$repo"/shell/.local/bin/*; do bash -n "$script"; done
 bash -n "$repo/scripts/tablet-auth.sh"
 bash -n "$repo/scripts/tests/install-container.sh"
+bash -n "$repo/scripts/tests/install-container-arch.sh"
 if command -v zsh >/dev/null; then
     for script in "$repo/zsh/.zshenv" "$repo/zsh/.config/zsh/.zshrc" "$repo"/zsh/.config/zsh/*; do zsh -n "$script"; done
 fi
@@ -26,15 +27,18 @@ fi
 if command -v desktop-file-validate >/dev/null; then
     desktop-file-validate --no-hints "$repo"/shell/.local/share/applications/*.desktop "$repo"/steam-hidpi/.local/share/applications/*.desktop
 fi
+# Qt's tools: /usr/lib64 on Fedora, /usr/lib on Arch.
+qt=/usr/lib64/qt6/bin
+[[ -d $qt ]] || qt=/usr/lib/qt6/bin
 # Quickshell ships no qmltypes: skip type-resolution categories, keep syntax and QML errors.
-qmllint=/usr/lib64/qt6/bin/qmllint
+qmllint=$qt/qmllint
 if [[ -x $qmllint ]]; then
     find "$repo/quickshell/.config/quickshell/desktop" -name '*.qml' -print0 |
         xargs -0 "$qmllint" --import disable --unqualified disable --unresolved-type disable \
             --required disable --missing-property disable --incompatible-type disable --unused-imports disable
 fi
 # Pure JS helpers of the shell (dock layout); offscreen, no compositor needed.
-qmltestrunner=/usr/lib64/qt6/bin/qmltestrunner
+qmltestrunner=$qt/qmltestrunner
 if [[ -x $qmltestrunner ]]; then
     QT_QPA_PLATFORM=offscreen "$qmltestrunner" -silent -input "$repo/scripts/tests"
 fi

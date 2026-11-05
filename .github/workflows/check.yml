@@ -42,3 +42,25 @@ jobs:
           chown -R ci "$PWD"
           install -d -m 700 -o ci /tmp/runtime
           XDG_RUNTIME_DIR=/tmp/runtime runuser -u ci -- ./scripts/check.sh
+
+  check-arch:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    timeout-minutes: 15
+    steps:
+      - name: Install the tools
+        run: |
+          pacman -Syu --noconfirm --needed \
+            desktop-file-utils gcc git hyprland lua matugen python python-cmarkgfm qt6-declarative zsh
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Run the checks
+        run: |
+          # As on Fedora: nothing check.sh would skip may be missing.
+          for tool in cc desktop-file-validate lua matugen zsh /usr/lib/qt6/bin/qmllint /usr/lib/qt6/bin/qmltestrunner; do
+            command -v "$tool"
+          done
+          python3 -c 'import cmarkgfm'
+          useradd --create-home ci
+          chown -R ci "$PWD"
+          install -d -m 700 -o ci /tmp/runtime
+          XDG_RUNTIME_DIR=/tmp/runtime runuser -u ci -- ./scripts/check.sh
