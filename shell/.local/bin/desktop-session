@@ -7,6 +7,12 @@ case "${1:-start}" in
         flock 9
         state="${XDG_STATE_HOME:-$HOME/.local/state}/desktop-session"
         mkdir -p "$state"
+        # The shell state holds notification bodies (one-time codes too) and the words typed on the on-screen
+        # keyboard: only the user reads it, whatever mode a backup restored.
+        shell_state="${XDG_STATE_HOME:-$HOME/.local/state}/desktop-shell"
+        mkdir -p "$shell_state"
+        chmod 700 "$shell_state"
+        find "$shell_state" -maxdepth 1 -type f -exec chmod 600 {} + || true
         export PATH="$HOME/.local/bin:$PATH"
         # Refresh graphical backends too when session startup is invoked manually.
         export GDK_BACKEND='wayland,x11,*'

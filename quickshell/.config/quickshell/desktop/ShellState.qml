@@ -39,4 +39,14 @@ Singleton {
         navigation = 0;
         panel = "";
     }
+    // A panel on a monitor that went away closes; the next one opens on the focused monitor.
+    Connections {
+        target: Quickshell
+        function onScreensChanged() {
+            if (root.activeScreen && !Quickshell.screens.includes(root.activeScreen)) {
+                root.close();
+                root.activeScreen = null;
+            }
+        }
+    }
 }

@@ -19,7 +19,7 @@ MAGICK = ['magick', '-limit', 'memory', '256MiB', '-limit', 'map', '512MiB']
 # The permissions are those of the file being replaced, else 0644 (mkstemp creates 0600; these are ordinary
 # files, readable like the rest of ~/.config).
 @contextlib.contextmanager
-def replacing(path, follow=True, suffix=''):
+def replacing(path, follow=True, suffix='', mode=None):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     if follow and path.is_symlink():
@@ -29,14 +29,15 @@ def replacing(path, follow=True, suffix=''):
     try:
         yield Path(temporary)
         keep = path.exists() and not path.is_symlink()
-        os.chmod(temporary, stat.S_IMODE(path.stat().st_mode) if keep else 0o644)
+        os.chmod(temporary, mode if mode is not None else stat.S_IMODE(path.stat().st_mode) if keep else 0o644)
         os.replace(temporary, path)
     finally:
         Path(temporary).unlink(missing_ok=True)
 
 
-def write_atomic(path, text, follow=True):
-    with replacing(path, follow) as temporary:
+def write_atomic(path, text, follow=True, mode=None):
+    # mode: always this one (private files), instead of the replaced file's.
+    with replacing(path, follow, mode=mode) as temporary:
         temporary.write_text(text, encoding='utf-8')
 
 

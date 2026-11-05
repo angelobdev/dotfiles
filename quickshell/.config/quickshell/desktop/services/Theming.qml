@@ -95,7 +95,7 @@ Singleton {
     }
     function query() {
         listing.running = true;
-        packQuery.running = true;
+        root.refreshPack();
         fontQuery.running = true;
         iconQuery.running = true;
     }
@@ -243,10 +243,10 @@ Singleton {
         stdout: SplitParser {
             onRead: data => {
                 if (root.parse(data, null)?.status === "ready")
-                    packQuery.running = true;
+                    root.refreshPack();
             }
         }
-        onExited: packQuery.running = true
+        onExited: root.refreshPack()
     }
     Process {
         id: listing
@@ -264,11 +264,26 @@ Singleton {
             }
         }
     }
+    // A refresh asked for while one runs is run once more afterwards: the last thumbnails or downloads would
+    // otherwise be missed (setting running on a running Process does nothing).
+    function refreshPack() {
+        if (packQuery.running)
+            packQuery.again = true;
+        else
+            packQuery.running = true;
+    }
     Process {
         id: packQuery
+        property bool again: false
         command: ["python3", root.helper, "wallpapers"]
         stdout: StdioCollector {
             onStreamFinished: root.pack = root.parse(text, root.pack)
+        }
+        onExited: {
+            if (again) {
+                again = false;
+                running = true;
+            }
         }
     }
     Process {
@@ -293,11 +308,11 @@ Singleton {
             onRead: data => {
                 const line = root.parse(data, null);
                 if (line?.status === "downloaded")
-                    packQuery.running = true;
+                    root.refreshPack();
                 else if (line?.status === "failed")
                     root.error = line.error;
             }
         }
-        onExited: packQuery.running = true
+        onExited: root.refreshPack()
     }
 }

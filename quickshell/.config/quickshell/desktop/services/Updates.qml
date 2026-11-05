@@ -31,7 +31,9 @@ Singleton {
         }
     }
     function names(value) {
-        return (value.packages ?? []).map(p => p.name + " " + p.version).concat((value.flatpaks ?? []).map(f => f.id + " " + f.version));
+        // Guarded like the properties above: a malformed file must not stop onLoaded before data is updated.
+        const list = items => Array.isArray(items) ? items.filter(item => item && typeof item === "object") : [];
+        return list(value.packages).map(p => p.name + " " + p.version).concat(list(value.flatpaks).map(f => f.id + " " + f.version));
     }
     function check() {
         if (!checker.running)

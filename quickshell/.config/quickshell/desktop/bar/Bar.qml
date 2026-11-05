@@ -244,7 +244,7 @@ PanelWindow {
             iconName: !UPower.onBattery ? "battery-charging" : "battery-" + Math.round(bar.battery / 25) * 25
             text: bar.battery + "%"
             implicitWidth: batteryContent.implicitWidth + leftPadding + rightPadding
-            tooltip: (UPower.onBattery ? I18n.tr("battery.onBattery") : I18n.tr("battery.pluggedIn")) + " · " + profileLabel
+            tooltip: I18n.tr("battery.tooltip", [UPower.onBattery ? I18n.tr("battery.onBattery") : I18n.tr("battery.pluggedIn"), profileLabel])
             Accessible.name: I18n.tr("battery.accessible", [text, profileLabel])
             contentItem: RowLayout {
                 id: batteryContent

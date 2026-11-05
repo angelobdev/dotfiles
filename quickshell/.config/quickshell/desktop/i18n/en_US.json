@@ -118,7 +118,16 @@
     "timeUntilFull": "Time until full",
     "title": "Battery & power",
     "unavailable": "No battery",
-    "accessible": "Battery %1 · %2"
+    "accessible": "Battery %1 · %2",
+    "tooltip": "%1 · %2",
+    "alert": {
+      "lowTitle": "Battery low: %1%",
+      "criticalTitle": "Battery critical: %1%",
+      "lowBody": "Plug in the charger soon.",
+      "lowBodyTime": "About %1 left. Plug in the charger soon.",
+      "criticalBody": "Plug in the charger now, or save your work.",
+      "criticalBodyTime": "About %1 left. Plug in the charger now, or save your work."
+    }
   },
   "bindings": {
     "brightnessDown": "Brightness down",
@@ -171,7 +180,12 @@
       "rejected": "Request rejected",
       "requestPending": "Another request is already pending",
       "serviceUnavailable": "Bluetooth service unavailable.",
-      "unauthorizedSender": "Unauthorized sender"
+      "unauthorizedSender": "Unauthorized sender",
+      "authenticationFailed": "Pairing failed: check that both devices show the same code.",
+      "noAnswer": "The device did not answer: put it in pairing mode, keep it close and try again.",
+      "inProgress": "This device is already pairing.",
+      "notReady": "Bluetooth is not ready: turn it on and try again.",
+      "failed": "Bluetooth could not do it: %1"
     },
     "hardwareBlocked": "Blocked by hardware",
     "noAdapters": "No Bluetooth adapter available",
@@ -857,6 +871,22 @@
       "dnf": "dnf could not check for updates: %1",
       "flatpak": "Flatpak could not check for updates: %1",
       "usage": "Usage: updates.py check|status"
+    }
+  },
+  "gaming": {
+    "title": "Steam and gamescope",
+    "errors": {
+      "scale": "Steam scale must be a number between 1 and 4.",
+      "settingsUnreadable": "Cannot read Steam settings from %1: %2",
+      "settingsShape": "Steam settings must contain a monitorScales object.",
+      "compilerMissing": "Steam renderer scaling needs a C compiler: sudo dnf install gcc",
+      "libraryBuild": "Cannot build the Steam UI scaling library: %1",
+      "runtimeMissing": "Steam UI runtime not found. Start /usr/bin/steam once to complete its installation.",
+      "resolution": "Use WIDTHxHEIGHT with dimensions from 1 to 16384.",
+      "fps": "FPS must be an integer from 1 to 1000.",
+      "mode": "Expected steam or gamescope mode.",
+      "scaleMissing": "-forcedesktopscaling requires a scale value.",
+      "notInstalled": "%1 is not installed."
     }
   }
 }

@@ -118,7 +118,16 @@
     "timeUntilFull": "Alla carica completa",
     "title": "Batteria ed energia",
     "unavailable": "Nessuna batteria",
-    "accessible": "Batteria %1 · %2"
+    "accessible": "Batteria %1 · %2",
+    "tooltip": "%1 · %2",
+    "alert": {
+      "lowTitle": "Batteria scarica: %1%",
+      "criticalTitle": "Batteria quasi esaurita: %1%",
+      "lowBody": "Collega presto il caricatore.",
+      "lowBodyTime": "Restano circa %1. Collega presto il caricatore.",
+      "criticalBody": "Collega subito il caricatore, o salva il tuo lavoro.",
+      "criticalBodyTime": "Restano circa %1. Collega subito il caricatore, o salva il tuo lavoro."
+    }
   },
   "bindings": {
     "brightnessDown": "Luminosità -",
@@ -171,7 +180,12 @@
       "rejected": "Richiesta rifiutata",
       "requestPending": "Un’altra richiesta è già in corso",
       "serviceUnavailable": "Servizio Bluetooth non disponibile.",
-      "unauthorizedSender": "Mittente non autorizzato"
+      "unauthorizedSender": "Mittente non autorizzato",
+      "authenticationFailed": "Abbinamento non riuscito: controlla che i due dispositivi mostrino lo stesso codice.",
+      "noAnswer": "Il dispositivo non ha risposto: mettilo in modalità abbinamento, tienilo vicino e riprova.",
+      "inProgress": "Questo dispositivo si sta già abbinando.",
+      "notReady": "Il Bluetooth non è pronto: attivalo e riprova.",
+      "failed": "Il Bluetooth non è riuscito a farlo: %1"
     },
     "hardwareBlocked": "Bloccato dall’hardware",
     "noAdapters": "Nessun adattatore Bluetooth disponibile",
@@ -857,6 +871,22 @@
       "dnf": "dnf non è riuscito a cercare aggiornamenti: %1",
       "flatpak": "Flatpak non è riuscito a cercare aggiornamenti: %1",
       "usage": "Uso: updates.py check|status"
+    }
+  },
+  "gaming": {
+    "title": "Steam e gamescope",
+    "errors": {
+      "scale": "La scala di Steam deve essere un numero tra 1 e 4.",
+      "settingsUnreadable": "Impossibile leggere le impostazioni di Steam da %1: %2",
+      "settingsShape": "Le impostazioni di Steam devono contenere un oggetto monitorScales.",
+      "compilerMissing": "Il ridimensionamento del renderer di Steam richiede un compilatore C: sudo dnf install gcc",
+      "libraryBuild": "Impossibile compilare la libreria di ridimensionamento della UI di Steam: %1",
+      "runtimeMissing": "Runtime della UI di Steam non trovato. Avvia /usr/bin/steam una volta per completarne l’installazione.",
+      "resolution": "Usa LARGHEZZAxALTEZZA con dimensioni da 1 a 16384.",
+      "fps": "Gli FPS devono essere un intero da 1 a 1000.",
+      "mode": "Modalità attesa: steam o gamescope.",
+      "scaleMissing": "-forcedesktopscaling richiede un valore di scala.",
+      "notInstalled": "%1 non è installato."
     }
   }
 }

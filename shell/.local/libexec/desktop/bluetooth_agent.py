@@ -41,6 +41,23 @@ class Agent:
         self.bus.signal_subscribe('org.bluez', 'org.freedesktop.DBus.Properties', 'PropertiesChanged', None, 'org.bluez.Device1', Gio.DBusSignalFlags.NONE, self.changed)
         self.watch = Gio.bus_watch_name_on_connection(self.bus, 'org.bluez', Gio.BusNameWatcherFlags.NONE, self.appeared, self.vanished)
 
+    @staticmethod
+    def describe(error):
+        # BlueZ answers in English D-Bus errors: the panel shows a translated sentence instead. A pairing the user
+        # cancelled is no error at all.
+        remote = re.match(r'GDBus\.Error:([\w.]+): ?(.*)', error.message, re.DOTALL)
+        reason = remote.group(1).rsplit('.', 1)[-1] if remote else ''
+        if error.matches(Gio.io_error_quark(), Gio.IOErrorEnum.TIMED_OUT):
+            reason = 'Timeout'  # Our own 120 s call timeout.
+        if reason in ('AuthenticationCanceled', 'Canceled'):
+            return ''
+        for key, reasons in (('authenticationFailed', ('AuthenticationFailed', 'AuthenticationRejected')),
+                             ('noAnswer', ('AuthenticationTimeout', 'ConnectionAttemptFailed', 'NoReply', 'Timeout')),
+                             ('inProgress', ('InProgress',)), ('notReady', ('NotReady',))):
+            if reason in reasons:
+                return tr('bluetooth.errors.' + key)
+        return tr('bluetooth.errors.failed', [remote.group(2) if remote else error.message])
+
     def call(self, path, interface, method, args, callback=None):
         self.bus.call('org.bluez', path, interface, method, args, None, Gio.DBusCallFlags.NONE, 120000, None, callback, None)
 
@@ -52,7 +69,7 @@ class Agent:
             bus.call_finish(result)
             self.call('/org/bluez', 'org.bluez.AgentManager1', 'RequestDefaultAgent', GLib.Variant('(o)', (PATH,)), self.on_default)
         except GLib.Error as error:
-            emit(type='status', registered=False, error=error.message)
+            emit(type='status', registered=False, error=self.describe(error))
 
     def on_default(self, bus, result, *_):
         try:
@@ -60,7 +77,7 @@ class Agent:
             self.registered = True
             emit(type='status', registered=True)
         except GLib.Error as error:
-            emit(type='status', registered=False, error=error.message)
+            emit(type='status', registered=False, error=self.describe(error))
 
     def vanished(self, *args):
         self.registered = False
@@ -158,7 +175,7 @@ class Agent:
                     bus.call_finish(result)
                     emit(type='operation', device=path, action=action, ok=True)
                 except GLib.Error as error:
-                    emit(type='operation', device=path, action=action, ok=False, error=error.message)
+                    emit(type='operation', device=path, action=action, ok=False, error=self.describe(error))
                 if self.display_device == path:
                     self.finish(False)
             self.call(path, 'org.bluez.Device1', method, None, completed)

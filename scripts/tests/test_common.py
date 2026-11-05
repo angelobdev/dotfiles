@@ -23,6 +23,14 @@ class CommonTests(unittest.TestCase):
             self.assertEqual(path.read_text(), 'two\n')
             self.assertEqual(path.stat().st_mode & 0o777, 0o600)
 
+    def test_a_private_file_gets_its_mode_whatever_it_had(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'private.json'
+            path.write_text('old\n')
+            os.chmod(path, 0o755)
+            common.write_atomic(path, 'new\n', mode=0o600)
+            self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+
     def test_links_are_followed_or_replaced(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

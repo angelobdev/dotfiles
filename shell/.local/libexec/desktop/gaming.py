@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Steam HiDPI startup and opt-in gamescope sessions for individual games."""
 from common import focused_monitor, hypr_json
+from i18n import tr
 import argparse
 import functools
 import hashlib
@@ -19,9 +20,9 @@ def scale_value(value):
     try:
         scale = float(value)
     except (TypeError, ValueError):
-        raise ValueError('Steam scale must be a number between 1 and 4.') from None
+        raise ValueError(tr('gaming.errors.scale')) from None
     if not math.isfinite(scale) or not 1 <= scale <= 4:
-        raise ValueError('Steam scale must be a number between 1 and 4.')
+        raise ValueError(tr('gaming.errors.scale'))
     return f'{scale:.3f}'.rstrip('0').rstrip('.')
 
 
@@ -33,9 +34,9 @@ def steam_settings():
     except FileNotFoundError:
         settings = {}
     except (OSError, ValueError) as error:
-        raise ValueError(f'Cannot read Steam settings from {config}: {error}') from error
+        raise ValueError(tr('gaming.errors.settingsUnreadable', [config, error])) from error
     if not isinstance(settings, dict) or not isinstance(settings.get('monitorScales', {}), dict):
-        raise ValueError('Steam settings must contain a monitorScales object.')
+        raise ValueError(tr('gaming.errors.settingsShape'))
     return settings
 
 
@@ -55,14 +56,14 @@ def prepare_steam_renderer(scale):
     if not library.is_file():
         compiler = shutil.which('cc')
         if not compiler:
-            raise ValueError('Steam renderer scaling needs a C compiler: sudo dnf install gcc')
+            raise ValueError(tr('gaming.errors.compilerMissing'))
         with tempfile.TemporaryDirectory(prefix='build-', dir=cache) as build:
             output = Path(build) / 'scale.so'
             result = subprocess.run([compiler, '-Wall', '-Wextra', '-Werror', '-shared', '-fPIC',
                                      '-O2', '-Wl,-z,relro,-z,now', '-o', str(output), str(source), '-ldl'],
                                     capture_output=True, text=True, timeout=30)
             if result.returncode:
-                raise ValueError(f'Cannot build Steam UI scaling library: {result.stderr.strip()}')
+                raise ValueError(tr('gaming.errors.libraryBuild', [result.stderr.strip()]))
             output.replace(library)
     wrapper = helpers / 'steamrt-ui'
     configured = os.environ.get('STEAM_RUNTIME_STEAMRT')
@@ -72,7 +73,7 @@ def prepare_steam_renderer(scale):
         runtime = Path(os.environ.get('DESKTOP_STEAM_REAL_RUNTIME',
                        str(Path.home() / '.steam/root/steamrt64/pv-runtime/steam-runtime-steamrt')))
     if not (runtime / '_v2-entry-point').is_file():
-        raise ValueError('Steam UI runtime not found. Start /usr/bin/steam once to complete its installation.')
+        raise ValueError(tr('gaming.errors.runtimeMissing'))
     os.environ.update(STEAM_RUNTIME_STEAMRT=str(wrapper), DESKTOP_STEAM_REAL_RUNTIME=str(runtime),
                       DESKTOP_STEAM_CEF_LIBRARY=str(library), DESKTOP_STEAM_CEF_SCALE=scale)
 
@@ -99,7 +100,7 @@ def steam_command(arguments):
 def resolution(value):
     match = re.fullmatch(r'([1-9][0-9]*)[xX]([1-9][0-9]*)', value)
     if not match or any(not 1 <= int(v) <= 16384 for v in match.groups()):
-        raise argparse.ArgumentTypeError('Use WIDTHxHEIGHT with dimensions from 1 to 16384.')
+        raise argparse.ArgumentTypeError(tr('gaming.errors.resolution'))
     return tuple(int(v) for v in match.groups())
 
 
@@ -109,7 +110,7 @@ def positive_fps(value):
     except ValueError:
         fps = 0
     if not 1 <= fps <= 1000:
-        raise argparse.ArgumentTypeError('FPS must be an integer from 1 to 1000.')
+        raise argparse.ArgumentTypeError(tr('gaming.errors.fps'))
     return fps
 
 
@@ -155,7 +156,7 @@ def gamescope_command(arguments):
 
 def main():
     if len(sys.argv) < 2 or sys.argv[1] not in ('steam', 'gamescope'):
-        raise ValueError('Expected steam or gamescope mode.')
+        raise ValueError(tr('gaming.errors.mode'))
     if sys.argv[1] == 'steam':
         command = steam_command(sys.argv[2:])
         # A session-wide XCURSOR_SIZE would override the scaled X cursor resource from desktop-xwayland.
@@ -164,7 +165,7 @@ def main():
         for index, argument in enumerate(command):
             if argument == '-forcedesktopscaling':
                 if index + 1 == len(command):
-                    raise ValueError('-forcedesktopscaling requires a scale value.')
+                    raise ValueError(tr('gaming.errors.scaleMissing'))
                 value = command[index + 1]
             elif argument.startswith('-forcedesktopscaling='):
                 value = argument.split('=', 1)[1]
@@ -177,7 +178,7 @@ def main():
     else:
         command = gamescope_command(sys.argv[2:])
     if not shutil.which(command[0]):
-        raise ValueError(f'{command[0]} is not installed.')
+        raise ValueError(tr('gaming.errors.notInstalled', [command[0]]))
     os.execvp(command[0], command)
 
 
@@ -186,4 +187,7 @@ if __name__ == '__main__':
         main()
     except (OSError, ValueError) as error:
         print(f'desktop-gaming: {error}', file=sys.stderr)
+        # Started from a desktop entry or the launcher, nobody reads stderr: say it on screen too.
+        if not sys.stderr.isatty():
+            subprocess.run(['notify-send', '--app-name=desktop-gaming', tr('gaming.title'), str(error)], check=False)
         sys.exit(1)

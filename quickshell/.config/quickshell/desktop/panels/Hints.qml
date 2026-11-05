@@ -80,7 +80,7 @@ Overlay {
             return I18n.tr("hints.categories.workspaces");
         if (/lock|suspend|logout|reboot|shut down|session/.test(name))
             return I18n.tr("session.title");
-        if (/applications|control center|notifications|quickshell|network|wi-fi|sound.*devices|battery|calendar|hints|wallpaper|clipboard/.test(name))
+        if (/applications|control center|notifications|quickshell|network|wi-fi|sound.*devices|battery|calendar|hints|wallpaper|clipboard|theming|do not disturb|keep awake|^dock/.test(name))
             return I18n.tr("hints.categories.shell");
         if (/browser|terminal|kitty|1password|calculator/.test(name))
             return I18n.tr("launcher.title");

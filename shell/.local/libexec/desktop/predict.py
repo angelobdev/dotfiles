@@ -166,12 +166,10 @@ class Words:
             return
         path = Path(self.memory)
         path.parent.mkdir(parents=True, exist_ok=True)
-        # Created for the owner alone; replacing the file keeps its mode.
-        if not path.exists():
-            os.close(os.open(path, os.O_CREAT | os.O_WRONLY, 0o600))
+        # For the owner alone, whatever mode the file had (a backup may restore it readable by others).
         # Sorted, or the order of the file would show the order of the words.
         write_atomic(path, json.dumps({'counts': self.counts, 'forgotten': sorted(self.forgotten)}, ensure_ascii=False,
-                                      sort_keys=True))
+                                      sort_keys=True), mode=0o600)
 
 
 def main():

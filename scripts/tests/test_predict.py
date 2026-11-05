@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """predict.py: next letters from word lists."""
 import json
+import os
 from pathlib import Path
 import stat
 import sys
@@ -150,6 +151,10 @@ class LearningTests(unittest.TestCase):
             words.learn(word)
         self.assertEqual(stat.S_IMODE(self.memory.stat().st_mode), 0o600)
         self.assertEqual(list(json.loads(self.memory.read_text())['counts']), ['alba', 'mare', 'zucca'])
+        # A mode restored from a backup does not stick.
+        os.chmod(self.memory, 0o755)
+        words.learn('vento')
+        self.assertEqual(stat.S_IMODE(self.memory.stat().st_mode), 0o600)
 
     def test_what_cannot_be_typed_or_is_too_short_is_not_learned(self):
         words = self.words()

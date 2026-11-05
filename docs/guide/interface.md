@@ -22,13 +22,13 @@
 - Quickshell clipboard with search and pause; custom screen-sharing picker and recording panel with a bar indicator.
 - Quickshell OSDs for volume, speaker mute, microphone, and brightness: icon, level, and device at the bottom center, without intercepting mouse or keyboard input.
 
-NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-daemon provide system services. Configuration starts Quickshell, hypridle, and hyprpaper. No Waybar, nm-applet, Blueman, Sway, or separate notification server is used.
+NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-daemon provide system services. Configuration starts Quickshell, hypridle, hyprpaper and udiskie. No Waybar, nm-applet, Blueman, Sway, or separate notification server is used.
 
 ## Shortcuts
 
 | Keys | Action |
 | --- | --- |
-| `Super + B` | Browser (`zen-browser`) |
+| `Super + B` | Browser (`zen-browser`, from the opt-in `apps` profile; bound in `local.lua`) |
 | `Super + Shift + Space` | 1Password quick access (local override) |
 | `Super + Enter` | Kitty |
 | `Super + A` | AI assistant: the drop-down console with Claude Code (hold `Space` to dictate); a click or tap outside closes it |
@@ -66,6 +66,8 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `XF86Calculator` | Calculator (`gnome-calculator`) |
 | Multimedia keys | Volume, microphone, brightness |
 | `Esc` / outside click | Close panel |
+
+Touchpad gestures (`input.lua`): three fingers left / right step workspaces, up opens Applications, down the Control Center. The touchscreen has its own set ([Tablet and touch](../features/tablet-and-touch.md#gestures)).
 
 In the session menu, **↑/↓ and Tab/Shift+Tab** move focus; **Enter or Space** activates the button. Confirmation requests focus **Cancel**: use **←/→ or Tab** to choose Confirm. **Esc** cancels confirmation, then closes the panel. The first button receives focus on opening.
 
@@ -167,6 +169,6 @@ See [On-screen keyboard](../features/on-screen-keyboard.md).
 
 ## Panel data
 
-Audio uses PipeWire nodes and changes default devices through Quickshell APIs; WirePlumber decides how to route existing streams. UPower supplies battery power in W, energy in Wh, and estimated times: this is not total wall-socket consumption and may vary over time. Missing estimates are indicated without inventing a runtime. The calendar reads enabled Evolution Data Server sources, including Online Accounts; GNOME still manages synchronization and credentials. Reads may require network access. Events remain in shell memory; EDS keeps its own cache. Do Not Disturb silences popups while retaining notifications in the center; its state resets when the shell restarts.
+Audio uses PipeWire nodes and changes default devices through Quickshell APIs; WirePlumber decides how to route existing streams. UPower supplies battery power in W, energy in Wh, and estimated times: this is not total wall-socket consumption and may vary over time. Missing estimates are indicated without inventing a runtime. The calendar reads enabled Evolution Data Server sources, including Online Accounts; GNOME still manages synchronization and credentials. Reads may require network access. Events remain in shell memory; EDS keeps its own cache. Do Not Disturb silences popups while retaining notifications in the center; it is kept across shell restarts and logins ([below](#do-not-disturb-keep-awake-and-notification-history)).
 
 Tray menus open below the icon on the same monitor. Positioning follows actual Wayland surface dimensions; near an edge it is constrained to available space, and submenus may open to the left.

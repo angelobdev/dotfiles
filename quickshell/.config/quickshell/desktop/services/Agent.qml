@@ -157,6 +157,14 @@ Singleton {
                 root.consoleScreen = "";
         }
     }
+    // A console on a monitor that went away is no longer open: it would keep holding back every notification.
+    Connections {
+        target: Quickshell
+        function onScreensChanged() {
+            if (root.consoleScreen !== "" && !Quickshell.screens.some(screen => screen.name === root.consoleScreen))
+                root.consoleScreen = "";
+        }
+    }
     // At start (a shell reload with the console open): lastIpcObject is filled by the refresh.
     Timer {
         interval: 1000

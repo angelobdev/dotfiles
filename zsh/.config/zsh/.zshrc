@@ -50,6 +50,3 @@ fi
 
 # Machine-specific additions, outside the repository.
 [[ -r $ZDOTDIR/local.zsh ]] && source $ZDOTDIR/local.zsh
-
-# To customize prompt, run `p10k configure` or edit ~/.local/share/zsh/plugins/powerlevel10k/config/p10k-lean-8colors.zsh.
-[[ ! -f ~/.local/share/zsh/plugins/powerlevel10k/config/p10k-lean-8colors.zsh ]] || source ~/.local/share/zsh/plugins/powerlevel10k/config/p10k-lean-8colors.zsh

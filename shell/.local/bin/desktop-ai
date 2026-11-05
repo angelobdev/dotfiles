@@ -4,6 +4,10 @@ set -euo pipefail
 export PATH="$HOME/.local/bin:$PATH"
 case "${1:-toggle}" in
     toggle)
+        # One press at a time, so a second press before the window maps sees the first one's launch.
+        exec 9>"${XDG_RUNTIME_DIR:-/tmp}/desktop-ai.lock"
+        flock 9
+        starting="${XDG_RUNTIME_DIR:-/tmp}/desktop-ai.starting"
         # Where Claude runs: in the console (toggle it), moved out of it (bring it back), or not yet.
         place="$(hyprctl clients -j | python3 -c '
 import json, sys
@@ -14,6 +18,10 @@ print("" if not names else "inside" if "special:ai" in names else "outside")
             exec hyprctl dispatch 'hl.dsp.workspace.toggle_special("ai")'
         elif [[ $place == outside ]]; then
             exec hyprctl eval 'desktop_console_show()'
+        fi
+        # Launched less than 10 s ago and not mapped yet: a second session would start.
+        if [[ -e $starting ]] && (( $(date +%s) - $(stat -c %Y "$starting") < 10 )); then
+            exit 0
         fi
         if ! command -v claude >/dev/null; then
             exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify assistant.title assistant.errors.claudeMissing
@@ -44,7 +52,9 @@ print(json.dumps({"voice": {"enabled": True, "mode": "hold"}, "language": langua
         directory="${DESKTOP_AI_DIRECTORY:-$repo}"
         [[ -d $directory ]] || directory="$HOME"
         # The desktop-ai window rule places the window on the special workspace "ai".
-        setsid -f kitty --class desktop-ai --directory "$directory" -e claude --settings "$settings" >/dev/null 2>&1
+        touch "$starting"
+        # Without the lock (9>&-): kitty would hold it, and every later press would wait for its lifetime.
+        setsid -f kitty --class desktop-ai --directory "$directory" -e claude --settings "$settings" >/dev/null 2>&1 9>&-
         ;;
     *) echo 'Usage: desktop-ai [toggle]' >&2; exit 2 ;;
 esac

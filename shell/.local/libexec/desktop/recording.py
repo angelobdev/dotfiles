@@ -13,6 +13,9 @@ import subprocess
 import sys
 import uuid
 
+# Seconds wf-recorder gets to finish the file after Stop.
+STOP_TIMEOUT = 15
+
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -54,16 +57,24 @@ def main():
         command += ['--audio='+device+('.monitor' if a.audio == 'output' else ''), '--audio-codec', 'libopus']
     destination.touch(exist_ok=False, mode=0o600)
     child = None
-    stopped = False
+    stopped = killed = False
+    def kill(*_):
+        nonlocal killed
+        if child and child.poll() is None:
+            killed = True
+            os.killpg(child.pid, signal.SIGKILL)  # Its whole group: a helper it started may hold stderr open.
     def stop(*_):
         nonlocal stopped
         stopped = True
         if child and child.poll() is None:
             child.send_signal(signal.SIGINT)
+            # A wf-recorder that never finishes the file is killed, so Stop always ends the recording.
+            signal.alarm(STOP_TIMEOUT)
+    signal.signal(signal.SIGALRM, kill)
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
     try:
-        child = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
+        child = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True, start_new_session=True)
         if stopped: stop()
         print(json.dumps({'recording': True, 'path': str(destination)}), flush=True)
         # Drain continuously to avoid a full pipe blocking the encoder.
@@ -73,12 +84,13 @@ def main():
             destination.unlink()
             print(json.dumps({'recording': False, 'error': tr('recording.errors.startFailed', [''.join(tail)[-1200:]])}), flush=True)
             return 1
-        print(json.dumps({'recording': False, 'path': str(destination), 'error': '' if stopped or code == 0 else tr('recording.errors.interruptedWith', [''.join(tail)[-1200:]])}), flush=True)
-        return 0 if stopped or code == 0 else 1
+        clean = (stopped or code == 0) and not killed
+        print(json.dumps({'recording': False, 'path': str(destination), 'error': '' if clean else tr('recording.errors.interruptedWith', [''.join(tail)[-1200:]])}), flush=True)
+        return 0 if clean else 1
     finally:
         if child and child.poll() is None:
             stop()
-            try: child.wait(timeout=15)
+            try: child.wait(timeout=STOP_TIMEOUT)
             except subprocess.TimeoutExpired:
                 child.kill(); child.wait()
         if destination.exists() and destination.stat().st_size == 0:

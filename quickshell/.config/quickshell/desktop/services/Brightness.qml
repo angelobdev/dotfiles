@@ -14,6 +14,8 @@ Singleton {
     property var pending: ({})
     property var requested: ({})
     property var inFlight: null
+    // Monitors changed while a read or write ran: read again once it ends.
+    property bool stale: false
     readonly property bool active: ShellState.panel === "controls" && Config.controlCenterModules.includes("brightness")
     readonly property var primary: monitors.find(m => m.name === Config.primaryMonitor) || monitors[0] || null
     readonly property var others: monitors.filter(m => m !== primary)
@@ -57,6 +59,7 @@ Singleton {
     }
     function refresh() {
         if (!reader.running && !writer.running && Object.keys(pending).length === 0) {
+            stale = false;
             reader.command = ["python3", helper, "read", JSON.stringify(Quickshell.screens.map(s => s.name)), JSON.stringify(Config.brightnessDevices)];
             reader.running = true;
         }
@@ -105,7 +108,22 @@ Singleton {
     Connections {
         target: Quickshell
         function onScreensChanged() {
+            // A new external monitor often answers DDC/CI only a few seconds after it appears.
+            root.stale = true;
+            hotplug.remaining = 3;
+            hotplug.restart();
             root.refresh();
+        }
+    }
+    Timer {
+        id: hotplug
+        property int remaining: 0
+        interval: 3000
+        repeat: true
+        onTriggered: {
+            root.refresh();
+            if (--remaining <= 0)
+                stop();
         }
     }
     Timer {
@@ -173,6 +191,8 @@ Singleton {
                 root.error = I18n.tr("brightness.errors.readingFailed");
             if (Object.keys(root.pending).length > 0 && !throttle.running)
                 Qt.callLater(root.flush);
+            else if (root.stale)
+                Qt.callLater(root.refresh);
         }
     }
     Process {

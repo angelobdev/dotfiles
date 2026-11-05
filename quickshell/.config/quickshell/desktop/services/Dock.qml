@@ -213,6 +213,30 @@ Singleton {
             property var pinned: null
         }
     }
+    // A monitor that goes away takes its state with it: a menu or keyboard left on it would block Super + D on
+    // every other screen, and a monitor that comes back with the same name would start with its dock forced up.
+    Connections {
+        target: Quickshell
+        function onScreensChanged() {
+            const names = Quickshell.screens.map(screen => screen.name);
+            const kept = map => {
+                const copy = {};
+                for (const name in map)
+                    if (names.includes(name))
+                        copy[name] = map[name];
+                return Object.keys(copy).length === Object.keys(map).length ? map : copy;
+            };
+            if (root.menuScreen !== "" && !names.includes(root.menuScreen))
+                root.menuScreen = "";
+            if (root.keyboardScreen !== "" && !names.includes(root.keyboardScreen))
+                root.keyboardScreen = "";
+            if (root.touchScreen !== "" && !names.includes(root.touchScreen))
+                root.touchScreen = "";
+            root.requested = kept(root.requested);
+            root.peeks = kept(root.peeks);
+            root.shown = kept(root.shown);
+        }
+    }
     Timer {
         id: touchTimer
         interval: 6000

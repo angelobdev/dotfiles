@@ -52,7 +52,7 @@ local function console_on(monitor)
     return special ~= nil and special.name == "special:ai"
 end
 
--- Also run by `desktop-shell console hide` when the shell's catcher layer is clicked or tapped.
+-- Also run by the shell (Agent.hideConsole, through `hyprctl eval`) when its catcher layer is clicked or tapped.
 function desktop_console_hide(name)
     for _, monitor in ipairs(hl.get_monitors()) do
         if (name == nil or monitor.name == name) and console_on(monitor) then

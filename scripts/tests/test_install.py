@@ -97,6 +97,10 @@ class ManifestTests(unittest.TestCase):
             self.assertTrue(clone['repo'].startswith('https://'))
             self.assertFalse(clone['path'].startswith(('/', '~')) or '..' in clone['path'])
 
+    def test_the_prompt_settings_are_not_reset_after_p10k_zsh(self):
+        # `p10k configure` appends a source of the upstream style to .zshrc, which unsets every change in p10k.zsh.
+        self.assertNotIn('p10k-lean-8colors', (REPO / 'zsh/.config/zsh/.zshrc').read_text())
+
     def test_the_zsh_files_name_the_clones(self):
         zshrc = (REPO / 'zsh/.config/zsh/.zshrc').read_text() + (REPO / 'zsh/.config/zsh/p10k.zsh').read_text()
         for clone in self.fedora['core']['clones']:
