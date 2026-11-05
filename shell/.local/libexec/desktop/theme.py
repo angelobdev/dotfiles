@@ -779,7 +779,7 @@ def generate(image=None):
     apply_vscode(applied)
     reload()
     if previous != DYNAMIC:
-        remember(previous, current_wallpaper())
+        remember(previous, wallpaper_chosen_under(previous))
     remember(DYNAMIC, image)
     if Path(current_wallpaper() or '') != image:
         apply_wallpaper(image)
@@ -964,6 +964,19 @@ def current_wallpaper():
         return None
 
 
+# The current wallpaper when it was chosen under the theme name. Switching away from a theme before its own
+# wallpaper landed (a conversion or download still running, or offline) leaves the previous theme's image on
+# screen, which is not this theme's. A selection from before wallpaper.py noted the theme counts as its.
+def wallpaper_chosen_under(name):
+    try:
+        selection = json.loads(SELECTION.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(selection, dict) or selection.get('theme', name) != name:
+        return None
+    return selection.get('source')
+
+
 # The remembered wallpaper while it still exists, else the first available one.
 def wallpaper_for(name, theme):
     remembered = memory().get(name)
@@ -1123,7 +1136,7 @@ def main():
         reload()
         # Colours switch at once; the wallpaper (a conversion, maybe a download) follows in the background.
         if previous != arguments.name:
-            remember(previous, current_wallpaper())
+            remember(previous, wallpaper_chosen_under(previous))
             spawn(['fetch', arguments.name, '--show'])
     elif arguments.command == 'wallpapers':
         name = arguments.name or current()

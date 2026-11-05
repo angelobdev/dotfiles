@@ -157,6 +157,18 @@ class WallpaperTests(unittest.TestCase):
                 theme.STATE, theme.WALLPAPERS = saved
 
 
+    def test_a_wallpaper_is_remembered_only_for_the_theme_it_was_chosen_under(self):
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(theme, 'SELECTION', Path(directory) / 'selection.json'):
+            self.assertIsNone(theme.wallpaper_chosen_under('gruvbox'))
+            theme.SELECTION.write_text(json.dumps({'source': '/w/a.jpg', 'theme': 'gruvbox'}))
+            self.assertEqual(theme.wallpaper_chosen_under('gruvbox'), '/w/a.jpg')
+            # Switched again before the new theme's wallpaper landed: the image on screen is the earlier theme's.
+            self.assertIsNone(theme.wallpaper_chosen_under('everforest'))
+            # Written before selections noted their theme.
+            theme.SELECTION.write_text(json.dumps({'source': '/w/b.jpg'}))
+            self.assertEqual(theme.wallpaper_chosen_under('everforest'), '/w/b.jpg')
+
+
 class PreferenceTests(unittest.TestCase):
     def test_preferences_override_and_default_restores(self):
         merged = theme.with_preferences(GRAPHITE, {'fonts': {'sans': 'Inter', 'size': 11}, 'iconTheme': 'breeze'})

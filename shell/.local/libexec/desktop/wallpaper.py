@@ -29,6 +29,9 @@ def main():
         if len(sys.argv) != 2:
             raise ValueError(tr('wallpaper.errors.usage'))
         original = default if sys.argv[1] == '--reset' else Path(sys.argv[1]).expanduser().resolve()
+        # The theme current when the image was asked for: theme.py remembers an image only for the theme it was
+        # chosen under, even when the theme changes during the conversion.
+        theme = current_theme(home)
         if not original.is_file() or original.suffix.lower() not in IMAGES:
             raise ValueError(tr('wallpaper.errors.invalidImage'))
         digest = hashlib.sha256()
@@ -48,12 +51,21 @@ def main():
             raise ValueError(tr('wallpaper.errors.applyFailed', [(applied.stderr or applied.stdout).strip()[:300]]))
         replace_link(current, rendered)
         write_atomic(state / 'selection.json',
-                     json.dumps({'source': str(original), 'rendered': str(rendered)}, ensure_ascii=False) + '\n')
+                     json.dumps({'source': str(original), 'rendered': str(rendered), 'theme': theme}, ensure_ascii=False) + '\n')
         # Keep the current image only: the original selected file is never modified.
         for cached in state.glob('*.jpg'):
             if cached != current and cached != rendered and not cached.is_symlink():
                 cached.unlink()
         print(tr('wallpaper.applied', [original.name]))
+
+
+def current_theme(home):
+    try:
+        path = Path(os.environ.get('XDG_STATE_HOME') or home / '.local/state') / 'desktop-theme/current.json'
+        name = json.loads(path.read_text(encoding='utf-8')).get('theme')
+    except (OSError, ValueError, AttributeError):
+        return None
+    return name if isinstance(name, str) else None
 
 
 def replace_link(destination, target):
