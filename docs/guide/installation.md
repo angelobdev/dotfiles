@@ -31,6 +31,7 @@ Verified versions: Hyprland 0.57.1, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 sudo dnf install -y git-core python3
 git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
 cd ~/.dotfiles
+./scripts/install-tui.py                                     # guided, see below; or by hand:
 ./scripts/install-desktop.py                                 # preview: changes nothing
 ./scripts/install-desktop.py apply                           # or --profiles core,hardware,plugins,apps,codecs, …
 sudo systemctl reboot
@@ -53,6 +54,17 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 The default is `core,hardware,plugins`; the others are opt-in. No Flatpak is installed: Flathub is yours to choose from. GDM needs GNOME Shell and GNOME Settings; the extras they recommend (Tour, Parental Controls, Color Profile Viewer, remote desktop, Rygel) are kept out. The manifest is the only list of packages: a new dependency goes there.
 
 After the reboot, sign in at GDM. A terminal opens by itself and runs `install-desktop.py post`, which builds the plugins (hyprpm asks for confirmation) and lists what is left by hand. If it fails it comes back at the next login; to run it yourself, press `Super + Return`.
+
+### Guided installation
+
+`scripts/install-tui.py` runs the same steps behind a few terminal screens; it needs nothing beyond Python, so it also works on the console of a fresh Server install.
+
+1. **Welcome**: the system, the model, the free space, and the choice between installing and, inside Hyprland, finishing the installation (`post`).
+2. **Profiles**: `Space` toggles one, `d` goes back to the defaults; `core` always stays on. The bottom shows what the highlighted profile adds, read from the manifest.
+3. **Vendor firmware**: only on a model whose firmware is still missing (see `--firmware` above). Type the directory with a copy (`Tab` completes it) or leave it empty to go on without.
+4. **Review**: the preview of every step, the warnings, and the equivalent `install-desktop.py` command. `Enter` opens a step's list, `r` checks again, `a` applies after a confirmation.
+
+Nothing changes before `a`. Then the installer leaves the screens and runs in the terminal: sudo asks for the password once and stays valid for the whole run, each step prints what it does, and at the end it offers to reboot. `--profiles` and `--firmware` preselect the choices. Without a terminal, or on one that cannot draw, use `install-desktop.py`.
 
 On Fedora Server the guided partitioning stops `/` at 15 GiB, which is not enough. Choose custom partitioning, or grow it afterwards: the installer warns under 30 GiB free and prints the command.
 

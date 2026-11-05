@@ -392,11 +392,18 @@ def load_plan(profiles, release=None, firmware=None):
     return Plan(importlib.import_module(name), version, table, manifest['verify']['commands'], profiles, firmware)
 
 
-def preflight(plan):
+def valid_profiles(profiles):
+    return 'core' in profiles and not set(profiles) - set(PROFILES)
+
+
+def refuse(plan):
     if platform.machine() != 'x86_64':
         sys.exit(f'{platform.machine()} is not verified: the desktop is tested on x86_64.')
     if not member(getpass.getuser(), plan.distro.ADMIN_GROUP):
         sys.exit(f'{getpass.getuser()} must be in the {plan.distro.ADMIN_GROUP} group to install packages.')
+
+
+def preflight_warnings(plan):
     warnings = []
     free = shutil.disk_usage('/').free
     if free < MIN_FREE:
@@ -409,7 +416,12 @@ def preflight(plan):
         if not firmware_source(plan, item):
             where = f'{plan.firmware} has no copy of it' if plan.firmware else 'pass --firmware <directory with a copy>'
             warnings.append(f'{item["purpose"]} needs {Path(item["target"]).name} ({item["source"]}): {where}.')
-    for warning in warnings:
+    return warnings
+
+
+def preflight(plan):
+    refuse(plan)
+    for warning in preflight_warnings(plan):
         print('Warning: ' + warning)
 
 
@@ -462,7 +474,7 @@ def main(argv=None):
     parser.add_argument('--profiles', default=DEFAULT_PROFILES, help=f'comma separated, from {", ".join(PROFILES)} (default: {DEFAULT_PROFILES})')
     args = parser.parse_args(argv)
     profiles = tuple(args.profiles.split(','))
-    if 'core' not in profiles or set(profiles) - set(PROFILES):
+    if not valid_profiles(profiles):
         parser.error(f'--profiles needs core, and takes only {", ".join(PROFILES)}.')
     if os.geteuid() == 0:
         sys.exit('Run as the desktop user: the script asks sudo for each system change.')

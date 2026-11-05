@@ -6,12 +6,14 @@ on:
     paths:
       - .github/workflows/install.yml
       - scripts/install-desktop.py
+      - scripts/install-tui.py
       - scripts/install/**
       - scripts/tests/install-container.sh
   pull_request:
     paths:
       - .github/workflows/install.yml
       - scripts/install-desktop.py
+      - scripts/install-tui.py
       - scripts/install/**
       - scripts/tests/install-container.sh
   workflow_dispatch:

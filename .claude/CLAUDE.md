@@ -22,7 +22,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 | `shell/.local/libexec/desktop/*.py` | Python helpers spawned by QML services and wrappers; `i18n.py` shares the QML catalogs |
 | `hypridle/ hyprlock/ hyprpaper/ gtk/ kitty/ fastfetch/ portals/ udiskie/ electron/ zsh/` | Plain config packages; `steam-hidpi/` is optional (`stow.py --with`) |
 | `docs/` | User guides (`guide/`), one page per area (`features/`), developer docs (`development/`) |
-| `scripts/` | `install-desktop.py` with `install/manifest.toml` (the only package list) and `install/fedora.py`, `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, `check-links.py`, hyprpm plugin packaging |
+| `scripts/` | `install-desktop.py` (and its guided front end `install-tui.py`) with `install/manifest.toml` (the only package list) and `install/fedora.py`, `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, `check-links.py`, hyprpm plugin packaging |
 | `.github/workflows/` | CI: `check.yml` runs `check.sh` on Fedora 45 on pushes to `main` and pull requests; `install.yml` runs the installer in a fresh Fedora 45 when it changes |
 
 ## Commands
@@ -31,6 +31,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 ./scripts/check.sh              # bash -n, Python compile, i18n tests, doc links, cc, desktop-file-validate, qmllint, Hyprland --verify-config
 ./scripts/stow.py dry-run       # then: ./scripts/stow.py apply (needed after ADDING files)
 ./scripts/install-desktop.py    # preview of a full install (dry-run by default; `apply` does it)
+./scripts/install-tui.py        # the same, guided: profiles, firmware, review, then apply
 hyprctl configerrors            # live Hyprland config state
 qs log -p ~/.config/quickshell/desktop | tail   # live shell reload result
 ~/.local/bin/desktop-shell status               # JSON snapshot of every service

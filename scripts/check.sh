@@ -8,7 +8,7 @@ if command -v zsh >/dev/null; then
     for script in "$repo/zsh/.zshenv" "$repo"/zsh/.config/zsh/*; do zsh -n "$script"; done
 fi
 # compile() also catches errors ast.parse accepts (e.g. return outside a function); it writes no bytecode.
-python3 - "$repo/scripts/stow.py" "$repo/scripts/install-hypr-plugins.py" "$repo/scripts/install-desktop.py" "$repo"/scripts/install/*.py "$repo/scripts/check-i18n.py" "$repo/scripts/check-links.py" "$repo"/scripts/tests/test_*.py "$repo/scripts/hyprpm/build.py" "$repo"/shell/.local/libexec/desktop/*.py "$repo/shell/.local/libexec/desktop/steamrt-ui/_v2-entry-point" <<'PY'
+python3 - "$repo/scripts/stow.py" "$repo/scripts/install-hypr-plugins.py" "$repo/scripts/install-desktop.py" "$repo/scripts/install-tui.py" "$repo"/scripts/install/*.py "$repo/scripts/check-i18n.py" "$repo/scripts/check-links.py" "$repo"/scripts/tests/test_*.py "$repo/scripts/hyprpm/build.py" "$repo"/shell/.local/libexec/desktop/*.py "$repo/shell/.local/libexec/desktop/steamrt-ui/_v2-entry-point" <<'PY'
 import pathlib, sys
 for path in sys.argv[1:]:
     compile(pathlib.Path(path).read_text(encoding='utf-8'), path, 'exec')

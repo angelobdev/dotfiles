@@ -51,9 +51,10 @@ On a fresh Fedora 45, Server edition included, one script installs everything:
 sudo dnf install -y git-core python3
 git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
 cd ~/.dotfiles
-./scripts/install-desktop.py          # preview: changes nothing
-./scripts/install-desktop.py apply    # sets up the desktop, then reboot
+./scripts/install-tui.py              # guided: choose, review, then apply
 ```
+
+Without the guided installer, `./scripts/install-desktop.py` previews the changes and `./scripts/install-desktop.py apply` makes them.
 
 At the first login a terminal opens and builds the [Hyprland plugins](docs/guide/plugins.md). Everything is a symlink to this repository, so editing a file here changes the live desktop. The [installation guide](docs/guide/installation.md) covers the profiles and what the script does.
 
