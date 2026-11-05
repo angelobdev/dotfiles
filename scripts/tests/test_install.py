@@ -704,10 +704,23 @@ class UninstallTests(unittest.TestCase):
     def test_the_record_stays_marked_as_undone(self):
         current = self.removal({})
         installer.unstate_apply(current, installer.unstate_pending(current))
-        self.assertEqual(installer.load_record(), {'uninstalled': True})
+        self.assertEqual(installer.load_record(), {'uninstalled': True, 'version': 1})
         again = installer.uninstall_plan(installer.Plan(fake_distro(), '45', TABLE, [], ('core',)))
         self.assertEqual(installer.unstate_pending(again), [])
         current.distro.history.assert_not_called()
+
+    def test_what_uninstall_left_stays_in_the_record_until_it_is_gone(self):
+        current = self.removal({'packages': ['a', 'gone'], 'repos': ['one']})
+        current.distro.installed.side_effect = lambda name: name == 'a'
+        current.distro.repo_missing.return_value = False
+        installer.unstate_apply(current, installer.unstate_pending(current))
+        self.assertEqual(installer.load_record(), {'uninstalled': True, 'version': 1, 'packages': ['a'], 'repos': ['one']})
+        again = current._replace(record=installer.load_record())
+        self.assertEqual(installer.unstate_pending(again), [])  # Nothing changed: nothing to do.
+        again.distro.installed.side_effect = lambda name: False  # Removed meanwhile by a second uninstall.
+        self.assertTrue(installer.unstate_pending(again))
+        installer.unstate_apply(again, [])
+        self.assertEqual(installer.load_record(), {'uninstalled': True, 'version': 1, 'repos': ['one']})
 
     def test_an_apply_on_a_desktop_from_before_the_record_starts_from_the_history(self):
         self.system(False)

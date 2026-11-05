@@ -936,13 +936,26 @@ def unrepos_apply(plan, names):
         plan.distro.remove_repo(plan.table['repos'][name])
 
 
+# What uninstall left on purpose and is still there: packages something installed by hand needs, repositories
+# that still provide packages. Kept in the record, so a later uninstall can finish once they are free.
+def leftovers(plan):
+    packages = [name for name in plan.record.get('packages', ()) if plan.distro.installed(name)]
+    repos = recorded_repos(plan)
+    return {key: value for key, value in (('packages', packages), ('repos', repos)) if value}
+
+
 def unstate_pending(plan):
-    return [] if plan.record.get('uninstalled') else [f'mark {RECORD} as undone']
+    if not plan.record.get('uninstalled'):
+        return [f'mark {RECORD} as undone']
+    left = leftovers(plan)
+    current = {key: plan.record[key] for key in ('packages', 'repos') if plan.record.get(key)}
+    return [] if left == current else [f'note in {RECORD} what is still left']
 
 
 def unstate_apply(plan, items):
-    # Kept, emptied: a second uninstall finds nothing to do, instead of rebuilding a record from the history.
-    save_record({'uninstalled': True})
+    # Kept, emptied of what is undone: a second uninstall finds only what was left, instead of rebuilding a record
+    # from the history.
+    save_record({'uninstalled': True, 'version': 1, **leftovers(plan)})
 
 
 # In order: the plugins, the login and the links while their tools are installed; PAM and the login shell before
