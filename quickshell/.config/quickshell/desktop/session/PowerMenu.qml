@@ -9,6 +9,7 @@ import "../components"
 Overlay {
     id: root
     panelName: "power"
+    busy: operation.running
     dialog: true
     closeOnEscape: false
     property string pending: ""

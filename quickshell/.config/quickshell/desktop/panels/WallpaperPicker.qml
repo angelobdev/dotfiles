@@ -11,8 +11,11 @@ Overlay {
     id: root
     panelName: "wallpaper"
     dialog: true
-    property url selectedUrl: ""
-    property string selectedPath: ""
+    busy: operation.running
+    property url selectedUrl: ShellState.recall("wallpaper/selectedUrl", "")
+    onSelectedUrlChanged: ShellState.remember("wallpaper/selectedUrl", selectedUrl)
+    property string selectedPath: ShellState.recall("wallpaper/selectedPath", "")
+    onSelectedPathChanged: ShellState.remember("wallpaper/selectedPath", selectedPath)
     property string failure: ""
     function fileUrl(path) {
         return "file://" + path.split("/").map(encodeURIComponent).join("/");
@@ -47,7 +50,8 @@ Overlay {
     }
     FolderListModel {
         id: folder
-        folder: root.fileUrl(Quickshell.env("HOME"))
+        folder: ShellState.recall("wallpaper/folder", root.fileUrl(Quickshell.env("HOME")))
+        onFolderChanged: ShellState.remember("wallpaper/folder", folder)
         nameFilters: ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.jxl", "*.avif", "*.bmp", "*.tif", "*.tiff"]
         caseSensitive: false
         showDirsFirst: true

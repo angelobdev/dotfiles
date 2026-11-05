@@ -6,7 +6,8 @@ import "../services"
 
 ControlTile {
     id: root
-    property bool expanded: Config.expandMonitors
+    property bool expanded: ShellState.recall("controls/brightnessExpanded", Config.expandMonitors)
+    onExpandedChanged: ShellState.remember("controls/brightnessExpanded", expanded)
     implicitHeight: column.implicitHeight + 24
     ColumnLayout {
         id: column

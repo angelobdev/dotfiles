@@ -102,10 +102,23 @@ ShellRoot {
         function theming(tab: string): void {
             if (ShellState.panel !== "theming")
                 ShellState.toggle("theming");
+            // Opening creates it at once (LazyPanel).
+            const panel = themingPanel.item;
+            if (!panel)
+                return;
             if (tab === "store-icons" || tab === "store-cursors")
-                themingPanel.openStore(tab.slice(6));
+                panel.openStore(tab.slice(6));
             else
-                themingPanel.tab = ["theme", "wallpaper", "font", "icons"].includes(tab) ? tab : "theme";
+                panel.tab = ["theme", "wallpaper", "font", "icons"].includes(tab) ? tab : "theme";
+        }
+        function loadedPanels(): var {
+            // data, not children: the loaders are not items.
+            const names = [];
+            for (let i = 0; i < panels.data.length; i++) {
+                if (panels.data[i].item)
+                    names.push(panels.data[i].name);
+            }
+            return names;
         }
         function status(): string {
             return JSON.stringify({
@@ -129,9 +142,11 @@ ShellRoot {
                     camera: Privacy.cameraApps,
                     sharing: Privacy.sharing
                 },
-                hintsBindings: hints.bindings.length,
-                powerSelection: powerMenu.selectedAction,
-                powerPending: powerMenu.pending,
+                // Panels exist only while open and shortly after (LazyPanel): null otherwise.
+                loadedPanels: loadedPanels(),
+                hintsBindings: hints.item?.bindings.length ?? null,
+                powerSelection: powerMenu.item?.selectedAction ?? null,
+                powerPending: powerMenu.item?.pending ?? null,
                 keepAwake: Idle.keepAwake,
                 bluetoothAdapters: Bluetooth.adapters.values.length,
                 bluetoothAgentRegistered: BluetoothAgent.registered,
@@ -258,36 +273,91 @@ ShellRoot {
     OsdPopup {}
     AssistWindow {}
     KeyboardWindow {}
-    Launcher {}
-    Controls {}
-    NetworkPanel {}
-    AudioPanel {}
-    BluetoothPanel {}
     BluetoothAuthentication {}
-    BatteryPanel {}
-    CalendarPanel {}
-    Hints {
-        id: hints
+    // Panels are created when they open and dropped a minute after they close (components/LazyPanel.qml).
+    Item {
+        id: panels
+        LazyPanel {
+            name: "launcher"
+            Launcher {}
+        }
+        LazyPanel {
+            name: "controls"
+            Controls {}
+        }
+        LazyPanel {
+            name: "network"
+            NetworkPanel {}
+        }
+        LazyPanel {
+            name: "audio"
+            AudioPanel {}
+        }
+        LazyPanel {
+            name: "bluetooth"
+            BluetoothPanel {}
+        }
+        LazyPanel {
+            name: "battery"
+            BatteryPanel {}
+        }
+        LazyPanel {
+            name: "calendar"
+            CalendarPanel {}
+        }
+        LazyPanel {
+            id: hints
+            name: "hints"
+            Hints {}
+        }
+        LazyPanel {
+            name: "recording"
+            RecordingPanel {}
+        }
+        LazyPanel {
+            name: "agent"
+            AgentPanel {}
+        }
+        LazyPanel {
+            name: "updates"
+            UpdatesPanel {}
+        }
+        LazyPanel {
+            name: "clipboard"
+            ClipboardPanel {}
+        }
+        LazyPanel {
+            name: "wallpaper"
+            WallpaperPicker {}
+        }
+        LazyPanel {
+            id: themingPanel
+            name: "theming"
+            ThemingPanel {}
+        }
+        LazyPanel {
+            name: "emoji"
+            EmojiPanel {}
+        }
+        LazyPanel {
+            name: "displays"
+            DisplayPanel {}
+        }
+        LazyPanel {
+            name: "notifications"
+            NotificationCenter {}
+        }
+        LazyPanel {
+            id: powerMenu
+            name: "power"
+            PowerMenu {}
+        }
     }
-    RecordingPanel {}
-    AgentPanel {}
-    UpdatesPanel {}
-    ClipboardPanel {}
-    WallpaperPicker {}
-    ThemingPanel {
-        id: themingPanel
-    }
-    EmojiPanel {}
-    DisplayPanel {}
     WindowSwitcher {
         id: windowSwitcher
     }
-    NotificationCenter {}
     NotificationPopups {
         id: popupWindow
-    }
-    PowerMenu {
-        id: powerMenu
     }
     Authentication {
         id: authentication

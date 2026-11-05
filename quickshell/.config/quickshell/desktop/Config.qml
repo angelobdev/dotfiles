@@ -109,4 +109,6 @@ QtObject {
     // External example: ({ "DP-1": { "type": "ddc", "bus": 6 } })
     // Explicit backlight: { "type": "backlight", "device": "intel_backlight" }
     readonly property var brightnessDevices: ({})
+    // Panels are created when they open and dropped this long after they close (seconds).
+    readonly property int panelKeepSeconds: 60
 }

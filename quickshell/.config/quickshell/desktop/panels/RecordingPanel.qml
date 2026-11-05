@@ -9,8 +9,10 @@ Overlay {
     id: root
     panelName: "recording"
     property string monitor: ""
-    property bool area: false
-    property string audioMode: "none"
+    property bool area: ShellState.recall("recording/area", false)
+    onAreaChanged: ShellState.remember("recording/area", area)
+    property string audioMode: ShellState.recall("recording/audioMode", "none")
+    onAudioModeChanged: ShellState.remember("recording/audioMode", audioMode)
     onOpened: monitor = ShellState.activeScreen?.name || Quickshell.screens[0]?.name || ""
     SidePanelCard {
         height: Math.min(460, parent.height - 76)

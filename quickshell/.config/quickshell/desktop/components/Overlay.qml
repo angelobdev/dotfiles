@@ -12,8 +12,11 @@ PanelWindow {
     // Centred dialogs scale from the middle; side panels slide down from the bar at the top right.
     property bool dialog: false
     readonly property bool open: ShellState.panel === panelName
-    // 0 closed .. 1 open; the window stays mapped until the closing animation reaches 0.
-    property real reveal: open ? 1 : 0
+    // A command still running: components/LazyPanel.qml keeps the panel until it ends.
+    property bool busy: false
+    // 0 closed .. 1 open; the window stays mapped until the closing animation reaches 0. It starts at 0, so a
+    // panel created open (LazyPanel) still animates in.
+    property real reveal: 0
     property Scale motionScale: Scale {
         origin.x: root.dialog ? root.width / 2 : root.width - 12 - Config.controlCenterWidth / 2
         origin.y: root.dialog ? root.height / 2 : 58
@@ -69,6 +72,12 @@ PanelWindow {
         opened();
     }
     Component.onCompleted: {
+        reveal = Qt.binding(() => open ? 1 : 0);
+        // Created open: the opening a panel gets when it was already there.
+        if (open) {
+            contentItem.forceActiveFocus();
+            opened();
+        }
         contentItem.transform = [motionScale, motionShift];
         // Reach full opacity early so the blur behind the card does not pop in late.
         contentItem.opacity = Qt.binding(() => Math.min(1, root.reveal * 2));

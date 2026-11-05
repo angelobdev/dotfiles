@@ -26,7 +26,7 @@ The IPC target also exposes `media(action)` (MPRIS through `services/Media.qml`)
 
 ## Quickshell structure
 
-- `shell.qml`: `ShellRoot` with one `Bar` and one `DockWindow` per screen (`Variants`) and exactly one instance of every panel, the OSD, notification popups/center and session prompts. It references some services through `property var` so they load eagerly (`Notices` owns the notification D-Bus name).
+- `shell.qml`: `ShellRoot` with one `Bar` and one `DockWindow` per screen (`Variants`) and one `LazyPanel` (a `LazyLoader`) per panel: a panel window is created when it opens and dropped `Config.panelKeepSeconds` after it closes, or once a running command ends (`Overlay.busy`). State a panel keeps between openings (expanded sections, tabs, the wallpaper folder, recording options, open notification stacks) goes through `ShellState.recall` / `remember`. The OSD, notification popups, the window switcher and the session and Bluetooth prompts stay loaded. It references some services through `property var` so they load eagerly (`Notices` owns the notification D-Bus name).
 - `share.qml`: a separate root launched by `portal_picker.py` for XDPH screen sharing; input through `DESKTOP_SHARE_*` environment variables, answer written to a file, then `Qt.quit()`.
 - Singletons: root `qmldir` (Theme, ShellState, Config, I18n) and `services/qmldir` (Audio, Notices, Brightness, Idle, Osd, Clipboard, Recording, Media, BluetoothAgent, Calendar, BarVisibility, NetworkInfo, Apps, Dock, Theming, BarStyle, SessionState). Each file has `pragma Singleton` *and* a qmldir line.
 - `Config.qml` is constant (`readonly` properties); editing it hot-reloads the whole shell.

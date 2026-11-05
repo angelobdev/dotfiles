@@ -9,8 +9,10 @@ import "../services"
 // Disturb, open below the grid, one at a time.
 ColumnLayout {
     id: root
-    property bool details: false
-    property bool focusDetails: false
+    property bool details: ShellState.recall("controls/switchDetails", false)
+    onDetailsChanged: ShellState.remember("controls/switchDetails", details)
+    property bool focusDetails: ShellState.recall("controls/focusDetails", false)
+    onFocusDetailsChanged: ShellState.remember("controls/focusDetails", focusDetails)
     spacing: 10
     function nightStatus() {
         if (!NightShift.available)

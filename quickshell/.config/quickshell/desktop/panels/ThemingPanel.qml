@@ -10,7 +10,8 @@ Overlay {
     id: root
     panelName: "theming"
     dialog: true
-    property string tab: "theme"
+    property string tab: ShellState.recall("theming/tab", "theme")
+    onTabChanged: ShellState.remember("theming/tab", tab)
     // "glass" is a page of the Theme tab, reached from the card of a theme with liquid glass.
     // "store" is a page of the Icons tab: the KDE Store, for cursor or icon themes (Store.kind).
     readonly property var tabs: ["theme", "wallpaper", "font", "icons", "glass", "store"]

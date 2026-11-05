@@ -12,6 +12,15 @@ Singleton {
         windowMenuRequested(Hyprland.focusedMonitor?.name ?? "");
     }
     property var activeScreen: null
+    // What panels keep between openings while they are unloaded (components/LazyPanel.qml): expanded sections,
+    // tabs, folders. Read once when a panel is created, written as it changes; gone with the shell.
+    property var memory: ({})
+    function recall(key, fallback) {
+        return key in memory ? memory[key] : fallback;
+    }
+    function remember(key, value) {
+        memory[key] = value;
+    }
     // Direction of the last move between the Control Center and a sub-panel: 1 forward, -1 back, 0 none.
     property int navigation: 0
     function toggle(name, screen) {

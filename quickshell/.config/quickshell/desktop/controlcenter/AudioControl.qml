@@ -6,7 +6,8 @@ import "../services"
 
 ControlTile {
     id: root
-    property bool expanded: Config.expandAudioDevices
+    property bool expanded: ShellState.recall("controls/audioExpanded", Config.expandAudioDevices)
+    onExpandedChanged: ShellState.remember("controls/audioExpanded", expanded)
     implicitHeight: column.implicitHeight + 24
     ColumnLayout {
         id: column

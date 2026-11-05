@@ -10,7 +10,8 @@ import "NotificationDeck.js" as NotificationDeck
 Overlay {
     id: root
     // Decks are grouped as in the popups; those opened with the button under their newest entry.
-    property var openStacks: []
+    property var openStacks: ShellState.recall("notifications/openStacks", [])
+    onOpenStacksChanged: ShellState.remember("notifications/openStacks", openStacks)
     readonly property var stacks: NotificationDeck.collapse(Notices.entries, openStacks)
     panelName: "notifications"
     SidePanelCard {

@@ -7,7 +7,8 @@ import "../services"
 ControlTile {
     id: root
     readonly property var player: Media.player
-    property bool expanded: false
+    property bool expanded: ShellState.recall("controls/mediaExpanded", false)
+    onExpandedChanged: ShellState.remember("controls/mediaExpanded", expanded)
     property real position: 0
     implicitHeight: content.implicitHeight + 24
     function updatePosition() {
