@@ -15,7 +15,7 @@ Overlay {
     onAudioModeChanged: ShellState.remember("recording/audioMode", audioMode)
     onOpened: monitor = ShellState.activeScreen?.name || Quickshell.screens[0]?.name || ""
     SidePanelCard {
-        height: Math.min(460, parent.height - 76)
+        height: Math.min(460, parent.height - Theme.panelClearance)
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: Theme.panelPadding

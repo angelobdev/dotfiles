@@ -95,7 +95,7 @@ Overlay {
         }
     }
     SidePanelCard {
-        height: Math.min(layout.implicitHeight + 2 * Theme.panelPadding, parent.height - 76)
+        height: Math.min(layout.implicitHeight + 2 * Theme.panelPadding, parent.height - Theme.panelClearance)
         ColumnLayout {
             id: layout
             anchors {

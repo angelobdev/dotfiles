@@ -15,7 +15,7 @@ Overlay {
     readonly property var stacks: NotificationDeck.collapse(Notices.entries, openStacks)
     panelName: "notifications"
     SidePanelCard {
-        height: Math.min(600, parent.height - 76)
+        height: Math.min(600, parent.height - Theme.panelClearance)
         ColumnLayout {
             anchors {
                 fill: parent

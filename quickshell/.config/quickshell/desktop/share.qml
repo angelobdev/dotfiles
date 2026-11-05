@@ -58,7 +58,7 @@ ShellRoot {
         Card {
             anchors.centerIn: parent
             width: Math.min(620, parent.width - 32)
-            height: Math.min(580, parent.height - 76)
+            height: Math.min(580, parent.height - Theme.panelClearance)
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 22

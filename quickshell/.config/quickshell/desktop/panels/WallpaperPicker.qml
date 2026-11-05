@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Io
 import ".."
 import "../components"
+import "../components/FileUrl.js" as FileUrl
 
 Overlay {
     id: root
@@ -17,9 +18,6 @@ Overlay {
     property string selectedPath: ShellState.recall("wallpaper/selectedPath", "")
     onSelectedPathChanged: ShellState.remember("wallpaper/selectedPath", selectedPath)
     property string failure: ""
-    function fileUrl(path) {
-        return "file://" + path.split("/").map(encodeURIComponent).join("/");
-    }
     function navigate(url) {
         folder.folder = url;
         selectedUrl = "";
@@ -50,7 +48,7 @@ Overlay {
     }
     FolderListModel {
         id: folder
-        folder: ShellState.recall("wallpaper/folder", root.fileUrl(Quickshell.env("HOME")))
+        folder: ShellState.recall("wallpaper/folder", FileUrl.of(Quickshell.env("HOME")))
         onFolderChanged: ShellState.remember("wallpaper/folder", folder)
         nameFilters: ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.jxl", "*.avif", "*.bmp", "*.tif", "*.tiff"]
         caseSensitive: false
@@ -99,12 +97,12 @@ Overlay {
                 ActionButton {
                     text: I18n.tr("wallpaper.home")
                     enabled: !operation.running
-                    onClicked: root.navigate(root.fileUrl(Quickshell.env("HOME")))
+                    onClicked: root.navigate(FileUrl.of(Quickshell.env("HOME")))
                 }
                 ActionButton {
                     text: I18n.tr("wallpaper.collection")
                     enabled: !operation.running
-                    onClicked: root.navigate(root.fileUrl(Quickshell.env("HOME") + "/.local/share/wallpapers"))
+                    onClicked: root.navigate(FileUrl.of(Quickshell.env("HOME") + "/.local/share/wallpapers"))
                 }
                 InputField {
                     id: path
@@ -112,7 +110,7 @@ Overlay {
                     text: decodeURIComponent(folder.folder.toString().replace(/^file:\/\//, ""))
                     placeholderText: I18n.tr("wallpaper.folderPlaceholder")
                     enabled: !operation.running
-                    onAccepted: root.navigate(root.fileUrl(text.startsWith("~/") ? Quickshell.env("HOME") + text.slice(1) : text.startsWith("/") ? text : Quickshell.env("HOME") + "/" + text))
+                    onAccepted: root.navigate(FileUrl.of(text.startsWith("~/") ? Quickshell.env("HOME") + text.slice(1) : text.startsWith("/") ? text : Quickshell.env("HOME") + "/" + text))
                 }
             }
             RowLayout {

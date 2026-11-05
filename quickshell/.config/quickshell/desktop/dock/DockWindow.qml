@@ -26,10 +26,10 @@ PanelWindow {
     property bool shiftAnimated: true
     // Larger in tablet mode, like every hit target.
     readonly property int iconSize: Theme.hit(Config.dockIconSize)
-    readonly property int cellWidth: iconSize + 8
+    readonly property int cellWidth: iconSize + DockModel.CELL_PADDING
     readonly property int separatorIndex: Dock.items.findIndex(i => i.separatorBefore)
     readonly property int dragFrom: dragKey === "" ? -1 : Dock.items.findIndex(i => i.key === dragKey)
-    readonly property int dragTarget: dragFrom === -1 ? -1 : DockModel.dropIndex(dragPoint.x - width / 2, Dock.items.filter(i => i.pinned).length, Dock.items.length, separatorIndex, cellWidth, 13)
+    readonly property int dragTarget: dragFrom === -1 ? -1 : DockModel.dropIndex(dragPoint.x - width / 2, Dock.items.filter(i => i.pinned).length, Dock.items.length, separatorIndex, cellWidth, DockModel.SEPARATOR)
     // Lifting a pin more than an icon above the shelf removes it on release.
     readonly property bool dragRemoving: dragFrom !== -1 && dragPoint.y < body.y - root.iconSize
     // Super+D hands the keyboard to this dock until Esc, Super+D, activation or an outside click.

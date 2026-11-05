@@ -1,5 +1,10 @@
 .pragma library
 
+// The gap of the separator between pins and running apps, and the padding of each cell around its icon:
+// the drawn layout (DockWindow, DockItem) and this maths read the same values.
+var SEPARATOR = 13;
+var CELL_PADDING = 8;
+
 // Pure layout helpers for the dock, kept apart so scripts/tests can exercise them without a compositor.
 
 // Centre of an item in the unmagnified row, relative to the row's centre. Using the resting layout keeps

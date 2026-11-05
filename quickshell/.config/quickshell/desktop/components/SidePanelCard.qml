@@ -10,5 +10,5 @@ Card {
         rightMargin: 12
     }
     width: Math.min(Config.controlCenterWidth, parent.width - 24)
-    height: Math.min(560, parent.height - 76)
+    height: Math.min(560, parent.height - Theme.panelClearance)
 }

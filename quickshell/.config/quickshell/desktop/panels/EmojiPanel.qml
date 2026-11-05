@@ -47,7 +47,7 @@ Overlay {
     Card {
         anchors.centerIn: parent
         width: Math.min(560, parent.width - 32)
-        height: Math.min(520, parent.height - 76)
+        height: Math.min(520, parent.height - Theme.panelClearance)
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: Theme.dialogPadding

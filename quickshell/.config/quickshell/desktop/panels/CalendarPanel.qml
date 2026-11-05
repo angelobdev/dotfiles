@@ -69,7 +69,7 @@ Overlay {
     Card {
         anchors.centerIn: parent
         width: Math.min(480, parent.width - 48)
-        height: Math.min(layout.implicitHeight + 44, parent.height - 76)
+        height: Math.min(layout.implicitHeight + 2 * Theme.dialogPadding, parent.height - Theme.panelClearance)
         FocusScope {
             id: keyboard
             anchors.fill: parent

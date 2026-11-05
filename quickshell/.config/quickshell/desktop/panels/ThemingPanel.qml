@@ -5,6 +5,7 @@ import Quickshell
 import ".."
 import "../components"
 import "../services"
+import "../components/FileUrl.js" as FileUrl
 
 Overlay {
     id: root
@@ -16,9 +17,6 @@ Overlay {
     // "store" is a page of the Icons tab: the KDE Store, for cursor or icon themes (Store.kind).
     readonly property var tabs: ["theme", "wallpaper", "font", "icons", "glass", "store"]
     readonly property var cycle: ["theme", "wallpaper", "font", "icons"]
-    function fileUrl(path) {
-        return "file://" + path.split("/").map(encodeURIComponent).join("/");
-    }
     function showTab(name) {
         tab = name;
         if (name === "wallpaper")
@@ -286,7 +284,7 @@ Overlay {
                                             Image {
                                                 anchors.fill: parent
                                                 visible: themeCell.dynamicCard && Theming.wallpaperThumb !== ""
-                                                source: visible ? root.fileUrl(Theming.wallpaperThumb) : ""
+                                                source: visible ? FileUrl.of(Theming.wallpaperThumb) : ""
                                                 sourceSize: Qt.size(480, 300)
                                                 fillMode: Image.PreserveAspectCrop
                                                 asynchronous: true
@@ -506,7 +504,7 @@ Overlay {
                                         }
                                         visible: wallCell.modelData.thumb !== ""
                                         // Cached JPEG thumbnails: Qt here cannot decode WebP, and full-size 8K images would be slow.
-                                        source: visible ? root.fileUrl(wallCell.modelData.thumb) : ""
+                                        source: visible ? FileUrl.of(wallCell.modelData.thumb) : ""
                                         sourceSize: Qt.size(480, 300)
                                         fillMode: Image.PreserveAspectCrop
                                         asynchronous: true
@@ -886,7 +884,7 @@ Overlay {
                                             required property string modelData
                                             width: 28
                                             height: 28
-                                            source: modelData ? root.fileUrl(modelData) : ""
+                                            source: modelData ? FileUrl.of(modelData) : ""
                                             sourceSize: Qt.size(56, 56)
                                             fillMode: Image.PreserveAspectFit
                                             asynchronous: true

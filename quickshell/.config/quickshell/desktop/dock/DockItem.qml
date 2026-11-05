@@ -33,8 +33,8 @@ Row {
     // Where the window anchors the selection ring and the context menu.
     readonly property Item anchorItem: cell
     readonly property int size: Theme.hit(Config.dockIconSize)
-    readonly property int cellWidth: size + 8
-    readonly property real zoom: 1 + (DockModel.magnify(pointerOffset - DockModel.baseOffset(index, count, separatorIndex, cellWidth, 13), cellWidth, Config.dockMagnification) - 1) * zoomAmount
+    readonly property int cellWidth: size + DockModel.CELL_PADDING
+    readonly property real zoom: 1 + (DockModel.magnify(pointerOffset - DockModel.baseOffset(index, count, separatorIndex, cellWidth, DockModel.SEPARATOR), cellWidth, Config.dockMagnification) - 1) * zoomAmount
     readonly property string label: modelData.entry?.name || modelData.appId
     signal menuRequested(var item, Item anchor)
     signal dragStarted(var item)
@@ -56,7 +56,7 @@ Row {
     // Pinned apps and running-only apps are split by a hairline.
     Item {
         visible: root.modelData.separatorBefore
-        width: 13
+        width: DockModel.SEPARATOR
         height: parent.height
         Rectangle {
             anchors.centerIn: parent

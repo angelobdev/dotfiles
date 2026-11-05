@@ -54,6 +54,8 @@ Singleton {
     readonly property color frameInactive: borderSize > 0 ? colors.inactiveBorder : stroke
     readonly property int panelPadding: 16
     readonly property int dialogPadding: 22
+    // The height a side panel or dialog leaves free: the bar above it and a margin below.
+    readonly property int panelClearance: 76
     // Motion shared with Hyprland's "out" and "accel" curves in appearance.lua.
     readonly property int motionFast: Config.reduceMotion ? 0 : 120
     readonly property int motionNormal: Config.reduceMotion ? 0 : 220

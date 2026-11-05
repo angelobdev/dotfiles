@@ -125,7 +125,7 @@ Overlay {
 
     SidePanelCard {
         // As tall as its content, up to the screen.
-        height: Math.min(content.implicitHeight + 2 * Theme.panelPadding, parent.height - 76)
+        height: Math.min(content.implicitHeight + 2 * Theme.panelPadding, parent.height - Theme.panelClearance)
         ColumnLayout {
             id: content
             anchors {
