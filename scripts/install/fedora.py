@@ -186,8 +186,11 @@ def removal(names):
 
 def installed_by_hand(names):
     # Of these installed packages, the ones a person asked for rather than dnf for a dependency.
+    # Anything dnf did not pull in counts: User, Group, External User (rpm -i) and None (reason unknown), so a
+    # package uninstall cannot account for is kept rather than removed.
     lines = query('dnf', 'repoquery', '--installed', '--qf', '%{name}.%{arch} %{reason}\n', *names).stdout.splitlines() if names else []
-    return {line.split()[0] for line in lines if len(line.split()) == 2 and line.split()[1] in ('User', 'Group')}
+    pulled = ('Dependency', 'Weak Dependency', 'Clean')
+    return {name for name, _, reason in (line.partition(' ') for line in lines) if name and reason.strip() and reason.strip() not in pulled}
 
 
 def requirements(names):

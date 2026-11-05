@@ -991,6 +991,13 @@ class RemovalTests(unittest.TestCase):
 
 
 class FedoraTests(unittest.TestCase):
+    def test_only_packages_dnf_pulled_in_count_as_not_by_hand(self):
+        rows = ('a.x86_64 User\nb.x86_64 Group\nc.x86_64 External User\nd.x86_64 None\n'
+                'e.x86_64 Dependency\nf.x86_64 Weak Dependency\ng.x86_64 Clean\n')
+        with mock.patch.object(fedora, 'query', return_value=reply(rows)):
+            self.assertEqual(fedora.installed_by_hand(['a']), {'a.x86_64', 'b.x86_64', 'c.x86_64', 'd.x86_64'})
+        self.assertEqual(fedora.installed_by_hand([]), set())
+
     def test_missing_reads_the_lines_rpm_prints(self):
         lines = 'hyprland-0.57.0-1.fc45.x86_64\nno package provides mesa-vulkan-drivers(x86-32)\nno package provides gdm\n'
         with mock.patch.object(fedora, 'query', return_value=reply(lines)):
