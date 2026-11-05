@@ -24,9 +24,11 @@ Overlay {
         tab = name;
         if (name === "wallpaper")
             Theming.makeThumbs();
+        // The tab shown by then: a later showTab in the same turn (IPC right after opening) wins, so focus never
+        // stays on a hidden page, where Enter would act on it.
         Qt.callLater(() => {
-            const view = [themeGrid, wallpaperGrid, sansList, iconList, glassBack, storeSearch][tabs.indexOf(name)];
-            view.forceActiveFocus();
+            const view = [themeGrid, wallpaperGrid, sansList, iconList, glassBack, storeSearch][tabs.indexOf(root.tab)];
+            view?.forceActiveFocus();
         });
     }
     function openStore(kind) {
