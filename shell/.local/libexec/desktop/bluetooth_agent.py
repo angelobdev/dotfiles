@@ -155,6 +155,8 @@ class Agent:
             self.finish(False)
 
     def command(self, data):
+        if not isinstance(data, dict):
+            raise ValueError('expected a JSON object')
         action = data.get('action')
         if action == 'reply':
             self.finish(data.get('accepted') is True, data.get('value', ''), data.get('id'))
