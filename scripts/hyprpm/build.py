@@ -21,13 +21,32 @@ def run(*args, **kwargs):
     return subprocess.run(args, check=True, **kwargs)
 
 
-def rpm_version(package):
-    return subprocess.check_output(['rpm', '-q', '--qf', '%{VERSION}-%{RELEASE}.%{ARCH}', package], text=True)
+def release_id():
+    # The distribution, from os-release: it says which package database holds Hyprland. The tools present do not
+    # (Fedora packages pacman, Arch packages rpm).
+    try:
+        lines = Path('/etc/os-release').read_text(encoding='utf-8').splitlines()
+    except OSError:
+        return ''
+    return next((line.partition('=')[2].strip('"\'') for line in lines if line.startswith('ID=')), '')
+
+
+def package_version(package):
+    # The installed build: VERSION-RELEASE.ARCH from rpm, [EPOCH:]VERSION-REL from pacman. Raises when it is missing.
+    if release_id() == 'arch':
+        command = ['pacman', '-Q', package]
+        fields = subprocess.run(command, capture_output=True, text=True, check=True).stdout.split()
+        # pacman -Q also answers for what a package provides.
+        if len(fields) != 2 or fields[0] != package:
+            raise subprocess.CalledProcessError(1, command)
+        return fields[1]
+    command = ['rpm', '-q', '--qf', '%{VERSION}-%{RELEASE}.%{ARCH}', package]
+    return subprocess.run(command, capture_output=True, text=True, check=True).stdout
 
 
 def cache_key():
     # Sources built for another Hyprland, or by another build.py or patch, are never reused.
-    version = rpm_version('hyprland')
+    version = package_version('hyprland')
     return hashlib.sha256((version + Path(__file__).read_text() + HYPRGRASS_PATCH.read_text()).encode()).hexdigest()[:20]
 
 

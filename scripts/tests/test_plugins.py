@@ -42,6 +42,10 @@ class Home(unittest.TestCase):
         home = mock.patch.object(Path, 'home', return_value=self.root / 'home')
         home.start()
         self.addCleanup(home.stop)
+        # Fedora's packaging, whatever runs the tests: on Arch the headers are in hyprland itself (ArchPackageTests).
+        release = mock.patch.object(bundle, 'release_id', return_value='fedora')
+        release.start()
+        self.addCleanup(release.stop)
 
     def built(self, digest=None, rpm=RPM, failed=False, abi=ABI):
         self.stamp_path.parent.mkdir(parents=True, exist_ok=True)
@@ -58,7 +62,7 @@ class Home(unittest.TestCase):
 
 class StatusTests(Home):
     def status(self, rpm=RPM):
-        with mock.patch.object(bundle, 'rpm_version', return_value=rpm):
+        with mock.patch.object(bundle, 'package_version', return_value=rpm):
             return bundle.status()
 
     def test_nothing_built_yet(self):
@@ -91,7 +95,7 @@ class StatusTests(Home):
 
     def test_hyprland_and_its_headers_from_different_updates(self):
         self.built(rpm='0.57.0-1.fc45.x86_64')
-        with mock.patch.object(bundle, 'rpm_version', side_effect=lambda package: RPM if package == 'hyprland' else '0.57.0-1.fc45.x86_64'):
+        with mock.patch.object(bundle, 'package_version', side_effect=lambda package: RPM if package == 'hyprland' else '0.57.0-1.fc45.x86_64'):
             self.assertEqual(bundle.status(), bundle.MISMATCHED)
 
     def test_the_verified_builds_are_not_part_of_the_digest(self):
@@ -104,13 +108,13 @@ class StatusTests(Home):
         self.assertEqual(set(bundle.FILES), {'build.py', 'hyprpm.toml', build.HYPRGRASS_PATCH.name})
 
     def test_verify_refuses_other_builds(self):
-        with mock.patch.object(bundle, 'rpm_version', side_effect=lambda package: '0.58.0-1.fc45.x86_64'):
+        with mock.patch.object(bundle, 'package_version', side_effect=lambda package: '0.58.0-1.fc45.x86_64'):
             with self.assertRaises(RuntimeError):
                 bundle.verify()
-        with mock.patch.object(bundle, 'rpm_version', side_effect=lambda package: RPM if package == 'hyprland' else 'other'):
+        with mock.patch.object(bundle, 'package_version', side_effect=lambda package: RPM if package == 'hyprland' else 'other'):
             with self.assertRaises(RuntimeError):
                 bundle.verify()
-        with mock.patch.object(bundle, 'rpm_version', return_value=RPM):
+        with mock.patch.object(bundle, 'package_version', return_value=RPM):
             self.assertEqual(bundle.verify(), RPM)
 
 
@@ -190,7 +194,7 @@ class InstallTests(Home):
         pc = self.root / 'hyprland.pc'
         pc.write_text('prefix=/usr/include\n')
         with mock.patch.dict(os.environ, {'HYPRLAND_INSTANCE_SIGNATURE': 'sig'}), mock.patch('os.geteuid', return_value=1000), \
-                mock.patch.object(bundle, 'verify'), mock.patch.object(bundle, 'rpm_version', return_value=RPM), \
+                mock.patch.object(bundle, 'verify'), mock.patch.object(bundle, 'package_version', return_value=RPM), \
                 mock.patch.object(bundle, 'status', return_value=status), \
                 mock.patch.object(installer, 'json_of', side_effect=lambda *command: replies[command]), \
                 mock.patch.object(installer, 'loaded', side_effect=lambda: next(loaded)), \

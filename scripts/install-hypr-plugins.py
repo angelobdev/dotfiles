@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the tested plugin set with hyprpm, using matching Fedora RPM headers."""
+"""Install the tested plugin set with hyprpm, using the headers of the installed Hyprland package."""
 import json
 import os
 from pathlib import Path
@@ -61,7 +61,7 @@ def main():
     for key in ('version', 'commit', 'abiHash'):
         if running.get(key) != installed.get(key):
             sys.exit('The session does not match the installed package: log out and back in first.')
-    # COPR reports commit "unknown"; also detect an RPM upgrade during this session.
+    # COPR reports commit "unknown"; also detect a package upgrade during this session.
     instances = json_of('hyprctl', '-j', 'instances')
     instance = next((x for x in instances if x.get('instance') == signature), None)
     if instance is None:
@@ -122,7 +122,7 @@ def main():
     for name in PLUGINS:
         run('hyprpm', 'enable', name)
     # Autoload refuses stale COPR builds, even though their Git hash is "unknown".
-    stamp = {'rpm': bundle.rpm_version('hyprland'), 'version': running['version'], 'abiHash': running['abiHash']}
+    stamp = {'rpm': bundle.package_version('hyprland'), 'version': running['version'], 'abiHash': running['abiHash']}
     bundle.STAMP.parent.mkdir(parents=True, exist_ok=True)
     bundle.STAMP.write_text(json.dumps(stamp) + '\n')
     run(str(REPO / 'scripts/stow.py'), 'apply')

@@ -9,14 +9,15 @@ from pathlib import Path
 import subprocess
 import tomllib
 
-from build import PLUGINS
+import build
+from build import PLUGINS, release_id
 
 PACKAGING = Path(__file__).resolve().parent
 # What hyprpm builds from: a change to any of these is a new bundle, rebuilt at the next login.
 FILES = ('build.py', 'hyprpm.toml', 'hyprgrass-hold-touches.patch')
 REPOSITORY = 'dotfiles-desktop'
-# RPM builds of hyprland and hyprland-devel the pins in build.py were verified against.
-VERIFIED = ('0.57.1-1.fc45.x86_64',)
+# Builds of Hyprland and its headers the pins in build.py were verified against: Fedora's RPM, Arch's package.
+VERIFIED = ('0.57.1-1.fc45.x86_64', '0.57.1-1')
 CACHE = Path('/var/cache/hyprpm') / getpass.getuser()
 STAMP = Path.home() / '.local/state/dotfiles/hypr-plugins.json'
 
@@ -30,15 +31,23 @@ UNVERIFIED = 'unverified'    # Hyprland changed to a build the pins were not ver
 MISMATCHED = 'mismatched'    # hyprland and hyprland-devel differ: an update stopped halfway, nothing can be built
 
 
-def rpm_version(package):
-    result = subprocess.run(('rpm', '-q', '--qf', '%{VERSION}-%{RELEASE}.%{ARCH}', package), capture_output=True, text=True)
-    return result.stdout if result.returncode == 0 else ''
+def headers_package():
+    # Fedora ships Hyprland's headers in hyprland-devel; Arch keeps them in hyprland itself.
+    return 'hyprland' if release_id() == 'arch' else 'hyprland-devel'
+
+
+def package_version(package):
+    # The installed build, or '' when the package is missing.
+    try:
+        return build.package_version(package)
+    except (subprocess.CalledProcessError, OSError, ValueError):
+        return ''
 
 
 def verify():
     # Refuse unreviewed compositor builds and mismatched headers.
-    version = rpm_version('hyprland')
-    if version != rpm_version('hyprland-devel'):
+    version = package_version('hyprland')
+    if version != package_version(headers_package()):
         raise RuntimeError('hyprland and hyprland-devel must have the same RPM version')
     if version not in VERIFIED:
         raise RuntimeError('Hyprland build differs from the verified version: update and verify pins before building')
@@ -79,9 +88,10 @@ def status():
     built = stamp()
     if not built:
         return MISSING
-    version = rpm_version('hyprland')
-    if version != rpm_version('hyprland-devel'):
+    version = package_version('hyprland')
+    if version != package_version(headers_package()):
         return MISMATCHED
+    # The stamp keeps the build under 'rpm', its name from before Arch: any distribution's package build.
     if version != built.get('rpm'):
         return COMPOSITOR_CHANGED if version in VERIFIED else UNVERIFIED
     if not complete():

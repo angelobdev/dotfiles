@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Autoload only plugins built from this packaging for this running and installed Fedora compositor; rebuild the others."""
+"""Autoload only plugins built from this packaging for this running and installed compositor; rebuild the others."""
 from i18n import tr
 import json
 import os
@@ -23,7 +23,7 @@ def notify(title, body):
 
 def session_matches(stamp):
     running = json.loads(output('hyprctl', '-j', 'version'))
-    devel = bundle.rpm_version('hyprland-devel')
+    devel = bundle.package_version(bundle.headers_package())
     instances = json.loads(output('hyprctl', '-j', 'instances'))
     instance = next(x for x in instances if x['instance'] == os.environ['HYPRLAND_INSTANCE_SIGNATURE'])
     return (devel == stamp['rpm'] and all(running.get(k) == stamp.get(k) for k in ('version', 'abiHash'))
