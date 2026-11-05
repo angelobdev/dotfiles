@@ -89,6 +89,7 @@ class InstallTests(unittest.TestCase):
             add(archive, 'Pointer/cursors/left_ptr', b'x')
             add(archive, 'Pointer/index.theme', b'[Icon Theme]\nName=Pointer\n')
         for patcher in (mock.patch.object(store, 'ICONS', self.root / 'icons'), mock.patch.object(store, 'LEDGER', self.root / 'store.json'),
+                        mock.patch.object(store, 'SYSTEM_ICONS', [self.root / 'system']),
                         mock.patch.object(store, 'tr', side_effect=lambda key, args=(): key)):
             patcher.start()
             self.addCleanup(patcher.stop)
@@ -113,6 +114,23 @@ class InstallTests(unittest.TestCase):
         self.assertTrue((self.root / 'icons/Pointer/mine').exists())
         with self.assertRaises(ValueError):
             store.remove('Pointer')
+
+    def pack(self, *names):
+        with tarfile.open(self.archive, 'w:gz') as archive:
+            for name in names:
+                add(archive, f'{name}/cursors/left_ptr', b'x')
+
+    def test_folder_names_that_could_reach_a_config_are_refused(self):
+        self.pack('x", y = os.getenv("HOME"), z = "', 'line\nbreak', 'default')
+        with self.assertRaisesRegex(ValueError, 'store.errors.name'):
+            store.install('cursors', 7, 1)
+        self.assertFalse((self.root / 'icons').exists() and any((self.root / 'icons').iterdir()))
+
+    def test_a_system_theme_name_is_never_taken(self):
+        (self.root / 'system/Adwaita').mkdir(parents=True)
+        self.pack('Adwaita', 'Pointer')
+        self.assertEqual(store.install('cursors', 7, 1), {'installed': ['Pointer']})
+        self.assertFalse((self.root / 'icons/Adwaita').exists())
 
     def test_remove_takes_only_what_the_store_installed(self):
         store.install('cursors', 7, 1)

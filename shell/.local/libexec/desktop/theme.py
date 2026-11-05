@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Render the desktop theme into the files the shell and applications read."""
-from common import IMAGES, focused_monitor, magick, replacing, write_atomic
+from common import IMAGES, focused_monitor, magick, replacing, theme_name, write_atomic
 from i18n import tr
 import argparse
 import colorsys
@@ -52,6 +52,8 @@ WINDOW_KEYS = ('rounding', 'borderSize', 'gapsIn', 'gapsOut')
 # {{ path }} or {{ path | filter }} or {{ path | filter:alpha }}; braces are free for CSS, Lua and JSON.
 PLACEHOLDER = re.compile(r'\{\{\s*([A-Za-z0-9_.]+)\s*(?:\|\s*([a-z]+)(?::([0-9a-f]{2}))?\s*)?\}\}')
 COLOR = re.compile(r'#([0-9a-f]{6})([0-9a-f]{2})?')
+# A line break in a value would add lines to INI and conf outputs.
+CONTROL = re.compile(r'[\x00-\x1f\x7f]')
 SCHEMA = 'org.gnome.desktop.interface'
 
 
@@ -63,8 +65,15 @@ def split_color(value, path):
 
 
 def convert(value, path, name, alpha):
+    if isinstance(value, str) and CONTROL.search(value):
+        raise ValueError(tr('theme.errors.control', [path]))
     if name is None:
         return str(value)
+    # Quoted strings: a name with a quote or backslash stays one value instead of breaking (or extending) the file.
+    if name == 'json':
+        return json.dumps(str(value), ensure_ascii=False)
+    if name == 'lua':
+        return '"' + str(value).replace('\\', '\\\\').replace('"', '\\"') + '"'
     rgb, own = split_color(value, path)
     alpha = alpha or own
     if name == 'hex':
@@ -253,10 +262,10 @@ def with_preferences(theme, chosen, name=None):
     # One font everywhere: the interface takes the monospace family.
     if chosen.get('fonts', {}).get('unified') and theme['fonts'].get('mono'):
         theme['fonts']['sans'] = theme['fonts']['mono']
-    if chosen.get('iconTheme'):
+    if theme_name(chosen.get('iconTheme')):
         theme.setdefault('system', {})['iconTheme'] = chosen['iconTheme']
     cursor = chosen.get('cursor', {})
-    if cursor.get('theme'):
+    if theme_name(cursor.get('theme')):
         theme.setdefault('system', {})['cursorTheme'] = cursor['theme']
     if isinstance(cursor.get('size'), int):
         theme.setdefault('system', {})['cursorSize'] = cursor['size']
@@ -345,7 +354,7 @@ def font_exists(family):
 
 
 def icon_theme_exists(name):
-    return bool(name) and '/' not in name and bool(icon_theme_dirs(name, ICON_DIRS))
+    return theme_name(name) and bool(icon_theme_dirs(name, ICON_DIRS))
 
 
 # Thumbnails make every format the gallery shows previewable (Qt lacks WebP here) and keep 8K
@@ -505,7 +514,7 @@ def icon_samples(name, roots, names=ICON_SAMPLES):
 # icon directory changes.
 def cached_icon_themes():
     # Bump the version when the discovery rules change.
-    signature = [2] + [[str(root), root.stat().st_mtime] for root in ICON_DIRS if root.is_dir()]
+    signature = [3] + [[str(root), root.stat().st_mtime] for root in ICON_DIRS if root.is_dir()]
     cache = STATE / 'icons-cache.json'
     try:
         stored = json.loads(cache.read_text(encoding='utf-8'))
@@ -526,7 +535,7 @@ def icon_themes(roots=None):
             continue
         for base in sorted(root.iterdir()):
             index_file = base / 'index.theme'
-            if base.name in listed or base.name in ('hicolor', 'default', 'locolor') or not index_file.is_file():
+            if base.name in listed or base.name in ('hicolor', 'default', 'locolor') or not theme_name(base.name) or not index_file.is_file():
                 continue
             info = read_index(index_file).get('Icon Theme', {})
             # Hidden is not honoured: Fedora's Adwaita sets it, and the sample check below already drops
@@ -619,7 +628,7 @@ def cursor_themes(roots=None):
         if not root.is_dir():
             continue
         for base in sorted(root.iterdir()):
-            if base.name in listed or base.name == 'default' or not ((base / 'cursors').is_dir() or (base / 'manifest.hl').is_file()):
+            if base.name in listed or base.name == 'default' or not theme_name(base.name) or not ((base / 'cursors').is_dir() or (base / 'manifest.hl').is_file()):
                 continue
             info = read_index(base / 'index.theme').get('Icon Theme', {}) if (base / 'index.theme').is_file() else {}
             listed[base.name] = {'id': base.name, 'name': info.get('Name', base.name)}
@@ -1258,6 +1267,8 @@ def main():
                 chosen_fonts['unified'] = arguments.unified == 'on'
             chosen['fonts'] = chosen_fonts
         else:
+            if arguments.name != 'default' and not icon_theme_exists(arguments.name):
+                raise ValueError(tr('theming.errors.iconsMissing', [arguments.name]))
             chosen['iconTheme'] = None if arguments.name == 'default' else arguments.name
         save_preferences(chosen)
         apply(current())

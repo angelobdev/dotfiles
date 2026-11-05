@@ -630,6 +630,7 @@
     "errors": {
       "checksum": "%1 non corrisponde al suo checksum ed è stato scartato.",
       "color": "Il valore %1 del tema non è un colore #rrggbb o #rrggbbaa: %2",
+      "control": "Il valore %1 del tema contiene un a capo o un carattere di controllo.",
       "filter": "Filtro di template del tema sconosciuto: %1",
       "invalid": "Impossibile leggere il tema %1: %2",
       "template": "Il template %1 usa un valore che il tema non definisce: %2",
@@ -1052,6 +1053,7 @@
       "missing": "Quel file non è più nello store.",
       "noTheme": "L’archivio non contiene temi di questo tipo.",
       "exists": "È già installato un tema con la stessa cartella.",
+      "name": "Il pacchetto non contiene temi con un nome di cartella semplice che non sostituisca un tema di sistema.",
       "notFromStore": "%1 non è stato installato dallo store.",
       "unavailable": "Impossibile raggiungere lo store.",
       "usage": "Uso: store.py search TIPO [RICERCA] [PAGINA] | install TIPO ID FILE | remove CARTELLA | installed"

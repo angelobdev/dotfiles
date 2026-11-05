@@ -2,7 +2,7 @@
 return {
     shadow = {{ hyprland.shadow | hypr }},
     glassTint = {{ hyprland.glassTint | hexrgba }},
-    glassStyle = "{{ hyprland.glassStyle }}",
+    glassStyle = {{ hyprland.glassStyle | lua }},
     glassTuning = {{ derived.glassTuning }},
     activeBorder = "rgba({{ hyprland.activeBorder | rgba }})",
     inactiveBorder = "rgba({{ hyprland.inactiveBorder | rgba }})",
@@ -10,7 +10,7 @@ return {
     borderSize = {{ hyprland.borderSize }},
     gapsIn = {{ hyprland.gapsIn }},
     gapsOut = {{ hyprland.gapsOut }},
-    mode = "{{ mode }}",
-    cursorTheme = "{{ system.cursorTheme }}",
+    mode = {{ mode | lua }},
+    cursorTheme = {{ system.cursorTheme | lua }},
     cursorSize = {{ system.cursorSize }},
 }

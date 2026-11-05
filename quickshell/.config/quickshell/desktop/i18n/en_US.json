@@ -630,6 +630,7 @@
     "errors": {
       "checksum": "%1 did not match its checksum and was discarded.",
       "color": "Theme value %1 is not a #rrggbb or #rrggbbaa colour: %2",
+      "control": "Theme value %1 holds a line break or control character.",
       "filter": "Unknown theme template filter: %1",
       "invalid": "The theme %1 cannot be read: %2",
       "template": "Template %1 uses a value the theme does not define: %2",
@@ -1052,6 +1053,7 @@
       "missing": "That file is no longer in the store.",
       "noTheme": "The archive holds no theme of this kind.",
       "exists": "A theme with the same folder name is already installed.",
+      "name": "The pack holds no theme with a plain folder name that would not replace a system theme.",
       "notFromStore": "%1 was not installed from the store.",
       "unavailable": "The store could not be reached.",
       "usage": "Usage: store.py search KIND [QUERY] [PAGE] | install KIND ID FILE | remove FOLDER | installed"

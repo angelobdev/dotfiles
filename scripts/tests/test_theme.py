@@ -223,6 +223,18 @@ class CursorTests(unittest.TestCase):
         self.assertIn('cursorSize = 32', lua)
         self.assertEqual(theme.with_preferences(GRAPHITE, {'cursor': {}}), GRAPHITE)
 
+    def test_names_stay_quoted_values_in_lua_and_json(self):
+        merged = dict(GRAPHITE, system=dict(GRAPHITE['system'], cursorTheme='a"b\\'), fonts=dict(GRAPHITE['fonts'], sans='Sans "Q"'))
+        outputs = theme.render_all(theme.complete(merged), TEMPLATES)
+        self.assertIn('cursorTheme = "a\\"b\\\\",', outputs['hyprland.lua'])
+        self.assertEqual(json.loads(outputs['quickshell.json'])['font'], 'Sans "Q"')
+        with self.assertRaises(ValueError):
+            theme.render_all(theme.complete(dict(GRAPHITE, system=dict(GRAPHITE['system'], iconTheme='A\nicon_theme=B'))), TEMPLATES)
+
+    def test_unplain_names_are_never_taken_from_preferences(self):
+        merged = theme.with_preferences(GRAPHITE, {'iconTheme': 'x\ny', 'cursor': {'theme': 'x", os = "'}})
+        self.assertEqual(merged['system'], GRAPHITE['system'])
+
     def test_the_lua_defaults_match_the_shipped_themes(self):
         defaults = (REPO / 'hypr/.config/hypr/config/theme.lua').read_text()
         self.assertIn(f'cursorTheme = "{GRAPHITE["system"]["cursorTheme"]}"', defaults)

@@ -13,7 +13,7 @@ installed: prints that list.
 
 The content is other people's: archives are size-limited, nothing is run, and only theme folders are kept.
 """
-from common import write_atomic
+from common import theme_name, write_atomic
 from i18n import tr
 import hashlib
 import json
@@ -34,6 +34,10 @@ AGENT = 'desktop-theming/1.0'
 HOME = Path.home()
 ICONS = Path(os.environ.get('XDG_DATA_HOME') or HOME / '.local/share') / 'icons'
 LEDGER = Path(os.environ.get('XDG_DATA_HOME') or HOME / '.local/share') / 'desktop/store.json'
+# Themes from packages or put there by hand: the user folder is searched first, so a pack with one of their
+# names (Adwaita, Papirus) would replace it for every app. Nor the default alias or the fallback themes.
+SYSTEM_ICONS = [HOME / '.icons'] + [Path(d) / 'icons' for d in (os.environ.get('XDG_DATA_DIRS') or '/usr/local/share:/usr/share').split(':') if d]
+RESERVED = {'default', 'hicolor', 'locolor'}
 MAX_DOWNLOAD = 300 * 2**20
 MAX_UNPACKED = 2 * 2**30
 MAX_MEMBERS = 300_000
@@ -140,11 +144,15 @@ def ledger():
         return {}
 
 
+def allowed(name):
+    return theme_name(name) and name not in RESERVED and not any((root / name).exists() for root in SYSTEM_ICONS)
+
+
 def install(kind, item_id, index):
     item = (fetch_json(f'{API}/data/{int(item_id)}?format=json').get('data') or [None])[0]
     if not item or not item.get(f'downloadlink{index}'):
         raise ValueError(tr('store.errors.missing'))
-    installed = []
+    installed, refused = [], False
     with tempfile.TemporaryDirectory(prefix='desktop-store-') as folder:
         work = Path(folder)
         archive = work / 'download'
@@ -159,6 +167,10 @@ def install(kind, item_id, index):
         ICONS.mkdir(parents=True, exist_ok=True)
         for theme in themes:
             name = theme.name
+            # Names go into config files (theme.py), so only plain ones.
+            if not allowed(name):
+                refused = True
+                continue
             target = ICONS / name
             # Only a folder the store put there may be replaced: never a theme from a package or by hand.
             if target.exists() and name not in record:
@@ -169,7 +181,7 @@ def install(kind, item_id, index):
             installed.append(name)
         write_atomic(LEDGER, json.dumps(record, ensure_ascii=False, indent=1))
     if not installed:
-        raise ValueError(tr('store.errors.exists'))
+        raise ValueError(tr('store.errors.name' if refused else 'store.errors.exists'))
     return {'installed': installed}
 
 

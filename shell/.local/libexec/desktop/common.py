@@ -3,6 +3,7 @@ import contextlib
 import json
 import os
 from pathlib import Path
+import re
 import stat
 import subprocess
 import tempfile
@@ -11,6 +12,13 @@ import tempfile
 IMAGES = {'.png', '.jpg', '.jpeg', '.webp', '.jxl', '.avif', '.bmp', '.tif', '.tiff'}
 # Resource limits, so a huge image cannot take the memory of the session.
 MAGICK = ['magick', '-limit', 'memory', '256MiB', '-limit', 'map', '512MiB']
+# Icon and cursor theme folder names. They end up in Lua, JSON and INI files, and some come from the KDE Store,
+# so only plain names are offered or installed.
+THEME_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9 ._+-]{0,63}')
+
+
+def theme_name(name):
+    return isinstance(name, str) and THEME_NAME.fullmatch(name) is not None
 
 
 # A temporary file next to path that replaces it when the block succeeds and is removed otherwise. follow
