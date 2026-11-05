@@ -11,4 +11,6 @@ return {
     gapsIn = {{ hyprland.gapsIn }},
     gapsOut = {{ hyprland.gapsOut }},
     mode = "{{ mode }}",
+    cursorTheme = "{{ system.cursorTheme }}",
+    cursorSize = {{ system.cursorSize }},
 }

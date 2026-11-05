@@ -48,6 +48,14 @@ Singleton {
             effective: {},
             chosen: {}
         })
+    // Installed cursor themes, the effective theme and size, and the sizes offered.
+    property var cursors: ({
+            themes: [],
+            theme: "",
+            size: 24,
+            sizes: [24, 32, 40, 48],
+            chosen: {}
+        })
     property var icons: ({
             themes: [],
             theme: "",
@@ -98,6 +106,7 @@ Singleton {
         root.refreshPack();
         fontQuery.running = true;
         iconQuery.running = true;
+        cursorQuery.running = true;
     }
     // Commands run one after another, so a wallpaper is applied before it is remembered.
     function run(commands) {
@@ -144,6 +153,15 @@ Singleton {
     function setIcons(id) {
         restartTab = "icons";
         run([["python3", helper, "icon-theme", id === "" ? "default" : id]]);
+    }
+    // No restart needed: Hyprland draws the new cursor at once, apps started afterwards follow it.
+    function setCursor(theme, size) {
+        const command = ["python3", helper, "cursor"];
+        if (theme !== undefined)
+            command.push("--theme", theme === "" ? "default" : theme);
+        if (size !== undefined)
+            command.push("--size", String(size));
+        run([command]);
     }
     function setShellIcons(source) {
         restartTab = "icons";
@@ -291,6 +309,13 @@ Singleton {
         command: ["python3", root.helper, "fonts"]
         stdout: StdioCollector {
             onStreamFinished: root.fonts = root.parse(text, root.fonts)
+        }
+    }
+    Process {
+        id: cursorQuery
+        command: ["python3", root.helper, "cursors"]
+        stdout: StdioCollector {
+            onStreamFinished: root.cursors = root.parse(text, root.cursors)
         }
     }
     Process {

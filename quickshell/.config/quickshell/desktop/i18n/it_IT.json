@@ -128,8 +128,13 @@
       "lowBody": "Collega presto il caricatore.",
       "lowBodyTime": "Restano circa %1. Collega presto il caricatore.",
       "criticalBody": "Collega subito il caricatore, o salva il tuo lavoro.",
-      "criticalBodyTime": "Restano circa %1. Collega subito il caricatore, o salva il tuo lavoro."
-    }
+      "criticalBodyTime": "Restano circa %1. Collega subito il caricatore, o salva il tuo lavoro.",
+      "peripheralTitle": "%1: batteria scarica (%2%)",
+      "peripheralBody": "Ricaricalo presto."
+    },
+    "stylus": "Stilo",
+    "device": "Dispositivo",
+    "devices": "Dispositivi"
   },
   "bindings": {
     "brightnessDown": "Luminosità -",
@@ -398,7 +403,9 @@
     "searchPlaceholder": "Cerca un’applicazione…",
     "terminalSuffix": "  [terminale]",
     "title": "Applicazioni",
-    "touchHint": "Tocco: apri    Pressione lunga: fissa nella dock"
+    "touchHint": "Tocco: apri    Pressione lunga: fissa nella dock",
+    "copyResult": "Invio copia il risultato",
+    "openFile": "Invio apre il file"
   },
   "media": {
     "choosePlayer": "Scegli lettore",
@@ -696,7 +703,9 @@
       "specularStrength": "Lucentezza",
       "bevelStrength": "Smussatura finestre",
       "noiseStrength": "Grana"
-    }
+    },
+    "cursor": "Cursore",
+    "cursorSize": "Dimensione del cursore"
   },
   "wallpaper": {
     "apply": "Imposta sfondo",
@@ -776,7 +785,10 @@
       "wallpaper": "Sfondo",
       "nextWallpaper": "Sfondo successivo",
       "lock": "Blocca",
-      "session": "Sessione"
+      "session": "Sessione",
+      "colorPicker": "Scegli un colore",
+      "areaText": "Copia testo",
+      "areaAsk": "Chiedi a Claude"
     },
     "pages": {
       "apps": "App",
@@ -892,5 +904,31 @@
       "scaleMissing": "-forcedesktopscaling richiede un valore di scala.",
       "notInstalled": "%1 non è installato."
     }
+  },
+  "colorPicker": {
+    "title": "Selettore colore",
+    "picked": "Colore %1",
+    "copied": "Copiato negli appunti.",
+    "missing": "hyprpicker non è installato."
+  },
+  "focus": {
+    "title": "Concentrazione",
+    "minutesLeft": "ancora %1 min",
+    "finished": "Sessione di concentrazione finita",
+    "finishedBody": "%1 minuti di concentrazione. Le notifiche sono tornate.",
+    "start": "%1 min",
+    "details": "Non disturbare per un po’, poi torna com’era.",
+    "tooltip": "Notifiche · Concentrazione, ancora %1 min",
+    "session": "Sessione di concentrazione"
+  },
+  "area": {
+    "title": "Area dello schermo",
+    "ocrMissing": "Il riconoscimento del testo richiede tesseract: sudo dnf install tesseract tesseract-langpack-ita",
+    "noText": "Nessun testo trovato in quell’area.",
+    "textCopied": "Testo copiato",
+    "imageCopied": "Area copiata per Claude",
+    "pasteHint": "Incollala nel prompt con Ctrl + V.",
+    "text": "Testo da un’area dello schermo",
+    "ask": "Chiedi a Claude di un’area dello schermo"
   }
 }

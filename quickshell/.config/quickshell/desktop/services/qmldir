@@ -23,3 +23,5 @@ singleton NightShift 1.0 NightShift.qml
 singleton Agent 1.0 Agent.qml
 singleton Updates 1.0 Updates.qml
 singleton Battery 1.0 Battery.qml
+singleton Focus 1.0 Focus.qml
+singleton LauncherSearch 1.0 LauncherSearch.qml

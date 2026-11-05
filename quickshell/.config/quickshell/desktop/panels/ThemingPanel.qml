@@ -687,9 +687,46 @@ Overlay {
                         }
                     }
                 }
-                // Icons: each pack with its own sample icons, and where the shell glyphs come from.
+                // Icons: each pack with its own sample icons, and where the shell glyphs come from. The cursor
+                // theme and size come first.
                 ColumnLayout {
                     spacing: 10
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Text {
+                            text: I18n.tr("theming.cursor")
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: 12
+                        }
+                        ChoiceCombo {
+                            Accessible.name: I18n.tr("theming.cursor")
+                            options: [
+                                {
+                                    name: "",
+                                    label: I18n.tr("theming.themeDefaultNamed", [Theming.cursors.theme ?? ""])
+                                }
+                            ].concat((Theming.cursors.themes ?? []).map(t => ({
+                                        name: t.id,
+                                        label: t.name
+                                    })))
+                            current: Theming.cursors.chosen?.theme ?? ""
+                            onChosen: name => Theming.setCursor(name, undefined)
+                        }
+                        ChoiceChips {
+                            Accessible.name: I18n.tr("theming.cursorSize")
+                            options: (Theming.cursors.sizes ?? []).map(size => ({
+                                        name: String(size),
+                                        label: String(size)
+                                    }))
+                            current: String(Theming.cursors.size ?? 24)
+                            onChosen: name => Theming.setCursor(undefined, Number(name))
+                        }
+                        Item {
+                            Layout.fillWidth: true
+                        }
+                    }
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10

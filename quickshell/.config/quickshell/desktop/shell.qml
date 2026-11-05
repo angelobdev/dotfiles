@@ -59,6 +59,10 @@ ShellRoot {
         function rotationLock(action: string): bool {
             return Tablet.requestLock(action);
         }
+        // A focus session: toggle, start (minutes: 0 for Config.focusMinutes), stop.
+        function focus(action: string, minutes: int): bool {
+            return Focus.request(action, minutes);
+        }
         function nightShift(action: string): bool {
             return NightShift.request(action);
         }
@@ -107,6 +111,7 @@ ShellRoot {
                 batteryWatts: UPower.displayDevice?.changeRate ?? null,
                 batteryTimeToEmpty: UPower.displayDevice?.timeToEmpty ?? null,
                 batteryAlert: Battery.level,
+                focusMinutesLeft: Focus.minutesLeft,
                 hintsBindings: hints.bindings.length,
                 powerSelection: powerMenu.selectedAction,
                 powerPending: powerMenu.pending,

@@ -53,8 +53,13 @@ print(json.dumps({"voice": {"enabled": True, "mode": "hold"}, "language": langua
         [[ -d $directory ]] || directory="$HOME"
         # The desktop-ai window rule places the window on the special workspace "ai".
         touch "$starting"
+        # Remote control on a socket of this window only (desktop-area ask types an image path at the prompt);
+        # the runtime directory is the user's alone, and other kitty windows keep it off.
+        socket="${XDG_RUNTIME_DIR:-/tmp}/desktop-ai-kitty"
+        rm -f "$socket"
         # Without the lock (9>&-): kitty would hold it, and every later press would wait for its lifetime.
-        setsid -f kitty --class desktop-ai --directory "$directory" -e claude --settings "$settings" >/dev/null 2>&1 9>&-
+        setsid -f kitty --class desktop-ai --directory "$directory" -o allow_remote_control=socket-only \
+            --listen-on "unix:$socket" -e claude --settings "$settings" >/dev/null 2>&1 9>&-
         ;;
     *) echo 'Usage: desktop-ai [toggle]' >&2; exit 2 ;;
 esac

@@ -1,6 +1,10 @@
--- Cursor. XCURSOR_SIZE stays unset: X11 clients draw in physical pixels under force_zero_scaling and read a
--- scaled size from the X resources set by desktop-xwayland; Wayland clients default to 24 logical pixels.
-hl.env("HYPRCURSOR_SIZE", "24")
+-- Cursor, from the theme and the Theming panel (config/theme.lua). XCURSOR_SIZE stays unset: X11 clients draw
+-- in physical pixels under force_zero_scaling and read a scaled size from the X resources set by
+-- desktop-xwayland. Clients that ask Hyprland for a cursor shape (GTK 4, Qt 6) get its cursor whatever these say.
+local cursor = require("config.theme")
+hl.env("HYPRCURSOR_THEME", cursor.cursorTheme)
+hl.env("HYPRCURSOR_SIZE", tostring(cursor.cursorSize))
+hl.env("XCURSOR_THEME", cursor.cursorTheme)
 
 -- qt6ct also registers the qt5ct key, so one value serves both Qt generations.
 hl.env("QT_QPA_PLATFORMTHEME", "qt5ct")

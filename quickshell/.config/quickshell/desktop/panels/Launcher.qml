@@ -13,16 +13,33 @@ Overlay {
     // Entry whose pin menu is open; null when closed.
     property var menuEntry: null
     property point menuOrigin: Qt.point(0, 0)
+    readonly property var appResults: DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (e.name + " " + e.genericName + " " + e.keywords.join(" ")).toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name))
+    // A calculation first (Enter copies it), then apps, then files (Enter opens one).
+    readonly property var results: (LauncherSearch.calc !== "" ? [{
+                kind: "calc",
+                text: LauncherSearch.calc
+            }] : []).concat(appResults.map(entry => ({
+                kind: "app",
+                entry: entry
+            }))).concat(LauncherSearch.files.map(path => ({
+                kind: "file",
+                path: path
+            })))
     onOpened: {
         closeMenu();
         search.clear();
         apps.currentIndex = 0;
         search.forceActiveFocus();
     }
-    function launch(entry) {
-        if (!entry)
+    function launch(item) {
+        if (!item)
             return;
-        Apps.launch(entry);
+        if (item.kind === "calc")
+            LauncherSearch.copy(item.text);
+        else if (item.kind === "file")
+            LauncherSearch.open(item.path);
+        else
+            Apps.launch(item.entry);
         ShellState.close();
     }
     function togglePin(entry) {
@@ -61,13 +78,16 @@ Overlay {
                 placeholderText: I18n.tr("launcher.searchPlaceholder")
                 color: Theme.text
                 font.family: Theme.font
-                onTextChanged: apps.currentIndex = 0
+                onTextChanged: {
+                    apps.currentIndex = 0;
+                    LauncherSearch.query = text;
+                }
                 Keys.onDownPressed: apps.currentIndex = Math.min(apps.count - 1, apps.currentIndex + 1)
                 Keys.onUpPressed: apps.currentIndex = Math.max(0, apps.currentIndex - 1)
                 onAccepted: root.launch(apps.model[apps.currentIndex])
                 Keys.onPressed: event => {
                     if (event.key === Qt.Key_P && event.modifiers & Qt.ControlModifier) {
-                        root.togglePin(apps.model[apps.currentIndex]);
+                        root.togglePin(apps.model[apps.currentIndex]?.entry);
                         event.accepted = true;
                     }
                 }
@@ -86,7 +106,7 @@ Overlay {
                 highlightMoveDuration: Theme.motionNormal
                 highlightMoveVelocity: -1
                 highlightResizeDuration: 0
-                model: DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (e.name + " " + e.genericName + " " + e.keywords.join(" ")).toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name))
+                model: root.results
                 delegate: ActionButton {
                     id: row
                     required property var modelData
@@ -94,23 +114,30 @@ Overlay {
                     width: apps.width
                     rightPadding: 40
                     implicitHeight: Theme.hit(52)
-                    iconSource: Quickshell.iconPath(modelData.icon, "application-x-executable")
+                    readonly property var entry: modelData.entry ?? null
+                    iconSource: modelData.kind === "calc" ? Quickshell.iconPath("accessories-calculator", "application-x-executable") : modelData.kind === "file" ? Quickshell.iconPath("text-x-generic", "application-x-executable") : Quickshell.iconPath(entry.icon, "application-x-executable")
                     iconSize: 30
                     alignLeft: true
-                    text: modelData.name + (modelData.runInTerminal ? I18n.tr("launcher.terminalSuffix") : "")
+                    textElide: Text.ElideMiddle
+                    text: modelData.kind === "calc" ? "= " + modelData.text : modelData.kind === "file" ? modelData.path.replace(Quickshell.env("HOME"), "~") : entry.name + (entry.runInTerminal ? I18n.tr("launcher.terminalSuffix") : "")
+                    tooltip: modelData.kind === "calc" ? I18n.tr("launcher.copyResult") : modelData.kind === "file" ? I18n.tr("launcher.openFile") : ""
                     highlighted: apps.currentIndex === index
                     highlightBackground: false
                     onClicked: root.launch(modelData)
                     // A long press (touch) opens the pin menu like a right click; Button then skips the click.
                     onPressAndHold: {
+                        if (!row.entry)
+                            return;
                         apps.currentIndex = row.index;
-                        root.openMenu(row.modelData, row, Qt.point(row.width / 2, row.height / 2));
+                        root.openMenu(row.entry, row, Qt.point(row.width / 2, row.height / 2));
                     }
                     TapHandler {
                         acceptedButtons: Qt.RightButton
                         onTapped: (point, button) => {
+                            if (!row.entry)
+                                return;
                             apps.currentIndex = row.index;
-                            root.openMenu(row.modelData, row, point.position);
+                            root.openMenu(row.entry, row, point.position);
                         }
                     }
                     // Only pinned apps carry a mark; the hint below says how to pin.
@@ -122,7 +149,7 @@ Overlay {
                         }
                         width: 16
                         height: 16
-                        visible: Dock.isPinned(row.modelData.id)
+                        visible: !!row.entry && Dock.isPinned(row.entry.id)
                         name: "pin"
                         color: row.highlighted ? Theme.accentText : Theme.muted
                     }

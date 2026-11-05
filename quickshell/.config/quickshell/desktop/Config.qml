@@ -12,6 +12,8 @@ QtObject {
     readonly property string recordingCodec: "libvpx-vp9"
     // Desktop-entry IDs the launcher leaves out: GNOME Settings (GDM needs it, it runs only in GNOME) and the
     // OpenCASCADE tool that the plugin build dependencies bring, and the uwsm unit menu.
+    // Launcher: files in the home folder below the apps (fd, from three typed characters).
+    readonly property bool launcherFiles: true
     readonly property var launcherHidden: ["org.gnome.Settings", "opencascade-draw", "uuctl"]
     // Dock: desktop-entry IDs pinned in this order, a reveal strip along the bottom edge (logical px) and its hover delay (ms).
     readonly property bool dockEnabled: true
@@ -34,7 +36,7 @@ QtObject {
         },
         {
             name: "system",
-            actions: ["screenshotArea", "screenshotDisplay", "recording", "clipboard", "theming", "wallpaper", "nextWallpaper", "hints", "lock", "session", "rotationLock"]
+            actions: ["screenshotArea", "screenshotDisplay", "areaText", "areaAsk", "recording", "clipboard", "theming", "wallpaper", "nextWallpaper", "colorPicker", "hints", "lock", "session", "rotationLock"]
         }
     ]
     readonly property string assistLongPress: "keyboard"
@@ -82,8 +84,15 @@ QtObject {
     // If disconnected, use the first connected screen.
     readonly property string primaryMonitor: "eDP-1"
     // Battery warnings (percent, on battery only): low offers Power Saver, critical stays until dismissed.
+    // Length of a focus session (Do Not Disturb for a while), in minutes.
+    readonly property int focusMinutes: 25
     readonly property int batteryLow: 20
     readonly property int batteryCritical: 10
+    // Peripheral batteries (stylus, mouse, headset) warn once below this.
+    readonly property int peripheralLow: 15
+    // UPower native-path prefixes of stylus batteries it does not type as a pen: the ELAN pen of the OmniBook
+    // reports through the touchscreen controller as a keyboard.
+    readonly property var stylusBatteries: ["hid-0018:04F3:4302"]
     // OSD: logical pixels and timeout in milliseconds.
     readonly property bool osdEnabled: true
     readonly property int osdTimeout: 1700

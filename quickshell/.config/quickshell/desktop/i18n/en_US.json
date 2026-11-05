@@ -128,8 +128,13 @@
       "lowBody": "Plug in the charger soon.",
       "lowBodyTime": "About %1 left. Plug in the charger soon.",
       "criticalBody": "Plug in the charger now, or save your work.",
-      "criticalBodyTime": "About %1 left. Plug in the charger now, or save your work."
-    }
+      "criticalBodyTime": "About %1 left. Plug in the charger now, or save your work.",
+      "peripheralTitle": "%1: battery low (%2%)",
+      "peripheralBody": "Charge it soon."
+    },
+    "stylus": "Stylus",
+    "device": "Device",
+    "devices": "Devices"
   },
   "bindings": {
     "brightnessDown": "Brightness down",
@@ -398,7 +403,9 @@
     "searchPlaceholder": "Search applications…",
     "terminalSuffix": "  [terminal]",
     "title": "Applications",
-    "touchHint": "Tap: open    Long press: pin to dock"
+    "touchHint": "Tap: open    Long press: pin to dock",
+    "copyResult": "Enter copies the result",
+    "openFile": "Enter opens the file"
   },
   "media": {
     "choosePlayer": "Choose player",
@@ -696,7 +703,9 @@
       "specularStrength": "Highlight",
       "bevelStrength": "Window bevel",
       "noiseStrength": "Grain"
-    }
+    },
+    "cursor": "Cursor",
+    "cursorSize": "Cursor size"
   },
   "wallpaper": {
     "apply": "Set wallpaper",
@@ -776,7 +785,10 @@
       "wallpaper": "Wallpaper",
       "nextWallpaper": "Next wallpaper",
       "lock": "Lock",
-      "session": "Session"
+      "session": "Session",
+      "colorPicker": "Pick a color",
+      "areaText": "Copy text",
+      "areaAsk": "Ask Claude"
     },
     "pages": {
       "apps": "Apps",
@@ -892,5 +904,31 @@
       "scaleMissing": "-forcedesktopscaling requires a scale value.",
       "notInstalled": "%1 is not installed."
     }
+  },
+  "colorPicker": {
+    "title": "Color picker",
+    "picked": "Color %1",
+    "copied": "Copied to the clipboard.",
+    "missing": "hyprpicker is not installed."
+  },
+  "focus": {
+    "title": "Focus",
+    "minutesLeft": "%1 min left",
+    "finished": "Focus session over",
+    "finishedBody": "%1 minutes of focus. Notifications are back.",
+    "start": "%1 min",
+    "details": "Do Not Disturb for a while, then back as it was.",
+    "tooltip": "Notifications · Focus, %1 min left",
+    "session": "Focus session"
+  },
+  "area": {
+    "title": "Screen area",
+    "ocrMissing": "Text recognition needs tesseract: sudo dnf install tesseract tesseract-langpack-ita",
+    "noText": "No text found in that area.",
+    "textCopied": "Text copied",
+    "imageCopied": "Area copied for Claude",
+    "pasteHint": "Paste it at the prompt with Ctrl + V.",
+    "text": "Text from screen area",
+    "ask": "Ask Claude about a screen area"
   }
 }

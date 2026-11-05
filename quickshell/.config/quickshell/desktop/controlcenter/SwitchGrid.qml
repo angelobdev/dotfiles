@@ -5,10 +5,12 @@ import "../components"
 import "../services"
 
 // The Control Center switches in a 2x2 grid: Do Not Disturb, Keep awake, Rotation lock (only with an
-// accelerometer) and Night shift, whose mode and temperature open below the grid.
+// accelerometer) and Night shift. The mode and temperature of Night shift, and the focus sessions of Do Not
+// Disturb, open below the grid, one at a time.
 ColumnLayout {
     id: root
     property bool details: false
+    property bool focusDetails: false
     spacing: 10
     function nightStatus() {
         if (!NightShift.available)
@@ -29,9 +31,15 @@ ColumnLayout {
             Layout.preferredWidth: 1
             icon: Notices.quiet ? "bell-off" : "bell"
             title: I18n.tr("notifications.doNotDisturb")
-            status: Notices.quiet ? I18n.tr("notifications.silenced") : I18n.tr("notifications.enabled")
+            status: Focus.active ? I18n.tr("focus.minutesLeft", [Focus.minutesLeft]) : Notices.quiet ? I18n.tr("notifications.silenced") : I18n.tr("notifications.enabled")
             checked: Notices.quiet
+            hasDetails: true
+            detailsOpen: root.focusDetails
             onToggled: Notices.setQuiet(!Notices.quiet)
+            onDetailsRequested: {
+                root.focusDetails = !root.focusDetails;
+                root.details = false;
+            }
         }
         ToggleTile {
             Layout.fillWidth: true
@@ -63,7 +71,35 @@ ColumnLayout {
             hasDetails: true
             detailsOpen: root.details
             onToggled: NightShift.toggle()
-            onDetailsRequested: root.details = !root.details
+            onDetailsRequested: {
+                root.details = !root.details;
+                root.focusDetails = false;
+            }
+        }
+    }
+    Expander {
+        expanded: root.focusDetails
+        spacing: 8
+        ChoiceChips {
+            options: [
+                {
+                    name: "0",
+                    label: I18n.tr("common.off")
+                }
+            ].concat([25, 50, 90].map(minutes => ({
+                        name: String(minutes),
+                        label: I18n.tr("focus.start", [minutes])
+                    })))
+            current: Focus.active ? String(SessionState.focusMinutes) : "0"
+            onChosen: name => name === "0" ? Focus.stop(false) : Focus.start(Number(name))
+        }
+        Text {
+            Layout.fillWidth: true
+            text: Focus.active ? I18n.tr("focus.minutesLeft", [Focus.minutesLeft]) + " · " + I18n.tr("focus.details") : I18n.tr("focus.details")
+            wrapMode: Text.WordWrap
+            font.family: Theme.font
+            font.pixelSize: 11
+            color: Theme.muted
         }
     }
     Expander {

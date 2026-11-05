@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Picks a color on screen with hyprpicker (Esc cancels), copies it as hex and names it in a notification.
+set -euo pipefail
+message() { python3 "$HOME/.local/libexec/desktop/i18n.py" "$@"; }
+command -v hyprpicker >/dev/null || exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify colorPicker.title colorPicker.missing
+color=$(hyprpicker --autocopy --format=hex --render-inactive --quiet 2>/dev/null) || exit 0
+[[ -n $color ]] || exit 0
+notify-send --app-name="$(message 'colorPicker.title')" --app-icon=color-select-symbolic \
+    "$(message 'colorPicker.picked' "$color")" "$(message 'colorPicker.copied')"

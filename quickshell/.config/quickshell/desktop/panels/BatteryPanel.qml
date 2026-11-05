@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell.Services.UPower
 import ".."
 import "../components"
+import "../services"
 
 Overlay {
     id: root
@@ -138,6 +139,38 @@ Overlay {
                             font.pixelSize: 12
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignRight
+                        }
+                    }
+                    Heading {
+                        visible: Battery.peripherals.length > 0
+                        text: I18n.tr("battery.devices")
+                        font.pixelSize: 14
+                        Layout.topMargin: 6
+                    }
+                    Repeater {
+                        model: Battery.peripherals
+                        RowLayout {
+                            id: peripheral
+                            required property var modelData
+                            readonly property int percent: Math.round(modelData.percentage * 100)
+                            Layout.fillWidth: true
+                            spacing: 10
+                            Icon {
+                                name: "battery-" + Math.round(peripheral.modelData.percentage * 4) * 25
+                                color: peripheral.percent <= Config.peripheralLow ? Theme.danger : Theme.text
+                                Layout.preferredWidth: 20
+                                Layout.preferredHeight: 20
+                            }
+                            Text {
+                                Layout.fillWidth: true
+                                text: Battery.peripheralName(peripheral.modelData)
+                                color: Theme.text
+                                elide: Text.ElideRight
+                            }
+                            Text {
+                                text: peripheral.percent + "%"
+                                color: Theme.muted
+                            }
                         }
                     }
                     Heading {

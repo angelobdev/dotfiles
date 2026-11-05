@@ -187,6 +187,39 @@ class PreferenceTests(unittest.TestCase):
             self.assertEqual((root / 'link.conf').read_text(), 'generated')
 
 
+class CursorTests(unittest.TestCase):
+    def test_the_chosen_cursor_reaches_gsettings_and_hyprland(self):
+        merged = theme.with_preferences(GRAPHITE, {'cursor': {'theme': 'Bibata', 'size': 32}})
+        self.assertEqual((merged['system']['cursorTheme'], merged['system']['cursorSize']), ('Bibata', 32))
+        lua = theme.render_all(theme.complete(merged), TEMPLATES)['hyprland.lua']
+        self.assertIn('cursorTheme = "Bibata"', lua)
+        self.assertIn('cursorSize = 32', lua)
+        self.assertEqual(theme.with_preferences(GRAPHITE, {'cursor': {}}), GRAPHITE)
+
+    def test_the_lua_defaults_match_the_shipped_themes(self):
+        defaults = (REPO / 'hypr/.config/hypr/config/theme.lua').read_text()
+        self.assertIn(f'cursorTheme = "{GRAPHITE["system"]["cursorTheme"]}"', defaults)
+        self.assertIn(f'cursorSize = {GRAPHITE["system"]["cursorSize"]}', defaults)
+
+    def test_cursor_themes_are_folders_with_cursors(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'Bibata/cursors').mkdir(parents=True)
+            (root / 'Bibata/index.theme').write_text('[Icon Theme]\nName=Bibata Modern\n')
+            (root / 'Hypr').mkdir()
+            (root / 'Hypr/manifest.hl').write_text('')
+            (root / 'Papirus').mkdir()
+            (root / 'default/cursors').mkdir(parents=True)
+            self.assertEqual(theme.cursor_themes([root]), [{'id': 'Bibata', 'name': 'Bibata Modern'}, {'id': 'Hypr', 'name': 'Hypr'}])
+
+    def test_only_valid_cursor_choices_are_saved(self):
+        with tempfile.TemporaryDirectory() as folder, mock.patch.object(theme, 'STATE', Path(folder)):
+            theme.save_preferences({'cursor': {'theme': None, 'size': 32}})
+            self.assertEqual(json.loads((Path(folder) / 'preferences.json').read_text()), {'cursor': {'size': 32}})
+            theme.save_preferences({'cursor': {'theme': None}})
+            self.assertEqual(json.loads((Path(folder) / 'preferences.json').read_text()), {})
+
+
 class PanelOptionTests(unittest.TestCase):
     def test_unified_font_uses_the_monospace_family(self):
         merged = theme.with_preferences(GRAPHITE, {'fonts': {'mono': 'JetBrains Mono', 'unified': True}})

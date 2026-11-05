@@ -14,6 +14,9 @@ local defaults = {
     gapsIn = 4,
     gapsOut = 4,
     mode = "dark",
+    -- The cursor (session.lua); theme.py also sets it live with hyprctl setcursor.
+    cursorTheme = "Adwaita",
+    cursorSize = 24,
 }
 
 local state = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")

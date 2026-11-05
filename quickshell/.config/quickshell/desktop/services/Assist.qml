@@ -140,6 +140,21 @@ Singleton {
                 label: I18n.tr("assist.actions.wallpaper"),
                 panel: "wallpaper"
             },
+            areaText: {
+                icon: "copy",
+                label: I18n.tr("assist.actions.areaText"),
+                exec: [Quickshell.env("HOME") + "/.local/bin/desktop-area", "text"]
+            },
+            areaAsk: {
+                icon: "assistant",
+                label: I18n.tr("assist.actions.areaAsk"),
+                exec: [Quickshell.env("HOME") + "/.local/bin/desktop-area", "ask"]
+            },
+            colorPicker: {
+                icon: "palette",
+                label: I18n.tr("assist.actions.colorPicker"),
+                exec: [Quickshell.env("HOME") + "/.local/bin/desktop-color"]
+            },
             nextWallpaper: {
                 icon: "next",
                 label: I18n.tr("assist.actions.nextWallpaper"),

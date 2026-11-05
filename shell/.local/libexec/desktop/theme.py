@@ -253,6 +253,11 @@ def with_preferences(theme, chosen, name=None):
         theme['fonts']['sans'] = theme['fonts']['mono']
     if chosen.get('iconTheme'):
         theme.setdefault('system', {})['iconTheme'] = chosen['iconTheme']
+    cursor = chosen.get('cursor', {})
+    if cursor.get('theme'):
+        theme.setdefault('system', {})['cursorTheme'] = cursor['theme']
+    if isinstance(cursor.get('size'), int):
+        theme.setdefault('system', {})['cursorSize'] = cursor['size']
     for key, value in (('iconSource', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle'))):
         if value:
             theme.setdefault('preferences', {})[key] = value
@@ -277,7 +282,9 @@ def save_preferences(chosen):
             values = {option: value for option, value in values.items() if value != GLASS_OPTIONS[option][0]}
             if values:
                 glass[name] = values
-    cleaned = {key: value for key, value in (('fonts', fonts), ('iconTheme', chosen.get('iconTheme')),
+    cursor = {key: value for key, value in chosen.get('cursor', {}).items()
+              if key == 'theme' and isinstance(value, str) and value or key == 'size' and isinstance(value, int)}
+    cleaned = {key: value for key, value in (('fonts', fonts), ('iconTheme', chosen.get('iconTheme')), ('cursor', cursor),
                                               ('shellIcons', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle')),
                                               ('windows', windows), ('dynamic', dynamic), ('glass', glass))
                if value}
@@ -526,6 +533,37 @@ def icon_themes(roots=None):
     return sorted(listed.values(), key=lambda t: t['name'].lower())
 
 
+# Cursor sizes offered, in logical pixels; Adwaita draws 24, 32, 48, 64 and 96, others scale the nearest.
+CURSOR_SIZES = (24, 32, 40, 48)
+
+
+def cursor_themes(roots=None):
+    # XCursor themes (a cursors folder) and hyprcursor ones (a manifest), by folder name; the "default" alias
+    # only points at another theme.
+    listed = {}
+    for root in roots or ICON_DIRS:
+        if not root.is_dir():
+            continue
+        for base in sorted(root.iterdir()):
+            if base.name in listed or base.name == 'default' or not ((base / 'cursors').is_dir() or (base / 'manifest.hl').is_file()):
+                continue
+            info = read_index(base / 'index.theme').get('Icon Theme', {}) if (base / 'index.theme').is_file() else {}
+            listed[base.name] = {'id': base.name, 'name': info.get('Name', base.name)}
+    return sorted(listed.values(), key=lambda t: t['name'].lower())
+
+
+def apply_cursor(theme):
+    # Hyprland draws the cursor of every client that asks for a cursor shape (GTK 4, Qt 6): it takes the change
+    # at once. Others read the environment (session.lua) or GSettings when they start.
+    system = theme.get('system', {})
+    if system.get('cursorTheme') and isinstance(system.get('cursorSize'), int):
+        try:
+            subprocess.run(['hyprctl', 'setcursor', system['cursorTheme'], str(system['cursorSize'])],
+                           capture_output=True, check=False, timeout=5)
+        except (OSError, subprocess.SubprocessError):
+            pass
+
+
 def render_all(theme, templates=TEMPLATES):
     # Paths a template may need besides the theme itself, and sizes derived from the window rounding
     # (16 is the design size, so the lock screen field keeps its 26 px corners by default).
@@ -706,6 +744,7 @@ def apply(name):
             install(config, outputs['qtct.conf'])
     apply_btop(outputs.get('btop.theme'))
     apply_gsettings(theme)
+    apply_cursor(theme)
     return theme
 
 
@@ -931,6 +970,11 @@ def main():
     font.add_argument('--mono')
     font.add_argument('--size', type=int)
     font.add_argument('--default', action='store_true')
+    cursor = commands.add_parser('cursor')
+    cursor.add_argument('--theme', help='an installed cursor theme, or default')
+    cursor.add_argument('--size', type=int, choices=CURSOR_SIZES)
+    cursor.add_argument('--default', action='store_true', help='back to the theme values')
+    commands.add_parser('cursors')
     icons = commands.add_parser('icon-theme')
     icons.add_argument('name')
     keep = commands.add_parser('remember-wallpaper')
@@ -975,7 +1019,7 @@ def main():
     arguments = parser.parse_args()
     # Commands that change the theme state run one at a time: the panel queue and DynamicTheme.qml can
     # overlap, and each rewrites current.json, preferences.json and the rendered files.
-    if arguments.command in ('apply', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme',
+    if arguments.command in ('apply', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme', 'cursor',
                              'shell-icons', 'bar-style', 'glass'):
         STATE.mkdir(parents=True, exist_ok=True)
         lock = open(STATE / '.lock', 'a')
@@ -1096,6 +1140,25 @@ def main():
     elif arguments.command == 'icons':
         print(json.dumps({'themes': cached_icon_themes(), 'theme': load(current()).get('system', {}).get('iconTheme'),
                           'chosen': preferences().get('iconTheme')}, ensure_ascii=False))
+    elif arguments.command == 'cursors':
+        system = with_preferences(load(current()), preferences()).get('system', {})
+        print(json.dumps({'themes': cursor_themes(), 'theme': system.get('cursorTheme'), 'size': system.get('cursorSize'),
+                          'sizes': list(CURSOR_SIZES), 'chosen': preferences().get('cursor', {})}, ensure_ascii=False))
+    elif arguments.command == 'cursor':
+        chosen = preferences()
+        cursor = {} if arguments.default else dict(chosen.get('cursor', {}))
+        if arguments.theme is not None:
+            if arguments.theme != 'default' and arguments.theme not in {t['id'] for t in cursor_themes()}:
+                raise ValueError(f'{arguments.theme} is not an installed cursor theme')
+            cursor['theme'] = None if arguments.theme == 'default' else arguments.theme
+        if arguments.size is not None:
+            cursor['size'] = arguments.size
+        chosen['cursor'] = cursor
+        save_preferences(chosen)
+        apply(current())
+        reload()
+        # X11 clients take theme and scaled size from X resources.
+        subprocess.run([str(HOME / '.local/bin/desktop-xwayland'), 'apply'], capture_output=True, check=False, timeout=15)
     elif arguments.command in ('font', 'icon-theme'):
         chosen = preferences()
         if arguments.command == 'font':

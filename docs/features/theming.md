@@ -32,11 +32,11 @@ One panel switches the whole desktop: shell, terminal, GTK and Qt apps, lock scr
   - **Use the monospace font everywhere** gives the interface the monospace family as well (shell, GTK, Qt, hyprlock, Kitty).
   - **Other installed family…** takes any installed family by name, even one the lists leave out; the name is checked with fontconfig first.
   - **Open fonts folder** opens `~/.local/share/fonts`; after adding fonts there, **Rescan** refreshes the font cache and the lists.
-- **Icons:** the installed icon packs with five sample icons each, drawn from that pack. "Theme default" goes back to the theme's pack.
+- **Icons:** the installed icon packs with five sample icons each, drawn from that pack. "Theme default" goes back to the theme's pack. Above them, the **Cursor**: an installed cursor theme (XCursor folders with `cursors/`, or hyprcursor ones with a `manifest.hl`, from the usual icon folders) and a size of 24, 32, 40 or 48. Hyprland takes it at once (`hyprctl setcursor`), so GTK 4 and Qt 6 apps, which ask it for cursor shapes, change with it; GSettings `cursor-theme`/`cursor-size`, the X resources (`desktop-xwayland`, scaled by the monitor) and the session's `HYPRCURSOR_THEME`, `HYPRCURSOR_SIZE` and `XCURSOR_THEME` follow, so other apps change once reopened. No shell restart is needed. Which cursor themes to install is still to be decided; Adwaita is the only one today.
   - **Shell icons: Desktop · Icon pack** sets where the glyphs of the bar, Control Center, OSD and panels come from. Desktop uses the bundled set. Icon pack uses the pack's symbolic icons, tinted like the bundled ones, and keeps a bundled glyph wherever the pack has none.
   - **Other installed icon theme** takes a theme by its folder name, and **Open icons folder** opens `~/.local/share/icons` for packs installed by hand.
 
-Font, size, icon pack, shell icons and bar style are your preferences: they apply to every theme. GTK applications follow them at once, and Kitty reloads. Qt applications follow them when reopened. The shell reads fonts and icons only at start, so after a font or icon change the panel shows a **Restart shell** banner. The restart reopens the panel on the same tab; open notifications stay in the history as archived entries.
+Font, size, icon pack, cursor, shell icons and bar style are your preferences: they apply to every theme. GTK applications follow them at once, and Kitty reloads. Qt applications follow them when reopened. The shell reads fonts and icons only at start, so after a font or icon change the panel shows a **Restart shell** banner. The restart reopens the panel on the same tab; open notifications stay in the history as archived entries.
 
 ## Themes
 
@@ -98,6 +98,7 @@ Other applications:
 Preferences: `~/.local/state/desktop-theme/preferences.json` holds what is chosen in the Theming panel, or with these commands:
 - `desktop-theme font --sans F --mono F --size N --unified on|off` (`--default` clears them). `--unified on` makes the interface use the monospace family.
 - `desktop-theme icon-theme NAME|default`.
+- `desktop-theme cursor [--theme NAME|default] [--size 24|32|40|48]` / `--default`: the cursor, saved as `cursor` in `preferences.json`; `theme.py cursors` lists the installed themes.
 - `desktop-theme shell-icons desktop|pack`: the shell glyphs from `assets/icons`, or the icon pack's symbolic icons mapped in `components/IconNames.js`.
 - `desktop-theme bar-style shade|transparent|toggle`.
 - `desktop-theme glass --option OPTION --value N` / `--reset`: the glass tuning of the current theme, saved under `glass.<theme>` in `preferences.json` (only values that differ from the default). `GLASS_TUNING` in `theme.py` lists the options with their defaults (the `liquid` preset in `plugins.lua`, checked by `test_theme.py`) and ranges; values are clamped to them. They are rendered into `hyprland.lua` as `glassTuning`, and `plugins.lua` lays them over the preset. A theme without liquid glass refuses the command.

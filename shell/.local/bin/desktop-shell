@@ -109,6 +109,18 @@ case "${1:-start}" in
         echo 'Usage: desktop-shell dock {show|hide|toggle|touch|launch 1-9}' >&2
         exit 2
         ;;
+    focus)
+        # A focus session: Do Not Disturb for MINUTES (Config.focusMinutes without), then back as it was.
+        case "${2:-}" in
+            toggle|stop) exec qs ipc -p "$config" call desktop focus "$2" 0 ;;
+            start)
+                [[ "${3:-0}" =~ ^[0-9]+$ ]] || { echo 'Usage: desktop-shell focus {toggle|start [MINUTES]|stop}' >&2; exit 2; }
+                exec qs ipc -p "$config" call desktop focus start "${3:-0}"
+                ;;
+        esac
+        echo 'Usage: desktop-shell focus {toggle|start [MINUTES]|stop}' >&2
+        exit 2
+        ;;
     keep-awake|dnd|tablet|rotation-lock|night-shift)
         # Night shift also has its automatic mode.
         actions='toggle|on|off'
@@ -145,5 +157,5 @@ case "${1:-start}" in
         ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
 esac

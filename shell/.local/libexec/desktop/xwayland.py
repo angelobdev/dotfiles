@@ -9,6 +9,7 @@ from pathlib import Path
 import subprocess
 import sys
 
+# The cursor size in logical pixels when GSettings has none (the Theming panel sets cursor-size).
 CURSOR_SIZE = 24
 # Aseprite's usual 200% on an unscaled monitor; DESKTOP_ASEPRITE_SCALE overrides it.
 ASEPRITE_BASE = 2
@@ -20,6 +21,16 @@ def target():
     if not monitor:
         raise ValueError(tr('xwayland.errors.noMonitor'))
     return monitor.get('name', ''), float(monitor.get('scale', 1))
+
+
+def cursor_size():
+    try:
+        result = subprocess.run(['gsettings', 'get', 'org.gnome.desktop.interface', 'cursor-size'],
+            capture_output=True, text=True, timeout=5)
+        size = int(result.stdout.strip()) if result.returncode == 0 else 0
+    except (OSError, subprocess.SubprocessError, ValueError):
+        size = 0
+    return size if 8 <= size <= 256 else CURSOR_SIZE
 
 
 def cursor_theme():
@@ -51,7 +62,7 @@ def aseprite_scale(monitor_scale):
 def apply():
     name, scale = target()
     # Under force_zero_scaling X clients draw in physical pixels, so DPI and cursor size carry the scale.
-    resources = {'Xft.dpi': round(96 * scale), 'Xcursor.theme': cursor_theme(), 'Xcursor.size': round(CURSOR_SIZE * scale)}
+    resources = {'Xft.dpi': round(96 * scale), 'Xcursor.theme': cursor_theme(), 'Xcursor.size': round(cursor_size() * scale)}
     data = ''.join(f'{key}: {value}\n' for key, value in resources.items())
     subprocess.run(['xrdb', '-merge'], input=data, text=True, check=True, timeout=10)
     result = {'monitor': name, 'scale': scale, **resources}

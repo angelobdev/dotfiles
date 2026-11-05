@@ -87,6 +87,9 @@ packages = [
     'python3', 'python3-gobject', 'ImageMagick', 'libnotify', 'libical-glib', 'evolution-data-server',
     'gnome-online-accounts-gtk', 'matugen', 'jq', 'ripgrep', 'grim', 'slurp', 'wl-clipboard', 'cliphist',
     'wf-recorder', 'btop', 'fastfetch', 'flatpak', 'xdg-user-dirs', 'xdg-utils', 'dconf',
+    # Color picker (Super + Shift + P), text from a screen area (tesseract, Italian and English), the launcher's
+    # calculator and unit conversions (qalc) and its file search (fd).
+    'hyprpicker', 'tesseract', 'tesseract-langpack-ita', 'tesseract-langpack-eng', 'qalculate', 'fd-find',
     # Drives and phones.
     # udiskie's tray icon is an AppIndicator (StatusNotifierItem) for the bar's tray.
     'udiskie', 'libayatana-appindicator-gtk3', 'udisks2', 'gvfs', 'gvfs-afc', 'gvfs-gphoto2', 'usbmuxd', 'libimobiledevice-utils',

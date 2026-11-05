@@ -18,6 +18,9 @@ Singleton {
     readonly property int nightShiftTemperature: state.nightShiftTemperature
     readonly property real nightShiftOverrideUntil: state.nightShiftOverrideUntil
     readonly property bool nightShiftOverrideValue: state.nightShiftOverrideValue === true
+    readonly property real focusUntil: state.focusUntil
+    readonly property int focusMinutes: state.focusMinutes
+    readonly property bool focusQuietBefore: state.focusQuietBefore === true
     function set(key, value) {
         if (state[key] === value)
             return;
@@ -56,6 +59,9 @@ Singleton {
             property int nightShiftTemperature: 0
             property real nightShiftOverrideUntil: 0
             property bool nightShiftOverrideValue: false
+            property real focusUntil: 0
+            property int focusMinutes: 0
+            property bool focusQuietBefore: false
         }
     }
 }

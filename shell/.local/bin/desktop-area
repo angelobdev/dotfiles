@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# A screen area, chosen with slurp (Esc cancels):
+#   text  its text (tesseract, Italian and English), copied to the clipboard;
+#   ask   the area as an image for Claude in the assistant console: its path is typed at the prompt, or, with a
+#         console started before this existed, the image is copied for Ctrl + V.
+set -euo pipefail
+message() { python3 "$HOME/.local/libexec/desktop/i18n.py" "$@"; }
+notify() { notify-send --app-name="$(message 'area.title')" --app-icon="$1" "$2" "${3:-}"; }
+mode=${1:-}
+[[ $mode == text || $mode == ask ]] || { echo 'Usage: desktop-area {text|ask}' >&2; exit 2; }
+if [[ $mode == text ]] && ! command -v tesseract >/dev/null; then
+    exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify area.title area.ocrMissing
+fi
+area=$(slurp 2>/dev/null) || exit 0
+# Captures stay in the runtime directory (gone at logout); the assistant may read one later in the chat,
+# so they are kept a day.
+folder="${XDG_RUNTIME_DIR:-/tmp}/desktop-area"
+mkdir -p -m 700 "$folder"
+find "$folder" -name '*.png' -mmin +1440 -delete 2>/dev/null || true
+image="$folder/$(date +%Y%m%d-%H%M%S).png"
+grim -g "$area" "$image"
+if [[ $mode == text ]]; then
+    languages=eng
+    tesseract --list-langs 2>/dev/null | grep -qx ita && languages=ita+eng
+    text=$(tesseract "$image" - -l "$languages" 2>/dev/null | sed -e 's/[[:space:]]*$//' | sed -e '/./,$!d' || true)
+    rm -f "$image"
+    if [[ -z ${text//[[:space:]]/} ]]; then
+        notify dialog-information-symbolic "$(message 'area.noText')"
+        exit 0
+    fi
+    printf '%s' "$text" | wl-copy
+    notify edit-copy-symbolic "$(message 'area.textCopied')" "$(printf '%s' "$text" | head -c 240)"
+    exit 0
+fi
+# ask: desktop-ai starts its kitty with a remote-control socket for this.
+socket="${XDG_RUNTIME_DIR:-/tmp}/desktop-ai-kitty"
+if [[ -S $socket ]] && kitty @ --to "unix:$socket" send-text --match all "$image " >/dev/null 2>&1; then
+    hyprctl eval 'desktop_console_show()' >/dev/null
+    exit 0
+fi
+wl-copy --type image/png <"$image"
+if hyprctl clients -j | grep -q '"class": "desktop-ai"'; then
+    hyprctl eval 'desktop_console_show()' >/dev/null
+else
+    "$HOME/.local/bin/desktop-ai" toggle
+fi
+notify image-x-generic-symbolic "$(message 'area.imageCopied')" "$(message 'area.pasteHint')"
