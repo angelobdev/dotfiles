@@ -24,6 +24,18 @@ Singleton {
         state[key] = value;
         file.writeAdapter();
     }
+    // Several keys with one write: separate writes in a row can read an earlier one back over the later values.
+    function setMany(values) {
+        let changed = false;
+        for (const key in values) {
+            if (state[key] !== values[key]) {
+                state[key] = values[key];
+                changed = true;
+            }
+        }
+        if (changed)
+            file.writeAdapter();
+    }
     FileView {
         id: file
         path: root.stateDir + "/session.json"

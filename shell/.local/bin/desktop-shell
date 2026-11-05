@@ -3,8 +3,10 @@ set -euo pipefail
 config="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/desktop"
 # Present after `stop`: the supervisor leaves the shell off until `start` or `restart`.
 stopped="${XDG_RUNTIME_DIR:-/tmp}/desktop-shell.stopped"
+# Quickshell's own instance list: after a crash its handler relaunches the shell under another command line,
+# so the process name says nothing.
 running() {
-    pgrep -u "$EUID" -f -- "^qs -p $config( |\$)" >/dev/null
+    [[ $(qs list --json -p "$config" 2>/dev/null) == *'"pid"'* ]]
 }
 case "${1:-start}" in
     start)
@@ -30,9 +32,9 @@ case "${1:-start}" in
                 restarts=("${recent[@]}" "$now")
                 (( ${#restarts[@]} > 1 )) && echo "desktop-shell: Quickshell is not running, starting it again." >&2
                 qs -p "$config" --no-duplicate --daemonize 8>&- || true
-                (( ${#restarts[@]} >= 5 )) && sleep 60
+                (( ${#restarts[@]} >= 5 )) && sleep 60 8>&-
             fi
-            sleep 3
+            sleep 3 8>&-  # Without the lock: a new supervisor must not wait for a sleeping child.
         done
         ;;
     restart)
@@ -45,18 +47,18 @@ case "${1:-start}" in
             theming) [[ "${3:-}" =~ ^(theme|wallpaper|font|icons)$ ]] || { echo 'Usage: desktop-shell restart [theming theme|wallpaper|font|icons]' >&2; exit 2; } ;;
             *) echo 'Usage: desktop-shell restart [theming theme|wallpaper|font|icons]' >&2; exit 2 ;;
         esac
+        old=$(qs list --json -p "$config" 2>/dev/null | grep -o '"pid": *[0-9]*' | grep -o '[0-9]*$' || true)
         qs kill -p "$config" 2>/dev/null || true
-        # kill requests shutdown; --no-duplicate can still see the exiting process.
-        # Wait for Quickshell's instance lock to disappear before starting again.
+        # Wait until the old instance is gone before starting again: its lock goes first, but it releases its
+        # polkit agent and the notification server only as its process exits, and the new one would start
+        # without them.
+        exited() {
+            local pid
+            for pid in $old; do kill -0 "$pid" 2>/dev/null && return 1; done
+            return 0
+        }
         for attempt in {1..50}; do
-            if ! qs list --json -p "$config" 2>/dev/null | python3 -c '
-import json, sys
-try:
-    running = bool(json.load(sys.stdin))
-except ValueError:
-    running = False
-sys.exit(0 if running else 1)
-'; then
+            if ! running && exited; then
                 rm -f "$stopped"  # exec skips the EXIT trap.
                 if [[ -z "${2:-}" ]]; then
                     exec qs -p "$config" --no-duplicate --daemonize

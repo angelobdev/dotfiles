@@ -40,11 +40,6 @@ PanelWindow {
         Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })");
     }
     readonly property int battery: Math.round((UPower.displayDevice?.percentage ?? 0) * 100)
-    // Keep the inhibitor on a mapped surface, independent of the control panel.
-    IdleInhibitor {
-        window: bar
-        enabled: Idle.keepAwake
-    }
     // Resting the pointer in the top-left corner toggles the overview of this monitor, once per visit. Not
     // in tablet mode, where a touch moves the pointer. The handler leaves clicks to the button under it.
     Item {
