@@ -1,4 +1,4 @@
-"""Shared by the helpers: atomic file replacement, the image types they accept, ImageMagick and Hyprland."""
+"""Shared by the helpers: atomic file replacement, the image types they accept, ImageMagick, Hyprland and the distribution."""
 import contextlib
 import hashlib
 import json
@@ -91,3 +91,24 @@ def focused_monitor():
         return None
     active = [m for m in monitors if isinstance(m, dict) and not m.get('disabled')]
     return next((m for m in active if m.get('focused')), active[0] if active else None)
+
+
+def release_id(path=Path('/etc/os-release')):
+    # The distribution: the package manager and some package names differ between Fedora and Arch.
+    try:
+        lines = path.read_text(encoding='utf-8').splitlines()
+    except OSError:
+        return ''
+    return next((line.partition('=')[2].strip('"\'') for line in lines if line.startswith('ID=')), '')
+
+
+# How each distribution installs packages; Fedora's for any other, as before Arch.
+INSTALL = {'fedora': 'sudo dnf install', 'arch': 'sudo pacman -S'}
+
+
+def install_command(packages):
+    # packages: the names, or {distribution: names} where they differ (Fedora's names for any other).
+    distribution = release_id()
+    if isinstance(packages, dict):
+        packages = packages.get(distribution, packages['fedora'])
+    return f"{INSTALL.get(distribution, INSTALL['fedora'])} {' '.join(packages)}"

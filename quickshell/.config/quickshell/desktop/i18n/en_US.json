@@ -641,7 +641,7 @@
       "invalid": "The theme %1 cannot be read: %2",
       "template": "Template %1 uses a value the theme does not define: %2",
       "unknown": "Unknown theme: %1",
-      "matugenMissing": "matugen is not installed; install it with: sudo dnf install matugen",
+      "matugenMissing": "matugen is not installed; install it with: %1",
       "matugenFailed": "matugen could not read the image: %1",
       "noWallpaper": "There is no wallpaper image to generate the theme from.",
       "glassUntunable": "%1 has no glass settings"
@@ -700,7 +700,7 @@
     "working": "Applying…",
     "dynamic": "Dynamic",
     "dynamicHint": "Colours from the wallpaper",
-    "dynamicInstall": "Install matugen: sudo dnf install matugen",
+    "dynamicInstall": "Install matugen: %1",
     "dynamicMode": "Dynamic mode",
     "dynamicModes": {
       "auto": "Auto",
@@ -902,6 +902,7 @@
     "flatpaksHeading": "Flatpak",
     "terminal": {
       "dnf": "System packages (dnf):",
+      "pacman": "System packages (pacman):",
       "flatpak": "Flatpak apps:",
       "plugins": "Hyprland was updated: log out and back in, and the plugins are rebuilt at that login (by hand: %1).",
       "done": "Done. Press Enter to close.",
@@ -909,6 +910,7 @@
     },
     "errors": {
       "dnf": "dnf could not check for updates: %1",
+      "pacman": "pacman could not check for updates: %1",
       "flatpak": "Flatpak could not check for updates: %1",
       "usage": "Usage: updates.py check|status"
     }
@@ -919,7 +921,7 @@
       "scale": "Steam scale must be a number between 1 and 4.",
       "settingsUnreadable": "Cannot read Steam settings from %1: %2",
       "settingsShape": "Steam settings must contain a monitorScales object.",
-      "compilerMissing": "Steam renderer scaling needs a C compiler: sudo dnf install gcc",
+      "compilerMissing": "Steam renderer scaling needs a C compiler: %1",
       "libraryBuild": "Cannot build the Steam UI scaling library: %1",
       "runtimeMissing": "Steam UI runtime not found. Start /usr/bin/steam once to complete its installation.",
       "resolution": "Use WIDTHxHEIGHT with dimensions from 1 to 16384.",
@@ -947,7 +949,7 @@
   },
   "area": {
     "title": "Screen area",
-    "ocrMissing": "Text recognition needs tesseract: sudo dnf install tesseract tesseract-langpack-ita",
+    "ocrMissing": "Text recognition needs tesseract: %1",
     "noText": "No text found in that area.",
     "textCopied": "Text copied",
     "imageCopied": "Area copied for Claude",
@@ -984,7 +986,7 @@
       "flags": "Flags"
     },
     "errors": {
-      "missing": "The emoji list needs unicode-emoji: sudo dnf install unicode-emoji cldr-emoji-annotation",
+      "missing": "The emoji list needs unicode-emoji: %1",
       "unreadable": "The emoji list could not be read.",
       "usage": "Usage: emoji.py list"
     }

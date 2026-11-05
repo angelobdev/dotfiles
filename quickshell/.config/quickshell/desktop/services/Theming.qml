@@ -20,11 +20,12 @@ Singleton {
     // when it has no liquid glass to tune.
     property var glass: null
     property string current: ""
-    // The theme generated from the wallpaper: whether matugen is installed and its mode.
+    // The theme generated from the wallpaper: whether matugen is installed, the command that installs it, and its mode.
     property var dynamic: ({
             available: false,
             mode: "auto",
-            source: null
+            source: null,
+            install: ""
         })
     // Shipped and user themes, then the dynamic one, with the colours it was generated with last, if any.
     readonly property var themeItems: themes.filter(t => t.id !== "dynamic").concat([

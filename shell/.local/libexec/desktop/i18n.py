@@ -77,7 +77,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         sys.exit('Usage: i18n.py KEY [ARGUMENTS...]')
     if sys.argv[1] == '--notify':
-        if len(sys.argv) != 4:
-            sys.exit('Usage: i18n.py --notify TITLE_KEY MESSAGE_KEY')
-        sys.exit(subprocess.run(['notify-send', tr(sys.argv[2]), tr(sys.argv[3])]).returncode)
+        if len(sys.argv) < 4:
+            sys.exit('Usage: i18n.py --notify TITLE_KEY MESSAGE_KEY [ARGUMENTS...]')
+        sys.exit(subprocess.run(['notify-send', tr(sys.argv[2]), tr(sys.argv[3], sys.argv[4:])]).returncode)
     print(tr(sys.argv[1], sys.argv[2:]))

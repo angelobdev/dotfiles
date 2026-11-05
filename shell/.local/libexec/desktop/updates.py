@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Available system updates (dnf and Flatpak) for the shell's update icon.
+"""Available system updates (dnf or pacman, and Flatpak) for the shell's update icon.
 
 check: refresh the metadata and write ~/.local/state/desktop-shell/updates.json, which services/Updates.qml
 watches (run by desktop-updates.timer 5 minutes after login and every 6 hours, 30 minutes after a failed check,
 and from the panel).
 status: print that file.
 """
-from common import write_atomic
+from common import release_id, write_atomic
 from i18n import tr
 import fcntl
 import json
@@ -30,6 +30,37 @@ def dnf_updates(output):
         if len(fields) == 3 and fields[0]:
             updates.append({'name': fields[0], 'version': fields[1], 'repo': fields[2]})
     return sorted(updates, key=lambda update: update['name'])
+
+
+def pacman_updates(output):
+    # checkupdates: "name old -> new" lines. pacman keeps no repository per update worth showing.
+    updates = []
+    for line in output.splitlines():
+        fields = line.split()
+        if len(fields) == 4 and fields[2] == '->':
+            updates.append({'name': fields[0], 'version': fields[3], 'repo': ''})
+    return sorted(updates, key=lambda update: update['name'])
+
+
+def system_updates():
+    # (updates, error): the listing of the distribution's package manager, or why it failed.
+    if release_id() == 'arch':
+        try:
+            # checkupdates syncs a copy of the databases as the user: no root, the system's stay as they are.
+            result = run(['checkupdates', '--nocolor'], 600)
+        except (OSError, subprocess.SubprocessError) as error:
+            return None, tr('updates.errors.pacman', [str(error)])
+        if result.returncode in (0, 2):  # 2: nothing to update
+            return pacman_updates(result.stdout), None
+        return None, tr('updates.errors.pacman', [(result.stderr or result.stdout).strip()[:200]])
+    try:
+        result = run(['dnf', '-q', 'repoquery', '--refresh', '--upgrades', '--latest-limit=1',
+                      '--queryformat', '%{name}\t%{evr}\t%{repoid}\n'], 600)
+    except (OSError, subprocess.SubprocessError) as error:
+        return None, tr('updates.errors.dnf', [str(error)])
+    if result.returncode == 0:
+        return dnf_updates(result.stdout), None
+    return None, tr('updates.errors.dnf', [result.stderr.strip()[:200]])
 
 
 def flatpak_updates(output):
@@ -59,15 +90,11 @@ def check(before=None):
     before = before or {}
     errors = []
     packages = before.get('packages', []) if isinstance(before.get('packages'), list) else []
-    try:
-        result = run(['dnf', '-q', 'repoquery', '--refresh', '--upgrades', '--latest-limit=1',
-                      '--queryformat', '%{name}\t%{evr}\t%{repoid}\n'], 600)
-        if result.returncode == 0:
-            packages = dnf_updates(result.stdout)
-        else:
-            errors.append(tr('updates.errors.dnf', [result.stderr.strip()[:200]]))
-    except (OSError, subprocess.SubprocessError) as error:
-        errors.append(tr('updates.errors.dnf', [str(error)]))
+    listed, error = system_updates()
+    if error:
+        errors.append(error)
+    else:
+        packages = listed
     apps = before.get('flatpaks', []) if isinstance(before.get('flatpaks'), list) else []
     try:
         result = run(['flatpak', 'remote-ls', '--updates', '--columns=application,version,origin'], 300)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""updates.py: dnf and Flatpak listings to updates.json, the Hyprland flag, errors kept apart."""
+"""updates.py: dnf or pacman, and Flatpak listings to updates.json, the Hyprland flag, errors kept apart."""
 import json
 from pathlib import Path
 import subprocess
@@ -18,6 +18,12 @@ def done(stdout='', code=0, stderr=''):
 
 
 class UpdatesTests(unittest.TestCase):
+    def setUp(self):
+        # Fedora, whatever runs the tests: ArchUpdatesTests covers pacman.
+        release = mock.patch.object(updates, 'release_id', return_value='fedora')
+        release.start()
+        self.addCleanup(release.stop)
+
     def test_dnf_lines_are_parsed_and_sorted(self):
         output = 'kernel\t7.2.14-200.fc44\tupdates\nhyprland\t0.56.3-1.fc44\tcopr:nett00n:hyprland\n\nnoise\n'
         self.assertEqual(updates.dnf_updates(output), [
@@ -67,6 +73,41 @@ class UpdatesTests(unittest.TestCase):
                     mock.patch.object(sys, 'argv', ['updates.py', 'check']), mock.patch.object(updates, 'retry_later'):
                 self.assertEqual(updates.main(), 0)
             self.assertEqual(json.loads(state.read_text()), {'packages': []})
+
+
+class ArchUpdatesTests(unittest.TestCase):
+    def setUp(self):
+        release = mock.patch.object(updates, 'release_id', return_value='arch')
+        release.start()
+        self.addCleanup(release.stop)
+
+    def test_checkupdates_lines_are_parsed_and_sorted(self):
+        output = 'linux 7.2.14.arch1-1 -> 7.2.15.arch1-1\nhyprland 0.57.0-1 -> 0.57.1-1\nnoise\n'
+        self.assertEqual(updates.pacman_updates(output), [
+            {'name': 'hyprland', 'version': '0.57.1-1', 'repo': ''},
+            {'name': 'linux', 'version': '7.2.15.arch1-1', 'repo': ''}])
+
+    def test_checkupdates_runs_as_the_user_and_sets_the_compositor_flag(self):
+        replies = [done('hyprland 0.57.0-1 -> 0.57.1-1\n'), done('')]
+        with mock.patch.object(updates, 'run', side_effect=replies) as run, mock.patch('updates.tr', side_effect=lambda k, a=None: k):
+            result = updates.check()
+        self.assertEqual(run.call_args_list[0].args[0], ['checkupdates', '--nocolor'])
+        self.assertTrue(result['compositor'])
+        self.assertEqual(result['errors'], [])
+
+    def test_nothing_to_update_is_not_an_error(self):
+        # checkupdates exits 2 when the system is current.
+        replies = [done('', 2), done('')]
+        with mock.patch.object(updates, 'run', side_effect=replies), mock.patch('updates.tr', side_effect=lambda k, a=None: k):
+            result = updates.check({'packages': [{'name': 'old', 'version': '1', 'repo': ''}]})
+        self.assertEqual((result['packages'], result['errors']), ([], []))
+
+    def test_a_failing_checkupdates_keeps_the_last_list(self):
+        before = {'checked': 1.0, 'packages': [{'name': 'linux', 'version': '1', 'repo': ''}], 'flatpaks': []}
+        replies = [done('', 1, '==> ERROR: Cannot fetch updates'), done('')]
+        with mock.patch.object(updates, 'run', side_effect=replies), mock.patch('updates.tr', side_effect=lambda k, a=None: k):
+            result = updates.check(before)
+        self.assertEqual((result['packages'], result['errors']), (before['packages'], ['updates.errors.pacman']))
 
 
 if __name__ == '__main__':

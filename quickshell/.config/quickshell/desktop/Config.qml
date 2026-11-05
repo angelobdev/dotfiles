@@ -21,8 +21,9 @@ QtObject {
     readonly property bool launcherFiles: true
     readonly property var launcherHidden: ["org.gnome.Settings", "opencascade-draw", "uuctl"]
     // Dock: desktop-entry IDs pinned in this order, a reveal strip along the bottom edge (logical px) and its hover delay (ms).
+    // An ID with no entry is skipped: Zen is zen-browser on Fedora, zen from the AUR on Arch.
     readonly property bool dockEnabled: true
-    readonly property var dockPinned: ["kitty", "zen-browser", "org.gnome.Nautilus", "com.microsoft.VSCode", "steam"]
+    readonly property var dockPinned: ["kitty", "zen-browser", "zen", "org.gnome.Nautilus", "com.microsoft.VSCode", "steam"]
     readonly property int dockIconSize: 44
     // Peak scale of the icon under the pointer; 1 turns magnification off.
     readonly property real dockMagnification: 1.4

@@ -214,7 +214,7 @@ ColumnLayout {
                                 margins: 12
                             }
                             visible: themeCell.unavailable
-                            text: I18n.tr("theming.dynamicInstall")
+                            text: I18n.tr("theming.dynamicInstall", [Theming.dynamic.install ?? ""])
                             wrapMode: Text.WordWrap
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter

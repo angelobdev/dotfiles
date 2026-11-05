@@ -9,7 +9,11 @@ notify() { notify-send --app-name="$(message 'area.title')" --app-icon="$1" "$2"
 mode=${1:-}
 [[ $mode == text || $mode == ask ]] || { echo 'Usage: desktop-area {text|ask}' >&2; exit 2; }
 if [[ $mode == text ]] && ! command -v tesseract >/dev/null; then
-    exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify area.title area.ocrMissing
+    case $(. /etc/os-release && echo "$ID") in
+        arch) install='sudo pacman -S tesseract tesseract-data-ita' ;;
+        *) install='sudo dnf install tesseract tesseract-langpack-ita' ;;
+    esac
+    exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify area.title area.ocrMissing "$install"
 fi
 area=$(slurp 2>/dev/null) || exit 0
 # Captures stay in the runtime directory (gone at logout); the assistant may read one later in the chat,

@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.SystemTray
 import Quickshell.Services.UPower
@@ -40,6 +41,24 @@ PanelWindow {
         Hyprland.dispatch("hl.dsp.focus({ workspace = " + id + " })");
     }
     readonly property int battery: Math.round((UPower.displayDevice?.percentage ?? 0) * 100)
+    // The distribution logo: the icon that os-release names (Fedora has one in the icon theme), else the icon
+    // pack distributor-logo-<ID> (Papirus has one for Arch), else start-here.
+    property string logo: Quickshell.iconPath("start-here")
+    FileView {
+        path: "/etc/os-release"
+        blockLoading: true
+        printErrors: false
+        onLoaded: {
+            const values = {};
+            for (const line of text().split("\n")) {
+                const match = line.match(/^(ID|LOGO)=(.*)$/);
+                // Quotes, and anything else an icon name cannot hold, go.
+                if (match)
+                    values[match[1]] = match[2].replace(/[^A-Za-z0-9._-]/g, "");
+            }
+            bar.logo = (values.LOGO ? Quickshell.iconPath(values.LOGO, true) : "") || Quickshell.iconPath("distributor-logo-" + (values.ID ?? ""), "start-here");
+        }
+    }
     // Resting the pointer in the top-left corner toggles the overview of this monitor, once per visit. Not
     // in tablet mode, where a touch moves the pointer. The handler leaves clicks to the button under it.
     Item {
@@ -121,7 +140,7 @@ PanelWindow {
         }
         spacing: 5
         BarButton {
-            iconSource: Quickshell.iconPath("fedora-logo-icon", "start-here")
+            iconSource: bar.logo
             iconSize: 18
             implicitWidth: Theme.hit(32)
             tooltip: I18n.tr("launcher.title")

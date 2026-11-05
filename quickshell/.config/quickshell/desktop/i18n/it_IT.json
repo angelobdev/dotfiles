@@ -641,7 +641,7 @@
       "invalid": "Impossibile leggere il tema %1: %2",
       "template": "Il template %1 usa un valore che il tema non definisce: %2",
       "unknown": "Tema sconosciuto: %1",
-      "matugenMissing": "matugen non è installato; installalo con: sudo dnf install matugen",
+      "matugenMissing": "matugen non è installato; installalo con: %1",
       "matugenFailed": "matugen non è riuscito a leggere l’immagine: %1",
       "noWallpaper": "Non c’è un’immagine di sfondo da cui generare il tema.",
       "glassUntunable": "%1 non ha impostazioni del vetro"
@@ -700,7 +700,7 @@
     "working": "Applicazione…",
     "dynamic": "Dinamico",
     "dynamicHint": "Colori dallo sfondo",
-    "dynamicInstall": "Installa matugen: sudo dnf install matugen",
+    "dynamicInstall": "Installa matugen: %1",
     "dynamicMode": "Modalità dinamica",
     "dynamicModes": {
       "auto": "Auto",
@@ -902,6 +902,7 @@
     "flatpaksHeading": "Flatpak",
     "terminal": {
       "dnf": "Pacchetti di sistema (dnf):",
+      "pacman": "Pacchetti di sistema (pacman):",
       "flatpak": "App Flatpak:",
       "plugins": "Hyprland è stato aggiornato: esci e rientra, e i plugin vengono ricompilati a quel login (a mano: %1).",
       "done": "Fatto. Premi Invio per chiudere.",
@@ -909,6 +910,7 @@
     },
     "errors": {
       "dnf": "dnf non è riuscito a cercare aggiornamenti: %1",
+      "pacman": "pacman non è riuscito a cercare aggiornamenti: %1",
       "flatpak": "Flatpak non è riuscito a cercare aggiornamenti: %1",
       "usage": "Uso: updates.py check|status"
     }
@@ -919,7 +921,7 @@
       "scale": "La scala di Steam deve essere un numero tra 1 e 4.",
       "settingsUnreadable": "Impossibile leggere le impostazioni di Steam da %1: %2",
       "settingsShape": "Le impostazioni di Steam devono contenere un oggetto monitorScales.",
-      "compilerMissing": "Il ridimensionamento del renderer di Steam richiede un compilatore C: sudo dnf install gcc",
+      "compilerMissing": "Il ridimensionamento del renderer di Steam richiede un compilatore C: %1",
       "libraryBuild": "Impossibile compilare la libreria di ridimensionamento della UI di Steam: %1",
       "runtimeMissing": "Runtime della UI di Steam non trovato. Avvia /usr/bin/steam una volta per completarne l’installazione.",
       "resolution": "Usa LARGHEZZAxALTEZZA con dimensioni da 1 a 16384.",
@@ -947,7 +949,7 @@
   },
   "area": {
     "title": "Area dello schermo",
-    "ocrMissing": "Il riconoscimento del testo richiede tesseract: sudo dnf install tesseract tesseract-langpack-ita",
+    "ocrMissing": "Il riconoscimento del testo richiede tesseract: %1",
     "noText": "Nessun testo trovato in quell’area.",
     "textCopied": "Testo copiato",
     "imageCopied": "Area copiata per Claude",
@@ -984,7 +986,7 @@
       "flags": "Bandiere"
     },
     "errors": {
-      "missing": "L’elenco delle emoji richiede unicode-emoji: sudo dnf install unicode-emoji cldr-emoji-annotation",
+      "missing": "L’elenco delle emoji richiede unicode-emoji: %1",
       "unreadable": "Impossibile leggere l’elenco delle emoji.",
       "usage": "Uso: emoji.py list"
     }

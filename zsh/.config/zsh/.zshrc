@@ -22,11 +22,19 @@ bindkey -e
 [[ -r $plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh ]] &&
     source $plugins/zsh-autocomplete/zsh-autocomplete.plugin.zsh
 
-[[ -r /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]] &&
+# The distribution's plugins: Fedora's folders first, then Arch's.
+if [[ -r /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
     source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+elif [[ -r /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+    source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
 
 # fzf: Ctrl+R history, Ctrl+T files, Alt+C directories. After zsh-autocomplete, so Ctrl+R is fzf's.
-[[ -r /usr/share/fzf/shell/key-bindings.zsh ]] && source /usr/share/fzf/shell/key-bindings.zsh
+if [[ -r /usr/share/fzf/shell/key-bindings.zsh ]]; then
+    source /usr/share/fzf/shell/key-bindings.zsh
+elif [[ -r /usr/share/fzf/key-bindings.zsh ]]; then
+    source /usr/share/fzf/key-bindings.zsh
+fi
 
 # zoxide: z <part of a path> jumps to the directories used most; zi picks one with fzf.
 (( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
@@ -45,8 +53,11 @@ fi
 [[ -r $ZDOTDIR/p10k.zsh ]] && source $ZDOTDIR/p10k.zsh
 
 # Last: it wraps the widgets every plugin above defined.
-[[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]] &&
+if [[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
     source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+elif [[ -r /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+    source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
 
 # Machine-specific additions, outside the repository.
 [[ -r $ZDOTDIR/local.zsh ]] && source $ZDOTDIR/local.zsh

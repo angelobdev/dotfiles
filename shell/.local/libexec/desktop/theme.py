@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Render the desktop theme into the files the shell and applications read."""
-from common import IMAGES, download as download_file, focused_monitor, magick, replacing, theme_name, write_atomic
+from common import IMAGES, download as download_file, focused_monitor, install_command, magick, replacing, theme_name, write_atomic
 from i18n import tr
 import argparse
 import colorsys
@@ -763,7 +763,7 @@ def dynamic_theme(data, source):
 
 def run_matugen(image, chosen):
     if shutil.which('matugen') is None:
-        raise ValueError(tr('theme.errors.matugenMissing'))
+        raise ValueError(tr('theme.errors.matugenMissing', [install_command(['matugen'])]))
     settings = chosen.get('dynamic', {})
     mode = MODES.get(settings.get('mode', 'auto'), 'smart')
     # Tonal spot, matugen's default: the other styles mostly moved the accent and were dropped.
@@ -800,7 +800,8 @@ def dynamic_info():
     except (OSError, ValueError, AttributeError):
         source = None
     settings = preferences().get('dynamic', {})
-    return {'available': shutil.which('matugen') is not None, 'mode': settings.get('mode', 'auto'), 'source': source}
+    return {'available': shutil.which('matugen') is not None, 'mode': settings.get('mode', 'auto'), 'source': source,
+            'install': install_command(['matugen'])}
 
 
 # A destination that is still an old Stow link is replaced, never written through into the repository.

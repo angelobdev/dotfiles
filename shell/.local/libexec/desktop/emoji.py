@@ -6,7 +6,7 @@ The order and groups come from Unicode's emoji-test.txt (unicode-emoji), the nam
 annotations (cldr-emoji-annotation), Italian or English as the shell. Skin-tone variants are left out. The
 result is cached per language until either source changes.
 """
-from common import write_atomic
+from common import install_command, write_atomic
 from i18n import language, tr
 import json
 import os
@@ -63,7 +63,8 @@ def build(code):
 def listing():
     code = 'it' if language() == 'it_IT' else 'en'
     if not TEST.is_file():
-        raise ValueError(tr('emoji.errors.missing'))
+        raise ValueError(tr('emoji.errors.missing', [install_command({'fedora': ['unicode-emoji', 'cldr-emoji-annotation'],
+                                                                     'arch': ['unicode-emoji', 'unicode-cldr-annotations', 'unicode-cldr']})]))
     sources = [TEST] + [ANNOTATIONS / folder / f'{code}.xml' for folder in ('annotations', 'annotationsDerived')]
     signature = [int(path.stat().st_mtime) for path in sources if path.is_file()]
     cache = CACHE / f'emoji-{code}.json'

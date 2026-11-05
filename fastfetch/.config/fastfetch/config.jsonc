@@ -1,8 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/fastfetch-cli/fastfetch/2.68.1/doc/json_schema.json",
   "logo": {
-    "type": "builtin",
-    "source": "Fedora_small",
+    "type": "small",
     "color": {
       "1": "white",
       "2": "bright_black"

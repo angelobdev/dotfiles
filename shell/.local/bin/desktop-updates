@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # System updates for the shell's update icon: check (desktop-updates.timer, the panel), status, and
-# upgrade, which opens a terminal running dnf and Flatpak so the progress and the sudo password prompt are
-# visible (in tablet mode the terminal opens the on-screen keyboard).
+# upgrade, which opens a terminal running dnf (pacman on Arch) and Flatpak so the progress and the sudo password
+# prompt are visible (in tablet mode the terminal opens the on-screen keyboard).
 helper="$HOME/.local/libexec/desktop/updates.py"
 message() { python3 "$HOME/.local/libexec/desktop/i18n.py" "$@"; }
 case "${1:-status}" in
@@ -12,16 +12,23 @@ case "${1:-status}" in
         setsid -f kitty --class desktop-updates --title "$(message 'updates.title')" -e "$0" run >/dev/null 2>&1
         ;;
     run)
-        before="$(rpm -q hyprland 2>/dev/null || true)"
+        if [[ $(. /etc/os-release && echo "$ID") == arch ]]; then
+            compositor() { pacman -Q hyprland 2>/dev/null || true; }
+            manager=pacman upgrade=(sudo pacman -Syu)
+        else
+            compositor() { rpm -q hyprland 2>/dev/null || true; }
+            manager=dnf upgrade=(sudo dnf upgrade --refresh)
+        fi
+        before="$(compositor)"
         failed=0
-        printf '\n%s\n\n' "$(message 'updates.terminal.dnf')"
-        sudo dnf upgrade --refresh || failed=1
+        printf '\n%s\n\n' "$(message "updates.terminal.$manager")"
+        "${upgrade[@]}" || failed=1
         if command -v flatpak >/dev/null; then
             printf '\n%s\n\n' "$(message 'updates.terminal.flatpak')"
             flatpak update || failed=1
         fi
         # A new Hyprland needs the plugins rebuilt for it, after a new login into the new binary.
-        if [[ $(rpm -q hyprland 2>/dev/null || true) != "$before" ]]; then
+        if [[ $(compositor) != "$before" ]]; then
             repo="$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)"
             printf '\n%s\n' "$(message 'updates.terminal.plugins' "$repo/scripts/install-hypr-plugins.py")"
         fi

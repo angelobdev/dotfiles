@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Steam HiDPI startup and opt-in gamescope sessions for individual games."""
-from common import focused_monitor, hypr_json
+from common import focused_monitor, hypr_json, install_command
 from i18n import tr
 import argparse
 import functools
@@ -56,7 +56,7 @@ def prepare_steam_renderer(scale):
     if not library.is_file():
         compiler = shutil.which('cc')
         if not compiler:
-            raise ValueError(tr('gaming.errors.compilerMissing'))
+            raise ValueError(tr('gaming.errors.compilerMissing', [install_command(['gcc'])]))
         with tempfile.TemporaryDirectory(prefix='build-', dir=cache) as build:
             output = Path(build) / 'scale.so'
             result = subprocess.run([compiler, '-Wall', '-Wextra', '-Werror', '-shared', '-fPIC',

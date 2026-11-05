@@ -10,8 +10,14 @@ import sys
 import gi
 gi.require_version('ECal', '2.0')
 gi.require_version('EDataServer', '1.2')
-gi.require_version('ICalGLib', '3.0')
-from gi.repository import ECal, EDataServer, ICalGLib
+# libical 3 on Fedora, 4 on Arch: what this file calls is in both.
+for version in ('3.0', '4.0'):
+    try:
+        gi.require_version('ICalGLib', version)
+        break
+    except ValueError:
+        pass
+from gi.repository import ECal, EDataServer, ICalGLib  # noqa: E402
 
 
 def timezone():
