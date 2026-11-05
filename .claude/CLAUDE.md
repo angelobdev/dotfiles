@@ -28,7 +28,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 ## Commands
 
 ```sh
-./scripts/check.sh              # bash -n, Python compile, i18n tests, doc links, cc, desktop-file-validate, qmllint, Hyprland --verify-config
+./scripts/check.sh              # bash -n, Python compile, i18n tests, doc links, cc, desktop-file-validate, qmllint, Lua tests, Hyprland --verify-config
 ./scripts/stow.py dry-run       # then: ./scripts/stow.py apply (needed after ADDING files)
 ./scripts/install-desktop.py    # preview of a full install (dry-run by default; `apply` does it)
 ./scripts/install-tui.py        # the same, guided: profiles, firmware, review, then apply

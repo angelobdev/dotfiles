@@ -27,13 +27,13 @@ jobs:
           dnf -y install dnf5-plugins
           dnf -y copr enable lionheartp/Hyprland
           dnf -y install --setopt=install_weak_deps=False \
-            desktop-file-utils gcc hyprland matugen python3 python3-cmarkgfm qt6-qtdeclarative-devel \
+            desktop-file-utils gcc hyprland lua matugen python3 python3-cmarkgfm qt6-qtdeclarative-devel \
             shadow-utils util-linux zsh
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run the checks
         run: |
           # check.sh and its tests skip these when they are missing: here that would hide a failure.
-          for tool in cc desktop-file-validate matugen zsh /usr/lib64/qt6/bin/qmllint /usr/lib64/qt6/bin/qmltestrunner; do
+          for tool in cc desktop-file-validate lua matugen zsh /usr/lib64/qt6/bin/qmllint /usr/lib64/qt6/bin/qmltestrunner; do
             command -v "$tool"
           done
           python3 -c 'import cmarkgfm'

@@ -715,6 +715,33 @@ class UninstallTests(unittest.TestCase):
             items = installer.unstow_pending(self.removal({}))
         self.assertIn(f'put back 2 files Stow had moved to {installer.STATE / "backups"}', items)
 
+    def test_the_plugin_cache_goes_whole_only_when_it_holds_nothing_else(self):
+        home = self.sandbox()
+        cache = home / 'cache'
+        (cache / installer.bundle.REPOSITORY).mkdir(parents=True)
+        (cache / 'headersRoot').mkdir()
+        current = self.removal({})
+        items = installer.unplugins_pending(current)
+        installer.unplugins_apply(current, items)
+        current.distro.sudo.assert_called_once_with('rm', '-rf', '--', str(cache))
+        self.assertFalse([path for path in self.plugin_files if path.exists()])
+        # A repository someone added by hand keeps the cache: only ours goes.
+        (cache / 'someone-else').mkdir()
+        current.distro.sudo.reset_mock()
+        installer.unplugins_apply(current, [str(cache / installer.bundle.REPOSITORY)])
+        current.distro.sudo.assert_called_once_with('rm', '-rf', '--', str(cache / installer.bundle.REPOSITORY))
+
+    def test_saved_gnome_settings_go_back_and_the_file_goes(self):
+        home = self.sandbox()
+        saved = home / 'interface.ini'
+        saved.write_text("org.gnome.desktop.interface color-scheme 'default'\norg.gnome.desktop.interface cursor-size 24\n")
+        with mock.patch.object(installer, 'INTERFACE', saved), mock.patch('subprocess.run') as run:
+            installer.unsettings_apply(self.removal({}), [])
+        self.assertEqual([call.args[0] for call in run.call_args_list],
+                         [('gsettings', 'set', 'org.gnome.desktop.interface', 'color-scheme', "'default'"),
+                          ('gsettings', 'set', 'org.gnome.desktop.interface', 'cursor-size', '24')])
+        self.assertFalse(saved.exists())
+
     def test_the_record_stays_marked_as_undone(self):
         current = self.removal({})
         installer.unstate_apply(current, installer.unstate_pending(current))
