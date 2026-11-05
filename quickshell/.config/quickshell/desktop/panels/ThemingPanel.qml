@@ -1020,6 +1020,7 @@ Overlay {
                         Layout.fillWidth: true
                         visible: Store.error !== "" || Store.message !== ""
                         text: Store.error || Store.message
+                        textFormat: Text.PlainText
                         color: Store.error !== "" ? Theme.danger : Theme.muted
                         font.family: Theme.font
                         font.pixelSize: Theme.textSize(12)
@@ -1063,6 +1064,7 @@ Overlay {
                                     Text {
                                         Layout.fillWidth: true
                                         text: storeCard.modelData.name
+                                        textFormat: Text.PlainText
                                         color: Theme.text
                                         elide: Text.ElideRight
                                         font.family: Theme.font
@@ -1072,6 +1074,7 @@ Overlay {
                                     Text {
                                         Layout.fillWidth: true
                                         text: I18n.tr("store.by", [storeCard.modelData.author]) + " · " + I18n.tr("store.downloads", [storeCard.modelData.downloads.toLocaleString(I18n.locale, "f", 0)])
+                                        textFormat: Text.PlainText
                                         color: Theme.muted
                                         elide: Text.ElideRight
                                         font.family: Theme.font

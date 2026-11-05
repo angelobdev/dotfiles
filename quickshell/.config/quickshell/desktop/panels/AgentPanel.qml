@@ -181,6 +181,7 @@ Overlay {
                 Layout.fillWidth: true
                 visible: Agent.running && (Agent.usage.model ?? "") !== ""
                 text: Agent.usage.context !== null && Agent.usage.context !== undefined ? I18n.tr("assistant.usage.modelContext", [Agent.usage.model, Math.round(Agent.usage.context)]) : Agent.usage.model ?? ""
+                textFormat: Text.PlainText
                 color: Theme.muted
                 font.family: Theme.font
                 font.pixelSize: Theme.textSize(11)

@@ -92,6 +92,7 @@ Overlay {
                         Text {
                             Layout.fillWidth: true
                             text: modelData.name + (modelData.model ? " · " + modelData.model : "")
+                            textFormat: Text.PlainText
                             color: Theme.text
                             elide: Text.ElideRight
                         }

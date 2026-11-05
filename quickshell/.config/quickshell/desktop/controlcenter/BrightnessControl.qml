@@ -77,6 +77,7 @@ ControlTile {
         Text {
             visible: !!Brightness.primary && !Brightness.primary.available
             text: Brightness.primary?.error || I18n.tr("common.loading")
+            textFormat: Text.PlainText
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             color: Theme.muted
@@ -114,6 +115,7 @@ ControlTile {
                     Text {
                         visible: !(monitorRow.monitor?.available ?? false)
                         text: monitorRow.monitor?.error || I18n.tr("common.loading")
+                        textFormat: Text.PlainText
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         color: Theme.muted

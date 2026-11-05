@@ -127,6 +127,7 @@ Overlay {
                             Text {
                                 Layout.fillWidth: true
                                 text: Weather.ready ? Weather.condition(Weather.data.current.code) + (Weather.data.place ? " · " + Weather.data.place : "") : ""
+                                textFormat: Text.PlainText
                                 color: Theme.text
                                 elide: Text.ElideRight
                             }
@@ -174,6 +175,7 @@ Overlay {
                         Layout.fillWidth: true
                         visible: (Weather.data.error ?? "") !== ""
                         text: Weather.data.stale && Weather.ready ? I18n.tr("weather.stale", [I18n.locale.toString(new Date(Weather.data.updated * 1000), I18n.timeFormat)]) : (Weather.data.error ?? "")
+                        textFormat: Text.PlainText
                         color: Theme.muted
                         font.pixelSize: Theme.textSize(11)
                         wrapMode: Text.WordWrap

@@ -252,6 +252,7 @@ Overlay {
                             Text {
                                 Layout.fillWidth: true
                                 text: Battery.peripheralName(peripheral.modelData)
+                                textFormat: Text.PlainText
                                 color: Theme.text
                                 elide: Text.ElideRight
                             }

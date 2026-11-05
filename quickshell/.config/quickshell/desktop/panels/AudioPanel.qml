@@ -96,6 +96,7 @@ Overlay {
                             Text {
                                 Layout.preferredWidth: 140
                                 text: stream.appName
+                                textFormat: Text.PlainText
                                 color: Theme.text
                                 elide: Text.ElideRight
                             }
