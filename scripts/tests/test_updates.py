@@ -42,11 +42,29 @@ class UpdatesTests(unittest.TestCase):
         self.assertEqual(result['errors'], ['updates.errors.dnf'])
         self.assertEqual(len(result['flatpaks']), 1)
 
+    def test_a_failing_source_keeps_its_last_list(self):
+        before = {'checked': 1.0, 'packages': [{'name': 'kernel', 'version': '1', 'repo': 'updates'}],
+                  'flatpaks': [{'id': 'org.app', 'version': '1', 'origin': 'flathub'}]}
+        replies = [done('', 1, 'Cannot download repomd.xml'), done('', 1, 'Unable to connect')]
+        with mock.patch.object(updates, 'run', side_effect=replies), mock.patch('updates.tr', side_effect=lambda k, a=None: k):
+            result = updates.check(before)
+        self.assertEqual((result['packages'], result['flatpaks'], result['checked']), (before['packages'], before['flatpaks'], 1.0))
+        self.assertEqual(result['errors'], ['updates.errors.dnf', 'updates.errors.flatpak'])
+
+    def test_a_failed_check_is_tried_again_later(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state = Path(directory) / 'updates.json'
+            for errors, retried in (([], False), (['offline'], True)):
+                with mock.patch.object(updates, 'STATE', state), mock.patch.object(updates, 'check', return_value={'errors': errors}), \
+                        mock.patch.object(sys, 'argv', ['updates.py', 'check']), mock.patch.object(updates, 'retry_later') as retry:
+                    updates.main()
+                self.assertEqual(retry.called, retried)
+
     def test_check_writes_the_state_file(self):
         with tempfile.TemporaryDirectory() as directory:
             state = Path(directory) / 'updates.json'
             with mock.patch.object(updates, 'STATE', state), mock.patch.object(updates, 'check', return_value={'packages': []}), \
-                    mock.patch.object(sys, 'argv', ['updates.py', 'check']):
+                    mock.patch.object(sys, 'argv', ['updates.py', 'check']), mock.patch.object(updates, 'retry_later'):
                 self.assertEqual(updates.main(), 0)
             self.assertEqual(json.loads(state.read_text()), {'packages': []})
 

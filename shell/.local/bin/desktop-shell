@@ -1,10 +1,44 @@
 #!/usr/bin/env bash
 set -euo pipefail
 config="${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/desktop"
+# Present after `stop`: the supervisor leaves the shell off until `start` or `restart`.
+stopped="${XDG_RUNTIME_DIR:-/tmp}/desktop-shell.stopped"
+running() {
+    pgrep -u "$EUID" -f -- "^qs -p $config( |\$)" >/dev/null
+}
 case "${1:-start}" in
-    start) exec qs -p "$config" --no-duplicate --daemonize ;;
-    stop) exec qs kill -p "$config" ;;
+    start)
+        rm -f "$stopped"
+        exec qs -p "$config" --no-duplicate --daemonize
+        ;;
+    stop)
+        touch "$stopped"
+        exec qs kill -p "$config"
+        ;;
+    supervise)
+        # Started once per session (session.lua): brings the shell back after a crash. It is also the notification
+        # daemon, the polkit agent and the on-screen keyboard over the lock screen, so a tablet without it has no way
+        # to type the password. Five restarts within five minutes slow it down to one a minute.
+        exec 8>"${XDG_RUNTIME_DIR:-/tmp}/desktop-shell-supervise.lock"
+        flock -n 8 || exit 0
+        restarts=()
+        while :; do
+            if [[ ! -e $stopped ]] && ! running; then
+                now=$(date +%s)
+                recent=()
+                for at in "${restarts[@]}"; do (( now - at < 300 )) && recent+=("$at"); done
+                restarts=("${recent[@]}" "$now")
+                (( ${#restarts[@]} > 1 )) && echo "desktop-shell: Quickshell is not running, starting it again." >&2
+                qs -p "$config" --no-duplicate --daemonize 8>&- || true
+                (( ${#restarts[@]} >= 5 )) && sleep 60
+            fi
+            sleep 3
+        done
+        ;;
     restart)
+        # The supervisor waits while the old instance exits, or it would start one first.
+        touch "$stopped"
+        trap 'rm -f "$stopped"' EXIT
         # "restart theming TAB" reopens the Theming panel on TAB once the new instance answers.
         case "${2:-}" in
             '') ;;
@@ -23,6 +57,7 @@ except ValueError:
     running = False
 sys.exit(0 if running else 1)
 '; then
+                rm -f "$stopped"  # exec skips the EXIT trap.
                 if [[ -z "${2:-}" ]]; then
                     exec qs -p "$config" --no-duplicate --daemonize
                 fi

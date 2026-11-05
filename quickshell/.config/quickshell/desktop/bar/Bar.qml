@@ -341,7 +341,7 @@ PanelWindow {
             onClicked: ShellState.toggle("controls", bar.screen)
         }
         BarButton {
-            text: I18n.locale.toString(clock.date, I18n.tr("bar.clockFormat"))
+            text: I18n.locale.toString(clock.date, I18n.tr("bar.dateFormat") + "  " + I18n.timeFormat)
             tooltip: I18n.tr("calendar.title")
             onClicked: ShellState.toggle("calendar", bar.screen)
             Layout.leftMargin: 3

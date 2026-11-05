@@ -22,7 +22,7 @@ Function-specific components stay beside their callers; components used by sever
 
 ## Interface language
 
-The language is read from `/etc/locale.conf`, without executing the file as a script. `LC_MESSAGES`, when present, takes precedence over `LANG`:
+The language comes from the session's locale (`LC_ALL`, `LC_MESSAGES`, `LANG`, in that order: GDM sets them from the language chosen for the user), then from `/etc/locale.conf`, which is read without executing it as a script. In the file too, `LC_MESSAGES` takes precedence over `LANG`:
 
 ```ini
 LANG="en_US.UTF-8"
@@ -30,11 +30,13 @@ LANG="en_US.UTF-8"
 # LC_MESSAGES="it_IT.UTF-8"
 ```
 
-Italian variants use `it_IT.json`; English variants use `en_US.json`. Unsupported languages, `C`, and `POSIX` fall back to US English. If the file is missing or has no usable settings, environment variables `LC_ALL`, `LC_MESSAGES`, and `LANG` are consulted in that order. File settings take precedence over the environment inherited from the session.
+Italian variants use `it_IT.json`; English variants use `en_US.json`. Unsupported languages fall back to US English; `C` and `POSIX` name no language, so the next source decides.
+
+Dates, times and numbers follow `LC_TIME` (then `LANG`), apart from the messages: `LANG=en_GB.UTF-8` gives an English interface with a 24-hour clock and weeks starting on Monday, and `LC_TIME=it_IT.UTF-8` Italian formats under English messages. The bar clock, the assistant and update panels take the region's short time format; the date in the bar keeps the message language's order.
 
 `I18n.qml` watches the system file and catalogs: declarative text and formats update when they change. Python helpers read the same setting when producing a message; existing errors and history retain the text they received. `desktop-shell status` exposes the selected language in the `language` field. No additional packages are required.
 
-Translations cover panels, controls, tooltips, Hints, the sharing picker, and messages owned by the helpers. The calendar uses localized names and the locale's first weekday (Monday for Italian, Sunday for US English), with 24/12-hour time formats; decimal numbers follow the same language. Application-supplied names and content, received notifications, events, tray entries, and service authentication prompts retain their source text. Known bind descriptions are translated in Hints; unknown custom descriptions remain as written in Lua.
+Translations cover panels, controls, tooltips, Hints, the sharing picker, and messages owned by the helpers. The calendar uses localized names and the first weekday of the formats' region (Monday for Italian and British English, Sunday for US English), with its 24/12-hour time format; decimal numbers follow the same region. Application-supplied names and content, received notifications, events, tray entries, and service authentication prompts retain their source text. Known bind descriptions are translated in Hints; unknown custom descriptions remain as written in Lua.
 
 Both catalogs share the same keys:
 
@@ -180,7 +182,7 @@ GNOME's built-in control can use software brightness through Mutter, especially 
 
 ## Removable media
 
-The `udiskie` Stow package manages `~/.config/udiskie/config.yml`. `desktop-session start` launches one udiskie process alongside hyprpaper/hypridle, with logs in `~/.local/state/desktop-session/udiskie.log`; repeated startup does not create duplicate processes. `desktop-session status` includes udiskie.
+The `udiskie` Stow package manages `~/.config/udiskie/config.yml`. `desktop-session start` starts it as `desktop-udiskie.service` (in the `shell` package) alongside hyprpaper/hypridle, restarted if it crashes, with its log in the journal (`journalctl --user -u desktop-udiskie`); repeated startup does not create duplicate processes. `desktop-session status` includes udiskie.
 
 Automatic mounting and notifications are enabled, the tray icon appears only while a removable device is present (`tray: auto`, `appindicator: true`), and system-internal disks are ignored. Notification browsing opens Nautilus; Quickshell displays the notifications using its existing notification server. Mounted drives normally appear under `/run/media/$USER/` and in Files. Use Files' eject control before unplugging a drive, or run `udiskie-umount --detach "/run/media/$USER/DRIVE_LABEL"` for a specific USB drive. Close files on the drive first.
 

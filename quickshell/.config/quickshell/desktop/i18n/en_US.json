@@ -38,8 +38,7 @@
       "finished": "Finished",
       "error": "Stopped with an error"
     },
-    "timeFormat": "HH:mm",
-    "dayTimeFormat": "ddd HH:mm",
+    "dayFormat": "ddd",
     "since": "Since %1",
     "panelTooltip": "Claude",
     "usage": {
@@ -87,7 +86,7 @@
     "title": "Authentication required"
   },
   "bar": {
-    "clockFormat": "ddd MMM d  h:mm AP",
+    "dateFormat": "ddd MMM d",
     "desktop": "Desktop"
   },
   "battery": {

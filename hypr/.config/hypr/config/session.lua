@@ -39,5 +39,6 @@ hl.on("hyprland.start", function()
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-plugins" reload')
     -- desktop-session exports the session environment to systemd and D-Bus activation, once.
     hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-session" start')
-    hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell" start')
+    -- Starts the shell, and starts it again if it crashes (desktop-shell stop keeps it off).
+    hl.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell" supervise')
 end)

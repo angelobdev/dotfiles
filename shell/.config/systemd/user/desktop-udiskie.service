@@ -1,0 +1,9 @@
+[Unit]
+Description=udiskie: mounts removable drives and shows them in the tray
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/udiskie
+Restart=on-failure
+RestartSec=3

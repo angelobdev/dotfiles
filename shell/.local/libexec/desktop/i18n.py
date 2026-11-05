@@ -22,9 +22,11 @@ def language_from_config(text, environment=None):
         match = ASSIGNMENT.fullmatch(line)
         if match:
             values[match[1]] = next(value for value in match.groups()[1:] if value is not None)
-    fallback = environment if environment is not None else os.environ
-    return normalize(values.get('LC_MESSAGES') or values.get('LANG') or fallback.get('LC_ALL')
-                     or fallback.get('LC_MESSAGES') or fallback.get('LANG'))
+    # The session's own locale first (GDM sets it from the user's language), then /etc/locale.conf; C and POSIX
+    # name no language and fall through.
+    env = environment if environment is not None else os.environ
+    candidates = (env.get('LC_ALL'), env.get('LC_MESSAGES'), env.get('LANG'), values.get('LC_MESSAGES'), values.get('LANG'))
+    return normalize(next((value for value in candidates if value and not re.match(r'(C|POSIX)([._@]|$)', value.strip(), re.I)), ''))
 
 
 def language():

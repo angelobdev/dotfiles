@@ -23,7 +23,9 @@ spec.loader.exec_module(i18n)
 class TranslationTests(unittest.TestCase):
     def test_locale_selection(self):
         cases = [
-            ('LANG="en_US.UTF-8"', {'LANG': 'it_IT'}, 'en_US'),
+            ('LANG="en_US.UTF-8"', {'LANG': 'it_IT'}, 'it_IT'),
+            ('LANG="it_IT.UTF-8"', {'LANG': 'C.UTF-8'}, 'it_IT'),
+            ('LANG="it_IT.UTF-8"', {'LC_ALL': 'POSIX', 'LANG': 'en_US.UTF-8'}, 'en_US'),
             ("LANG='it_IT.UTF-8'", {}, 'it_IT'),
             (' LANG = it_IT.UTF-8 # comment', {}, 'it_IT'),
             ('LANG=en_US\nLC_MESSAGES=it_IT.UTF-8', {}, 'it_IT'),

@@ -10,6 +10,8 @@ hl.env("DESKTOP_AI_LANGUAGE", "italian")
 
 -- The OmniBook Ultra Flip reports its 2-in-1 posture (SW_TABLET_MODE) on this switch.
 require("config.tablet").switch("Intel HID switches")
+-- With an external monitor on, closing the lid turns the internal display off instead of suspending.
+require("config.tablet").lid("Lid Switch")
 
 -- BINDS --
 

@@ -13,8 +13,8 @@ hyprctl configerrors
 hyprctl getoption xwayland:enabled
 xprop -root _NET_SUPPORTING_WM_CHECK
 readlink -f ~/.local/state/desktop-session/wallpaper/current.jpg
-cat ~/.local/state/desktop-session/hypridle.log
-cat ~/.local/state/desktop-session/udiskie.log
+journalctl --user -b -u hypridle -u hyprpaper -u desktop-udiskie
+journalctl --user -b -t desktop-shell   # the shell's supervisor and the lock
 ./scripts/check.sh
 ```
 

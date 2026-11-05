@@ -30,14 +30,14 @@ Overlay {
         }
     }
     function clock(date) {
-        return I18n.locale.toString(date, I18n.tr("assistant.timeFormat"));
+        return I18n.locale.toString(date, I18n.timeFormat);
     }
     // Today "at 22:37", another day "Sun 20:50": todayKey or otherKey with the time in it.
     function when(seconds, todayKey, otherKey) {
         const date = new Date(seconds * 1000);
         if (date.toDateString() === now.toDateString())
             return I18n.tr(todayKey, [clock(date)]);
-        return I18n.tr(otherKey, [I18n.locale.toString(date, I18n.tr("assistant.dayTimeFormat"))]);
+        return I18n.tr(otherKey, [I18n.locale.toString(date, I18n.tr("assistant.dayFormat") + " " + I18n.timeFormat)]);
     }
     Timer {
         interval: 30000

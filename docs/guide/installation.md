@@ -86,7 +86,7 @@ systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-
 
 The repository is the source of the files; Stow creates symlinks without directory folding. `dry-run` writes nothing and reports conflicts as errors. `--with steam-hidpi` also links that optional package. `apply` backs up conflicting files to `~/.local/state/dotfiles/backups/<timestamp>/`, simulates the operation, then applies the links. It rejects symlinked parent directories. Run `apply` again after adding files. Do not use sudo with Stow.
 
-Multilingual support uses the existing Qt and Python installations, with no additional dependencies. The shell language comes from `/etc/locale.conf`; see [Interface language](configuration.md#interface-language) for details and catalogs.
+Multilingual support uses the existing Qt and Python installations, with no additional dependencies. The shell language comes from the session locale, then `/etc/locale.conf`; see [Interface language](configuration.md#interface-language) for details and catalogs.
 
 Packages use standard XDG paths under `$HOME`, and nothing names a user: desktop entries call `desktop-*` commands by name, found through the `PATH` that `hypr/.config/hypr/config/session.lua` extends with `~/.local/bin`. The Fedora night wallpaper is included as JPEG in `hyprpaper/.local/share/wallpapers`, converted from the JPEG XL image of Fedora's `f44-backgrounds-base` because this hyprpaper build cannot decode it; the CC BY-SA 4.0 license and Fedora attribution are included next to it.
 

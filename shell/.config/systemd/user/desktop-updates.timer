@@ -1,9 +1,11 @@
 [Unit]
-Description=Check for system updates 5 minutes after login and every 6 hours
+Description=Check for system updates 5 minutes after login and at 0, 6, 12 and 18 o'clock
 
 [Timer]
 OnActiveSec=5min
-OnUnitActiveSec=6h
+# Wall-clock times, not time awake: a laptop that sleeps a lot still checks four times a day, and a check
+# missed while asleep runs at resume.
+OnCalendar=00/6:00
 RandomizedDelaySec=2min
 
 [Install]

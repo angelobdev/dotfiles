@@ -5,9 +5,9 @@
 ## Session startup
 
 1. Hyprland loads `hypr/.config/hypr/hyprland.lua`, which sets `package.path` from `$XDG_CONFIG_HOME/hypr` (fallback `~/.config/hypr`) and `require`s modules in a fixed order: `monitors`, `appearance`, `input`, `plugins`, `binds`, `rules`, `xwayland`, `session`, then `local`. `hl.config` merges per key, so one option section can be split across modules; later monitor rules and values override earlier ones.
-2. `config/session.lua` registers a `hyprland.start` callback that runs `desktop-plugins reload`, imports environment into D-Bus/systemd, then `desktop-session start` and `desktop-shell start`.
-3. `desktop-session start` (flock-serialized) refreshes the activation environment, applies `desktop-theme`, starts portals and the GVfs AFC monitor, ensures the wallpaper link, and starts one each of `hyprpaper`, `hypridle`, `udiskie` (logs in `~/.local/state/desktop-session/`).
-4. `desktop-shell start` runs `qs -p ~/.config/quickshell/desktop --no-duplicate --daemonize`.
+2. `config/session.lua` registers a `hyprland.start` callback that runs `desktop-plugins reload`, imports environment into D-Bus/systemd, then `desktop-session start` and `desktop-shell supervise`.
+3. `desktop-session start` (flock-serialized) refreshes the activation environment, makes `~/.local/state/desktop-shell` private (0700, files 0600), applies `desktop-theme`, starts portals and the GVfs AFC monitor, takes logind's Sleep-key inhibitor (`desktop-sleep-key`, a transient unit bound to `graphical-session.target`), ensures the wallpaper link, and starts `hypridle`, `hyprpaper` and `udiskie` as user units (the packaged ones, `desktop-udiskie.service`): restarted when they crash, stopped at logout, logs in the journal. Without a systemd graphical session it falls back to plain processes logging to `~/.local/state/desktop-session/`. A failing step never keeps the later ones from starting.
+4. `desktop-shell supervise` starts `qs -p ~/.config/quickshell/desktop --no-duplicate --daemonize` and starts it again within 3 s if it stops (one try a minute after five in five minutes); `desktop-shell stop` keeps it off until `start` or `restart`.
 
 Hyprland's `exec` PATH does not include `~/.local/bin`, so Lua always calls wrappers by absolute, quoted path (`'"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'`).
 

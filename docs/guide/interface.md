@@ -52,7 +52,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Ctrl + R` | Screen recording |
 | `Super + D` | Show the dock with keyboard navigation / hide it |
 | `Super + Alt + 1`…`9` | Open or focus the Nth dock item |
-| `Super + L` / `XF86Sleep` | Lock / suspend with lock |
+| `Super + L` / `XF86Sleep` | Lock / suspend with lock (the desktop holds logind's Sleep-key inhibitor, so the key suspends once) |
 | `Super + Shift + R` | Restart Quickshell |
 | `Super + V` / `Super + Shift + F` | Floating / fullscreen |
 | `Super + Ctrl + P` / `Super + J` | Pseudotiling / split orientation |
@@ -157,7 +157,7 @@ See [AI assistant](../features/ai-assistant.md).
 
 ## System updates
 
-When updates are available, an icon with their number appears in the bar (checked 5 minutes after login and every 6 hours) and a notification announces new ones. Its panel lists them with **Check now** and **Update**, which opens a terminal for dnf and Flatpak; a Hyprland update is flagged, since the plugins need rebuilding after it.
+When updates are available, an icon with their number appears in the bar (checked 5 minutes after login and every 6 hours; offline, it keeps the last list and tries again 30 minutes later) and a notification announces new ones. Its panel lists them with **Check now** and **Update**, which opens a terminal for dnf and Flatpak; a Hyprland update is flagged, since the plugins need rebuilding after it.
 
 ## Assist button
 

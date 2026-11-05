@@ -14,8 +14,8 @@ Overlay {
     function when(milliseconds) {
         const date = new Date(milliseconds);
         if (date.toDateString() === new Date().toDateString())
-            return I18n.tr("updates.checkedAt", [I18n.locale.toString(date, I18n.tr("assistant.timeFormat"))]);
-        return I18n.tr("updates.checkedOn", [I18n.locale.toString(date, I18n.tr("assistant.dayTimeFormat"))]);
+            return I18n.tr("updates.checkedAt", [I18n.locale.toString(date, I18n.timeFormat)]);
+        return I18n.tr("updates.checkedOn", [I18n.locale.toString(date, I18n.tr("assistant.dayFormat") + " " + I18n.timeFormat)]);
     }
     function summary() {
         if (Updates.count === 0)

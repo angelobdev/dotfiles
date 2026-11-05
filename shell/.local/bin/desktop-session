@@ -26,19 +26,43 @@ case "${1:-start}" in
         python3 "$HOME/.local/libexec/desktop/electron.py" apply || echo "Electron flags not applied." >&2
         # X11 clients take DPI and cursor size from X resources matching the monitor scale.
         "$HOME/.local/bin/desktop-xwayland" apply >/dev/null || echo "XWayland profile not applied." >&2
-        systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service
+        systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service ||
+            echo "Portals not started." >&2
         # Apple devices expose AFC volumes, not UDisks block devices.
-        systemctl --user start gvfs-afc-volume-monitor.service
-        # Update checks for the bar icon: 5 minutes from now, then every 6 hours (desktop-updates.timer).
+        systemctl --user start gvfs-afc-volume-monitor.service || echo "AFC volume monitor not started." >&2
+        # Update checks for the bar icon: 5 minutes from now, then at 0, 6, 12 and 18 o'clock (desktop-updates.timer).
         systemctl --user start desktop-updates.timer || echo "Update checks not started." >&2
         "$HOME/.local/bin/desktop-wallpaper" --ensure || echo "Wallpaper not ensured." >&2
-        for daemon in hyprpaper hypridle udiskie; do
-            command -v "$daemon" >/dev/null || { echo "Missing required daemon: $daemon." >&2; exit 1; }
-            if ! pgrep -u "$EUID" -x "$daemon" >/dev/null; then
+        # The Sleep key is the desktop's (binds.lua: desktop-power suspend locks first), as under GNOME: without this
+        # inhibitor logind suspends on it too, and a second suspend follows the resume. Gone at logout.
+        if systemctl --user -q is-active graphical-session.target; then
+            systemd-run --user --unit=desktop-sleep-key --collect --quiet -p BindsTo=graphical-session.target \
+                -p After=graphical-session.target systemd-inhibit --what=handle-suspend-key --who=Desktop \
+                --why='The desktop locks the screen before it suspends' --mode=block sleep infinity 2>/dev/null || true
+        elif ! pgrep -u "$EUID" -f 'systemd-inhibit --what=handle-suspend-key --who=Desktop' >/dev/null; then
+            nohup systemd-inhibit --what=handle-suspend-key --who=Desktop --why='The desktop locks the screen before it suspends' \
+                --mode=block sleep infinity >/dev/null 2>&1 9>&- &
+        fi
+        # hypridle first: without it there is no idle lock and no lock before sleep. Each one runs as a user unit
+        # (the packaged ones; desktop-udiskie.service for udiskie), restarted if it crashes and stopped at logout.
+        # A daemon that is missing or does not start never keeps the others down.
+        missing=0
+        for daemon in hypridle hyprpaper udiskie; do
+            if ! command -v "$daemon" >/dev/null; then
+                echo "Missing daemon: $daemon." >&2
+                missing=1
+                continue
+            fi
+            pgrep -u "$EUID" -x "$daemon" >/dev/null && continue
+            unit="$daemon.service"
+            [[ $daemon == udiskie ]] && unit=desktop-udiskie.service
+            if ! systemctl --user start "$unit" 2>/dev/null; then
+                # No systemd graphical session (Hyprland started without uwsm): unsupervised, logging here.
                 # Close our flock fd in children; it must only serialize startup.
                 nohup "$daemon" >"$state/$daemon.log" 2>&1 9>&- &
             fi
         done
+        exit "$missing"
         ;;
     status)
         for daemon in hyprpaper hypridle hyprlock udiskie; do

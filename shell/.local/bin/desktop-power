@@ -16,9 +16,10 @@ case "${1:-}" in
         # The shell shows the on-screen keyboard over the lock in tablet mode, where there is no other
         # keyboard to type the password with; it is told when the lock goes.
         # Every call to the shell or the compositor is bounded: a hung shell must never keep the session
-        # unlocked (and the flock above held, so that later requests exit silently).
+        # unlocked (and the flock above held, so that later requests exit silently). One second each, so
+        # all three stay well under logind's 5 s sleep delay: the lock is up before the machine sleeps.
         logger -t desktop-shell "lock start" 2>/dev/null || true
-        timeout 2 "$HOME/.local/bin/desktop-shell" keyboard locked >/dev/null 2>&1 || true
+        timeout 1 "$HOME/.local/bin/desktop-shell" keyboard locked >/dev/null 2>&1 || true
         # In tablet mode hyprlock gets a copy of its config: fingerprint unlock off, as the folded screen
         # covers the reader (hyprlock reads it itself, not through PAM), and the widgets anchored to the
         # bottom (user, password field, messages) lifted so the field sits above the keyboard with the same
@@ -27,11 +28,11 @@ case "${1:-}" in
         posture="$XDG_RUNTIME_DIR/desktop-shell/tablet.json"
         if [[ -s "$themed" ]] && grep -Eq '"tablet"[[:space:]]*:[[:space:]]*true' "$posture" 2>/dev/null; then
             tablet="$XDG_RUNTIME_DIR/desktop-hyprlock-tablet.conf"
-            keyboard=$(timeout 2 "$HOME/.local/bin/desktop-shell" status 2>/dev/null | python3 -c '
+            keyboard=$(timeout 1 "$HOME/.local/bin/desktop-shell" status 2>/dev/null | python3 -c '
 import json, sys
 area = json.load(sys.stdin).get("keyboard", {}).get("area") or []
 print(area[0] + " " + str(area[4]) if len(area) == 5 else "")' 2>/dev/null || true)
-            scale=$(timeout 2 hyprctl -j monitors 2>/dev/null | python3 -c '
+            scale=$(timeout 1 hyprctl -j monitors 2>/dev/null | python3 -c '
 import json, sys
 name = sys.argv[1]
 print(next((m["scale"] for m in json.load(sys.stdin) if m["name"] == name), 1))' "${keyboard%% *}" 2>/dev/null || echo 1)

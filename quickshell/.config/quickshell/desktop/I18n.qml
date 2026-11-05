@@ -8,16 +8,23 @@ import "i18n/Sources.js" as Sources
 Singleton {
     id: root
     property string language: "en_US"
-    readonly property var locale: Qt.locale(language)
+    // Formats dates, times and numbers (LC_TIME), apart from the message language.
+    property string region: "en_US"
+    readonly property var locale: Qt.locale(region)
+    // The region's short time: "h:mm AP" in en_US, "HH:mm" in it_IT and en_GB.
+    readonly property string timeFormat: locale.timeFormat(Locale.ShortFormat)
     property var italian: ({})
     property var english: ({})
 
     function selectLanguage(text) {
-        language = LocaleData.languageFromConfig(text, {
+        const environment = {
             LC_ALL: Quickshell.env("LC_ALL"),
             LC_MESSAGES: Quickshell.env("LC_MESSAGES"),
+            LC_TIME: Quickshell.env("LC_TIME"),
             LANG: Quickshell.env("LANG")
-        });
+        };
+        language = LocaleData.languageFromConfig(text, environment);
+        region = LocaleData.regionFromConfig(text, environment, language);
     }
     function catalog(text) {
         try {

@@ -2,7 +2,8 @@
 """Available system updates (dnf and Flatpak) for the shell's update icon.
 
 check: refresh the metadata and write ~/.local/state/desktop-shell/updates.json, which services/Updates.qml
-watches (run by desktop-updates.timer 5 minutes after login and every 6 hours, and from the panel).
+watches (run by desktop-updates.timer 5 minutes after login and every 6 hours, 30 minutes after a failed check,
+and from the panel).
 status: print that file.
 """
 from common import write_atomic
@@ -16,6 +17,8 @@ import sys
 import time
 
 STATE = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'desktop-shell/updates.json'
+# After a failed source (offline, a mirror down), one more check this much later instead of the next 6-hour run.
+RETRY = '30min'
 # Packages whose update needs the Hyprland plugins rebuilt (scripts/install-hypr-plugins.py).
 COMPOSITOR = ('hyprland', 'hyprland-devel', 'hyprland-libs')
 
@@ -43,9 +46,19 @@ def run(command, timeout):
     return subprocess.run(command, capture_output=True, text=True, timeout=timeout)
 
 
-def check():
+def previous():
+    try:
+        value = json.loads(STATE.read_text(encoding='utf-8'))
+        return value if isinstance(value, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def check(before=None):
+    # A source that fails keeps the list it had: being offline is not "no updates", and the icon stays.
+    before = before or {}
     errors = []
-    packages = []
+    packages = before.get('packages', []) if isinstance(before.get('packages'), list) else []
     try:
         result = run(['dnf', '-q', 'repoquery', '--refresh', '--upgrades', '--latest-limit=1',
                       '--queryformat', '%{name}\t%{evr}\t%{repoid}\n'], 600)
@@ -55,7 +68,7 @@ def check():
             errors.append(tr('updates.errors.dnf', [result.stderr.strip()[:200]]))
     except (OSError, subprocess.SubprocessError) as error:
         errors.append(tr('updates.errors.dnf', [str(error)]))
-    apps = []
+    apps = before.get('flatpaks', []) if isinstance(before.get('flatpaks'), list) else []
     try:
         result = run(['flatpak', 'remote-ls', '--updates', '--columns=application,version,origin'], 300)
         if result.returncode == 0:
@@ -63,11 +76,22 @@ def check():
         else:
             errors.append(tr('updates.errors.flatpak', [result.stderr.strip()[:200]]))
     except FileNotFoundError:
-        pass
+        apps = []
     except (OSError, subprocess.SubprocessError) as error:
         errors.append(tr('updates.errors.flatpak', [str(error)]))
-    return {'checked': round(time.time(), 3), 'packages': packages, 'flatpaks': apps,
-            'compositor': any(package['name'] in COMPOSITOR for package in packages), 'errors': errors}
+    # The time of the last check that reached at least one source.
+    checked = before.get('checked') if len(errors) == 2 else round(time.time(), 3)
+    return {'checked': checked, 'packages': packages, 'flatpaks': apps,
+            'compositor': any(package.get('name') in COMPOSITOR for package in packages), 'errors': errors}
+
+
+def retry_later():
+    # A transient timer: systemd-run refuses a second one while it waits, so retries never pile up.
+    try:
+        subprocess.run(['systemd-run', '--user', '--quiet', '--collect', '--on-active=' + RETRY, '--unit=desktop-updates-retry',
+                        str(Path.home() / '.local/bin/desktop-updates'), 'check'], capture_output=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        pass
 
 
 def main():
@@ -77,7 +101,10 @@ def main():
         # The timer and the panel can start a check at the same time: one runs, the other waits for it.
         with (STATE.parent / '.updates.lock').open('a') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
-            write_atomic(STATE, json.dumps(check(), ensure_ascii=False) + '\n')
+            result = check(previous())
+            write_atomic(STATE, json.dumps(result, ensure_ascii=False) + '\n')
+        if result.get('errors'):
+            retry_later()
         return 0
     if arguments == ['status']:
         try:
