@@ -28,6 +28,8 @@ Overlay {
     onOpened: {
         closeMenu();
         search.clear();
+        // A recreated panel starts with an empty field, so clear() emits no textChanged: reset the shared search too.
+        LauncherSearch.query = "";
         apps.currentIndex = 0;
         search.forceActiveFocus();
     }
