@@ -56,4 +56,14 @@ Singleton {
             root.measure();
         }
     }
+    // So is a new theme: the choice is between its own two text colours, and Generate keeps the wallpaper.
+    Connections {
+        target: Theme
+        function onTextChanged() {
+            root.measure();
+        }
+        function onAccentTextChanged() {
+            root.measure();
+        }
+    }
 }
