@@ -1033,7 +1033,11 @@ Overlay {
                         clip: true
                         cellWidth: Math.floor(width / Math.max(1, Math.floor(width / 260)))
                         cellHeight: Theme.hit(292)
-                        model: Store.items
+                        // Keyed by entry: a new page arrives as added cards, so the grid keeps its place.
+                        model: ScriptModel {
+                            values: Store.items
+                            objectProp: "id"
+                        }
                         onAtYEndChanged: if (atYEnd && count > 0)
                             Store.next()
                         delegate: Item {
