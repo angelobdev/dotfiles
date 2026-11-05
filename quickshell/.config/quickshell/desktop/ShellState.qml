@@ -37,7 +37,7 @@ Singleton {
         if (!["launcher", "controls", "network", "bluetooth", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "theming", "clipboard", "recording", "power", "agent", "updates", "emoji", "displays"].includes(name))
             return;
         // Set before the panel changes so both the closing and the opening panel read the same direction.
-        navigation = direction;
+        navigation = direction ?? 0;
         activeScreen = screen || screenNamed(Hyprland.focusedMonitor?.name);
         panel = panel === name ? "" : name;
     }
