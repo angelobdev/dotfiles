@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 import ".."
 
@@ -8,6 +9,8 @@ Singleton {
     id: root
     property bool registered: false
     property var prompt: null
+    // The focused monitor when the prompt came, set first so the prompt window opens there.
+    property var promptScreen: null
     property string error: ""
     property var pairing: []
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/bluetooth_agent.py"
@@ -56,9 +59,10 @@ Singleton {
                     if (data.type === "status") {
                         root.registered = data.registered;
                         root.error = data.error || "";
-                    } else if (data.type === "prompt")
+                    } else if (data.type === "prompt") {
+                        root.promptScreen = ShellState.screenNamed(Hyprland.focusedMonitor?.name);
                         root.prompt = data.prompt;
-                    else if (data.type === "error") {
+                    } else if (data.type === "error") {
                         root.error = data.error;
                         root.pairing = [];
                     } else if (data.type === "operation") {

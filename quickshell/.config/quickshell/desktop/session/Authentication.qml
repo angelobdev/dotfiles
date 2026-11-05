@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Wayland
 import Quickshell.Services.Polkit
 import ".."
@@ -10,6 +11,8 @@ import "../components"
 Scope {
     id: root
     readonly property bool registered: agent.isRegistered
+    // The focused monitor when the request came, kept while it is open: the last panel may have been elsewhere.
+    property var promptScreen: null
     function submit() {
         if (!response.enabled)
             return;
@@ -18,12 +21,15 @@ Scope {
     }
     PolkitAgent {
         id: agent
-        onAuthenticationRequestStarted: ShellState.close()
+        onAuthenticationRequestStarted: {
+            root.promptScreen = ShellState.screenNamed(Hyprland.focusedMonitor?.name);
+            ShellState.close();
+        }
     }
     PanelWindow {
         id: prompt
         visible: agent.isActive
-        screen: ShellState.activeScreen || Quickshell.screens[0]
+        screen: root.promptScreen || Quickshell.screens[0]
         anchors {
             top: true
             bottom: true

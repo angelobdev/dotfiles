@@ -15,7 +15,8 @@ PanelWindow {
     readonly property bool displayOnly: ["DisplayPinCode", "DisplayPasskey"].includes(prompt?.kind)
     readonly property bool valid: prompt?.kind === "RequestPasskey" ? /^[0-9]{1,6}$/.test(response.text) : response.text.length > 0 && response.text.length <= 16
     visible: prompt !== null
-    screen: ShellState.activeScreen || Quickshell.screens[0]
+    // The focused monitor when the prompt came, kept while it is open: the last panel may have been elsewhere.
+    screen: BluetoothAgent.promptScreen || Quickshell.screens[0]
     anchors {
         top: true
         bottom: true
