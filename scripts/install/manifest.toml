@@ -10,6 +10,7 @@
 # exclude: packages kept out of every install, such as the weak dependencies of GNOME Shell that GDM brings.
 # login_shell: the shell the installing user logs in with.
 # clones: [[...]] tables of repo, commit and path (under the home), for what the distribution does not package.
+#   track = 'tags' follows the release tags; without it, the head of the default branch.
 # firmware: [[...]] vendor blobs nobody may redistribute, for one DMI product_name: install-desktop.py --firmware DIR
 #   finds them by sha256 (and size) and installs them to target, then rebuilds the initramfs.
 # aur: [[...]] tables of package, commit and version (Arch only): the AUR PKGBUILD at that commit, built with makepkg.
@@ -119,16 +120,18 @@ exclude = ['gnome-tour', 'malcontent-control', 'gnome-color-manager', 'gnome-rem
 disable = ['cockpit.socket']
 notes = ['Sign in to your calendars with gnome-online-accounts-gtk.']
 
-# Not packaged by Fedora. Updating one: a new commit here, then install-desktop.py apply.
+# Not packaged by Fedora. Updating them: install-desktop.py pins --update, then install-desktop.py apply, or Updates
+# in install-tui.py. Powerlevel10k's releases stopped at v1.20.0: it follows its branch.
 [[fedora.core.clones]]
 repo = 'https://github.com/romkatv/powerlevel10k'
-commit = 'd05a1b00f9a61f9578bf9dc19b8451942dde8734'
+commit = '7ddd1b2715c3844275214347a3572ac1fdd6dc39'
 path = '.local/share/zsh/plugins/powerlevel10k'
 
 [[fedora.core.clones]]
 repo = 'https://github.com/marlonrichert/zsh-autocomplete'
 commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
 path = '.local/share/zsh/plugins/zsh-autocomplete'
+track = 'tags'
 
 # This laptop: an HP OmniBook Ultra Flip. Most of it suits any recent Intel 2-in-1.
 [fedora.hardware]
@@ -279,13 +282,14 @@ notes = ['Sign in to your calendars with gnome-online-accounts-gtk.']
 
 [[arch.core.clones]]
 repo = 'https://github.com/romkatv/powerlevel10k'
-commit = 'd05a1b00f9a61f9578bf9dc19b8451942dde8734'
+commit = '7ddd1b2715c3844275214347a3572ac1fdd6dc39'
 path = '.local/share/zsh/plugins/powerlevel10k'
 
 [[arch.core.clones]]
 repo = 'https://github.com/marlonrichert/zsh-autocomplete'
 commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
 path = '.local/share/zsh/plugins/zsh-autocomplete'
+track = 'tags'
 
 # This laptop: an HP OmniBook Ultra Flip. linux-firmware-intel holds the Wi-Fi, Bluetooth, GPU, VSC, NPU and ISH
 # firmware that Fedora splits in several packages.
@@ -333,7 +337,7 @@ notes = [
 ]
 
 # Not in the Arch repositories. Updating one: install-desktop.py pins (review the PKGBUILD changes it links),
-# install-desktop.py pins --update, then install-desktop.py apply.
+# install-desktop.py pins --update, then install-desktop.py apply; or Updates in install-tui.py.
 [[arch.apps.aur]]
 package = 'zen-browser-bin'
 commit = '12bff888a8299aedcef68cca18378cfac24474d8'

@@ -1071,6 +1071,53 @@ class RemovalTests(unittest.TestCase):
         self.assertEqual(fedora.base_packages(later), {'a.x86_64', 'b.noarch'})
 
 
+class ClonePinTests(unittest.TestCase):
+    TAGS = '\n'.join((f'{"1" * 40}\trefs/tags/25.03.19', f'{"2" * 40}\trefs/tags/26.9.30', f'{"3" * 40}\trefs/tags/26.10.1',
+                      f'{"9" * 40}\trefs/tags/26.10.1^{{}}')) + '\n'
+    ITEM = {'repo': 'https://github.com/marlonrichert/zsh-autocomplete', 'commit': '2' * 40, 'path': '.local/share/zsh/plugins/zsh-autocomplete',
+            'track': 'tags'}
+
+    def test_versions_sort_by_their_numbers(self):
+        self.assertEqual(max(['25.03.19', '26.9.30', '26.10.1'], key=installer.version_key), '26.10.1')
+        self.assertEqual(max(['v1.9.0', 'v1.20.0'], key=installer.version_key), 'v1.20.0')
+
+    def test_an_annotated_tag_stands_for_its_commit(self):
+        with mock.patch.object(installer, 'query', return_value=reply(self.TAGS)):
+            self.assertEqual(installer.remote_tags('x'), {'25.03.19': '1' * 40, '26.9.30': '2' * 40, '26.10.1': '9' * 40})
+
+    def test_a_clone_that_follows_tags_moves_to_the_latest_release(self):
+        with mock.patch.object(installer, 'query', return_value=reply(self.TAGS)):
+            pin = installer.newer_pin('clones', self.ITEM)
+        self.assertEqual((pin.name, pin.new, pin.label, pin.tag), ('zsh-autocomplete', '9' * 40, '26.9.30 -> 26.10.1', '26.10.1'))
+        self.assertEqual(pin.url, f'https://github.com/marlonrichert/zsh-autocomplete/compare/{"2" * 40}...{"9" * 40}')
+        with mock.patch.object(installer, 'query', return_value=reply(self.TAGS)):
+            self.assertIsNone(installer.newer_pin('clones', {**self.ITEM, 'commit': '9' * 40}))
+        with mock.patch.object(installer, 'query', return_value=reply('', 128)):
+            self.assertIs(installer.newer_pin('clones', self.ITEM), False)
+
+    def test_any_other_clone_follows_its_branch(self):
+        item = {**self.ITEM, 'track': None, 'repo': 'https://github.com/romkatv/powerlevel10k', 'path': '.p/powerlevel10k'}
+        with mock.patch.object(installer, 'query', return_value=reply(f'{"7" * 40}\tHEAD\n')) as query:
+            pin = installer.newer_pin('clones', item)
+        query.assert_called_once_with('git', 'ls-remote', 'https://github.com/romkatv/powerlevel10k', 'HEAD')
+        self.assertEqual((pin.label, pin.tag), (f'{"2" * 12} -> {"7" * 12}', ''))
+
+    def test_repin_rewrites_the_commit_and_the_release_it_is_at(self):
+        text = f"[[fedora.core.clones]]\ncommit = '{'2' * 40}'  # 26.9.30\npath = 'p'\n\n[[arch.core.clones]]\ncommit = '{'2' * 40}'  # 26.9.30\n"
+        moved = installer.repin(text, '2' * 40, '9' * 40, tag='26.10.1')
+        self.assertEqual(moved, text.replace('2' * 40, '9' * 40).replace('# 26.9.30', '# 26.10.1'))
+        # A clone that follows its branch loses a comment that no longer names its commit.
+        self.assertEqual(installer.repin(text, '2' * 40, '9' * 40).count('#'), 0)
+
+    def test_the_same_clone_on_two_distributions_is_one_pin(self):
+        tables = [{'core': {'clones': [self.ITEM]}}, {'core': {'clones': [dict(self.ITEM)]}, 'apps': {'aur': [{'package': 'p', 'commit': 'c' * 40}]}}]
+        self.assertEqual([kind for kind, _ in installer.pin_entries(tables)], ['clones', 'aur'])
+
+    def test_the_manifest_clones_say_what_they_follow(self):
+        tracks = {clone['path'].rsplit('/', 1)[-1]: clone.get('track') for clone in MANIFEST['fedora']['core']['clones']}
+        self.assertEqual(tracks, {'powerlevel10k': None, 'zsh-autocomplete': 'tags'})
+
+
 class AutostartTests(unittest.TestCase):
     def test_exec_arguments_follow_the_desktop_entry_rules(self):
         self.assertEqual(installer.exec_argument('/home/a/.dotfiles/scripts/x.py'), '/home/a/.dotfiles/scripts/x.py')

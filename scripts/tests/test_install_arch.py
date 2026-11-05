@@ -670,7 +670,7 @@ key = 'https://downloads.1password.com/linux/keys/1password.asc'
 
     def test_nothing_newer(self):
         code, out, text = self.pins({'zen-browser-bin': 'a' * 40, '1password': 'b' * 40})
-        self.assertEqual((code, out.strip()), (0, 'Every AUR package is pinned to its latest commit.'))
+        self.assertEqual((code, out.strip()), (0, 'Every pin is at its latest commit.'))
 
     def test_a_newer_commit_is_shown_with_its_changes_and_not_written(self):
         code, out, text = self.pins({'zen-browser-bin': 'c' * 40, '1password': 'b' * 40})
