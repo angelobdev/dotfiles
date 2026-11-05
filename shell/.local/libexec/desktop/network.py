@@ -216,10 +216,14 @@ def add_hidden(device, ssid, secure):
     return uuid
 
 
-def vpns():
+# Saved connections as (name, uuid, type, active), listed once for the whole extras poll.
+def connections():
+    return [tuple((split_terse(line) + ['', '', '', ''])[:4]) for line in nmcli('-f', 'NAME,UUID,TYPE,ACTIVE', 'connection', 'show').splitlines()]
+
+
+def vpns(listed=None):
     found = []
-    for line in nmcli('-f', 'NAME,UUID,TYPE,ACTIVE', 'connection', 'show').splitlines():
-        name, uuid, kind, active = (split_terse(line) + ['', '', '', ''])[:4]
+    for name, uuid, kind, active in listed or connections():
         if kind in VPN_TYPES:
             found.append({'name': name, 'uuid': uuid, 'type': kind, 'active': active == 'yes'})
     return sorted(found, key=lambda vpn: vpn['name'].lower())
@@ -233,16 +237,20 @@ def edit(uuid, commands):
         raise ValueError(tr('network.errors.commandFailed', (result.stderr.strip()[-300:] or result.returncode,)))
 
 
-def hotspot_profile():
-    for line in nmcli('-f', 'UUID,TYPE', 'connection', 'show').splitlines():
-        uuid, kind = (split_terse(line) + ['', ''])[:2]
-        if kind == WIFI and values('-g', '802-11-wireless.mode', 'connection', 'show', uuid)[0] == 'ap':
-            return uuid
+def hotspot_profile(listed=None):
+    # One nmcli for every saved Wi-Fi profile, not one each: each connection prints its uuid, then its mode.
+    wifi = [uuid for _, uuid, kind, _ in listed or connections() if kind == WIFI]
+    if not wifi:
+        return ''
+    lines = nmcli('-g', 'connection.uuid,802-11-wireless.mode', 'connection', 'show', *wifi).splitlines()
+    for line, following in zip(lines, lines[1:]):
+        if line in wifi and following == 'ap':
+            return line
     return ''
 
 
-def hotspot():
-    uuid = hotspot_profile()
+def hotspot(listed=None):
+    uuid = hotspot_profile(listed)
     if not uuid:
         return {'uuid': '', 'ssid': '', 'active': False}
     _, ssid, device = connection(uuid)
@@ -443,7 +451,8 @@ def main():
     elif args.command == 'tailscale':
         result = tailscale()
     elif args.command == 'extras':
-        result = {'vpn': vpns(), 'hotspot': hotspot(), 'tailscale': tailscale()}
+        listed = connections()
+        result = {'vpn': vpns(listed), 'hotspot': hotspot(listed), 'tailscale': tailscale()}
     elif args.command in ('tailscale-up', 'tailscale-down'):
         result = tailscale_toggle(args.command == 'tailscale-up')
     elif args.command == 'set-dns':
