@@ -40,8 +40,10 @@ Singleton {
     readonly property real cornerScale: Math.max(0, colors.rounding) / 16
     readonly property int radius: Math.max(0, Math.round(colors.rounding))
     // In tablet mode hit targets grow for fingers (Config.touchScale); in laptop mode every size is the
-    // design one. Text sizes do not change.
+    // design one. Text sizes do not change with it.
     readonly property real touchScale: Tablet.active ? Config.touchScale : 1
+    // Text size chosen in the Theming panel (1 to 1.5); every drawn text size goes through textSize().
+    readonly property real textScale: Math.max(1, Math.min(1.5, colors.textScale))
     readonly property int barHeight: hit(38)
     // Shell surfaces take the window border chosen in the Theming panel: its width, the active colour for
     // what has the focus (panels, menus) and the inactive one for the rest (dock, OSD, notifications).
@@ -63,6 +65,9 @@ Singleton {
     }
     function hit(size) {
         return Math.round(size * touchScale);
+    }
+    function textSize(size) {
+        return Math.round(size * textScale);
     }
     // desktop-theme renders the current theme here; the defaults are Graphite, so a missing or broken file
     // changes nothing and edits apply live.
@@ -97,6 +102,7 @@ Singleton {
             property string font: "Adwaita Sans"
             property string iconSource: "desktop"
             property string barStyle: "shade"
+            property real textScale: 1
             property real rounding: 16
             property real borderSize: 0
             property color activeBorder: "#d4d6dc"

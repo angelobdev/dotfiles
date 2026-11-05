@@ -27,7 +27,7 @@ ComboBox {
     leftPadding: 12
     rightPadding: 12 + Theme.hit(18)
     font.family: Theme.font
-    font.pixelSize: 12
+    font.pixelSize: Theme.textSize(12)
     opacity: enabled ? 1 : 0.45
     TextMetrics {
         id: longest
@@ -71,7 +71,7 @@ ComboBox {
             elide: Text.ElideRight
             color: entry.modelData.name === root.current ? Theme.accent : Theme.text
             font.family: Theme.font
-            font.pixelSize: 12
+            font.pixelSize: Theme.textSize(12)
             font.bold: entry.modelData.name === root.current
         }
         background: Rectangle {

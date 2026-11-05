@@ -71,7 +71,7 @@ ShellRoot {
                     wrapMode: Text.Wrap
                     text: I18n.tr("sharing.chooseSourceHint")
                     color: Theme.muted
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.textSize(13)
                 }
                 RowLayout {
                     ActionButton {
@@ -138,7 +138,7 @@ ShellRoot {
                         text: I18n.tr("sharing.rememberChoice")
                         color: Theme.muted
                         Layout.fillWidth: true
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textSize(12)
                     }
                     ControlSwitch {
                         id: remember

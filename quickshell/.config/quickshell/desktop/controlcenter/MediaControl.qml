@@ -60,7 +60,7 @@ ControlTile {
                     elide: Text.ElideRight
                     text: root.player ? [root.player.trackArtist, root.player.identity].filter(Boolean).join(" · ") : I18n.tr("media.unavailable")
                     color: Theme.muted
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.textSize(11)
                     textFormat: Text.PlainText
                 }
             }
@@ -112,7 +112,7 @@ ControlTile {
             visible: seek.visible
             text: root.time(root.position) + " / " + root.time(root.player?.length)
             color: Theme.muted
-            font.pixelSize: 10
+            font.pixelSize: Theme.textSize(10)
         }
         ColumnLayout {
             visible: root.expanded && Media.players.length > 1

@@ -119,7 +119,7 @@ Overlay {
                             text: Weather.ready ? Weather.data.current.temp + "°" : ""
                             color: Theme.text
                             font.family: Theme.font
-                            font.pixelSize: 30
+                            font.pixelSize: Theme.textSize(30)
                         }
                         ColumnLayout {
                             Layout.fillWidth: true
@@ -134,7 +134,7 @@ Overlay {
                                 Layout.fillWidth: true
                                 text: Weather.ready ? I18n.tr("weather.feels", [Weather.data.current.feels]) + " · " + I18n.tr("weather.wind", [Weather.data.current.wind]) : ""
                                 color: Theme.muted
-                                font.pixelSize: 12
+                                font.pixelSize: Theme.textSize(12)
                                 elide: Text.ElideRight
                             }
                         }
@@ -153,7 +153,7 @@ Overlay {
                                     Layout.alignment: Qt.AlignHCenter
                                     text: modelData.time
                                     color: Theme.muted
-                                    font.pixelSize: 11
+                                    font.pixelSize: Theme.textSize(11)
                                 }
                                 Icon {
                                     Layout.alignment: Qt.AlignHCenter
@@ -165,7 +165,7 @@ Overlay {
                                     Layout.alignment: Qt.AlignHCenter
                                     text: modelData.temp + "°" + (modelData.rain >= 30 ? " " + I18n.tr("weather.rain", [modelData.rain]) : "")
                                     color: Theme.text
-                                    font.pixelSize: 12
+                                    font.pixelSize: Theme.textSize(12)
                                 }
                             }
                         }
@@ -175,7 +175,7 @@ Overlay {
                         visible: (Weather.data.error ?? "") !== ""
                         text: Weather.data.stale && Weather.ready ? I18n.tr("weather.stale", [I18n.locale.toString(new Date(Weather.data.updated * 1000), I18n.timeFormat)]) : (Weather.data.error ?? "")
                         color: Theme.muted
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textSize(11)
                         wrapMode: Text.WordWrap
                     }
                 }
@@ -189,7 +189,7 @@ Overlay {
                         Layout.fillWidth: true
                         text: root.locale.toString(new Date(root.year, root.month, 1), I18n.tr("calendar.monthFormat"))
                         horizontalAlignment: Text.AlignHCenter
-                        font.pixelSize: 18
+                        font.pixelSize: Theme.textSize(18)
                         font.family: Theme.font
                         color: Theme.text
                     }
@@ -215,7 +215,7 @@ Overlay {
                             text: modelData
                             horizontalAlignment: Text.AlignHCenter
                             color: Theme.muted
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                         }
                     }
                     Repeater {
@@ -307,7 +307,7 @@ Overlay {
                                         wrapMode: Text.Wrap
                                         text: root.eventTime(modelData) + " · " + (Calendar.source(modelData.source)?.name || "")
                                         color: Theme.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.textSize(11)
                                         textFormat: Text.PlainText
                                     }
                                     Text {
@@ -316,7 +316,7 @@ Overlay {
                                         visible: text !== ""
                                         text: modelData.location
                                         color: Theme.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.textSize(11)
                                         textFormat: Text.PlainText
                                     }
                                 }
@@ -335,7 +335,7 @@ Overlay {
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             color: Theme.danger
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textSize(11)
                             textFormat: Text.PlainText
                         }
                     }
@@ -367,7 +367,7 @@ Overlay {
                     wrapMode: Text.WordWrap
                     text: I18n.tr("calendar.navigationHint")
                     color: Theme.muted
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.textSize(11)
                 }
             }
         }

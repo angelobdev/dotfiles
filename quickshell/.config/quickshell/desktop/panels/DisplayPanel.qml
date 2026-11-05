@@ -99,7 +99,7 @@ Overlay {
                             Layout.fillWidth: true
                             text: modelData.disabled ? I18n.tr("displays.off") : I18n.tr("displays.details", [modelData.width, modelData.height, Math.round(modelData.refreshRate), Math.round(modelData.scale * 100)]) + (modelData.mirrorOf && modelData.mirrorOf !== "none" ? " · " + I18n.tr("displays.mirroring") : "")
                             color: Theme.muted
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                             elide: Text.ElideRight
                         }
                     }
@@ -134,7 +134,7 @@ Overlay {
                 wrapMode: Text.WordWrap
                 text: root.several ? I18n.tr("displays.hint") : I18n.tr("displays.single")
                 color: Theme.muted
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
         }
     }

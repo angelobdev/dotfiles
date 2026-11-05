@@ -63,13 +63,13 @@ Overlay {
                 text: meter.label
                 color: Theme.text
                 font.family: Theme.font
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
             }
             Text {
                 text: meter.known ? Math.round(meter.used) + "%" : "–"
                 color: meter.used >= 90 ? Theme.danger : Theme.text
                 font.family: Theme.font
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
                 font.bold: true
             }
         }
@@ -91,7 +91,7 @@ Overlay {
             visible: text !== ""
             color: Theme.muted
             font.family: Theme.font
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
     }
     SidePanelCard {
@@ -128,7 +128,7 @@ Overlay {
                         text: root.stateText()
                         color: Theme.text
                         font.family: Theme.font
-                        font.pixelSize: 15
+                        font.pixelSize: Theme.textSize(15)
                         wrapMode: Text.Wrap
                     }
                     Text {
@@ -137,7 +137,7 @@ Overlay {
                         text: Agent.running ? Agent.detail : ""
                         color: Theme.muted
                         font.family: Theme.font
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textSize(12)
                         wrapMode: Text.Wrap
                         maximumLineCount: 3
                         elide: Text.ElideRight
@@ -148,13 +148,13 @@ Overlay {
                         text: I18n.tr("assistant.since", [root.clock(new Date(Agent.since))])
                         color: Theme.muted
                         font.family: Theme.font
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textSize(11)
                     }
                 }
             }
             Heading {
                 text: Agent.plan !== "" ? I18n.tr("assistant.usage.titlePlan", [Agent.plan]) : I18n.tr("assistant.usage.title")
-                font.pixelSize: 14
+                font.pixelSize: Theme.textSize(14)
                 Layout.topMargin: 4
             }
             Meter {
@@ -174,7 +174,7 @@ Overlay {
                 text: Agent.usage.limitsUpdated ? root.when(Agent.usage.limitsUpdated, "assistant.usage.updatedAt", "assistant.usage.updatedOn") : I18n.tr("assistant.usage.empty")
                 color: Theme.muted
                 font.family: Theme.font
-                font.pixelSize: 11
+                font.pixelSize: Theme.textSize(11)
                 wrapMode: Text.Wrap
             }
             Text {
@@ -183,7 +183,7 @@ Overlay {
                 text: Agent.usage.context !== null && Agent.usage.context !== undefined ? I18n.tr("assistant.usage.modelContext", [Agent.usage.model, Math.round(Agent.usage.context)]) : Agent.usage.model ?? ""
                 color: Theme.muted
                 font.family: Theme.font
-                font.pixelSize: 11
+                font.pixelSize: Theme.textSize(11)
             }
             ActionButton {
                 Layout.fillWidth: true

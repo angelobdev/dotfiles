@@ -65,7 +65,7 @@ Overlay {
                         }
                         Text {
                             text: root.available ? Math.round(root.battery.percentage * 100) + "%" : I18n.tr("battery.unavailable")
-                            font.pixelSize: 36
+                            font.pixelSize: Theme.textSize(36)
                             font.family: Theme.font
                             color: Theme.text
                         }
@@ -106,24 +106,24 @@ Overlay {
                         Text {
                             text: root.charging ? I18n.tr("battery.chargingPower") : root.discharging ? I18n.tr("battery.powerDraw") : I18n.tr("battery.powerFlow")
                             color: Theme.muted
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                         }
                         Text {
                             text: Math.abs(root.battery?.changeRate ?? 0).toLocaleString(I18n.locale, "f", 1) + " W"
                             color: Theme.text
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignRight
                         }
                         Text {
                             text: root.charging ? I18n.tr("battery.timeUntilFull") : I18n.tr("battery.timeRemaining")
                             color: Theme.muted
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                         }
                         Text {
                             text: root.charging ? root.duration(root.battery?.timeToFull) : root.discharging ? root.duration(root.battery?.timeToEmpty) : root.stateLabel
                             color: Theme.text
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             horizontalAlignment: Text.AlignRight
@@ -131,12 +131,12 @@ Overlay {
                         Text {
                             text: I18n.tr("battery.availableEnergy")
                             color: Theme.muted
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                         }
                         Text {
                             text: (root.battery?.energy ?? 0).toLocaleString(I18n.locale, "f", 1) + " / " + (root.battery?.energyCapacity ?? 0).toLocaleString(I18n.locale, "f", 1) + " Wh"
                             color: Theme.text
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                             Layout.fillWidth: true
                             horizontalAlignment: Text.AlignRight
                         }
@@ -144,7 +144,7 @@ Overlay {
                     Heading {
                         visible: Battery.peripherals.length > 0
                         text: I18n.tr("battery.devices")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.textSize(14)
                         Layout.topMargin: 6
                     }
                     Repeater {
@@ -175,7 +175,7 @@ Overlay {
                     }
                     Heading {
                         text: I18n.tr("battery.profile")
-                        font.pixelSize: 14
+                        font.pixelSize: Theme.textSize(14)
                         Layout.topMargin: 6
                     }
                     ActionButton {
@@ -209,7 +209,7 @@ Overlay {
                     Text {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textSize(11)
                         color: Theme.muted
                         text: I18n.tr("battery.estimatesHint")
                     }

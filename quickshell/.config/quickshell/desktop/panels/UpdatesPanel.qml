@@ -38,14 +38,14 @@ Overlay {
             elide: Text.ElideRight
             color: Theme.text
             font.family: Theme.font
-            font.pixelSize: 12
+            font.pixelSize: Theme.textSize(12)
             textFormat: Text.PlainText
         }
         Text {
             text: parent.version
             color: Theme.muted
             font.family: Theme.font
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
             textFormat: Text.PlainText
         }
     }
@@ -65,7 +65,7 @@ Overlay {
                 text: root.summary()
                 color: Theme.text
                 font.family: Theme.font
-                font.pixelSize: 15
+                font.pixelSize: Theme.textSize(15)
                 wrapMode: Text.Wrap
             }
             Text {
@@ -74,7 +74,7 @@ Overlay {
                 text: I18n.tr("updates.compositor")
                 color: Theme.danger
                 font.family: Theme.font
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
                 wrapMode: Text.Wrap
             }
             ScrollView {
@@ -93,7 +93,7 @@ Overlay {
                     Heading {
                         visible: Updates.packages.length > 0
                         text: I18n.tr("updates.packagesHeading")
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.textSize(13)
                     }
                     Repeater {
                         model: Updates.packages
@@ -106,7 +106,7 @@ Overlay {
                     Heading {
                         visible: Updates.flatpaks.length > 0
                         text: I18n.tr("updates.flatpaksHeading")
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.textSize(13)
                         Layout.topMargin: 6
                     }
                     Repeater {
@@ -127,7 +127,7 @@ Overlay {
                     text: modelData
                     color: Theme.danger
                     font.family: Theme.font
-                    font.pixelSize: 11
+                    font.pixelSize: Theme.textSize(11)
                     wrapMode: Text.Wrap
                     textFormat: Text.PlainText
                 }
@@ -137,7 +137,7 @@ Overlay {
                 text: Updates.checking ? I18n.tr("updates.checking") : Updates.checked > 0 ? root.when(Updates.checked) : I18n.tr("updates.never")
                 color: Theme.muted
                 font.family: Theme.font
-                font.pixelSize: 11
+                font.pixelSize: Theme.textSize(11)
             }
             RowLayout {
                 Layout.fillWidth: true

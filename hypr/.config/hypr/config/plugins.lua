@@ -78,6 +78,18 @@ if plugins.hyprgrass then
         action = hl.dsp.window.drag(),
         mouse = true,
     })
+    -- Three fingers pinched zoom the screen, as on the touchpad (input.lua, where the direction names are
+    -- explained): apart zooms in, together zooms out.
+    for direction, action in pairs({ pinchin = "in", pinchout = "out" }) do
+        touch.bind({
+            pattern = {
+                kind = "pinch",
+                fingers = 3,
+                direction = direction
+            },
+            action = hl.dsp.exec_cmd(shell .. " zoom " .. action),
+        })
+    end
     -- The window follows to the workspace beside it, empty ones included.
     swipe(4, "left", hl.dsp.window.move({ workspace = "r-1" }))
     swipe(4, "right", hl.dsp.window.move({ workspace = "r+1" }))

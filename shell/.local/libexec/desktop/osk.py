@@ -5,6 +5,8 @@ run [--input-method]: a persistent virtual keyboard with the same XKB keymap as 
 input:kb_layout), so keys mean what the layout drawn by the shell says. One command per stdin line:
     key CODE MODS      press and release evdev CODE with the modifier mask MODS held
     press CODE / release CODE
+    text TEXT          commits TEXT to the focused field through the input method (an emoji, say); prints
+                       {"event": "text", "ok": false} when no field takes it, so the shell pastes it instead
     predict [WORD]     prints {"event": "letters", "word", "letters": {letter: probability}, "words": [...]}
     learn WORD         counts a finished word (predict.py)
     forget WORD        never suggests it again
@@ -207,6 +209,9 @@ class InputMethod:
         self.object = wayland.new_id()
         wayland.send(manager, 0, struct.pack('<II', seat, self.object))
         wayland.listeners[self.object] = self.event
+        self.wayland = wayland
+        # Done events received: commit names the state it applies to.
+        self.serial = 0
         self.emit = emit
         self.pending = {}
         self.active = False
@@ -224,6 +229,7 @@ class InputMethod:
             # A hidden field is a password whatever it calls itself; the keyboard stays out of those.
             self.pending['purpose'] = 'password' if hint & SECRET and name in ('normal', 'alpha', 'name') else name
         elif opcode == 5:
+            self.serial += 1
             active = self.pending.get('active', self.active)
             purpose = self.pending.get('purpose', self.purpose)
             if active and (not self.active or purpose != self.purpose):
@@ -234,6 +240,14 @@ class InputMethod:
         elif opcode == 6:
             # Another input method holds the seat; the keyboard still types, it just cannot open by itself.
             self.emit({'event': 'unavailable'})
+
+    def commit_text(self, text):
+        # commit_string, then commit: text the layout has no key for goes straight into the field.
+        if not self.active:
+            return False
+        self.wayland.send(self.object, 0, self.wayland.string(text))
+        self.wayland.send(self.object, 3, struct.pack('<I', self.serial))
+        return True
 
 
 def emit(message):
@@ -276,10 +290,13 @@ PREDICTION = Prediction()
 
 
 # A malformed or out of range line is ignored; it must not end the helper and silence the keyboard.
-def handle(keyboard, line):
+def handle(keyboard, line, input_method=None):
     words = line.split()
     try:
-        if len(words) == 3 and words[0] == 'key':
+        if len(words) >= 2 and words[0] == 'text':
+            text = line.split(' ', 1)[1]
+            emit({'event': 'text', 'ok': bool(input_method and input_method.commit_text(text)), 'text': text})
+        elif len(words) == 3 and words[0] == 'key':
             keyboard.tap(int(words[1]), int(words[2]))
         elif len(words) == 2 and words[0] in ('press', 'release'):
             keyboard.key(int(words[1]), words[0] == 'press')
@@ -295,8 +312,9 @@ def handle(keyboard, line):
 
 def run(input_method):
     keyboard = VirtualKeyboard(Xkb(*layout()))
+    method = None
     if input_method:
-        InputMethod(keyboard.wayland, keyboard.seat, emit)
+        method = InputMethod(keyboard.wayland, keyboard.seat, emit)
         keyboard.wayland.roundtrip()
     emit({'status': 'ready'})
     selector = selectors.DefaultSelector()
@@ -314,7 +332,7 @@ def run(input_method):
             pending += data
             while b'\n' in pending:
                 line, pending = pending.split(b'\n', 1)
-                handle(keyboard, line.decode(errors='replace'))
+                handle(keyboard, line.decode(errors='replace'), method)
 
 
 def main():

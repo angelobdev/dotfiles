@@ -204,7 +204,7 @@ Overlay {
                         elide: Text.ElideRight
                         color: Theme.muted
                         font.family: Theme.font
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textSize(11)
                     }
                     GridView {
                         id: themeGrid
@@ -302,7 +302,7 @@ Overlay {
                                                 text: "Aa"
                                                 color: themeCell.preview.fg
                                                 font.family: Theme.font
-                                                font.pixelSize: 15
+                                                font.pixelSize: Theme.textSize(15)
                                                 font.bold: true
                                             }
                                             Text {
@@ -311,7 +311,7 @@ Overlay {
                                                 text: "Lorem ipsum"
                                                 color: themeCell.preview.muted
                                                 font.family: Theme.font
-                                                font.pixelSize: 10
+                                                font.pixelSize: Theme.textSize(10)
                                             }
                                         }
                                         Text {
@@ -326,7 +326,7 @@ Overlay {
                                             verticalAlignment: Text.AlignVCenter
                                             color: Theme.text
                                             font.family: Theme.font
-                                            font.pixelSize: 12
+                                            font.pixelSize: Theme.textSize(12)
                                         }
                                         Rectangle {
                                             visible: !themeCell.unavailable
@@ -344,7 +344,7 @@ Overlay {
                                                 text: "OK"
                                                 color: themeCell.preview.accentFg
                                                 font.family: Theme.font
-                                                font.pixelSize: 10
+                                                font.pixelSize: Theme.textSize(10)
                                                 font.bold: true
                                             }
                                         }
@@ -373,7 +373,7 @@ Overlay {
                                             elide: Text.ElideRight
                                             color: Theme.text
                                             font.family: Theme.font
-                                            font.pixelSize: 13
+                                            font.pixelSize: Theme.textSize(13)
                                             font.bold: themeCell.active
                                         }
                                         Text {
@@ -381,14 +381,14 @@ Overlay {
                                             text: I18n.tr("theming.dynamicHint")
                                             color: Theme.muted
                                             font.family: Theme.font
-                                            font.pixelSize: 11
+                                            font.pixelSize: Theme.textSize(11)
                                         }
                                         Text {
                                             visible: themeCell.active
                                             text: I18n.tr("theming.current")
                                             color: Theme.accent
                                             font.family: Theme.font
-                                            font.pixelSize: 11
+                                            font.pixelSize: Theme.textSize(11)
                                         }
                                         // Opens the glass page; the MouseArea of the card lies beneath it.
                                         CompactIconButton {
@@ -428,7 +428,7 @@ Overlay {
                             text: Theming.downloading ? I18n.tr("theming.downloading") : I18n.tr("theming.notDownloaded")
                             color: Theme.muted
                             font.family: Theme.font
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                         }
                         ActionButton {
                             text: I18n.tr("theming.download")
@@ -500,7 +500,7 @@ Overlay {
                                         text: wallCell.modelData.custom ? I18n.tr("theming.custom") : !wallCell.modelData.downloaded ? (Theming.downloading ? I18n.tr("theming.downloading") : I18n.tr("theming.notDownloaded")) : I18n.tr("theming.preparing")
                                         color: Theme.muted
                                         font.family: Theme.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Theme.textSize(12)
                                     }
                                 }
                             }
@@ -533,7 +533,7 @@ Overlay {
                             text: I18n.tr("theming.unified")
                             color: Theme.text
                             font.family: Theme.font
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.textSize(13)
                         }
                         ControlSwitch {
                             checked: Theming.fonts.chosen?.unified === true
@@ -573,7 +573,7 @@ Overlay {
                                     text: fontColumn.modelData.label
                                     color: Theme.muted
                                     font.family: Theme.font
-                                    font.pixelSize: 12
+                                    font.pixelSize: Theme.textSize(12)
                                     font.bold: true
                                 }
                                 ListView {
@@ -601,7 +601,7 @@ Overlay {
                                         alignLeft: true
                                         text: modelData === "" ? I18n.tr("theming.themeDefaultNamed", [fontColumn.themeFamily]) : modelData
                                         font.family: modelData === "" ? fontColumn.themeFamily : modelData
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.textSize(14)
                                         highlighted: selected
                                         onClicked: {
                                             fontList.currentIndex = index;
@@ -632,7 +632,7 @@ Overlay {
                             text: I18n.tr("theming.size")
                             color: Theme.muted
                             font.family: Theme.font
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                         }
                         ChoiceCombo {
                             Accessible.name: I18n.tr("theming.size")
@@ -653,6 +653,29 @@ Overlay {
                         ActionButton {
                             text: I18n.tr("theming.rescan")
                             onClicked: Theming.rescan("fonts")
+                        }
+                    }
+                    // The shell's own text (bar, panels, notifications), applied at once; apps follow the size above.
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 10
+                        Text {
+                            text: I18n.tr("theming.shellText")
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(12)
+                        }
+                        ChoiceChips {
+                            Accessible.name: I18n.tr("theming.shellText")
+                            options: [1, 1.15, 1.3, 1.5].map(scale => ({
+                                        name: String(scale),
+                                        label: Math.round(scale * 100) + "%"
+                                    }))
+                            current: String(Theme.textScale)
+                            onChosen: name => Theming.setTextScale(Number(name))
+                        }
+                        Item {
+                            Layout.fillWidth: true
                         }
                     }
                     Rectangle {
@@ -698,7 +721,7 @@ Overlay {
                             text: I18n.tr("theming.cursor")
                             color: Theme.muted
                             font.family: Theme.font
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                         }
                         ChoiceCombo {
                             Accessible.name: I18n.tr("theming.cursor")
@@ -709,7 +732,7 @@ Overlay {
                                 }
                             ].concat((Theming.cursors.themes ?? []).map(t => ({
                                         name: t.id,
-                                        label: t.name
+                                        label: t.download ? I18n.tr("theming.cursorDownload", [t.name]) : t.name
                                     })))
                             current: Theming.cursors.chosen?.theme ?? ""
                             onChosen: name => Theming.setCursor(name, undefined)
@@ -734,7 +757,7 @@ Overlay {
                             text: I18n.tr("theming.shellIcons")
                             color: Theme.muted
                             font.family: Theme.font
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                         }
                         ChoiceCombo {
                             Accessible.name: I18n.tr("theming.shellIcons")
@@ -845,7 +868,7 @@ Overlay {
                             elide: Text.ElideRight
                             color: Theme.text
                             font.family: Theme.font
-                            font.pixelSize: 14
+                            font.pixelSize: Theme.textSize(14)
                             font.bold: true
                         }
                         ActionButton {
@@ -860,7 +883,7 @@ Overlay {
                         wrapMode: Text.Wrap
                         color: Theme.muted
                         font.family: Theme.font
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textSize(12)
                     }
                     Flickable {
                         Layout.fillWidth: true
@@ -894,7 +917,7 @@ Overlay {
                                         elide: Text.ElideRight
                                         color: Theme.text
                                         font.family: Theme.font
-                                        font.pixelSize: 13
+                                        font.pixelSize: Theme.textSize(13)
                                     }
                                     ControlSlider {
                                         id: glassSlider
@@ -945,7 +968,7 @@ Overlay {
                                         text: root.glassText(glassRow.entry, glassSlider.value)
                                         color: Math.abs(glassSlider.value - glassRow.entry.default) > glassRow.entry.step / 2 ? Theme.accent : Theme.muted
                                         font.family: Theme.font
-                                        font.pixelSize: 12
+                                        font.pixelSize: Theme.textSize(12)
                                         HoverHandler {
                                             id: valueHover
                                         }
@@ -979,7 +1002,7 @@ Overlay {
                         wrapMode: Text.Wrap
                         color: Theme.muted
                         font.family: Theme.font
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textSize(12)
                     }
                     ActionButton {
                         text: I18n.tr("theming.restart")
@@ -994,7 +1017,7 @@ Overlay {
                 textFormat: Text.PlainText
                 wrapMode: Text.Wrap
                 color: Theme.danger
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
             Text {
                 // Wraps instead of widening the layout past the panel (wide theme fonts, long translations).
@@ -1003,7 +1026,7 @@ Overlay {
                 text: Theming.busy ? I18n.tr("theming.working") : Tablet.active ? "" : I18n.tr("theming.navigationHint")
                 color: Theme.muted
                 font.family: Theme.font
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
         }
     }
@@ -1019,7 +1042,7 @@ Overlay {
             text: setting.label
             color: Theme.muted
             font.family: Theme.font
-            font.pixelSize: 12
+            font.pixelSize: Theme.textSize(12)
         }
         ChoiceCombo {
             id: combo
@@ -1042,7 +1065,7 @@ Overlay {
                 implicitHeight: Theme.hit(34)
                 placeholderText: entry.placeholder
                 font.family: Theme.font
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
                 onAccepted: Theming.applyCustom(entry.kind, text)
             }
             ActionButton {
@@ -1059,7 +1082,7 @@ Overlay {
             wrapMode: Text.Wrap
             color: Theme.danger
             font.family: Theme.font
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
     }
     // The two font lists are created by a Repeater; these let arrow keys move between them.

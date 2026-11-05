@@ -20,7 +20,7 @@ MenuItem {
     topPadding: 5
     bottomPadding: 5
     font.family: Theme.font
-    font.pixelSize: 13
+    font.pixelSize: Theme.textSize(13)
     hoverEnabled: true
     onTriggered: if (entry && !subMenu)
         entry.triggered()
@@ -47,7 +47,7 @@ MenuItem {
                 anchors.centerIn: parent
                 text: root.entry?.checkState === Qt.PartiallyChecked ? "−" : root.checked ? (root.entry?.buttonType === QsMenuButtonType.RadioButton ? "●" : "✓") : ""
                 color: Theme.text
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
                 visible: root.checkable
             }
         }

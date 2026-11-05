@@ -208,7 +208,7 @@ Overlay {
                         Text {
                             text: I18n.networkDescription(NetworkConnectivity.toString(Networking.connectivity))
                             color: Theme.muted
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textSize(11)
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                         }
@@ -220,7 +220,7 @@ Overlay {
                         Text {
                             text: I18n.tr("network.currentConnection")
                             color: Theme.muted
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textSize(11)
                         }
                         ActionButton {
                             id: currentConnection
@@ -248,7 +248,7 @@ Overlay {
                                         text: currentConnection.text
                                         color: Theme.text
                                         font.family: Theme.font
-                                        font.pixelSize: 14
+                                        font.pixelSize: Theme.textSize(14)
                                         elide: Text.ElideRight
                                         textFormat: Text.PlainText
                                     }
@@ -257,7 +257,7 @@ Overlay {
                                         text: [(root.activeInfo?.ipv4 ?? []).map(a => a.split("/")[0])[0] ?? "", root.activeInfo?.frequency ? I18n.tr("network.band", [(root.activeInfo.frequency / 1000).toLocaleString(I18n.locale, "f", 1), root.activeInfo.channel]) : root.activeDevice?.type === DeviceType.Wired && root.activeDevice.linkSpeed > 0 ? I18n.tr("network.linkSpeedValue", [root.activeDevice.linkSpeed]) : ""].filter(part => part !== "").join(" · ")
                                         color: Theme.muted
                                         font.family: Theme.font
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.textSize(11)
                                         elide: Text.ElideRight
                                     }
                                 }
@@ -281,7 +281,7 @@ Overlay {
                                 text: [deviceRow.wired ? I18n.tr("network.ethernet") + " (" + deviceRow.modelData.name + ")" : deviceRow.modelData.name, deviceRow.wired && !deviceRow.modelData.hasLink ? I18n.tr("network.cableUnplugged") : I18n.networkDescription(ConnectionState.toString(deviceRow.modelData.state))].join(" · ")
                                 color: Theme.muted
                                 textFormat: Text.PlainText
-                                font.pixelSize: 11
+                                font.pixelSize: Theme.textSize(11)
                                 Layout.fillWidth: true
                                 elide: Text.ElideRight
                             }
@@ -356,7 +356,7 @@ Overlay {
                         Text {
                             text: I18n.tr("network.vpn")
                             color: Theme.muted
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textSize(11)
                         }
                         RowLayout {
                             visible: NetworkInfo.tailscale.installed === true
@@ -375,13 +375,13 @@ Overlay {
                                     text: I18n.tr("network.tailscale")
                                     color: Theme.text
                                     font.family: Theme.font
-                                    font.pixelSize: 13
+                                    font.pixelSize: Theme.textSize(13)
                                 }
                                 Text {
                                     Layout.fillWidth: true
                                     text: root.tailscaleSummary
                                     color: Theme.muted
-                                    font.pixelSize: 11
+                                    font.pixelSize: Theme.textSize(11)
                                     elide: Text.ElideRight
                                     textFormat: Text.PlainText
                                 }
@@ -417,7 +417,7 @@ Overlay {
                         Text {
                             text: I18n.tr("network.hotspot")
                             color: Theme.muted
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textSize(11)
                         }
                         RowLayout {
                             Layout.fillWidth: true
@@ -433,7 +433,7 @@ Overlay {
                                 text: NetworkInfo.hotspot.active ? I18n.tr("network.hotspotOn", [NetworkInfo.hotspot.ssid]) : I18n.tr("network.hotspotHint")
                                 color: NetworkInfo.hotspot.active ? Theme.text : Theme.muted
                                 font.family: Theme.font
-                                font.pixelSize: NetworkInfo.hotspot.active ? 13 : 11
+                                font.pixelSize: Theme.textSize(NetworkInfo.hotspot.active ? 13 : 11)
                                 wrapMode: Text.Wrap
                                 textFormat: Text.PlainText
                             }

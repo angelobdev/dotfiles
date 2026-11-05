@@ -168,7 +168,7 @@ Overlay {
                         wrapMode: Text.Wrap
                         text: I18n.tr("audio.routingHint")
                         color: Theme.muted
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textSize(12)
                     }
                 }
             }

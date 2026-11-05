@@ -16,7 +16,7 @@ Menu {
     padding: 6
     implicitWidth: 252
     font.family: Theme.font
-    font.pixelSize: 13
+    font.pixelSize: Theme.textSize(13)
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     delegate: TrayMenuItem {}
     background: Rectangle {

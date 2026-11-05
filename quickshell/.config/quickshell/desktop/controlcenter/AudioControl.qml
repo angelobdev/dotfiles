@@ -21,14 +21,14 @@ ControlTile {
             Text {
                 text: I18n.tr("audio.sound")
                 color: Theme.text
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
                 font.weight: Font.DemiBold
                 Layout.fillWidth: true
             }
             Text {
                 text: Audio.volume + "%"
                 color: Theme.muted
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
             CompactIconButton {
                 iconName: "chevron-down"
@@ -51,7 +51,7 @@ ControlTile {
             Layout.fillWidth: true
             elide: Text.ElideRight
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
             textFormat: Text.PlainText
         }
         RowLayout {
@@ -78,7 +78,7 @@ ControlTile {
             Text {
                 text: I18n.tr("audio.outputsHeading")
                 color: Theme.muted
-                font.pixelSize: 10
+                font.pixelSize: Theme.textSize(10)
                 font.letterSpacing: 1
                 Layout.topMargin: 6
             }
@@ -89,7 +89,7 @@ ControlTile {
                     Layout.fillWidth: true
                     alignLeft: true
                     implicitHeight: 34
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textSize(12)
                     text: modelData.description || modelData.name
                     textElide: Text.ElideMiddle
                     tooltip: text
@@ -102,7 +102,7 @@ ControlTile {
             Text {
                 text: I18n.tr("audio.inputsHeading")
                 color: Theme.muted
-                font.pixelSize: 10
+                font.pixelSize: Theme.textSize(10)
                 font.letterSpacing: 1
                 Layout.topMargin: 10
             }
@@ -113,7 +113,7 @@ ControlTile {
                     Layout.fillWidth: true
                     alignLeft: true
                     implicitHeight: 34
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textSize(12)
                     text: modelData.description || modelData.name
                     textElide: Text.ElideMiddle
                     tooltip: text
@@ -143,12 +143,12 @@ ControlTile {
                 Text {
                     text: Audio.inputVolume + "%"
                     color: Theme.muted
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textSize(12)
                 }
             }
             ActionButton {
                 text: I18n.tr("audio.openPanel")
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
                 onClicked: ShellState.push("audio")
             }
         }

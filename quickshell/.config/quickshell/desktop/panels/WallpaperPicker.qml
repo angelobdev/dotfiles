@@ -153,7 +153,7 @@ Overlay {
                         visible: folder.count === 0
                         text: I18n.tr("wallpaper.empty")
                         color: Theme.muted
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textSize(12)
                     }
                 }
                 Rectangle {
@@ -189,7 +189,7 @@ Overlay {
                 elide: Text.ElideMiddle
                 color: Theme.muted
                 textFormat: Text.PlainText
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
             Text {
                 visible: root.failure !== ""

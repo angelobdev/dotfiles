@@ -23,6 +23,7 @@
   "font": "{{ fonts.sans }}",
   "iconSource": "{{ preferences.iconSource }}",
   "barStyle": "{{ preferences.barStyle }}",
+  "textScale": {{ preferences.textScale }},
   "rounding": {{ hyprland.rounding }},
   "borderSize": {{ hyprland.borderSize }},
   "activeBorder": "{{ hyprland.activeBorder | qt }}",

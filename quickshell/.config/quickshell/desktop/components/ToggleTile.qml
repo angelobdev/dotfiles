@@ -52,7 +52,7 @@ Rectangle {
             text: root.title
             elide: Text.ElideRight
             font.family: Theme.font
-            font.pixelSize: 13
+            font.pixelSize: Theme.textSize(13)
             color: Theme.text
         }
         Text {
@@ -60,7 +60,7 @@ Rectangle {
             text: root.status
             elide: Text.ElideRight
             font.family: Theme.font
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
             color: Theme.muted
         }
     }

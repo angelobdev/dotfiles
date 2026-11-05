@@ -85,7 +85,7 @@ PanelWindow {
                 visible: ["RequestConfirmation", "DisplayPasskey", "DisplayPinCode"].includes(root.prompt?.kind)
                 text: root.prompt?.kind === "DisplayPinCode" ? String(root.prompt?.value ?? "") : String(root.prompt?.value ?? "").padStart(6, "0")
                 color: Theme.text
-                font.pixelSize: 30
+                font.pixelSize: Theme.textSize(30)
                 font.letterSpacing: 4
                 Layout.alignment: Qt.AlignHCenter
                 textFormat: Text.PlainText

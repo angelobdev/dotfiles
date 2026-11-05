@@ -18,7 +18,10 @@ Singleton {
     readonly property bool extra: SessionState.oskExtra
     // Purpose of the focused text field ("" without one); a terminal also gets the extra row.
     property string purpose: ""
-    readonly property bool extraShown: extra || purpose === "terminal"
+    // Terminals show the extra row (Esc, Tab, Ctrl, Alt, arrows) by default; the strip button hides it there
+    // without touching the saved choice for other fields.
+    property bool terminalExtraHidden: false
+    readonly property bool extraShown: purpose === "terminal" ? !terminalExtraHidden : extra
     // Opened by a text field rather than by hand, so it closes with the field.
     property bool autoShown: false
     property bool inputMethod: false
@@ -75,6 +78,7 @@ Singleton {
             accents: {},
             extra: []
         })
+    // The emoji page has no rows: KeyboardView draws its grid in their place, as tall as the letters.
     readonly property var rows: layout.pages[page] ?? []
     // Every letter by its label, the accented ones too, with Backspace and Space by their action.
     readonly property var letterKeys: {
@@ -147,6 +151,21 @@ Singleton {
     }
     function setExtra(value) {
         SessionState.set("oskExtra", value);
+    }
+    // The strip button: shows or hides the row that is on screen now.
+    function toggleExtra() {
+        if (purpose === "terminal")
+            terminalExtraHidden = !terminalExtraHidden;
+        else
+            setExtra(!extra);
+    }
+    // Text no key types (an emoji): into the focused field through the input method, or pasted.
+    function typeText(text) {
+        Emoji.remember(text);
+        if (ready && process.running)
+            process.write("text " + text + "\n");
+        else
+            Emoji.insert(text);
     }
     function send(code, mods) {
         if (process.running)
@@ -263,7 +282,7 @@ Singleton {
     }
     function labelOf(key) {
         if (key.action === "page")
-            return key.page === "letters" ? I18n.tr("osk.keys.letters") : key.page === "symbols" ? I18n.tr("osk.keys.symbols") : I18n.tr("osk.keys.more");
+            return key.page === "emoji" ? key.label : key.page === "letters" ? I18n.tr("osk.keys.letters") : key.page === "symbols" ? I18n.tr("osk.keys.symbols") : I18n.tr("osk.keys.more");
         if (key.name === "esc")
             return I18n.tr("osk.keys.esc");
         if (key.name === "tab")
@@ -389,6 +408,9 @@ Singleton {
                     root.focusOut();
                 } else if (message.event === "unavailable") {
                     root.inputMethod = false;
+                } else if (message.event === "text" && !message.ok) {
+                    // No text field took it: paste it into the focused window instead.
+                    Emoji.insert(message.text);
                 }
             }
         }

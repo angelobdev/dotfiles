@@ -304,7 +304,8 @@ Found during the October 27, 2026 repository review. Checked items were approved
   - [ ] Install the new packages and try OCR, ask Claude, the calculator and file search; see the stylus with the pen near.
 - [x] Privacy indicators, emoji picker, media in the bar and on the lock screen, weather in the calendar, screen zoom, a High Contrast theme and a display picker with Extend / Mirror / External only / Laptop only (2026-11-05).
   - [ ] See a screen share and a player in the bar and on the lock screen; try the display modes with a real monitor.
-- [ ] Still open from the review: a shell-wide text scale (the QML sizes are literal), an emoji page on the on-screen keyboard itself, the zoom by pinch gesture.
+- [x] Shell text scale, an emoji page on the on-screen keyboard, pinch zoom, and cursor packs (Breeze installed; Bibata and Phinger fetched on demand) (2026-11-05).
+  - [ ] Try the pinch zoom and the emoji page by touch.
 - [x] Cursor customization (requested 2026-11-05): theme and size from the Theming panel, applied everywhere the cursor is set today (Hyprland/hyprcursor and `HYPRCURSOR_SIZE`, GSettings `cursor-theme` from `theme.py`, the GTK `settings.ini` files that pin Adwaita 24, XWayland through `xwayland.py`, Qt). Done the same day in the Icons tab.
-  - [ ] Which cursor themes to preinstall (manifest), to be decided.
+  - [x] Cursor themes: Breeze in the manifest, Bibata and Phinger on demand.
 - [ ] Multi-distro installation support (add Debian and Arch): a manifest table and a module with the functions of `install/fedora.py`, with names checked on that distribution. Other Fedora-specific code to adapt: `rpm` in `scripts/hyprpm/build.py`, `install-hypr-plugins.py` and `plugins.py`; `dnf` in `desktop-updates` and `updates.py`; `authselect` in `tablet-auth.sh`; `/usr/lib64/qt6` in `check.sh`; `/usr/share/pkgconfig/hyprland.pc`; the `dnf` hints in `stow.py` and `gaming.py`.

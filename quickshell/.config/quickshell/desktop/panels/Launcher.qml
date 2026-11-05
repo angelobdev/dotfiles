@@ -169,7 +169,7 @@ Overlay {
                 wrapMode: Text.WordWrap
                 text: Tablet.active ? I18n.tr("launcher.touchHint") : I18n.tr("launcher.navigationHint")
                 color: Theme.muted
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
         }
     }

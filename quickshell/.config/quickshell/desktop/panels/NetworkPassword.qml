@@ -20,7 +20,7 @@ ColumnLayout {
     Text {
         text: I18n.tr("network.password")
         color: Theme.muted
-        font.pixelSize: 11
+        font.pixelSize: Theme.textSize(11)
     }
     RowLayout {
         Layout.fillWidth: true
@@ -30,7 +30,7 @@ ColumnLayout {
             text: root.revealed && NetworkInfo.secret !== "" ? NetworkInfo.secret : "••••••••••••"
             color: Theme.text
             font.family: Theme.font
-            font.pixelSize: 14
+            font.pixelSize: Theme.textSize(14)
             elide: Text.ElideRight
             textFormat: Text.PlainText
         }
@@ -70,7 +70,7 @@ ColumnLayout {
         visible: NetworkInfo.copied
         text: I18n.tr("network.copied", [NetworkInfo.clearAfter])
         color: Theme.muted
-        font.pixelSize: 11
+        font.pixelSize: Theme.textSize(11)
     }
     Rectangle {
         visible: root.showQr && NetworkInfo.qr !== null
@@ -109,7 +109,7 @@ ColumnLayout {
         Layout.fillWidth: true
         text: I18n.tr("network.qrHint", [root.name])
         color: Theme.muted
-        font.pixelSize: 11
+        font.pixelSize: Theme.textSize(11)
         horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.Wrap
         textFormat: Text.PlainText

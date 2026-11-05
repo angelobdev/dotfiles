@@ -146,6 +146,10 @@ Singleton {
         restartTab = "font";
         run([["python3", helper, "font", "--size", String(size)]]);
     }
+    // No restart: the shell reads it from quickshell.json as it changes.
+    function setTextScale(scale) {
+        run([["python3", helper, "text-scale", String(scale)]]);
+    }
     function setUnified(on) {
         restartTab = "font";
         run([["python3", helper, "font", "--unified", on ? "on" : "off"]]);

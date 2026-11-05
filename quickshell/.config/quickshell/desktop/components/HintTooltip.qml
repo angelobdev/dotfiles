@@ -47,7 +47,7 @@ PopupWindow {
         textFormat: Text.PlainText
         wrapMode: Text.Wrap
         font.family: Theme.font
-        font.pixelSize: 12
+        font.pixelSize: Theme.textSize(12)
         color: Theme.text
     }
 }

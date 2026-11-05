@@ -196,7 +196,7 @@ PanelWindow {
                                 Layout.fillWidth: true
                                 text: item.modelData.title || item.appId
                                 color: Theme.text
-                                font.pixelSize: 12
+                                font.pixelSize: Theme.textSize(12)
                                 elide: Text.ElideRight
                             }
                         }

@@ -110,7 +110,7 @@ Rectangle {
                         visible: row.modelData.checked !== undefined
                         text: row.modelData.checked ? "●" : ""
                         color: Theme.text
-                        font.pixelSize: 9
+                        font.pixelSize: Theme.textSize(9)
                     }
                 }
                 Text {
@@ -120,7 +120,7 @@ Rectangle {
                     elide: Text.ElideRight
                     color: row.kind === "heading" ? Theme.muted : row.modelData.destructive ? Theme.danger : Theme.text
                     font.family: Theme.font
-                    font.pixelSize: row.kind === "heading" ? 12 : 13
+                    font.pixelSize: Theme.textSize(row.kind === "heading" ? 12 : 13)
                     font.weight: row.kind === "heading" ? Font.DemiBold : Font.Normal
                 }
             }

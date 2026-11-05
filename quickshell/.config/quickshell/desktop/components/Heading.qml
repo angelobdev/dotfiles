@@ -4,7 +4,7 @@ import ".."
 Text {
     color: Theme.text
     font.family: Theme.font
-    font.pixelSize: 18
+    font.pixelSize: Theme.textSize(18)
     font.bold: true
     textFormat: Text.PlainText
 }

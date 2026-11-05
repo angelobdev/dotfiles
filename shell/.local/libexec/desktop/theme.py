@@ -13,6 +13,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import urllib.request
 
 HOME = Path.home()
@@ -183,6 +184,7 @@ def complete(theme):
     preferences = theme.setdefault('preferences', {})
     preferences.setdefault('iconSource', 'desktop')
     preferences.setdefault('barStyle', 'shade')
+    preferences.setdefault('textScale', 1)
     return theme
 
 
@@ -258,7 +260,7 @@ def with_preferences(theme, chosen, name=None):
         theme.setdefault('system', {})['cursorTheme'] = cursor['theme']
     if isinstance(cursor.get('size'), int):
         theme.setdefault('system', {})['cursorSize'] = cursor['size']
-    for key, value in (('iconSource', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle'))):
+    for key, value in (('iconSource', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle')), ('textScale', chosen.get('textScale'))):
         if value:
             theme.setdefault('preferences', {})[key] = value
     for key in WINDOW_KEYS:
@@ -286,6 +288,7 @@ def save_preferences(chosen):
               if key == 'theme' and isinstance(value, str) and value or key == 'size' and isinstance(value, int)}
     cleaned = {key: value for key, value in (('fonts', fonts), ('iconTheme', chosen.get('iconTheme')), ('cursor', cursor),
                                               ('shellIcons', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle')),
+                                              ('textScale', chosen.get('textScale') if chosen.get('textScale') in TEXT_SCALES[1:] else None),
                                               ('windows', windows), ('dynamic', dynamic), ('glass', glass))
                if value}
     write_atomic(STATE / 'preferences.json', json.dumps(cleaned, ensure_ascii=False) + '\n')
@@ -533,8 +536,69 @@ def icon_themes(roots=None):
     return sorted(listed.values(), key=lambda t: t['name'].lower())
 
 
+# Text sizes of the shell offered, as factors of the drawn sizes (Theme.textSize in QML).
+TEXT_SCALES = (1, 1.15, 1.3, 1.5)
 # Cursor sizes offered, in logical pixels; Adwaita draws 24, 32, 48, 64 and 96, others scale the nearest.
 CURSOR_SIZES = (24, 32, 40, 48)
+
+
+# Cursor themes Fedora does not package, part of the desktop's set beside Adwaita and Breeze: pinned releases,
+# checked by sha256, unpacked into ~/.local/share/icons. `apply` (every login) fetches the missing ones in the
+# background; choosing one before that fetches it at once. member is the folder taken from the archive.
+CURSOR_PACKS = {
+    'macOS': {'name': 'macOS', 'file': 'macOS.tar.xz', 'member': 'macOS',
+              'url': 'https://github.com/ful1e5/apple_cursor/releases/download/v2.0.1/macOS.tar.xz',
+              'sha256': '9c6e5e13b068ce51a9e90a9abd6ce232ec7d25d4ceb05aa8ac76efbb99c76762'},
+    'macOS-White': {'name': 'macOS White', 'file': 'macOS.tar.xz', 'member': 'macOS-White',
+                    'url': 'https://github.com/ful1e5/apple_cursor/releases/download/v2.0.1/macOS.tar.xz',
+                    'sha256': '9c6e5e13b068ce51a9e90a9abd6ce232ec7d25d4ceb05aa8ac76efbb99c76762'},
+    'Bibata-Modern-Classic': {'name': 'Bibata Modern Classic', 'file': 'Bibata-Modern-Classic.tar.xz', 'member': 'Bibata-Modern-Classic',
+                              'url': 'https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Classic.tar.xz',
+                              'sha256': '7d3495864e5bbef02f5e77de760b2905903b63c71495a78ef6306d19a3b556d8'},
+    'Bibata-Modern-Ice': {'name': 'Bibata Modern Ice', 'file': 'Bibata-Modern-Ice.tar.xz', 'member': 'Bibata-Modern-Ice',
+                          'url': 'https://github.com/ful1e5/Bibata_Cursor/releases/download/v2.0.7/Bibata-Modern-Ice.tar.xz',
+                          'sha256': 'a68cae60c4dc706350e194ebc91c5fe48bc7bc9d59e119555834a2a7ee5078ef'},
+}
+USER_ICONS = HOME / '.local/share/icons'
+CURSOR_DOWNLOADS = Path(os.environ.get('XDG_CACHE_HOME') or HOME / '.cache') / 'desktop/cursors'
+
+
+def fetch_cursor(name):
+    # The archive is kept, so the second Phinger variant needs no download. Only the pack's own folder is
+    # unpacked, with tarfile's data filter: no links out of it, no devices, no absolute paths.
+    pack = CURSOR_PACKS[name]
+    archive = CURSOR_DOWNLOADS / pack['file']
+    if not archive.is_file() or hashlib.sha256(archive.read_bytes()).hexdigest() != pack['sha256']:
+        archive.parent.mkdir(parents=True, exist_ok=True)
+        download(pack, archive)
+    staging = USER_ICONS / f'.{name}.unpacking'
+    shutil.rmtree(staging, ignore_errors=True)
+    staging.mkdir(parents=True)
+    try:
+        with tarfile.open(archive) as source:
+            prefix = pack['member'].strip('/')
+            members = [member for member in source.getmembers()
+                       if member.name.lstrip('./') == prefix or member.name.lstrip('./').startswith(prefix + '/')]
+            if not members:
+                raise ValueError(tr('theme.errors.checksum', [pack['file']]))
+            source.extractall(staging, members=members, filter='data')
+        unpacked = staging / prefix
+        target = USER_ICONS / name
+        shutil.rmtree(target, ignore_errors=True)
+        unpacked.rename(target)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+
+
+def fetch_missing_cursors():
+    # The desktop's set, in the background after apply; one that fails is tried again at the next login.
+    installed = {theme['id'] for theme in cursor_themes()}
+    for name in CURSOR_PACKS:
+        if name not in installed:
+            try:
+                fetch_cursor(name)
+            except (OSError, ValueError, tarfile.TarError) as error:
+                print(f'{name}: {error}', file=sys.stderr)
 
 
 def cursor_themes(roots=None):
@@ -975,6 +1039,7 @@ def main():
     cursor.add_argument('--size', type=int, choices=CURSOR_SIZES)
     cursor.add_argument('--default', action='store_true', help='back to the theme values')
     commands.add_parser('cursors')
+    commands.add_parser('cursor-fetch')
     icons = commands.add_parser('icon-theme')
     icons.add_argument('name')
     keep = commands.add_parser('remember-wallpaper')
@@ -996,6 +1061,8 @@ def main():
     glass.add_argument('--option', choices=tuple(GLASS_OPTIONS))
     glass.add_argument('--value', type=float)
     glass.add_argument('--reset', action='store_true')
+    text_scale = commands.add_parser('text-scale')
+    text_scale.add_argument('scale', type=float, choices=TEXT_SCALES)
     bar = commands.add_parser('bar-style')
     bar.add_argument('style', choices=('shade', 'transparent', 'toggle'))
     commands.add_parser('tone')
@@ -1020,12 +1087,16 @@ def main():
     # Commands that change the theme state run one at a time: the panel queue and DynamicTheme.qml can
     # overlap, and each rewrites current.json, preferences.json and the rendered files.
     if arguments.command in ('apply', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme', 'cursor',
-                             'shell-icons', 'bar-style', 'glass'):
+                             'shell-icons', 'bar-style', 'glass', 'text-scale'):
         STATE.mkdir(parents=True, exist_ok=True)
         lock = open(STATE / '.lock', 'a')
         fcntl.flock(lock, fcntl.LOCK_EX)
     if arguments.command == 'apply':
         apply(current())
+        if not set(CURSOR_PACKS) <= {theme['id'] for theme in cursor_themes()}:
+            spawn(['cursor-fetch'])
+    elif arguments.command == 'cursor-fetch':
+        fetch_missing_cursors()
     elif arguments.command == 'set':
         previous = current()
         theme = apply(arguments.name)
@@ -1100,9 +1171,11 @@ def main():
         save_preferences(chosen)
         apply(name)
         subprocess.run(['hyprctl', 'reload'], capture_output=True, check=False, timeout=10)
-    elif arguments.command in ('shell-icons', 'bar-style'):
+    elif arguments.command in ('shell-icons', 'bar-style', 'text-scale'):
         chosen = preferences()
-        if arguments.command == 'shell-icons':
+        if arguments.command == 'text-scale':
+            chosen['textScale'] = None if arguments.scale == 1 else arguments.scale
+        elif arguments.command == 'shell-icons':
             chosen['shellIcons'] = None if arguments.source == 'desktop' else arguments.source
         else:
             style = arguments.style
@@ -1142,14 +1215,19 @@ def main():
                           'chosen': preferences().get('iconTheme')}, ensure_ascii=False))
     elif arguments.command == 'cursors':
         system = with_preferences(load(current()), preferences()).get('system', {})
-        print(json.dumps({'themes': cursor_themes(), 'theme': system.get('cursorTheme'), 'size': system.get('cursorSize'),
+        installed = cursor_themes()
+        offered = installed + [{'id': key, 'name': pack['name'], 'download': True} for key, pack in CURSOR_PACKS.items()
+                               if key not in {theme['id'] for theme in installed}]
+        print(json.dumps({'themes': sorted(offered, key=lambda t: t['name'].lower()), 'theme': system.get('cursorTheme'), 'size': system.get('cursorSize'),
                           'sizes': list(CURSOR_SIZES), 'chosen': preferences().get('cursor', {})}, ensure_ascii=False))
     elif arguments.command == 'cursor':
         chosen = preferences()
         cursor = {} if arguments.default else dict(chosen.get('cursor', {}))
         if arguments.theme is not None:
+            if arguments.theme in CURSOR_PACKS and arguments.theme not in {t['id'] for t in cursor_themes()}:
+                fetch_cursor(arguments.theme)
             if arguments.theme != 'default' and arguments.theme not in {t['id'] for t in cursor_themes()}:
-                raise ValueError(f'{arguments.theme} is not an installed cursor theme')
+                raise ValueError(tr('theming.errors.cursorMissing', [arguments.theme]))
             cursor['theme'] = None if arguments.theme == 'default' else arguments.theme
         if arguments.size is not None:
             cursor['size'] = arguments.size

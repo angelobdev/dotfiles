@@ -201,7 +201,7 @@ Overlay {
                 // Keys only; a finger needs no hint to tap a button.
                 visible: !Tablet.active
                 text: I18n.tr("session.navigationHint")
-                font.pixelSize: 11
+                font.pixelSize: Theme.textSize(11)
                 color: Theme.muted
             }
         }

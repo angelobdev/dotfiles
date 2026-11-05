@@ -39,3 +39,22 @@ hl.gesture({
         hl.exec_cmd(shell .. " toggle controls")
     end
 })
+
+-- Three fingers pinched zoom the screen around the pointer, a step at a time (the same steps and OSD as
+-- Super + Alt + plus / minus). Hyprland names the directions the other way round from how they feel:
+-- pinchin is the fingers moving apart.
+hl.gesture({
+    fingers = 3,
+    direction = "pinchin",
+    action = function()
+        hl.exec_cmd(shell .. " zoom in")
+    end
+})
+
+hl.gesture({
+    fingers = 3,
+    direction = "pinchout",
+    action = function()
+        hl.exec_cmd(shell .. " zoom out")
+    end
+})

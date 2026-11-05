@@ -27,7 +27,8 @@ class LayoutTests(unittest.TestCase):
         for name, rows in LAYOUT['pages'].items():
             for row in rows:
                 for key in row['keys']:
-                    if 'label' not in key:
+                    # A page key's label names the page (the emoji key shows one), it types nothing.
+                    if 'label' not in key or key.get('action') == 'page':
                         continue
                     with self.subTest(page=name, key=key['label']):
                         self.assertEqual(self.typed(key['code'], key.get('mods', 0)), key['label'])
@@ -53,8 +54,9 @@ class LayoutTests(unittest.TestCase):
         for rows in LAYOUT['pages'].values():
             for row in rows:
                 for key in row['keys']:
+                    # The emoji page is drawn by KeyboardView itself, from the emoji picker's list.
                     if key.get('action') == 'page':
-                        self.assertIn(key['page'], LAYOUT['pages'])
+                        self.assertIn(key['page'], list(LAYOUT['pages']) + ['emoji'])
 
     def test_extra_keys_are_named_or_drawn(self):
         for key in LAYOUT['extra']:
@@ -67,8 +69,21 @@ class InputMethodTests(unittest.TestCase):
         method = osk.InputMethod.__new__(osk.InputMethod)
         method.emitted = []
         method.emit = method.emitted.append
-        method.pending, method.active, method.purpose = {}, False, 'normal'
+        method.pending, method.active, method.purpose, method.serial, method.object = {}, False, 'normal', 0, 7
+        method.wayland = mock.Mock(string=osk.Wayland.string)
         return method
+
+    def test_text_goes_into_an_active_field_only(self):
+        method = self.method()
+        self.assertFalse(method.commit_text('😍'))
+        method.wayland.send.assert_not_called()
+        for opcode in (0, 5):
+            method.event(opcode, b'')
+        self.assertTrue(method.commit_text('😍'))
+        calls = method.wayland.send.call_args_list
+        self.assertEqual([call.args[1] for call in calls], [0, 3])
+        self.assertEqual(calls[0].args[2], osk.Wayland.string('😍'))
+        self.assertEqual(calls[1].args[2], struct.pack('<I', 1))
 
     def test_events_apply_on_done(self):
         method = self.method()

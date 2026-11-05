@@ -28,12 +28,12 @@ ControlTile {
             spacing: 3
             Text {
                 text: root.title
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
                 color: Theme.text
             }
             Text {
                 text: root.status
-                font.pixelSize: 11
+                font.pixelSize: Theme.textSize(11)
                 color: Theme.muted
             }
         }

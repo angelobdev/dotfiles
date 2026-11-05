@@ -115,7 +115,7 @@ Overlay {
                 wrapMode: Text.Wrap
                 text: Clipboard.error || (!Config.clipboardEnabled ? I18n.tr("clipboard.disabled") : Clipboard.paused ? I18n.tr("clipboard.paused") : I18n.tr("clipboard.navigationHint"))
                 color: Clipboard.error ? Theme.danger : Theme.muted
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
                 textFormat: Text.PlainText
             }
         }

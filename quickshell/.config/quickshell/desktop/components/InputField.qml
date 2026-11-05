@@ -12,7 +12,7 @@ TextField {
     selectionColor: Theme.accent
     selectedTextColor: Theme.accentText
     font.family: Theme.font
-    font.pixelSize: 14
+    font.pixelSize: Theme.textSize(14)
     background: Rectangle {
         radius: Theme.corner(8)
         color: Theme.background

@@ -21,14 +21,14 @@ ControlTile {
             Text {
                 text: I18n.tr("brightness.title")
                 color: Theme.text
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
                 font.weight: Font.DemiBold
                 Layout.fillWidth: true
             }
             Text {
                 text: Brightness.primary?.available ? Brightness.displayPercent(Brightness.primary) + "%" : "—"
                 color: Theme.muted
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
             CompactIconButton {
                 visible: Brightness.others.length > 0
@@ -50,7 +50,7 @@ ControlTile {
         Text {
             text: Brightness.primary?.name || I18n.tr("brightness.noDisplay")
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
         RowLayout {
             Icon {
@@ -79,7 +79,7 @@ ControlTile {
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
         Expander {
             expanded: root.expanded && Brightness.others.length > 0
@@ -94,7 +94,7 @@ ControlTile {
                     Text {
                         text: monitorRow.modelData + ((monitorRow.monitor?.available ?? false) ? " · " + Brightness.displayPercent(monitorRow.monitor) + "%" : "")
                         color: Theme.muted
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textSize(11)
                     }
                     ControlSlider {
                         id: otherSlider
@@ -116,7 +116,7 @@ ControlTile {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
                         color: Theme.muted
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textSize(11)
                     }
                 }
             }
@@ -127,7 +127,7 @@ ControlTile {
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             color: Theme.danger
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
     }
 }

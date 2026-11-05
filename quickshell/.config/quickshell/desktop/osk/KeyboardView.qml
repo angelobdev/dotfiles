@@ -227,7 +227,7 @@ Rectangle {
             text: Keyboard.labelOf(button.key)
             color: button.down ? Theme.accentText : Theme.text
             font.family: Theme.font
-            font.pixelSize: button.special ? 15 : 22
+            font.pixelSize: Theme.textSize(button.special ? 15 : 22)
         }
         // The shifted character, small in the corner, where it is not just the capital.
         Text {
@@ -240,7 +240,7 @@ Rectangle {
             text: button.key.shift ?? ""
             color: Theme.muted
             font.family: Theme.font
-            font.pixelSize: 12
+            font.pixelSize: Theme.textSize(12)
         }
         TapHandler {
             id: tap
@@ -295,8 +295,8 @@ Rectangle {
             StripButton {
                 anchors.verticalCenter: parent.verticalCenter
                 icon: "keyboard"
-                lit: Keyboard.extra
-                onClicked: Keyboard.setExtra(!Keyboard.extra)
+                lit: Keyboard.extraShown
+                onClicked: Keyboard.toggleExtra()
                 Accessible.name: I18n.tr("osk.extra")
             }
             Row {
@@ -340,7 +340,7 @@ Rectangle {
                             elide: Text.ElideRight
                             color: Theme.text
                             font.family: Theme.font
-                            font.pixelSize: 16
+                            font.pixelSize: Theme.textSize(16)
                         }
                         TapHandler {
                             id: suggestionTap
@@ -372,9 +372,15 @@ Rectangle {
         Item {
             id: keys
             Layout.fillWidth: true
-            implicitHeight: keyRows.implicitHeight
+            // The emoji page keeps the height of the letters, so the keyboard does not jump.
+            property real lettersHeight: 4 * root.keyHeight + 3 * root.spacing
+            implicitHeight: Keyboard.page === "emoji" ? lettersHeight : keyRows.implicitHeight
+            onImplicitHeightChanged: if (Keyboard.page === "letters" && keyRows.implicitHeight > 0)
+                lettersHeight = keyRows.implicitHeight
             ColumnLayout {
                 id: keyRows
+                // The emoji page draws its grid in their place, extra row included.
+                visible: Keyboard.page !== "emoji"
                 anchors {
                     left: parent.left
                     right: parent.right
@@ -411,8 +417,82 @@ Rectangle {
                     }
                 }
             }
+            // Emoji: recently used first, then all of them; a tap types one into the focused field.
+            ColumnLayout {
+                anchors.fill: parent
+                visible: Keyboard.page === "emoji"
+                spacing: root.spacing
+                onVisibleChanged: if (visible)
+                    Emoji.load()
+                GridView {
+                    id: emojiGrid
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    cellWidth: Math.floor(width / Math.max(1, Math.floor(width / 64)))
+                    cellHeight: 56
+                    model: Emoji.recent.concat(Emoji.emoji.map(e => e.e).filter(e => !Emoji.recent.includes(e)))
+                    delegate: Item {
+                        required property string modelData
+                        width: emojiGrid.cellWidth
+                        height: emojiGrid.cellHeight
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 2
+                            radius: Theme.corner(10)
+                            color: emojiTap.pressed ? Theme.accent : "transparent"
+                        }
+                        Text {
+                            anchors.centerIn: parent
+                            text: parent.modelData
+                            font.family: "Noto Color Emoji"
+                            font.pixelSize: Theme.textSize(30)
+                        }
+                        TapHandler {
+                            id: emojiTap
+                            onTapped: Keyboard.typeText(parent.modelData)
+                        }
+                    }
+                    Text {
+                        anchors.centerIn: parent
+                        visible: emojiGrid.count === 0
+                        text: Emoji.error !== "" ? Emoji.error : I18n.tr("emoji.loading")
+                        color: Theme.muted
+                        width: parent.width - 32
+                        wrapMode: Text.Wrap
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+                }
+                Row {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: root.spacing
+                    Repeater {
+                        model: [{
+                                action: "page",
+                                page: "letters",
+                                width: 1.5
+                            }, {
+                                action: "space",
+                                code: 57,
+                                width: 5
+                            }, {
+                                // A plain key: one tap, one deletion (the rows repeat a held Backspace instead).
+                                code: 14,
+                                icon: "backspace",
+                                name: "backspace",
+                                width: 1.5
+                            }]
+                        KeyButton {
+                            required property var modelData
+                            key: modelData
+                            standalone: true
+                        }
+                    }
+                }
+            }
             // One area over every key, so a finger keeps its touch while it slides from key to key.
             MultiPointTouchArea {
+                enabled: Keyboard.page !== "emoji"
                 anchors.fill: parent
                 onPressed: points => points.forEach(p => root.touchPressed(p.pointId, p.x, p.y))
                 onUpdated: points => points.forEach(p => root.touchMoved(p.pointId, p.x, p.y))

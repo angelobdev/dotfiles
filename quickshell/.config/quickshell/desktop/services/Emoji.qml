@@ -25,13 +25,25 @@ Singleton {
         if (!loaded && !lister.running)
             lister.running = true;
     }
-    function remember() {
+    // With a character: only noted among the recent ones (the on-screen keyboard types it itself).
+    function remember(character) {
+        if (character) {
+            SessionState.set("emojiRecent", [character].concat(recent.filter(e => e !== character)).slice(0, 24).join(" "));
+            return;
+        }
         target = Hyprland.activeToplevel?.address ?? "";
     }
     function pick(character) {
-        SessionState.set("emojiRecent", [character].concat(recent.filter(e => e !== character)).slice(0, 24).join(" "));
+        remember(character);
         Quickshell.execDetached(["wl-copy", "--", character]);
         ShellState.close();
+        if (target !== "")
+            clients.running = true;
+    }
+    // Pasted into the window focused now, with no panel to close (the on-screen keyboard takes no focus).
+    function insert(character) {
+        target = Hyprland.activeToplevel?.address ?? "";
+        Quickshell.execDetached(["wl-copy", "--", character]);
         if (target !== "")
             clients.running = true;
     }

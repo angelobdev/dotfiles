@@ -28,7 +28,7 @@ Button {
     leftPadding: compact ? 0 : 12
     rightPadding: compact ? 0 : 12
     font.family: Theme.font
-    font.pixelSize: 13
+    font.pixelSize: Theme.textSize(13)
     opacity: enabled ? 1 : 0.45
     // A press sinks by a couple of pixels whatever the width, so wide rows barely move and icons visibly do.
     scale: down ? 1 - Math.min(0.04, 6 / Math.max(width, 1)) : 1

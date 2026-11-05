@@ -99,7 +99,7 @@ packages = [
     'udiskie', 'libayatana-appindicator-gtk3', 'udisks2', 'gvfs', 'gvfs-afc', 'gvfs-gphoto2', 'usbmuxd', 'libimobiledevice-utils',
     # Look.
     'qt5ct', 'qt6ct', 'qt6-qtsvg', 'qt6-qtimageformats', 'papirus-icon-theme', 'adwaita-icon-theme', 'adw-gtk3-theme',
-    'adwaita-cursor-theme', 'fontconfig', 'adwaita-sans-fonts', 'adwaita-mono-fonts',
+    'adwaita-cursor-theme', 'breeze-cursor-theme', 'fontconfig', 'adwaita-sans-fonts', 'adwaita-mono-fonts',
     'google-noto-color-emoji-fonts', 'rsms-inter-fonts', 'ibm-plex-sans-fonts', 'ibm-plex-mono-fonts',
     'jetbrains-mono-fonts', 'fira-code-fonts',
     # Apps the shell opens.

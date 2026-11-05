@@ -187,6 +187,21 @@ class PreferenceTests(unittest.TestCase):
             self.assertEqual((root / 'link.conf').read_text(), 'generated')
 
 
+class TextScaleTests(unittest.TestCase):
+    def test_the_shell_text_scale_reaches_quickshell(self):
+        rendered = theme.render_all(theme.complete(theme.with_preferences(GRAPHITE, {'textScale': 1.3})), TEMPLATES)['quickshell.json']
+        self.assertEqual(json.loads(rendered)['textScale'], 1.3)
+        default = theme.render_all(theme.complete(GRAPHITE), TEMPLATES)['quickshell.json']
+        self.assertEqual(json.loads(default)['textScale'], 1)
+
+    def test_only_offered_scales_are_saved(self):
+        with tempfile.TemporaryDirectory() as folder, mock.patch.object(theme, 'STATE', Path(folder)):
+            theme.save_preferences({'textScale': 1.15})
+            self.assertEqual(json.loads((Path(folder) / 'preferences.json').read_text()), {'textScale': 1.15})
+            theme.save_preferences({'textScale': 3})
+            self.assertEqual(json.loads((Path(folder) / 'preferences.json').read_text()), {})
+
+
 class CursorTests(unittest.TestCase):
     def test_the_chosen_cursor_reaches_gsettings_and_hyprland(self):
         merged = theme.with_preferences(GRAPHITE, {'cursor': {'theme': 'Bibata', 'size': 32}})
@@ -211,6 +226,37 @@ class CursorTests(unittest.TestCase):
             (root / 'Papirus').mkdir()
             (root / 'default/cursors').mkdir(parents=True)
             self.assertEqual(theme.cursor_themes([root]), [{'id': 'Bibata', 'name': 'Bibata Modern'}, {'id': 'Hypr', 'name': 'Hypr'}])
+
+    def test_a_cursor_pack_unpacks_only_its_folder(self):
+        import hashlib
+        import io
+        import tarfile as tar
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            archive = root / 'packs.tar.bz2'
+            with tar.open(archive, 'w:bz2') as pack:
+                for name, data in (('./pack-light/cursors/left_ptr', b'light'), ('./pack-light/index.theme', b'[Icon Theme]\nName=Pack Light\n'),
+                                   ('./pack-dark/cursors/left_ptr', b'dark')):
+                    info = tar.TarInfo(name)
+                    info.size = len(data)
+                    pack.addfile(info, io.BytesIO(data))
+            digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+            packs = {'pack-light': {'name': 'Pack Light', 'file': 'packs.tar.bz2', 'member': 'pack-light', 'url': 'https://example.com/packs.tar.bz2', 'sha256': digest}}
+
+            def download(entry, destination):
+                destination.write_bytes(archive.read_bytes())
+            with mock.patch.object(theme, 'CURSOR_PACKS', packs), mock.patch.object(theme, 'USER_ICONS', root / 'icons'), \
+                    mock.patch.object(theme, 'CURSOR_DOWNLOADS', root / 'cache'), mock.patch.object(theme, 'download', side_effect=download) as fetched:
+                theme.fetch_cursor('pack-light')
+                self.assertEqual((root / 'icons/pack-light/cursors/left_ptr').read_bytes(), b'light')
+                self.assertFalse((root / 'icons/pack-dark').exists())
+                self.assertEqual(theme.cursor_themes([root / 'icons']), [{'id': 'pack-light', 'name': 'Pack Light'}])
+                theme.fetch_cursor('pack-light')
+                self.assertEqual(fetched.call_count, 1)  # The archive is kept.
+                # A kept archive that no longer matches is fetched again (download() checks the new one).
+                packs['pack-light']['sha256'] = '0' * 64
+                theme.fetch_cursor('pack-light')
+                self.assertEqual(fetched.call_count, 2)
 
     def test_only_valid_cursor_choices_are_saved(self):
         with tempfile.TemporaryDirectory() as folder, mock.patch.object(theme, 'STATE', Path(folder)):

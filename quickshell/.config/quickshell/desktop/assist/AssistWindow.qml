@@ -170,7 +170,7 @@ PanelWindow {
                             elide: Text.ElideRight
                             color: Theme.text
                             font.family: Theme.font
-                            font.pixelSize: 11
+                            font.pixelSize: Theme.textSize(11)
                         }
                     }
                     TapHandler {

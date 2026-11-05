@@ -644,7 +644,8 @@
     "downloading": "Downloading wallpapers…",
     "errors": {
       "fontMissing": "No installed font family is called “%1”.",
-      "iconsMissing": "No installed icon theme is called “%1”."
+      "iconsMissing": "No installed icon theme is called “%1”.",
+      "cursorMissing": "%1 is not an installed cursor theme."
     },
     "interfaceFont": "INTERFACE",
     "monospaceFont": "MONOSPACE",
@@ -706,7 +707,9 @@
       "noiseStrength": "Grain"
     },
     "cursor": "Cursor",
-    "cursorSize": "Cursor size"
+    "cursorSize": "Cursor size",
+    "cursorDownload": "%1 (download)",
+    "shellText": "Shell text"
   },
   "wallpaper": {
     "apply": "Set wallpaper",

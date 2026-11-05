@@ -136,6 +136,11 @@
             "width": 1.5
           },
           {
+            "action": "page",
+            "page": "emoji",
+            "label": "🙂"
+          },
+          {
             "label": "'",
             "code": 12,
             "shift": "?"
@@ -143,7 +148,7 @@
           {
             "action": "space",
             "code": 57,
-            "width": 4
+            "width": 3
           },
           {
             "label": ",",

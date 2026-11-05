@@ -152,7 +152,7 @@ PanelWindow {
             textFormat: Text.PlainText
             color: BarStyle.muted
             font.family: Theme.font
-            font.pixelSize: 12
+            font.pixelSize: Theme.textSize(12)
             visible: bar.width > 1100
             // The window menu: right click, or a long press for touch. Only the title itself, so a double
             // click on the empty bar beside it still switches the bar style.

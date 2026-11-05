@@ -65,7 +65,7 @@ PanelWindow {
                         text: Osd.title
                         color: Theme.text
                         font.family: Theme.font
-                        font.pixelSize: 13
+                        font.pixelSize: Theme.textSize(13)
                         font.weight: Font.DemiBold
                         Layout.fillWidth: true
                     }
@@ -74,7 +74,7 @@ PanelWindow {
                         text: Osd.muted ? I18n.tr("audio.muted") : Osd.percent + "%"
                         color: Theme.text
                         font.family: Theme.font
-                        font.pixelSize: 12
+                        font.pixelSize: Theme.textSize(12)
                     }
                 }
                 Rectangle {
@@ -103,7 +103,7 @@ PanelWindow {
                     elide: Text.ElideRight
                     color: Theme.muted
                     font.family: Theme.font
-                    font.pixelSize: 10
+                    font.pixelSize: Theme.textSize(10)
                 }
             }
         }

@@ -143,7 +143,7 @@ Rectangle {
             Text {
                 text: root.notification?.appName || I18n.tr("notifications.fallbackTitle")
                 color: Theme.muted
-                font.pixelSize: 11
+                font.pixelSize: Theme.textSize(11)
                 textFormat: Text.PlainText
                 elide: Text.ElideRight
                 Layout.fillWidth: true
@@ -152,7 +152,7 @@ Rectangle {
                 visible: root.archived
                 text: I18n.tr("notifications.archived")
                 color: Theme.muted
-                font.pixelSize: 11
+                font.pixelSize: Theme.textSize(11)
                 font.italic: true
             }
         }
@@ -164,7 +164,7 @@ Rectangle {
                 text: root.notification?.summary ?? ""
                 color: Theme.text
                 font.bold: true
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
                 maximumLineCount: root.popup ? 3 : 2147483647

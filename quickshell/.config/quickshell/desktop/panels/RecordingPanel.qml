@@ -25,7 +25,7 @@ Overlay {
             Text {
                 text: Recording.running ? (Recording.stopping ? I18n.tr("recording.saving") : I18n.tr("recording.elapsed", [Recording.elapsed])) : I18n.tr("recording.chooseSource")
                 color: Theme.text
-                font.pixelSize: 15
+                font.pixelSize: Theme.textSize(15)
             }
             RowLayout {
                 visible: !Recording.running
@@ -58,7 +58,7 @@ Overlay {
                 visible: !Recording.running
                 text: I18n.tr("audio.title")
                 color: Theme.muted
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
             RowLayout {
                 visible: !Recording.running
@@ -83,7 +83,7 @@ Overlay {
                 wrapMode: Text.Wrap
                 text: Recording.error || Recording.path || I18n.tr("recording.saveLocationHint")
                 color: Recording.error ? Theme.danger : Theme.muted
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
                 textFormat: Text.PlainText
             }
             Item {

@@ -55,7 +55,7 @@ ColumnLayout {
         Layout.fillWidth: true
         text: root.network?.connected ? [I18n.tr("network.status.connected"), root.wifi ? I18n.tr("network.signal", [Math.round((root.network?.signalStrength ?? 0) * 100)]) : "", root.band].filter(part => part !== "").join(" · ") : I18n.networkDescription(ConnectionState.toString(root.network?.state ?? ConnectionState.Unknown))
         color: Theme.muted
-        font.pixelSize: 12
+        font.pixelSize: Theme.textSize(12)
         elide: Text.ElideRight
     }
     NetworkPassword {
@@ -75,7 +75,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 text: I18n.tr("network.autoJoin")
                 color: Theme.text
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
             }
             ControlSwitch {
                 enabled: !NetworkInfo.busy
@@ -94,7 +94,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 text: I18n.tr("network.metered")
                 color: Theme.text
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
             }
             ControlSwitch {
                 enabled: !NetworkInfo.busy
@@ -114,7 +114,7 @@ ColumnLayout {
         Text {
             text: I18n.tr("network.ipConfig")
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
         ChoiceChips {
             enabled: !NetworkInfo.busy
@@ -153,7 +153,7 @@ ColumnLayout {
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 Layout.fillWidth: true
                 implicitHeight: Theme.hit(36)
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
                 placeholderText: I18n.tr("network.addressPlaceholder")
                 text: root.profile?.ipv4Address ?? ""
                 onAccepted: gatewayField.forceActiveFocus()
@@ -166,7 +166,7 @@ ColumnLayout {
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                     Layout.fillWidth: true
                     implicitHeight: Theme.hit(36)
-                    font.pixelSize: 13
+                    font.pixelSize: Theme.textSize(13)
                     placeholderText: I18n.tr("network.gatewayPlaceholder")
                     text: root.profile?.ipv4Gateway ?? ""
                     onAccepted: applyIp.clicked()
@@ -186,7 +186,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 text: I18n.tr("network.manualDnsHint")
                 color: Theme.muted
-                font.pixelSize: 11
+                font.pixelSize: Theme.textSize(11)
                 wrapMode: Text.Wrap
             }
         }
@@ -198,7 +198,7 @@ ColumnLayout {
         Text {
             text: I18n.tr("network.dns")
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
         ChoiceChips {
             enabled: !NetworkInfo.busy
@@ -237,7 +237,7 @@ ColumnLayout {
                 inputMethodHints: Qt.ImhFormattedNumbersOnly
                 Layout.fillWidth: true
                 implicitHeight: Theme.hit(36)
-                font.pixelSize: 13
+                font.pixelSize: Theme.textSize(13)
                 placeholderText: I18n.tr("network.dnsCustomPlaceholder")
                 text: root.dnsChoice === "custom" ? root.profile.dns.join(" ") : ""
                 onAccepted: applyDns.clicked()
@@ -260,7 +260,7 @@ ColumnLayout {
         Text {
             text: root.wifi ? I18n.tr("network.mac") : I18n.tr("network.macWired")
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
         ChoiceChips {
             enabled: !NetworkInfo.busy
@@ -292,7 +292,7 @@ ColumnLayout {
             Layout.fillWidth: true
             text: I18n.tr("network.macHint")
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
             wrapMode: Text.Wrap
         }
     }
@@ -303,7 +303,7 @@ ColumnLayout {
         Text {
             text: I18n.tr("network.info")
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
         GridLayout {
             Layout.fillWidth: true
@@ -319,7 +319,7 @@ ColumnLayout {
                     Layout.alignment: Qt.AlignTop
                     text: row[index % 2]
                     color: index % 2 === 0 ? Theme.muted : Theme.text
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textSize(12)
                     wrapMode: index % 2 === 1 ? Text.WrapAnywhere : Text.NoWrap
                     textFormat: Text.PlainText
                 }

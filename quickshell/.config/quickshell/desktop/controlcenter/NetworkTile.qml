@@ -29,7 +29,7 @@ ControlTile {
             text: network?.name || (Networking.wifiEnabled ? I18n.tr("network.notConnected") : I18n.tr("network.wifiOff"))
             elide: Text.ElideRight
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
             textFormat: Text.PlainText
         }
     }

@@ -644,7 +644,8 @@
     "downloading": "Scaricamento degli sfondi…",
     "errors": {
       "fontMissing": "Nessuna famiglia di font installata si chiama “%1”.",
-      "iconsMissing": "Nessun tema di icone installato si chiama “%1”."
+      "iconsMissing": "Nessun tema di icone installato si chiama “%1”.",
+      "cursorMissing": "%1 non è un tema cursore installato."
     },
     "interfaceFont": "INTERFACCIA",
     "monospaceFont": "MONOSPACE",
@@ -706,7 +707,9 @@
       "noiseStrength": "Grana"
     },
     "cursor": "Cursore",
-    "cursorSize": "Dimensione del cursore"
+    "cursorSize": "Dimensione del cursore",
+    "cursorDownload": "%1 (da scaricare)",
+    "shellText": "Testo della shell"
   },
   "wallpaper": {
     "apply": "Imposta sfondo",

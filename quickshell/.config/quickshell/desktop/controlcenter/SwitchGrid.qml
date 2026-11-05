@@ -98,7 +98,7 @@ ColumnLayout {
             text: Focus.active ? I18n.tr("focus.minutesLeft", [Focus.minutesLeft]) + " · " + I18n.tr("focus.details") : I18n.tr("focus.details")
             wrapMode: Text.WordWrap
             font.family: Theme.font
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
             color: Theme.muted
         }
     }
@@ -128,7 +128,7 @@ ColumnLayout {
             text: I18n.tr("nightShift.schedule", [Config.nightShiftStart, Config.nightShiftEnd])
             wrapMode: Text.WordWrap
             font.family: Theme.font
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
             color: Theme.muted
         }
         RowLayout {
@@ -137,7 +137,7 @@ ColumnLayout {
             Text {
                 text: I18n.tr("nightShift.kelvin", [slider.value])
                 font.family: Theme.font
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
                 color: Theme.text
                 Layout.preferredWidth: 60
             }

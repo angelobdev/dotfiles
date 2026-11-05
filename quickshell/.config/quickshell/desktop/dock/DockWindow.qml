@@ -298,7 +298,7 @@ PanelWindow {
                 textFormat: Text.PlainText
                 color: Theme.text
                 font.family: Theme.font
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
         }
     }

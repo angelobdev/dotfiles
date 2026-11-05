@@ -26,7 +26,7 @@ RowLayout {
     }
     Heading {
         text: root.title
-        font.pixelSize: 16
+        font.pixelSize: Theme.textSize(16)
         Layout.fillWidth: true
         Layout.minimumWidth: 0
         elide: Text.ElideRight

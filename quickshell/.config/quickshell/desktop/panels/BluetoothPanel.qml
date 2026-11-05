@@ -69,7 +69,7 @@ Overlay {
                             Text {
                                 text: adapterGroup.modelData.state === BluetoothAdapterState.Blocked ? I18n.tr("bluetooth.hardwareBlocked") : adapterGroup.modelData.enabled ? I18n.tr("bluetooth.pairedDevices") : I18n.tr("bluetooth.off")
                                 color: Theme.muted
-                                font.pixelSize: 12
+                                font.pixelSize: Theme.textSize(12)
                             }
                             Repeater {
                                 model: adapterGroup.paired
@@ -90,7 +90,7 @@ Overlay {
                                     Text {
                                         text: (modelData.state === BluetoothDeviceState.Connected ? I18n.tr("bluetooth.connected") : modelData.state === BluetoothDeviceState.Connecting ? I18n.tr("bluetooth.connecting") : modelData.state === BluetoothDeviceState.Disconnecting ? I18n.tr("bluetooth.disconnecting") : I18n.tr("bluetooth.disconnected")) + (modelData.batteryAvailable ? " · " + Math.round(modelData.battery * 100) + "%" : "")
                                         color: Theme.muted
-                                        font.pixelSize: 11
+                                        font.pixelSize: Theme.textSize(11)
                                         Layout.leftMargin: 12
                                     }
                                 }
@@ -99,7 +99,7 @@ Overlay {
                                 visible: adapterGroup.discovered.length > 0
                                 text: I18n.tr("bluetooth.availableDevices")
                                 color: Theme.muted
-                                font.pixelSize: 12
+                                font.pixelSize: Theme.textSize(12)
                             }
                             Repeater {
                                 model: adapterGroup.discovered
@@ -128,7 +128,7 @@ Overlay {
                                 visible: adapterGroup.paired.length === 0
                                 text: I18n.tr("bluetooth.noPairedDevices")
                                 color: Theme.muted
-                                font.pixelSize: 12
+                                font.pixelSize: Theme.textSize(12)
                             }
                         }
                     }
@@ -145,7 +145,7 @@ Overlay {
                 text: BluetoothAgent.error || I18n.tr("bluetooth.pairingHint")
                 color: BluetoothAgent.error ? Theme.danger : Theme.muted
                 textFormat: Text.PlainText
-                font.pixelSize: 11
+                font.pixelSize: Theme.textSize(11)
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
             }

@@ -29,7 +29,7 @@ Flow {
             required property var modelData
             implicitHeight: Theme.hit(30)
             text: modelData.label
-            font.pixelSize: 12
+            font.pixelSize: Theme.textSize(12)
             highlighted: root.current === modelData.name
             background: Rectangle {
                 radius: Theme.corner(15)

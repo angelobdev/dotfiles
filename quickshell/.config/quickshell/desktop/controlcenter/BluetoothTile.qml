@@ -26,7 +26,7 @@ ControlTile {
             text: !Bluetooth.defaultAdapter ? I18n.tr("common.unavailable") : !Bluetooth.defaultAdapter.enabled ? I18n.tr("common.off") : connected > 0 ? I18n.plural("bluetooth.connectedCount.one", "bluetooth.connectedCount.other", connected) : I18n.tr("common.on")
             elide: Text.ElideRight
             color: Theme.muted
-            font.pixelSize: 11
+            font.pixelSize: Theme.textSize(11)
         }
     }
 }

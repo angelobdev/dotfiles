@@ -189,12 +189,12 @@ Overlay {
                     text: I18n.tr("hints.shortcutColumn")
                     Layout.preferredWidth: 280
                     color: Theme.muted
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textSize(12)
                 }
                 Text {
                     text: I18n.tr("hints.actionColumn")
                     color: Theme.muted
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textSize(12)
                 }
             }
             ListView {
@@ -218,7 +218,7 @@ Overlay {
                         }
                         text: section
                         color: Theme.muted
-                        font.pixelSize: 11
+                        font.pixelSize: Theme.textSize(11)
                         font.weight: Font.DemiBold
                         font.letterSpacing: 0.6
                     }
@@ -242,7 +242,7 @@ Overlay {
                             Layout.preferredWidth: 256
                             color: Theme.accent
                             font.family: Theme.font
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textSize(12)
                             elide: Text.ElideRight
                         }
                         Text {
@@ -251,7 +251,7 @@ Overlay {
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             color: Theme.text
-                            font.pixelSize: 13
+                            font.pixelSize: Theme.textSize(13)
                             textFormat: Text.PlainText
                         }
                     }
@@ -272,7 +272,7 @@ Overlay {
                 Text {
                     text: I18n.plural("hints.shortcutCount.one", "hints.shortcutCount.other", root.bindings.length)
                     color: Theme.muted
-                    font.pixelSize: 12
+                    font.pixelSize: Theme.textSize(12)
                 }
                 Item {
                     Layout.fillWidth: true

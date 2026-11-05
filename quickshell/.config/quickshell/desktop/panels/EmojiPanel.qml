@@ -90,7 +90,7 @@ Overlay {
                         topPadding: 0
                         bottomPadding: 0
                         text: modelData === -1 ? "🕘" : (Emoji.emoji.find(e => e.g === modelData)?.e ?? "")
-                        font.pixelSize: 18
+                        font.pixelSize: Theme.textSize(18)
                         font.family: "Noto Color Emoji"
                         // The emoji alone, centred in its square.
                         contentItem: Text {
@@ -132,7 +132,7 @@ Overlay {
                     Text {
                         anchors.centerIn: parent
                         text: parent.modelData
-                        font.pixelSize: Theme.hit(26)
+                        font.pixelSize: Theme.textSize(Theme.hit(26))
                         font.family: "Noto Color Emoji"
                     }
                     MouseArea {
@@ -158,7 +158,7 @@ Overlay {
                 elide: Text.ElideRight
                 text: grid.count > 0 ? (root.names[root.shown[grid.currentIndex]] ?? "") : ""
                 color: Theme.muted
-                font.pixelSize: 12
+                font.pixelSize: Theme.textSize(12)
             }
         }
     }
