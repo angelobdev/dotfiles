@@ -164,10 +164,16 @@ Singleton {
                 }
             }
         }
+        onStarted: backoff.started()
+        onExited: backoff.ended()
+    }
+    Backoff {
+        id: backoff
+        base: 2000
     }
     Timer {
         id: watcherRetry
-        interval: 2000
+        interval: backoff.interval
         repeat: true
         running: Config.osdEnabled && !watcher.running
         onTriggered: watcher.running = true

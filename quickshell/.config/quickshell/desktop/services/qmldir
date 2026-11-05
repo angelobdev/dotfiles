@@ -31,3 +31,4 @@ singleton Weather 1.0 Weather.qml
 singleton Zoom 1.0 Zoom.qml
 singleton Store 1.0 Store.qml
 CoalescedProcess 1.0 CoalescedProcess.qml
+Backoff 1.0 Backoff.qml

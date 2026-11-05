@@ -34,14 +34,20 @@ Singleton {
                 }
             }
         }
+        onStarted: backoff.started()
         onExited: {
             root.hiddenMonitors = [];
+            backoff.ended();
             retry.restart();
         }
     }
+    Backoff {
+        id: backoff
+        base: 2000
+    }
     Timer {
         id: retry
-        interval: 2000
+        interval: backoff.interval
         onTriggered: watcher.running = true
     }
 }

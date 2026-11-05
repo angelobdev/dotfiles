@@ -64,11 +64,19 @@ Singleton {
                 } catch (error) {}
             }
         }
-        onExited: retry.restart()
+        onStarted: backoff.started()
+        onExited: {
+            backoff.ended();
+            retry.restart();
+        }
+    }
+    Backoff {
+        id: backoff
+        base: 5000
     }
     Timer {
         id: retry
-        interval: 5000
+        interval: backoff.interval
         onTriggered: cameras.running = true
     }
 }
