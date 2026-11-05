@@ -12,12 +12,39 @@ AUTH_FEATURE = 'with-fingerprint'
 AUTH_PROFILE = 'custom/desktop-tablet'
 
 
+# rpm and dnf answers kept while nothing changes, when the installer turns it on: planning an uninstall asks dnf
+# the same questions from several steps, each a solver run of seconds. Any change through sudo() forgets them.
+answers = None
+
+
+def remember_answers():
+    global answers
+    answers = {}
+
+
+def forget_answers():
+    if answers is not None:
+        answers.clear()
+
+
 def query(*command):
+    if answers is None or command[0] not in ('dnf', 'rpm'):
+        return run_query(command)
+    if command not in answers:
+        answers[command] = run_query(command)
+    return answers[command]
+
+
+def run_query(command):
     return subprocess.run(command, capture_output=True, text=True, env={**os.environ, 'LC_ALL': 'C'})
 
 
 def sudo(*command):
-    subprocess.run(('sudo', *command), check=True)
+    forget_answers()
+    try:
+        subprocess.run(('sudo', *command), check=True)
+    finally:
+        forget_answers()
 
 
 def missing(packages):

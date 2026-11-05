@@ -1013,6 +1013,19 @@ class CompositorGuardTests(unittest.TestCase):
 
 
 class FedoraTests(unittest.TestCase):
+    def test_answers_are_kept_until_a_change(self):
+        self.addCleanup(setattr, fedora, 'answers', None)
+        fedora.remember_answers()
+        with mock.patch.object(fedora, 'run_query', return_value=reply('x')) as run, mock.patch('subprocess.run'):
+            fedora.query('dnf', 'repoquery', 'a')
+            fedora.query('dnf', 'repoquery', 'a')
+            fedora.query('systemctl', 'is-enabled', 'x')
+            fedora.query('systemctl', 'is-enabled', 'x')
+            self.assertEqual(run.call_count, 3)  # dnf once, systemctl each time
+            fedora.sudo('dnf', 'remove', '-y', 'a')
+            fedora.query('dnf', 'repoquery', 'a')
+            self.assertEqual(run.call_count, 4)
+
     def test_only_packages_dnf_pulled_in_count_as_not_by_hand(self):
         rows = ('a.x86_64 User\nb.x86_64 Group\nc.x86_64 External User\nd.x86_64 None\n'
                 'e.x86_64 Dependency\nf.x86_64 Weak Dependency\ng.x86_64 Clean\n')

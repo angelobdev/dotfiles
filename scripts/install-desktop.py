@@ -1114,6 +1114,7 @@ def main(argv=None):
     if os.geteuid() == 0:
         sys.exit('Run as the desktop user: the script asks sudo for each system change.')
     plan = load_plan(profiles, firmware=args.firmware, any_version=args.uninstall)
+    plan.distro.remember_answers()
     if args.uninstall:
         refuse(plan)
         if args.action == 'apply':

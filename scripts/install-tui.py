@@ -463,6 +463,8 @@ def choose_firmware(ui, plan, items):
 
 
 def collect(ui, plan):
+    # A fresh look each time (check again, after apply), shared by the steps within it.
+    plan.distro.remember_answers()
     reviews = []
     steps = installer.UNSTEPS if removing(plan) else installer.STEPS
     for index, step in enumerate(steps):
