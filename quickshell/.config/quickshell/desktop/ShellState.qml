@@ -33,8 +33,11 @@ Singleton {
     function back() {
         show("controls", activeScreen, -1);
     }
+    // Every panel: shell.qml has a LazyPanel for each and desktop-shell toggle accepts the same names
+    // (scripts/tests/test_panels.py keeps the three in step).
+    readonly property var panels: ["launcher", "controls", "network", "bluetooth", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "theming", "clipboard", "recording", "power", "agent", "updates", "emoji", "displays"]
     function show(name, screen, direction) {
-        if (!["launcher", "controls", "network", "bluetooth", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "theming", "clipboard", "recording", "power", "agent", "updates", "emoji", "displays"].includes(name))
+        if (!panels.includes(name))
             return;
         // Set before the panel changes so both the closing and the opening panel read the same direction.
         navigation = direction ?? 0;
