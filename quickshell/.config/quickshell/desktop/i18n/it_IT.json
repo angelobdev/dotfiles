@@ -320,8 +320,13 @@
   },
   "desktopMenu": {
     "launcher": "Applicazioni",
+    "logout": "Esci…",
+    "open": "Apri",
+    "powerOff": "Spegni…",
+    "reboot": "Riavvia…",
+    "session": "Sessione",
     "settings": "Impostazioni",
-    "session": "Sessione…"
+    "suspend": "Sospendi…"
   },
   "directions": {
     "down": "in basso",
@@ -713,6 +718,13 @@
       "sound": "Audio",
       "system": "Sistema",
       "tablet": "Tablet e touch"
+    },
+    "sidebar": {
+      "connections": "Connessioni",
+      "devices": "Dispositivi",
+      "input": "Input",
+      "personalization": "Personalizzazione",
+      "system": "Sistema"
     },
     "system": {
       "about": "Informazioni",

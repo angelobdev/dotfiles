@@ -72,10 +72,17 @@ Overlay {
         pending = "";
         Qt.callLater(() => focusAction(selectedAction));
     }
+    // The desktop menu can open this on one action, waiting for its confirmation (ShellState "power/ask").
     onOpened: {
         pending = "";
         failure = "";
-        Qt.callLater(() => focusAction(0));
+        const ask = ShellState.recall("power/ask", "");
+        ShellState.remember("power/ask", "");
+        const index = actions.findIndex(entry => entry.action === ask);
+        if (index >= 0)
+            Qt.callLater(() => choose(index));
+        else
+            Qt.callLater(() => focusAction(0));
     }
     contentItem.Keys.onEscapePressed: {
         if (pending !== "")

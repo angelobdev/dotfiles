@@ -3,8 +3,9 @@ import QtQuick.Layouts
 import Quickshell
 import ".."
 
-// A context menu built from plain entries: { kind: "item" | "heading" | "separator", text, icon, checked,
-// destructive, enabled, keepOpen, action }. Hover and arrow keys share one selection, Enter triggers it.
+// A context menu built from plain entries: { kind: "item" | "heading" | "separator", text, icon, glyph,
+// checked, destructive, enabled, keepOpen, action }. icon is an image (a tray icon); glyph names a shell icon
+// (assets/icons), drawn in the colour of the text. Hover and arrow keys share one selection, Enter triggers it.
 Rectangle {
     id: root
     property var entries: []
@@ -105,10 +106,16 @@ Rectangle {
                 Item {
                     Layout.preferredWidth: 16
                     Layout.preferredHeight: 16
-                    visible: row.kind === "item" && (row.modelData.checked !== undefined || !!row.modelData.icon)
+                    visible: row.kind === "item" && (row.modelData.checked !== undefined || !!row.modelData.icon || !!row.modelData.glyph)
+                    Icon {
+                        anchors.fill: parent
+                        visible: row.modelData.checked === undefined && !!row.modelData.glyph
+                        name: row.modelData.glyph ?? ""
+                        color: row.modelData.destructive ? Theme.danger : Theme.text
+                    }
                     Image {
                         anchors.fill: parent
-                        visible: row.modelData.checked === undefined
+                        visible: row.modelData.checked === undefined && !row.modelData.glyph
                         source: row.modelData.icon ?? ""
                         sourceSize: Qt.size(32, 32)
                         fillMode: Image.PreserveAspectFit
