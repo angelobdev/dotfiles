@@ -395,7 +395,7 @@ class UpdateSourceTests(unittest.TestCase):
     def test_no_pins_no_line(self):
         self.assertIsNone(tui.pin_source(plan(), 'aur', 'AUR packages'))
 
-    def repository(self, behind='3', ahead='0', dirty='', upstream=reply('homelab/main\n'), fetch=reply()):
+    def repository(self, behind='3', ahead='0', dirty='', upstream=reply('origin/main\n'), fetch=reply()):
         answers = {'rev-parse': upstream, 'fetch': fetch, 'status': reply(dirty), 'log': reply('abc1234 docs: x\n')}
 
         def git(*arguments):
@@ -407,7 +407,7 @@ class UpdateSourceTests(unittest.TestCase):
 
     def test_a_clean_tree_behind_its_upstream_can_fast_forward(self):
         found = self.repository()
-        self.assertEqual((found.summary, found.details, found.selectable), ('3 commits behind homelab/main', ['abc1234 docs: x'], True))
+        self.assertEqual((found.summary, found.details, found.selectable), ('3 commits behind origin/main', ['abc1234 docs: x'], True))
 
     def test_local_changes_or_commits_stop_the_fast_forward(self):
         self.assertFalse(self.repository(dirty=' M x').selectable)
@@ -416,7 +416,7 @@ class UpdateSourceTests(unittest.TestCase):
         self.assertIn('merge it by hand', self.repository(ahead='1').summary)
 
     def test_up_to_date_or_nothing_to_compare_with(self):
-        self.assertEqual(self.repository(behind='0').summary, 'up to date with homelab/main')
+        self.assertEqual(self.repository(behind='0').summary, 'up to date with origin/main')
         self.assertEqual(self.repository(upstream=reply('', 128)).summary, 'no upstream branch to compare with')
         self.assertIn('git fetch failed', self.repository(fetch=reply('', 128, 'Permission denied')).error)
 
@@ -424,7 +424,7 @@ class UpdateSourceTests(unittest.TestCase):
         with mock.patch.dict('os.environ', {}, clear=False), mock.patch.object(installer, 'query', return_value=reply('')), \
                 mock.patch('subprocess.run', return_value=reply()) as run:
             tui.os.environ.pop('GIT_SSH_COMMAND', None)
-            tui.git('fetch', '--quiet', 'homelab')
+            tui.git('fetch', '--quiet', 'origin')
         environment = run.call_args.kwargs['env']
         self.assertEqual((environment['GIT_TERMINAL_PROMPT'], environment['GIT_SSH_COMMAND']), ('0', 'ssh -o BatchMode=yes'))
 
