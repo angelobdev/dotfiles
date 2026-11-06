@@ -38,11 +38,24 @@ Singleton {
     }
     Connections {
         target: Hyprland
-        // screencast>>STATE,OWNER: 1 when a share starts, 0 when it stops.
+        // screencast>>STATE,OWNER: 1 when a share starts, 0 when it stops. A screencopy client such as
+        // wf-recorder sends both for every frame it copies, so "off" waits for screencastEnd: the icon stays
+        // on through a recording instead of flickering with each frame.
         function onRawEvent(event) {
-            if (event.name === "screencast")
-                root.screencast = event.data.split(",")[0] === "1";
+            if (event.name !== "screencast")
+                return;
+            if (event.data.split(",")[0] === "1") {
+                screencastEnd.stop();
+                root.screencast = true;
+            } else {
+                screencastEnd.restart();
+            }
         }
+    }
+    Timer {
+        id: screencastEnd
+        interval: 1500
+        onTriggered: root.screencast = false
     }
     // privacy.py watch prints the holders whenever a camera opens or closes (inotify), nothing in between.
     Process {

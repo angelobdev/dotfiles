@@ -829,3 +829,9 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 ## Keyboard layout from the system, 2026-11-06
 
 - `input.lua` reads `XkbLayout` and `XkbVariant` from `/etc/X11/xorg.conf.d/00-keyboard.conf` (what `localectl set-x11-keymap` writes on Fedora and Arch), else `KEYMAP` of `/etc/vconsole.conf` without its suffix, else `us`. On this laptop: `kb_layout` `it`, `kb_variant` empty, the keyboards on the Italian keymap, as before.
+
+## Screen-capture indicator, 2026-11-06
+
+- Cause: a screencopy client (`wf-recorder`, also behind the shell's own recorder) makes Hyprland send `screencast>>1` and `screencast>>0` for every frame it copies: 157 of each in a 3-second capture of eDP-1, read from socket2. The bar's monitor icon followed each one and flickered.
+- `Privacy.qml` now turns the indicator on at once and off only after 1.5 s without a new `1`. A 4-second `wf-recorder` capture sampled through `desktop-shell status` every ~100 ms: `privacy.sharing` false, then true in one run for the whole capture, then false once.
+- Not tried: a portal share (XDPH), which also counts through its PipeWire stream and is unaffected by the delay apart from the 1.5 s at its end.

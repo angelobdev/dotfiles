@@ -38,6 +38,7 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] Scrolling past the last pill opens a new workspace on that monitor, unless the last one is empty; the assist button still stops at the ends.
 - [x] Window title, spacer, tray, battery percentage/icon, Hints, notifications, Control Center, date/time, and power menu.
 - [x] QML tray menus with matching background/border, rounded corners, hover, submenus, anchoring below the icon on its monitor, and keyboard navigation; Esc and outside clicks close the menu.
+- [x] The screen-capture icon of the privacy indicator stays on through a recording: screencopy clients send an on/off pair per frame, so "off" waits 1.5 s.
 - [x] Centered status icons and native tooltips below buttons; bar buttons no longer retain a highlight from mouse focus after panels close, while keyboard and panel focus indicators remain available.
 - [x] Launcher with search, application icons, left-aligned titles, and keyboard navigation.
 - [x] Hints panel with search, categories, and shortcuts/descriptions read from actual Hyprland bindings.
