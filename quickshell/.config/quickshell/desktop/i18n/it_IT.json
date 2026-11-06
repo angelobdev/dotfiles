@@ -1026,6 +1026,7 @@
     "mirroring": "duplica il portatile",
     "hint": "Solo portatile spegne gli altri monitor; Solo esterno spegne il pannello del portatile finché l’altro monitor resta collegato.",
     "single": "Collega un altro monitor per scegliere come si dividono il desktop.",
+    "noPanel": "Queste modalità dispongono gli altri monitor intorno allo schermo di un portatile, e questo computer non ne ha uno: imposta i monitor in ~/.config/desktop/hypr.lua.",
     "modes": {
       "extend": "Estendi",
       "mirror": "Duplica",

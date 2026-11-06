@@ -4,7 +4,7 @@
 
 ## Diagnostics
 
-`hypr/.config/hypr/config/local.lua` holds machine overrides. The QML palette is in `Theme.qml`, icons in `assets/icons`, and GTK CSS/Qt colors in their respective packages. Quickshell and Hyprland reload their configurations; restart hypridle/hyprpaper after changing their files. Autostart runs at login; `desktop-session start` and `desktop-shell start` avoid duplicate processes. `desktop-shell restart` waits for the previous instance to exit before starting another.
+Your own Hyprland settings go in `~/.config/desktop/hypr.lua` and shell options in `~/.config/desktop/shell.json` ([configuration](configuration.md#your-own-settings)); a supported model's settings are in `hypr/.config/hypr/config/machines/`. The QML palette is in `Theme.qml`, icons in `assets/icons`, and GTK CSS/Qt colors in their respective packages. Quickshell and Hyprland reload their configurations; restart hypridle/hyprpaper after changing their files. Autostart runs at login; `desktop-session start` and `desktop-shell start` avoid duplicate processes. `desktop-shell restart` waits for the previous instance to exit before starting another.
 ```sh
 ~/.local/bin/desktop-shell status
 ~/.local/bin/desktop-session status

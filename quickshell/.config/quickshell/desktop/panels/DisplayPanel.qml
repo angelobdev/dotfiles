@@ -9,8 +9,8 @@ import "../components"
 import "../services"
 
 // Displays (Super + P, the F1 key of the OmniBook): the connected monitors, and how the others sit with the
-// laptop panel: extended beside it, mirroring it, alone (panel off) or off. config/tablet.lua applies the mode
-// and keeps it; with one monitor the modes wait for another.
+// laptop panel: extended beside it, mirroring it, alone (panel off) or off. config/displays.lua applies the mode
+// and keeps it; with one monitor the modes wait for another, and a computer without a panel has none.
 Overlay {
     id: root
     panelName: "displays"
@@ -18,6 +18,8 @@ Overlay {
     property var monitors: []
     property string mode: "extend"
     readonly property bool several: monitors.filter(m => m.name !== "FALLBACK").length > 1
+    // The same names config/displays.lua looks for.
+    readonly property bool laptop: monitors.some(m => /^(eDP|LVDS|DSI)-/.test(m.name))
     function choose(name) {
         mode = name;
         Quickshell.execDetached(["hyprctl", "eval", "desktop_display_mode(\"" + name + "\")"]);
@@ -108,6 +110,7 @@ Overlay {
             }
             ChoiceChips {
                 Layout.fillWidth: true
+                visible: root.laptop
                 enabled: root.several
                 options: [
                     {
@@ -133,7 +136,7 @@ Overlay {
             Text {
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                text: root.several ? I18n.tr("displays.hint") : I18n.tr("displays.single")
+                text: !root.laptop ? I18n.tr("displays.noPanel") : root.several ? I18n.tr("displays.hint") : I18n.tr("displays.single")
                 color: Theme.muted
                 font.pixelSize: Theme.textSize(12)
             }

@@ -85,7 +85,7 @@ def watch():
 
 def apply(transform):
     write_atomic(STATE, 'return { transform = %d }\n' % transform)
-    # config/tablet.lua defines desktop_rotate, which reapplies the internal monitor with the transform.
+    # config/tablet.lua defines desktop_rotate: config/displays.lua reapplies the internal monitor with the transform.
     result = subprocess.run(['hyprctl', 'eval', 'if desktop_rotate then desktop_rotate(%d) end' % transform],
                             capture_output=True, text=True, timeout=10)
     if result.returncode != 0 or result.stdout.strip() not in ('', 'ok'):

@@ -28,8 +28,6 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 
 | Keys | Action |
 | --- | --- |
-| `Super + B` | Browser (`zen-browser`, from the opt-in `apps` profile; bound in `local.lua`) |
-| `Super + Shift + Space` | 1Password quick access (local override) |
 | `Super + Enter` | Kitty |
 | `Alt + Tab` / `Alt + Shift + Tab` | Window switcher: thumbnails of the windows from the most recently used, on the focused monitor; Tab, Shift + Tab or the arrows move, releasing the left `Alt` (or `Return`) focuses the selected one and moves the pointer onto it, `Esc`, any other key or a click outside cancels, a click on a thumbnail picks it. Windows on special workspaces (the assistant console) are left out |
 | `Super + A` | AI assistant: the drop-down console with Claude Code (hold `Space` to dictate); a click or tap outside closes it |
@@ -92,7 +90,7 @@ Verified with `wev` on this machine. Fn/Fn Lock determines whether the action ke
 | F10, play/pause | `XF86AudioPlay` | Play/pause the selected MPRIS player |
 | F11, three diamonds | `XF86Launch2` | Control Center |
 
-The original `Super + P` pseudotiling shortcut conflicted with the firmware's display key; pseudotiling now uses `Super + Ctrl + P`. Machine-specific Control Center aliases live in `hypr/.config/hypr/config/local.lua`. The screenshot shortcut remains `Super + Shift + S`; no ordinary function-key shortcut was added for screenshots.
+The original `Super + P` pseudotiling shortcut conflicted with the firmware's display key; pseudotiling now uses `Super + Ctrl + P`. These keys are bound in the machine profile, `hypr/.config/hypr/config/machines/omnibook_ultra_flip.lua`; [your own settings](configuration.md#your-own-settings) can bind keys of another keyboard the same way. The screenshot shortcut remains `Super + Shift + S`; no ordinary function-key shortcut was added for screenshots.
 
 Media keys call Quickshell through `desktop-shell media ACTION`, using the same selected/playing/fallback player as the Control Center. Commands unsupported by that player, or commands with no available player, do nothing. Play/pause, pause, next, previous, and stop remain available while locked, without repeat-triggering transport actions. No additional media daemon or playerctl process is required.
 

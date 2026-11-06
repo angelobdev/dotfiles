@@ -33,7 +33,7 @@ Overlay {
             return I18n.tr("battery.statusUnavailable");
         }
     }
-    // The internal display (config/tablet.lua keeps its refresh, one for battery and one for mains power): VRR
+    // The internal display (config/displays.lua keeps its refresh, one for battery and one for mains power): VRR
     // when it can, or one of its fixed rates; "" is its preferred mode.
     property var monitors: []
     property var refreshChoices: ({

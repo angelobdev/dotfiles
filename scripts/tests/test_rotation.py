@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""rotation.py: sensor orientations to Hyprland transforms, and the state file config/tablet.lua reads."""
+"""rotation.py: sensor orientations to Hyprland transforms, and the state file config/displays.lua reads."""
 import io
 import json
 from pathlib import Path

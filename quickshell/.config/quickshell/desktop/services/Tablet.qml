@@ -137,7 +137,7 @@ Singleton {
         onLoaded: root.postureLoaded = true
         onLoadFailed: root.postureLoaded = true
     }
-    // The rotation Hyprland applied at startup (config/tablet.lua reads the same file).
+    // The rotation Hyprland applied at startup (config/displays.lua reads the same file).
     FileView {
         path: root.stateDir + "/rotation.lua"
         printErrors: false

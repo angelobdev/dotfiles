@@ -8,7 +8,7 @@ import ".."
 // Warns once per discharge when the battery runs low, and again when it is critical. Plugging the charger in
 // resets both; a level that wobbles around a threshold warns only once. With autoSaver (the battery panel, on
 // by default) the low level also turns Power Saver on, once per discharge; the charger brings back the profile
-// it replaced, unless another one was chosen meanwhile. A change of power source tells config/tablet.lua,
+// it replaced, unless another one was chosen meanwhile. A change of power source tells config/displays.lua,
 // which keeps a display refresh for each.
 Singleton {
     id: root
@@ -113,7 +113,7 @@ Singleton {
     Connections {
         target: UPower
         function onOnBatteryChanged() {
-            // The source itself, so tablet.lua reads no files on the compositor thread.
+            // The source itself, so displays.lua reads no files on the compositor thread.
             Quickshell.execDetached(["hyprctl", "eval", "desktop_refresh_power(\"" + (UPower.onBattery ? "battery" : "ac") + "\")"]);
         }
     }

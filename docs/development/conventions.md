@@ -43,7 +43,7 @@ Match the surrounding code. Comments are sparse one-liners that explain *why* ("
 
 - Every bind goes through `bind(keys, dispatcher, description, flags)`. The English description is also the Hints lookup key (mapped in `i18n/Sources.js`), so keep descriptions byte-identical or update the mapping and both catalogs.
 - User-facing errors from Lua use `python3 ~/.local/libexec/desktop/i18n.py --notify "<title key>" "<message key>"`; `check-i18n.py` scans that literal in `binds.lua`.
-- Guard plugin APIs (`hl.plugin or {}`); machine-specific settings go in `config/local.lua`.
+- Guard plugin APIs (`hl.plugin or {}`); a model's settings go in a profile in `config/machines/` (chosen by DMI in `machines/init.lua`), a user's own in `~/.config/desktop/hypr.lua`, never in the repository.
 
 ## i18n
 
