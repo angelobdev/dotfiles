@@ -5,6 +5,7 @@ import ".."
 import "../components"
 import "../services"
 import "theming"
+import "settings"
 
 // Settings: one entry point for configuring the desktop, after GNOME Settings. A sidebar of sections on the
 // left, the chosen section on the right; on a narrow screen one of the two at a time, with Back. Sections are
@@ -13,12 +14,38 @@ Overlay {
     id: root
     panelName: "settings"
     dialog: true
-    // Every section, in sidebar order. Each has a page in the StackLayout below, at the same index.
+    // Every section, in sidebar order. Appearance has its own view; the others are built from
+    // SettingsSchema.js (settings/OptionsSection.qml).
     readonly property var sections: [
         {
             name: "appearance",
             icon: "palette",
             label: I18n.tr("settings.sections.appearance")
+        },
+        {
+            name: "desktop",
+            icon: "apps",
+            label: I18n.tr("settings.sections.desktop")
+        },
+        {
+            name: "keyboard",
+            icon: "keyboard",
+            label: I18n.tr("settings.sections.keyboard")
+        },
+        {
+            name: "tablet",
+            icon: "rotate",
+            label: I18n.tr("settings.sections.tablet")
+        },
+        {
+            name: "power",
+            icon: "battery-75",
+            label: I18n.tr("settings.sections.power")
+        },
+        {
+            name: "privacy",
+            icon: "eye-off",
+            label: I18n.tr("settings.sections.privacy")
         }
     ]
     readonly property var sectionNames: sections.map(entry => entry.name)
@@ -27,8 +54,8 @@ Overlay {
     // Narrow screens show the sidebar or a section, not both; Back returns to the sidebar.
     readonly property bool compact: card.width < 820
     property bool showingSidebar: false
-    // The page of the Appearance section, for IPC (shell.qml theming()).
-    readonly property var appearance: appearancePage.item
+    // The page of the Appearance section, for IPC (shell.qml theming()); set when it loads.
+    property var appearance: null
     // A section by name, an unknown one falls back to the first. tab: a tab inside it (Appearance), "" for the
     // one it remembers.
     function showSection(name, tab) {
@@ -36,7 +63,9 @@ Overlay {
         showingSidebar = false;
         // Set above, so the section's page is loaded by now.
         if (section === "appearance")
-            appearancePage.item?.open(tab ?? "");
+            appearance?.open(tab ?? "");
+        else
+            Qt.callLater(() => pages.itemAt(sectionNames.indexOf(section))?.item?.focusItem?.forceActiveFocus());
     }
     // ShellState.openSection keeps the section asked for; another one asked while open moves there.
     onOpened: showSection(ShellState.recall("settings/section", section), "")
@@ -121,15 +150,36 @@ Overlay {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     currentIndex: root.sectionNames.indexOf(root.section)
-                    // Appearance: the theme, wallpaper, font, icons and cursors (panels/theming).
-                    Loader {
-                        id: appearancePage
-                        property bool visited: false
-                        active: visited || root.section === "appearance"
-                        onLoaded: visited = true
-                        sourceComponent: ThemingView {
-                            title: I18n.tr("settings.sections.appearance")
-                            active: root.open && root.section === "appearance" && (!root.compact || !root.showingSidebar)
+                    // One page per section, in sidebar order, built the first time it shows.
+                    Repeater {
+                        id: pages
+                        model: root.sections
+                        Loader {
+                            id: page
+                            required property var modelData
+                            property bool visited: false
+                            active: visited || root.section === modelData.name
+                            onLoaded: {
+                                visited = true;
+                                if (modelData.name === "appearance")
+                                    root.appearance = item;
+                            }
+                            sourceComponent: modelData.name === "appearance" ? appearanceView : optionsView
+                            // Appearance: the theme, wallpaper, font, icons and cursors (panels/theming).
+                            Component {
+                                id: appearanceView
+                                ThemingView {
+                                    title: page.modelData.label
+                                    active: root.open && root.section === "appearance" && (!root.compact || !root.showingSidebar)
+                                }
+                            }
+                            Component {
+                                id: optionsView
+                                OptionsSection {
+                                    section: page.modelData.name
+                                    title: page.modelData.label
+                                }
+                            }
                         }
                     }
                 }

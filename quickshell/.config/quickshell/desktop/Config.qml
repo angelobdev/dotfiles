@@ -6,9 +6,53 @@ import Quickshell.Io
 // The options of the shell. ~/.config/desktop/shell.json changes any of them by name, as in
 // {"dockIconSize": 48, "primaryMonitor": "DP-1"}: it lives outside this repository, so a pull never meets a
 // local change. The file is watched; a value of another type than the default keeps the default.
+// Settings writes it too (set, reset): only values that differ from the default, other keys left as they are.
 Singleton {
     id: root
     property var user: ({})
+    // The file exists but is not a JSON object: Settings leaves it alone instead of writing over it.
+    property bool unreadable: false
+    function isSet(name) {
+        return user[name] !== undefined && user[name] !== null;
+    }
+    // A value equal to the default removes the option, so the file keeps only what was changed.
+    function set(name, value, fallback) {
+        const next = Object.assign({}, user);
+        if (JSON.stringify(value) === JSON.stringify(fallback))
+            delete next[name];
+        else
+            next[name] = value;
+        return save(next);
+    }
+    function reset(name) {
+        const next = Object.assign({}, user);
+        delete next[name];
+        return save(next);
+    }
+    function save(next) {
+        if (unreadable)
+            return false;
+        user = next;
+        pending = JSON.stringify(next, null, 2) + "\n";
+        // ~/.config/desktop may not exist yet on a new install: made once before the first write.
+        if (folderMade)
+            file.setText(pending);
+        else if (!folder.running)
+            folder.running = true;
+        return true;
+    }
+    readonly property string directory: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/desktop"
+    property string pending: ""
+    property bool folderMade: false
+    Process {
+        id: folder
+        command: ["mkdir", "-p", root.directory]
+        onExited: code => {
+            root.folderMade = code === 0;
+            if (root.folderMade)
+                file.setText(root.pending);
+        }
+    }
     function pick(name, fallback) {
         const value = user[name];
         if (value === undefined || value === null)
@@ -20,23 +64,35 @@ Singleton {
         return value;
     }
     function parse(text) {
+        unreadable = false;
+        // An empty file is an empty set of options.
+        if (text.trim() === "")
+            return {};
         try {
             const value = JSON.parse(text);
             if (value && typeof value === "object" && !Array.isArray(value))
                 return value;
+            console.warn("shell.json: not a JSON object");
         } catch (error) {
             console.warn("shell.json:", error);
         }
+        unreadable = true;
         return {};
     }
     FileView {
-        path: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/desktop/shell.json"
+        id: file
+        path: root.directory + "/shell.json"
         blockLoading: true
         watchChanges: true
         printErrors: false
+        // Written whole through a temporary file: a reader never sees half of it.
+        atomicWrites: true
         onFileChanged: reload()
         onLoaded: root.user = root.parse(text())
-        onLoadFailed: root.user = ({})
+        onLoadFailed: {
+            root.unreadable = false;
+            root.user = ({});
+        }
     }
     readonly property int minimumWorkspaces: pick("minimumWorkspaces", 2)
     readonly property bool workspaceScroll: pick("workspaceScroll", true)
