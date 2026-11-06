@@ -58,6 +58,13 @@ Overlay {
                     }
                 }
             }
+            // Settings, on the section seen last.
+            ActionButton {
+                Layout.alignment: Qt.AlignRight
+                compact: true
+                text: I18n.tr("settings.open")
+                onClicked: ShellState.openSection("settings", ShellState.recall("settings/section", "appearance"), ShellState.activeScreen, false)
+            }
         }
     }
 }
