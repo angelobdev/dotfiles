@@ -20,6 +20,8 @@ Two files outside this repository hold what is yours, so `git pull` (or **Reposi
   { "dockIconSize": 48, "dockPinned": ["kitty", "org.gnome.Nautilus"], "weatherCity": "Turin" }
   ```
 
+The keyboard layout follows the system's (`localectl set-x11-keymap`, read from `/etc/X11/xorg.conf.d/00-keyboard.conf`, else the console keymap of `/etc/vconsole.conf`, else `us`); `hl.config({ input = { kb_layout = "de" } })` in `~/.config/desktop/hypr.lua` chooses another. The on-screen keyboard draws the Italian layout only for now (`Config.oskLayout`), so its labels match a physical `it` keymap.
+
 ## Quickshell layout
 
 Under `quickshell/.config/quickshell/desktop/`, `shell.qml` is the desktop entry point and `share.qml` is the sharing picker's entry point. `Config.qml`, `Theme.qml`, `ShellState.qml`, and the `I18n.qml` singleton remain at the root.

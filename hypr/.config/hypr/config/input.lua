@@ -1,8 +1,36 @@
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
 
+-- The keyboard layout the system has (localectl set-x11-keymap writes it for X11 and Wayland sessions alike), else
+-- the console's keymap, else us. ~/.config/desktop/hypr.lua can set another one.
+local function system_layout()
+    local file = io.open("/etc/X11/xorg.conf.d/00-keyboard.conf")
+    if file then
+        local text = file:read("*a") or ""
+        file:close()
+        local layout = text:match('Option%s+"XkbLayout"%s+"([^"]+)"')
+        if layout then
+            return layout, text:match('Option%s+"XkbVariant"%s+"([^"]*)"') or ""
+        end
+    end
+    file = io.open("/etc/vconsole.conf")
+    if file then
+        local text = file:read("*a") or ""
+        file:close()
+        -- Console keymaps add a suffix to the XKB name: de-latin1, fr-latin9.
+        local keymap = text:match('KEYMAP="?([%w_]+)')
+        if keymap then
+            return keymap, ""
+        end
+    end
+    return "us", ""
+end
+
+local layout, variant = system_layout()
+
 hl.config({
     input = {
-        kb_layout = "it",
+        kb_layout = layout,
+        kb_variant = variant,
         follow_mouse = 1,
         sensitivity = 0,
         touchpad = {

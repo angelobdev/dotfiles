@@ -825,3 +825,7 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - The pin lines (AUR packages, zsh plugins) only with `git config desktop.maintainer true` in the repository, set in this laptop's clone so it keeps them; any other clone gets the pins with **Repository**, and **Desktop** lists what they need.
 - After a pull (`after_pull`): with changed files, `stow.py apply` with the plan's optional packages; in a Hyprland session also `hyprctl reload` when `hypr/` changed and `desktop-shell restart` through `hyprctl eval` (the supervisor's environment, as the memory rule requires) when `quickshell/` changed. Unit tests for each case, the order (links first) and a pull that brought nothing.
 - Not tried live: a pull with new files from the screen (this clone is up to date).
+
+## Keyboard layout from the system, 2026-11-06
+
+- `input.lua` reads `XkbLayout` and `XkbVariant` from `/etc/X11/xorg.conf.d/00-keyboard.conf` (what `localectl set-x11-keymap` writes on Fedora and Arch), else `KEYMAP` of `/etc/vconsole.conf` without its suffix, else `us`. On this laptop: `kb_layout` `it`, `kb_variant` empty, the keyboards on the Italian keymap, as before.

@@ -214,7 +214,9 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [x] Installer: a `tablet` profile apart from `hardware` (iio-sensor-proxy, libwacom, hid-sensors modules, tablet sign-in, ISH firmware), preselected by the TUI when it finds a touchscreen or a tablet switch. Hyprgrass built and loaded only with it (per-plugin selection: the bundle digest changes, the plugins rebuild once at the next login).
   - [ ] Fingerprint sign-in on a laptop without `tablet`: `authselect enable-feature with-fingerprint` came with the tablet sign-in, so `hardware` alone installs fprintd without it (Workstation turns it on by itself, Server does not).
 - [x] Updates screen: after a pull, stow and a shell restart through the supervisor; the pin lines (zsh plugins, AUR, plugins) only for the maintainer, other installs get the pins with the repository.
-- [ ] Personal defaults: keyboard layout from the system (`localectl`) instead of `it`, the OSK layout to match, docs and README no longer assuming the OmniBook.
+- [x] Personal defaults: the keyboard layout from the system (`00-keyboard.conf`, `vconsole.conf`, else `us`) instead of `it`.
+  - [ ] On-screen keyboard layouts besides Italian (`osk/layouts/`), picked to match `kb_layout`.
+  - [ ] README and guides: say what a non-OmniBook gets (no tablet profile, panel found by name) once tried on another machine.
 
 ### Codebase review
 
