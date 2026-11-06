@@ -140,7 +140,7 @@ PanelWindow {
         opacity: root.open ? 1 : 0
         Behavior on opacity {
             NumberAnimation {
-                duration: Config.reduceMotion ? 0 : 90
+                duration: Theme.reduceMotion ? 0 : 90
             }
         }
         GridLayout {

@@ -111,10 +111,13 @@ if plugins.hyprglass then
     -- console or a translucent terminal showed a frozen copy of what was behind (verification log,
     -- 2026-11-03). Layers re-render every frame (force_live_resample) and windows re-sample every frame
     -- (no background_cache), at some GPU cost while glass is on screen.
+    -- Reduce effects (Theming panel) turns the glass off on windows and shell surfaces alike; the plugin stays
+    -- loaded, since swapping it in a running session is not safe.
     glass.config({
+        enabled = not theme.reduceEffects,
         default_theme = theme.mode == "light" and "light" or "dark",
         default_preset = style,
-        layers = { enabled = true, force_live_resample = true },
+        layers = { enabled = not theme.reduceEffects, force_live_resample = true },
         windows = { background_cache = false },
     })
     glass.preset("desktop", {

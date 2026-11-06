@@ -13,4 +13,5 @@ return {
     mode = {{ mode | lua }},
     cursorTheme = {{ system.cursorTheme | lua }},
     cursorSize = {{ system.cursorSize }},
+    reduceEffects = {{ preferences.reduceEffects | bool }},
 }

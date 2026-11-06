@@ -188,6 +188,10 @@ Singleton {
     function resetGlass() {
         run([["python3", helper, "glass", "--reset"]]);
     }
+    // Hyprland reloads with or without animations, blur, shadows and glass; the shell follows quickshell.json.
+    function setReduceEffects(reduced) {
+        run([["python3", helper, "reduce-effects", reduced ? "on" : "off"]]);
+    }
     function setBarStyle(style) {
         run([["python3", helper, "bar-style", style]]);
     }

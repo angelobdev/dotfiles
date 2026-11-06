@@ -52,7 +52,7 @@ class GraphiteTests(unittest.TestCase):
 
     def test_quickshell_matches_the_theme_defaults(self):
         source = (REPO / 'quickshell/.config/quickshell/desktop/Theme.qml').read_text(encoding='utf-8')
-        defaults = dict(re.findall(r'^\s+property (?:color|string|real) (\w+): "?([^"\n]+?)"?$', source, re.M))
+        defaults = dict(re.findall(r'^\s+property (?:color|string|real|bool) (\w+): "?([^"\n]+?)"?$', source, re.M))
         rendered = json.loads(self.out['quickshell.json'])
         self.assertEqual(set(rendered), set(defaults))
         for key, value in rendered.items():
@@ -212,6 +212,38 @@ class TextScaleTests(unittest.TestCase):
             self.assertEqual(json.loads((Path(folder) / 'preferences.json').read_text()), {'textScale': 1.15})
             theme.save_preferences({'textScale': 3})
             self.assertEqual(json.loads((Path(folder) / 'preferences.json').read_text()), {})
+
+
+class ReduceEffectsTests(unittest.TestCase):
+    def render(self, chosen):
+        out = theme.render_all(theme.complete(theme.with_preferences(GRAPHITE, chosen)), TEMPLATES)
+        return json.loads(out['quickshell.json'])['reduceEffects'], dict(re.findall(r'^    (\w+) = (\S+),$', out['hyprland.lua'], re.M))['reduceEffects']
+
+    def test_the_choice_reaches_hyprland_and_the_shell(self):
+        self.assertEqual(self.render({'reduceEffects': True}), (True, 'true'))
+        self.assertEqual(self.render({}), (False, 'false'))
+        # Only a real true counts: a hand-edited "yes" leaves the effects on.
+        self.assertEqual(self.render({'reduceEffects': 'yes'}), (False, 'false'))
+
+    def test_only_on_is_saved_and_toggle_flips_it(self):
+        import argparse
+        with tempfile.TemporaryDirectory() as folder, mock.patch.object(theme, 'STATE', Path(folder)), \
+                mock.patch.object(theme, 'apply'), mock.patch.object(theme, 'reload') as reloaded, \
+                mock.patch.object(theme, 'current', return_value='graphite'):
+            saved = Path(folder) / 'preferences.json'
+            for action, expected in (('on', {'reduceEffects': True}), ('toggle', {}), ('toggle', {'reduceEffects': True}), ('off', {})):
+                theme.command_reduce_effects(argparse.Namespace(action=action))
+                self.assertEqual(json.loads(saved.read_text()), expected, action)
+            # Hyprland reloads each time: animations, blur, shadows and glass are its config.
+            self.assertEqual(reloaded.call_count, 4)
+
+    def test_compositor_and_glass_read_the_switch(self):
+        appearance = (REPO / 'hypr/.config/hypr/config/appearance.lua').read_text(encoding='utf-8')
+        self.assertIn('local effects = not theme.reduceEffects', appearance)
+        self.assertEqual(appearance.count('enabled = effects'), 3)
+        plugins = (REPO / 'hypr/.config/hypr/config/plugins.lua').read_text(encoding='utf-8')
+        self.assertIn('enabled = not theme.reduceEffects,', plugins)
+        self.assertIn('layers = { enabled = not theme.reduceEffects,', plugins)
 
 
 class IconThemeTests(unittest.TestCase):

@@ -1,4 +1,7 @@
 local theme = require("config.theme")
+-- Reduce effects (Theming panel) turns off what costs the GPU most; the glass is in plugins.lua. Your own
+-- settings in ~/.config/desktop/hypr.lua, loaded last, still win.
+local effects = not theme.reduceEffects
 
 hl.config({
     general = {
@@ -19,13 +22,13 @@ hl.config({
         inactive_opacity = 0.92,
         fullscreen_opacity = 1.0,
         shadow = {
-            enabled = true,
+            enabled = effects,
             range = 12,
             render_power = 3,
             color = theme.shadow
         },
         blur = {
-            enabled = true,
+            enabled = effects,
             size = 8,
             passes = 3
         },
@@ -34,7 +37,7 @@ hl.config({
         preserve_split = true
     },
     animations = {
-        enabled = true
+        enabled = effects
     },
     misc = {
         disable_hyprland_logo = true,

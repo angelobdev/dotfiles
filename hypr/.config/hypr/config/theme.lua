@@ -17,6 +17,8 @@ local defaults = {
     -- The cursor (session.lua); theme.py also sets it live with hyprctl setcursor.
     cursorTheme = "Adwaita",
     cursorSize = 24,
+    -- Reduce effects in the Theming panel: no animations, blur, shadows or glass (appearance.lua, plugins.lua).
+    reduceEffects = false,
 }
 
 local state = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")

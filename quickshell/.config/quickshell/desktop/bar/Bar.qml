@@ -356,7 +356,7 @@ PanelWindow {
             Rectangle {
                 id: agentDot
                 readonly property bool asking: Agent.state === "permission" || Agent.state === "error"
-                readonly property bool pulsing: Agent.state === "working" && !Config.reduceMotion
+                readonly property bool pulsing: Agent.state === "working" && !Theme.reduceMotion
                 // On battery the dot blinks in two steps instead of fading: a fade redraws the bar on every frame
                 // (120 a second here) for as long as the assistant works, and Hyprland composites each one.
                 readonly property bool animated: pulsing && !UPower.onBattery

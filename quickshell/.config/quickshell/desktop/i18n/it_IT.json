@@ -660,6 +660,9 @@
     "custom": "Personalizzato…",
     "download": "Scarica gli sfondi",
     "downloading": "Scaricamento degli sfondi…",
+    "effects": "Effetti",
+    "effectsFull": "Completi",
+    "effectsReduced": "Ridotti",
     "errors": {
       "fontMissing": "Nessuna famiglia di font installata si chiama “%1”.",
       "iconsMissing": "Nessun tema di icone installato si chiama “%1”.",

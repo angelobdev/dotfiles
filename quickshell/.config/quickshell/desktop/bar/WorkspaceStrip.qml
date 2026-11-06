@@ -87,7 +87,7 @@ RowLayout {
                     color: workspace.active ? BarStyle.accent : workspace.modelData.urgent ? Theme.danger : BarStyle.muted
                     Behavior on width {
                         NumberAnimation {
-                            duration: Config.reduceMotion ? 0 : 160
+                            duration: Theme.reduceMotion ? 0 : 160
                         }
                     }
                 }
