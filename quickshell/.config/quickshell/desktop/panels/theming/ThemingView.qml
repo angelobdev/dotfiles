@@ -14,22 +14,28 @@ ColumnLayout {
     // The section is on screen: Ctrl+Tab and the Theming refresh are for it only.
     property bool active: false
     property string tab: ShellState.recall("theming/tab", "theme")
+    // Tabs shown at least once: their pages are loaded and stay. Added before the tab changes (showTab), so a
+    // loader depends on this list alone.
+    property var seen: []
+    Component.onCompleted: seen = [tab]
     onTabChanged: ShellState.remember("theming/tab", tab)
     // "glass" is a page of the Theme tab, reached from the card of a theme with liquid glass.
     // "store" is a page of the Cursors or Icons tab: the KDE Store, for cursor or icon themes (Store.kind).
-    readonly property var tabs: ["theme", "wallpaper", "font", "icons", "cursors", "glass", "store"]
-    readonly property var cycle: ["theme", "wallpaper", "font", "icons", "cursors"]
+    readonly property var tabs: ["theme", "layout", "wallpaper", "font", "icons", "cursors", "glass", "store"]
+    readonly property var cycle: ["theme", "layout", "wallpaper", "font", "icons", "cursors"]
     // The tab a page belongs to: glass to Theme, the store to the kind it shows.
     readonly property string shownTab: tab === "glass" ? "theme" : tab === "store" ? (Store.kind === "cursors" ? "cursors" : "icons") : tab
     spacing: 14
     function showTab(name) {
+        if (!seen.includes(name))
+            seen = seen.concat([name]);
         tab = name;
         if (name === "wallpaper")
             Theming.makeThumbs();
         // The tab shown by then: a later showTab in the same turn (IPC right after opening) wins, so focus never
         // stays on a hidden page, where Enter would act on it.
         Qt.callLater(() => {
-            const page = [themePage, wallpaperPage, fontPage, iconsPage, cursorsPage, glassPage, storePage][tabs.indexOf(root.tab)];
+            const page = [themePage, layoutPage, wallpaperPage, fontPage, iconsPage, cursorsPage, glassPage, storePage][tabs.indexOf(root.tab)];
             page?.item?.focusItem?.forceActiveFocus();
         });
     }
@@ -111,6 +117,10 @@ ColumnLayout {
                     label: I18n.tr("theming.tabs.theme")
                 },
                 {
+                    name: "layout",
+                    label: I18n.tr("theming.tabs.layout")
+                },
+                {
                     name: "wallpaper",
                     label: I18n.tr("theming.tabs.wallpaper")
                 },
@@ -139,23 +149,27 @@ ColumnLayout {
         TabSwipe {
             onSwiped: step => root.cycleTab(step)
         }
-        // Each page is built the first time its tab shows, then kept (the section opens on one tab).
+        // Each page is built the first time its tab shows, then kept (root.seen; the section opens on one tab).
         // Theme: a card per theme with a small mock-up of its surfaces and accent, and its colours.
         Loader {
             id: themePage
-            property bool visited: false
-            active: visited || root.tab === "theme"
-            onLoaded: visited = true
+            active: root.seen.includes("theme")
             sourceComponent: ThemePage {
+                panel: root
+            }
+        }
+        // Layout: the bar style, the effects, and the window rounding, border and gaps.
+        Loader {
+            id: layoutPage
+            active: root.seen.includes("layout")
+            sourceComponent: LayoutPage {
                 panel: root
             }
         }
         // Wallpaper: the set of the current theme, then "Custom…" for any image.
         Loader {
             id: wallpaperPage
-            property bool visited: false
-            active: visited || root.tab === "wallpaper"
-            onLoaded: visited = true
+            active: root.seen.includes("wallpaper")
             sourceComponent: WallpaperPage {
                 panel: root
             }
@@ -163,9 +177,7 @@ ColumnLayout {
         // Font: interface and monospace families, each shown in itself, and the size.
         Loader {
             id: fontPage
-            property bool visited: false
-            active: visited || root.tab === "font"
-            onLoaded: visited = true
+            active: root.seen.includes("font")
             sourceComponent: FontPage {
                 panel: root
             }
@@ -173,9 +185,7 @@ ColumnLayout {
         // Icons: each pack with its own sample icons, and where the shell glyphs come from.
         Loader {
             id: iconsPage
-            property bool visited: false
-            active: visited || root.tab === "icons"
-            onLoaded: visited = true
+            active: root.seen.includes("icons")
             sourceComponent: IconsPage {
                 panel: root
             }
@@ -183,9 +193,7 @@ ColumnLayout {
         // Cursors: each theme with five of its own shapes at the chosen size, and the size.
         Loader {
             id: cursorsPage
-            property bool visited: false
-            active: visited || root.tab === "cursors"
-            onLoaded: visited = true
+            active: root.seen.includes("cursors")
             sourceComponent: CursorsPage {
                 panel: root
             }
@@ -193,9 +201,7 @@ ColumnLayout {
         // Glass: the Hyprglass options of the current theme, each saved as it is released.
         Loader {
             id: glassPage
-            property bool visited: false
-            active: visited || root.tab === "glass"
-            onLoaded: visited = true
+            active: root.seen.includes("glass")
             sourceComponent: GlassPage {
                 panel: root
             }
@@ -204,9 +210,7 @@ ColumnLayout {
         // its files, and removes what it installed.
         Loader {
             id: storePage
-            property bool visited: false
-            active: visited || root.tab === "store"
-            onLoaded: visited = true
+            active: root.seen.includes("store")
             sourceComponent: StorePage {
                 panel: root
             }
