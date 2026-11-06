@@ -774,3 +774,11 @@ Arch support in the installer and the runtime, decided with the user: official r
 - The real screen in a pseudo-terminal rendered by `pyte`, opened with `--updates`, details unfolded, the cursor moved, back to the menu and out with "Nothing changed.". The first run showed "the desktop is not installed yet" on this desktop: `core` misses one package. The screen now takes the profiles from the install record (all nine here), and the desktop from its Stow links. Stray text after unfolding was `pyte` ignoring REP (`CSI n b`), which ncurses uses with `TERM=xterm`; with `vt100` the same steps draw clean, and kitty implements REP.
 - `desktop-manager`, linked by `stow.py apply` (the only new link): `--help` reaches `install-tui.py`, and `desktop-manager updates` opened the updates screen in a pseudo-terminal and quit with "Nothing changed."; without a terminal it refuses as the installer does.
 - Not yet: applying from the screen on this laptop (a system update and a pin) and a pull on the Arch machine.
+
+## The bar's Update button opens desktop-manager updates, 2026-11-06
+
+Decided with the user: **Update** in the updates panel opens the updates screen of the guided installer instead of running dnf (pacman) and Flatpak at once. `desktop-updates upgrade` still opens the floating `desktop-updates` Kitty window; its `run` now starts `desktop-manager updates` and waits for Enter (`updates.terminal.close`, or `updates.terminal.failed` when the installer exits with an error). The per-manager terminal messages left the catalogs.
+
+- `check.sh` passes.
+- `desktop-updates run` in a pseudo-terminal: the updates screen drew every source, `q` quit with "Nothing changed.", then "Premi Invio per chiudere." and exit 0 after Enter.
+- Not yet: the button pressed on screen, and an apply from that window.

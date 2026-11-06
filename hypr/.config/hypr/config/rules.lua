@@ -35,7 +35,7 @@ hl.window_rule({
     workspace = "special:ai",
 })
 
--- desktop-updates upgrade: the terminal for dnf and Flatpak, over the desktop in the middle.
+-- desktop-updates upgrade: the terminal with desktop-manager updates, over the desktop in the middle.
 hl.window_rule({
     name = "desktop-updates",
     match = { class = "^desktop-updates$" },

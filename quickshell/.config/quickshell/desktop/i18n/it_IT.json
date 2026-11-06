@@ -901,11 +901,7 @@
     "packagesHeading": "Sistema",
     "flatpaksHeading": "Flatpak",
     "terminal": {
-      "dnf": "Pacchetti di sistema (dnf):",
-      "pacman": "Pacchetti di sistema (pacman):",
-      "flatpak": "App Flatpak:",
-      "plugins": "Hyprland è stato aggiornato: esci e rientra, e i plugin vengono ricompilati a quel login (a mano: %1).",
-      "done": "Fatto. Premi Invio per chiudere.",
+      "close": "Premi Invio per chiudere.",
       "failed": "Qualcosa non è andato (vedi sopra). Premi Invio per chiudere."
     },
     "errors": {

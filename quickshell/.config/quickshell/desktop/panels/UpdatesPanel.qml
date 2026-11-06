@@ -6,8 +6,8 @@ import "../components"
 import "../services"
 
 // Available updates, opened from the bar icon that shows while there are any (or desktop-shell toggle
-// updates): what would be updated, when it was checked, and Update, which opens a terminal for dnf and
-// Flatpak (desktop-updates upgrade).
+// updates): what would be updated, when it was checked, and Update, which opens a terminal on the updates
+// screen of the guided installer (desktop-updates upgrade, desktop-manager updates).
 Overlay {
     id: root
     panelName: "updates"
