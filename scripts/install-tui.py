@@ -1003,6 +1003,17 @@ def apply_updates(plan, picked):
     return 0
 
 
+def set_locale():
+    """The environment's locale, for curses to draw UTF-8. One the system lacks (LC_MESSAGES=en_US.UTF-8 with
+    only Italian installed, say) makes setlocale fail: then the character set alone, else C.UTF-8."""
+    for category, name in ((locale.LC_ALL, ''), (locale.LC_CTYPE, ''), (locale.LC_CTYPE, 'C.UTF-8')):
+        try:
+            locale.setlocale(category, name)
+            return
+        except locale.Error:
+            continue
+
+
 def main(argv=None):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--firmware', metavar='DIR', help='directory the firmware screen starts with')
@@ -1019,7 +1030,7 @@ def main(argv=None):
         sys.exit('Run it in a terminal; without one, use install-desktop.py.')
     plan = installer.load_plan(profiles, firmware=args.firmware)
     installer.refuse(plan)
-    locale.setlocale(locale.LC_ALL, '')
+    set_locale()
     os.environ.setdefault('ESCDELAY', '25')
     try:
         choice = curses.wrapper(interface, plan, bool(args.profiles), 'updates' if args.updates else 'menu')

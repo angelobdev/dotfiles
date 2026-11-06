@@ -564,5 +564,37 @@ class RefusalTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, 2)
 
 
+class LocaleTests(unittest.TestCase):
+    def test_a_missing_locale_falls_back_to_the_character_set(self):
+        calls = []
+
+        def setlocale(category, name):
+            calls.append((category, name))
+            if category == tui.locale.LC_ALL:
+                raise tui.locale.Error('unsupported locale setting')
+        with mock.patch.object(tui.locale, 'setlocale', side_effect=setlocale):
+            tui.set_locale()
+        self.assertEqual(calls, [(tui.locale.LC_ALL, ''), (tui.locale.LC_CTYPE, '')])
+
+    def test_c_utf8_when_nothing_else_is_installed(self):
+        calls = []
+
+        def setlocale(category, name):
+            calls.append((category, name))
+            if name == '':
+                raise tui.locale.Error('unsupported locale setting')
+        with mock.patch.object(tui.locale, 'setlocale', side_effect=setlocale):
+            tui.set_locale()
+        self.assertEqual(calls[-1], (tui.locale.LC_CTYPE, 'C.UTF-8'))
+
+    def test_the_real_environment_never_raises(self):
+        with mock.patch.dict('os.environ', {'LC_ALL': '', 'LC_MESSAGES': 'xx_XX.UTF-8'}):
+            saved = tui.locale.setlocale(tui.locale.LC_ALL)
+            try:
+                tui.set_locale()
+            finally:
+                tui.locale.setlocale(tui.locale.LC_ALL, saved)
+
+
 if __name__ == '__main__':
     unittest.main()
