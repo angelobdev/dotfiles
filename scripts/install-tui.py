@@ -7,6 +7,7 @@ import curses
 import getpass
 import importlib.util
 import io
+import json
 import locale
 import os
 from pathlib import Path
@@ -712,14 +713,24 @@ def plugins_source():
                   'Built for one Hyprland build, and replaced only at a login, before they load.')
 
 
+def maintainer():
+    # Who moves the pins: `git config desktop.maintainer true` in this repository. Everyone else gets the pins
+    # with the repository, and the Desktop line applies them: pinning here would leave local changes that stop
+    # the next pull.
+    return git('config', '--bool', 'desktop.maintainer').stdout.strip() == 'true'
+
+
 def check_updates(ui, plan):
     plan.distro.remember_answers()
     updates = shell_helper('updates')
+    pins = (
+        ('aur', 'AUR packages', lambda: pin_source(plan, 'aur', 'AUR packages')),
+        ('clones', 'zsh plugins', lambda: pin_source(plan, 'clones', 'zsh plugins')),
+    ) if maintainer() else ()
     checks = (
         ('system', 'System packages', lambda: package_source(plan, updates)),
         ('flatpak', 'Flatpak apps', lambda: flatpak_source(updates)),
-        ('aur', 'AUR packages', lambda: pin_source(plan, 'aur', 'AUR packages')),
-        ('clones', 'zsh plugins', lambda: pin_source(plan, 'clones', 'zsh plugins')),
+        *pins,
         ('repository', 'Repository', repository_source),
         ('desktop', 'Desktop', lambda: desktop_source(plan)),
         ('plugins', 'Hyprland plugins', plugins_source),
@@ -947,12 +958,34 @@ def apply(plan):
     return 0
 
 
-def pull():
+def pull(plan):
     # Then this program starts again from the new version, on the updates screen: the pins may have moved.
+    before = git('rev-parse', 'HEAD').stdout.strip()
     print('Running: git merge --ff-only @{u}', flush=True)
     subprocess.run(('git', '-C', str(REPO), 'merge', '--ff-only', '@{u}'), check=True)
+    after_pull(plan, before)
     print('Checking again with the new version...', flush=True)
     os.execv(sys.executable, [sys.executable, str(REPO / 'scripts/install-tui.py'), '--updates'])
+
+
+def after_pull(plan, before):
+    # The running desktop follows its files at once, but a new file needs its link first: Hyprland would load a
+    # module that requires it and fail until then, and Quickshell does not pick new files up on its own.
+    changed = git('diff', '--name-only', before, 'HEAD').stdout.split()
+    if not changed or not shutil.which('stow'):
+        return
+    print('Linking new files: ' + ' '.join(installer.stow_command(plan, 'apply')), flush=True)
+    subprocess.run(installer.stow_command(plan, 'apply'), check=True)
+    if not os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
+        return
+    if any(path.startswith('hypr/') for path in changed):
+        subprocess.run(('hyprctl', 'reload'), check=False, stdout=subprocess.DEVNULL)
+    if any(path.startswith('quickshell/') for path in changed):
+        # Through Hyprland, not from here: the shell's supervisor starts it with the session's environment.
+        print('Restarting the shell...', flush=True)
+        command = str(Path.home() / '.local/bin/desktop-shell') + ' restart'
+        subprocess.run(('hyprctl', 'eval', f'hl.dispatch(hl.dsp.exec_cmd({json.dumps(command)}))'), check=False,
+                       stdout=subprocess.DEVNULL)
 
 
 def update_flatpaks():
@@ -1045,7 +1078,7 @@ def main(argv=None):
         installer.post(plan)
         return 0
     if action == 'pull':
-        return pull()
+        return pull(plan)
     if action == 'updates':
         return apply_updates(plan, picked[0])
     return apply(plan)

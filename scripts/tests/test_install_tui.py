@@ -434,9 +434,27 @@ class UpdateSourceTests(unittest.TestCase):
         with mock.patch.object(tui, 'shell_helper'), mock.patch.object(tui, 'package_source', side_effect=RuntimeError('no network')), \
                 mock.patch.object(tui, 'flatpak_source', return_value=None), mock.patch.object(tui, 'pin_source', return_value=None), \
                 mock.patch.object(tui, 'repository_source', return_value=None), mock.patch.object(tui, 'desktop_source', return_value=None), \
-                mock.patch.object(tui, 'plugins_source', return_value=None):
+                mock.patch.object(tui, 'plugins_source', return_value=None), mock.patch.object(tui, 'maintainer', return_value=True):
             found = tui.check_updates(ui, plan())
         self.assertEqual([(entry.key, entry.error) for entry in found], [('system', 'no network')])
+
+    def test_the_pins_only_for_the_maintainer(self):
+        ui = mock.Mock()
+        ui.frame.return_value = None
+        for maintainer, kinds in ((True, ['aur', 'clones']), (False, [])):
+            line = lambda _plan, kind, title: tui.Source(kind, title, 'newer', [], '', True)
+            with mock.patch.object(tui, 'shell_helper'), mock.patch.object(tui, 'package_source', return_value=None), \
+                    mock.patch.object(tui, 'flatpak_source', return_value=None), mock.patch.object(tui, 'pin_source', side_effect=line), \
+                    mock.patch.object(tui, 'repository_source', return_value=None), mock.patch.object(tui, 'desktop_source', return_value=None), \
+                    mock.patch.object(tui, 'plugins_source', return_value=None), mock.patch.object(tui, 'maintainer', return_value=maintainer):
+                found = tui.check_updates(ui, plan())
+            self.assertEqual([entry.key for entry in found], kinds)
+
+    def test_the_maintainer_is_named_in_the_repository_s_git_config(self):
+        for answer, expected in (('true\n', True), ('false\n', False), ('', False)):
+            with mock.patch.object(tui, 'git', return_value=reply(answer)) as git:
+                self.assertEqual(tui.maintainer(), expected)
+            git.assert_called_once_with('config', '--bool', 'desktop.maintainer')
 
     def test_the_shell_helpers_never_hide_the_standard_library(self):
         updates = tui.shell_helper('updates')
@@ -539,10 +557,35 @@ class ApplyUpdatesTests(unittest.TestCase):
         self.assertNotIn('bar', calls)
 
     def test_a_pull_fast_forwards_and_starts_again_on_the_updates_screen(self):
-        with mock.patch('subprocess.run') as run, mock.patch('os.execv') as execv, mock.patch('builtins.print'):
-            tui.pull()
+        with mock.patch('subprocess.run') as run, mock.patch('os.execv') as execv, mock.patch('builtins.print'), \
+                mock.patch.object(tui, 'git', return_value=reply('abc\n')), mock.patch.object(tui, 'after_pull') as after:
+            tui.pull(plan())
         run.assert_called_once_with(('git', '-C', str(tui.REPO), 'merge', '--ff-only', '@{u}'), check=True)
+        self.assertEqual(after.call_args.args[1], 'abc')
         self.assertEqual(execv.call_args.args[1][-2:], [str(tui.REPO / 'scripts/install-tui.py'), '--updates'])
+
+    def after_pull(self, changed, session):
+        environment = {'HYPRLAND_INSTANCE_SIGNATURE': 'sig'} if session else {}
+        with mock.patch('subprocess.run') as run, mock.patch('builtins.print'), mock.patch('shutil.which', return_value='/usr/bin/stow'), \
+                mock.patch.object(tui, 'git', return_value=reply('\n'.join(changed))), mock.patch.dict('os.environ', environment, clear=True):
+            tui.after_pull(plan(), 'abc')
+        return [call.args[0] for call in run.call_args_list]
+
+    def test_a_pull_links_new_files_then_reloads_what_changed(self):
+        calls = self.after_pull(['hypr/.config/hypr/config/new.lua', 'quickshell/.config/quickshell/desktop/New.qml'], True)
+        self.assertEqual(calls[0], installer.stow_command(plan(), 'apply'))
+        self.assertEqual(calls[1], ('hyprctl', 'reload'))
+        self.assertEqual(calls[2][:2], ('hyprctl', 'eval'))
+        self.assertIn('desktop-shell restart', calls[2][2])
+
+    def test_a_pull_of_docs_only_links_and_restarts_nothing(self):
+        self.assertEqual(self.after_pull(['docs/README.md'], True), [installer.stow_command(plan(), 'apply')])
+
+    def test_outside_the_session_a_pull_only_links(self):
+        self.assertEqual(self.after_pull(['quickshell/x.qml'], False), [installer.stow_command(plan(), 'apply')])
+
+    def test_a_pull_that_brought_nothing_does_nothing(self):
+        self.assertEqual(self.after_pull([], True), [])
 
 
 def bundle_module():

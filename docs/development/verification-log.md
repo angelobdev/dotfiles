@@ -819,3 +819,9 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Plugins: `bundle.selected()` builds Hyprgrass only with `tablet` (all four without a record); `install-hypr-plugins.py` writes a `hyprpm.toml` of the selection into the packaging repository and enables only it. With all four the digest is the same as before (`afc956cf2eb4654c` here, `bundle.status()` still `current`), so this laptop rebuilds nothing; without Hyprgrass it is another digest, rebuilt at the next login.
 - Tests: selection, migration, digest and filtered manifest in `test_plugins.py`; detection from sample `/proc/bus/input/devices` blocks (switch, touchscreen, a lid and a touchpad that are not) in `test_install.py`; the fresh preselection with and without a 2-in-1 in `test_install_tui.py`. The install workflow and the container scripts now run `core,hardware,tablet,plugins`.
 - Not tried: a login that builds the three-plugin set, on a machine without `tablet`.
+
+## Updates screen for other installs, 2026-11-06
+
+- The pin lines (AUR packages, zsh plugins) only with `git config desktop.maintainer true` in the repository, set in this laptop's clone so it keeps them; any other clone gets the pins with **Repository**, and **Desktop** lists what they need.
+- After a pull (`after_pull`): with changed files, `stow.py apply` with the plan's optional packages; in a Hyprland session also `hyprctl reload` when `hypr/` changed and `desktop-shell restart` through `hyprctl eval` (the supervisor's environment, as the memory rule requires) when `quickshell/` changed. Unit tests for each case, the order (links first) and a pull that brought nothing.
+- Not tried live: a pull with new files from the screen (this clone is up to date).
