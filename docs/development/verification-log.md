@@ -805,3 +805,9 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - `test_displays.lua` (was `test_tablet.lua`): 21 checks, the new ones a panel found by name that rotates, a monitor left to its rules, internal turning the other monitor off, and a desktop whose monitors no mode, refresh or rotation touches.
 - Live on this laptop: `Hyprland --verify-config` on a copy of the final configuration first; then, after each saved file, `hyprctl configerrors` empty, eDP-1 at 1.6667 and 120 Hz on mains (the saved choice), the tablet and lid switches bound, 118 binds as before, and `desktop_rotate(0)`, `desktop_refresh_power("ac")` and `desktop_display_mode("extend")` through `hyprctl eval` changing nothing.
 - Found on the way: a module that is new to the repository needs `stow.py apply` before a file requires it. Saving `tablet.lua` before `displays.lua` was linked left Hyprland for a minute without the panel's rule (scale 1) and the switch binds, until the link was made.
+
+## Touch only with a touchscreen, 2026-11-06
+
+- `Tablet.touchscreen`: `hyprctl devices -j` lists a touch device (asked once at start), or tablet mode is on; in `desktop-shell status` too. The on-screen keyboard's helper runs as the input method only then (`Keyboard.autoShow`), and Hints lists the gestures only then.
+- Found on the way: started from `onAutoShowChanged`, the helper ran without `--input-method`, the handler running before the command's binding had the flag; `Qt.callLater` fixed it. A hot reload of these singletons kept part of the old state, so the result was checked after a clean restart through the supervisor: `touchscreen: true`, `osk.py run --input-method` running, `inputMethod: true`, `ready: true`, as before on this laptop.
+- Not checked live: a computer without a touchscreen (the false branch of the same parse).

@@ -210,6 +210,7 @@ ShellRoot {
                 tablet: {
                     active: Tablet.active,
                     accelerometer: Tablet.available,
+                    touchscreen: Tablet.touchscreen,
                     orientation: Tablet.orientation,
                     transform: Tablet.transform,
                     rotationLock: Tablet.locked

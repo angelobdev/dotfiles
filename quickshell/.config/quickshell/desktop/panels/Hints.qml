@@ -13,7 +13,7 @@ Overlay {
     dialog: true
     property var bindings: []
     // The touchscreen gestures (hypr/config/plugins.lua) and touch interactions of the shell: first in
-    // tablet mode, after the shortcuts otherwise.
+    // tablet mode, after the shortcuts otherwise, and left out on a computer without a touchscreen.
     readonly property var gestures: [
         {
             keys: I18n.tr("hints.gestures.threeSideways"),
@@ -207,7 +207,7 @@ Overlay {
                 Layout.fillHeight: true
                 clip: true
                 spacing: 3
-                model: (Tablet.active ? root.gestures.concat(root.bindings) : root.bindings.concat(root.gestures)).filter(b => (b.keys + " " + b.name + " " + b.submap + " " + b.category).toLowerCase().includes(search.text.toLowerCase()))
+                model: (Tablet.active ? root.gestures.concat(root.bindings) : Tablet.touchscreen ? root.bindings.concat(root.gestures) : root.bindings).filter(b => (b.keys + " " + b.name + " " + b.submap + " " + b.category).toLowerCase().includes(search.text.toLowerCase()))
                 section.property: "category"
                 section.criteria: ViewSection.FullString
                 section.delegate: Item {

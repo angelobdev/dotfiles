@@ -7,9 +7,10 @@ import "../osk/KeyScore.js" as KeyScore
 
 // The on-screen keyboard: what it shows (osk/layouts/<layout>.json) and what it types, through osk.py, a
 // virtual keyboard with the keymap of the physical one. Docked or floating and the extra row are saved.
-// With Config.oskAutoShow the helper runs from the start as the input method too: in tablet mode a text
-// field taking the focus opens the keyboard on the page for its purpose, and losing it closes a keyboard
-// that opened by itself. Otherwise the helper starts the first time the keyboard is shown.
+// With Config.oskAutoShow, on a computer with a touchscreen, the helper runs from the start as the input
+// method too: in tablet mode a text field taking the focus opens the keyboard on the page for its purpose, and
+// losing it closes a keyboard that opened by itself. Otherwise the helper starts the first time the keyboard
+// is shown.
 Singleton {
     id: root
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/osk.py"
@@ -302,7 +303,7 @@ Singleton {
         // brings it back over the panel.
         if (shown && ShellState.panel !== "")
             raise();
-        if (!Config.oskAutoShow || !Tablet.active)
+        if (!root.autoShow || !Tablet.active)
             return;
         if (!shown) {
             setShown(true);
@@ -361,10 +362,14 @@ Singleton {
     }
     onPredictingChanged: setWord(word)
     onReadyChanged: setWord(word)
-    Component.onCompleted: {
-        if (Config.oskAutoShow)
+    // Without a touchscreen the helper runs only while the keyboard is shown, and never as the input method, so
+    // it does not take that place from fcitx5 or IBus. Tablet.touchscreen arrives just after the start.
+    readonly property bool autoShow: Config.oskAutoShow && Tablet.touchscreen
+    // Later, once the command has the input method flag: the handler can run before that binding.
+    onAutoShowChanged: Qt.callLater(() => {
+        if (root.autoShow && !process.running)
             process.running = true;
-    }
+    })
     Timer {
         id: saveTouch
         interval: 30000
@@ -379,13 +384,13 @@ Singleton {
     Timer {
         interval: 3000
         repeat: true
-        running: (Config.oskAutoShow || root.shown) && !process.running
+        running: (root.autoShow || root.shown) && !process.running
         onTriggered: process.running = true
     }
     Process {
         id: process
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
-        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "run"].concat(Config.oskAutoShow ? ["--input-method"] : []))
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "run"].concat(root.autoShow ? ["--input-method"] : []))
         stdinEnabled: true
         stdout: SplitParser {
             onRead: data => {
@@ -397,7 +402,7 @@ Singleton {
                 }
                 if (message.status === "ready") {
                     root.ready = true;
-                    root.inputMethod = Config.oskAutoShow;
+                    root.inputMethod = root.autoShow;
                 } else if (message.event === "letters") {
                     if (message.word === root.word && root.predicting) {
                         root.letters = message.letters;

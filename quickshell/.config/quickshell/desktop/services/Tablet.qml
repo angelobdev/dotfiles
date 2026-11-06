@@ -20,6 +20,10 @@ Singleton {
     readonly property bool locked: SessionState.rotationLock
     // Whether there is an accelerometer at all; the Control Center tile shows only then.
     property bool available: false
+    // Whether Hyprland lists a touchscreen (hyprctl devices), asked once at start: the on-screen keyboard's
+    // input method and the gestures in Hints are for touch only. Tablet mode counts as touch too.
+    property bool touchFound: false
+    readonly property bool touchscreen: touchFound || active
     property string orientation: ""
     // Last transform the sensor reported, and the one Hyprland has; both start from the saved rotation.
     property int sensed: 0
@@ -79,6 +83,20 @@ Singleton {
             if (command[3] !== String(root.transform)) {
                 command = ["python3", root.helper, "apply", String(root.transform)];
                 running = true;
+            }
+        }
+    }
+    Process {
+        running: true
+        command: ["hyprctl", "devices", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const touch = JSON.parse(text).touch;
+                    root.touchFound = Array.isArray(touch) && touch.length > 0;
+                } catch (failure) {
+                    root.touchFound = false;
+                }
             }
         }
     }
