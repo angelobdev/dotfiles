@@ -76,7 +76,7 @@ desktop-plugins reload
 hyprctl reload
 ```
 
-The installer reenables all four plugins. Lua blocks are guarded so startup also works without plugins. Native Hyprland blur remains the fallback when Hyprglass is disabled.
+The installer reenables the plugins of the installed profiles: all four with `tablet`, the three others without it, since Hyprgrass is for a touchscreen (`bundle.selected()`; without an installer record, all four). A different set is a different bundle digest, built at the next login like any packaging change; the full set keeps the digest it always had. Lua blocks are guarded so startup also works without plugins. Native Hyprland blur remains the fallback when Hyprglass is disabled.
 
 Main-session installation is complete: all four plugins are enabled in hyprpm and loaded in Hyprland; `desktop-plugins reload` and `hyprctl configerrors` pass without errors.
 

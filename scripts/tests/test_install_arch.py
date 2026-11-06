@@ -189,7 +189,7 @@ class ManifestTests(unittest.TestCase):
             self.assertNotIn(profile, installer.DEFAULT_PROFILES.split(','))
 
     def test_the_firmware_is_fedora_s(self):
-        self.assertEqual(self.arch['hardware']['firmware'], MANIFEST['fedora']['hardware']['firmware'])
+        self.assertEqual(self.arch['tablet']['firmware'], MANIFEST['fedora']['tablet']['firmware'])
 
 
 class ReleaseTests(unittest.TestCase):

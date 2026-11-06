@@ -29,7 +29,8 @@ import bundle  # noqa: E402
 # One line each; docs/guide/installation.md has the long version.
 DESCRIPTIONS = {
     'core': 'Hyprland, Quickshell, GDM with the hyprland-uwsm session, portals, audio, network, fonts and zsh: the desktop itself.',
-    'hardware': 'Firmware, video decoding and sensors of an Intel 2-in-1, fingerprint and tablet sign-in, firewall zone, sshd off.',
+    'hardware': 'Firmware, video decoding, cameras and power of a recent Intel laptop, fingerprint reader, firewall zone, sshd off.',
+    'tablet': 'A 2-in-1: screen rotation, stylus, sign-in without the fingerprint reader while folded, touchscreen gestures (Hyprgrass).',
     'plugins': 'What building the Hyprland plugins needs, from RPM Fusion too; the RPM Fusion ffmpeg replaces ffmpeg-free.',
     'apps': 'Zen Browser, 1Password, VS Code, Neovim, gh, glab, uv, gcc and a few command-line tools.',
     'containers': 'Docker (moby-engine, docker-compose, the docker group) and Tailscale.',
@@ -98,7 +99,7 @@ def status_label(status):
 def preselected(statuses):
     # On a desktop already set up, what it has; on a fresh system, the defaults.
     if not installed(statuses['core']):
-        return tuple(installer.DEFAULT_PROFILES.split(','))
+        return tuple(installer.default_profiles().split(','))
     return tuple(name for name in installer.PROFILES if name == 'core' or installed(statuses[name]))
 
 
@@ -147,7 +148,7 @@ def command(plan, action='apply'):
 
 
 def firmware_items(plan):
-    # The vendor blobs this model still needs; none unless hardware is chosen and the model matches.
+    # The vendor blobs this model still needs; none unless tablet is chosen and the model matches.
     return installer.firmware_needed(plan)
 
 
@@ -370,7 +371,7 @@ def choose_profiles(ui, plan, mode, statuses, preset=False):
         intro = 'The profiles found on this system start on. core is the desktop itself and always stays on.'
     else:
         intro = 'Choose what to install. core is the desktop itself and always stays on.'
-    defaults = tuple(installer.DEFAULT_PROFILES.split(','))
+    defaults = tuple(installer.default_profiles().split(','))
     keys = 'Up/Down move   Space toggle   d defaults   ' + ('i installed   ' if found else '') + 'Enter continue   Esc back   q quit'
     while True:
         row = ui.frame('Profiles', keys)
@@ -1018,10 +1019,10 @@ def main(argv=None):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--firmware', metavar='DIR', help='directory the firmware screen starts with')
     parser.add_argument('--profiles', help='profiles chosen at the start (default: the ones installed, or on a fresh system '
-                        f'{installer.DEFAULT_PROFILES})')
+                        f'{installer.DEFAULT_PROFILES}, and tablet on a 2-in-1)')
     parser.add_argument('--updates', action='store_true', help='start on the updates screen')
     args = parser.parse_args(argv)
-    profiles = tuple((args.profiles or installer.DEFAULT_PROFILES).split(','))
+    profiles = tuple((args.profiles or installer.default_profiles()).split(','))
     if not installer.valid_profiles(profiles):
         parser.error(f'--profiles needs core, and takes only {", ".join(installer.PROFILES)}.')
     if os.geteuid() == 0:

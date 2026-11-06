@@ -5,6 +5,7 @@ Outside the bundle, so it is not part of its digest: accepting a Hyprland build 
 import getpass
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import tomllib
@@ -20,6 +21,12 @@ REPOSITORY = 'dotfiles-desktop'
 VERIFIED = ('0.57.1-1.fc45.x86_64', '0.57.1-1')
 CACHE = Path('/var/cache/hyprpm') / getpass.getuser()
 STAMP = Path.home() / '.local/state/dotfiles/hypr-plugins.json'
+# The installer's record (install-desktop.py RECORD): its profiles say which plugins to build.
+RECORD = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'dotfiles/install.json'
+# Plugins built only with a profile: the touchscreen gestures are for a 2-in-1.
+PROFILE_OF = {'hyprgrass': 'tablet'}
+# Records written since the tablet profile left hardware say so; before, hardware held what tablet holds now.
+PROFILES_VERSION = 2
 
 # status(): what the plugins need, from the least to the most work.
 CURRENT = 'current'          # built from this bundle for the installed Hyprland
@@ -54,8 +61,49 @@ def verify():
     return version
 
 
-def digest():
-    return hashlib.sha256(b''.join((PACKAGING / name).read_bytes() for name in FILES)).hexdigest()[:16]
+def migrate(record):
+    # A record from before the tablet profile: its hardware profile was hardware and tablet together.
+    profiles = record.get('profiles')
+    if isinstance(profiles, list) and record.get('profiles_version') != PROFILES_VERSION and 'hardware' in profiles \
+            and 'tablet' not in profiles:
+        profiles.insert(profiles.index('hardware') + 1, 'tablet')
+    return record
+
+
+def recorded_profiles():
+    # The profiles the installer applied, or None without a record (plugins installed by hand: all of them).
+    try:
+        record = json.loads(RECORD.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(record, dict) or record.get('uninstalled') or not isinstance(record.get('profiles'), list):
+        return None
+    return migrate(record)['profiles']
+
+
+def selected(profiles=False):
+    # The plugins to build, in PLUGINS order: those of a profile only when it is installed.
+    profiles = recorded_profiles() if profiles is False else profiles
+    return tuple(name for name in PLUGINS if profiles is None or PROFILE_OF.get(name, 'core') == 'core' or PROFILE_OF[name] in profiles)
+
+
+def manifest(names):
+    # hyprpm.toml with only these plugins: hyprpm builds every plugin its manifest lists.
+    text = (PACKAGING / 'hyprpm.toml').read_text(encoding='utf-8')
+    if tuple(names) == tuple(PLUGINS):
+        return text
+    blocks = text.split('\n\n')
+    kept = [block for block in blocks if not any(f'[{name}]' in block.splitlines() for name in PLUGINS if name not in names)]
+    return '\n\n'.join(kept)
+
+
+def digest(names=None):
+    # The full set keeps the digest it always had: a laptop with every plugin rebuilds nothing for this.
+    names = selected() if names is None else tuple(names)
+    data = b''.join((PACKAGING / name).read_bytes() for name in FILES)
+    if names != tuple(PLUGINS):
+        data += ('\0plugins:' + ','.join(names)).encode()
+    return hashlib.sha256(data).hexdigest()[:16]
 
 
 def repository_state():
@@ -74,7 +122,7 @@ def installed_digest():
 def complete():
     # Every plugin built: hyprpm marks one that did not with failed = true, and a removed repository has none.
     state = repository_state()
-    return bool(installed_digest()) and not any(state.get(name, {}).get('failed', True) for name in PLUGINS)
+    return bool(installed_digest()) and not any(state.get(name, {}).get('failed', True) for name in selected())
 
 
 def stamp():

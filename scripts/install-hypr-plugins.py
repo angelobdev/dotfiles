@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Install the tested plugin set with hyprpm, using the headers of the installed Hyprland package."""
+"""Install the tested plugin set with hyprpm, using the headers of the installed Hyprland package.
+
+The set follows the installed profiles (bundle.selected): Hyprgrass only with tablet."""
 import json
 import os
 from pathlib import Path
@@ -69,7 +71,8 @@ def main():
     if not os.path.samefile('/proc/' + str(instance['pid']) + '/exe', shutil.which('Hyprland')):
         sys.exit('The running compositor uses the old binary: log in again.')
     in_use = loaded()
-    if bundle.status() == bundle.CURRENT and in_use == set(PLUGINS):
+    wanted = bundle.selected()
+    if bundle.status() == bundle.CURRENT and in_use == set(wanted):
         print('The plugins are built from this packaging for this Hyprland, and loaded: nothing to do.')
         return
     cache = bundle.CACHE
@@ -103,6 +106,8 @@ def main():
         source.mkdir(parents=True, exist_ok=True)
         for name in bundle.FILES:
             shutil.copy2(PACKAGING / name, source / name)
+        # Only the selected plugins: hyprpm builds whatever its manifest lists.
+        (source / 'hyprpm.toml').write_text(bundle.manifest(wanted), encoding='utf-8')
         run('git', 'init', '-q', str(source))
         run('git', '-C', str(source), 'add', *bundle.FILES)
         run('git', '-C', str(source), '-c', 'user.name=Dotfiles packaging', '-c', 'user.email=dotfiles@localhost', '-c', 'commit.gpgsign=false', 'commit', '-qm', 'Package tested Hyprland plugins')
@@ -110,16 +115,16 @@ def main():
     if repo_state.exists():
         existing = tomllib.loads(repo_state.read_text())
         # Another packaging, or a build that stopped halfway: replaced whole, while nothing of it is loaded.
-        if existing['repository']['url'] != source.as_uri() or any(existing.get(name, {}).get('failed', True) for name in PLUGINS):
+        if existing['repository']['url'] != source.as_uri() or any(existing.get(name, {}).get('failed', True) for name in wanted):
             if in_use:
                 sys.exit(AT_LOGIN)
             run('hyprpm', 'remove', bundle.REPOSITORY)
     if not repo_state.exists():
         run('hyprpm', 'add', source.as_uri())
     existing = tomllib.loads(repo_state.read_text())
-    if any(existing.get(name, {}).get('failed', True) for name in PLUGINS):
+    if any(existing.get(name, {}).get('failed', True) for name in wanted):
         sys.exit('One or more plugins failed to build: check the log before enabling them.')
-    for name in PLUGINS:
+    for name in wanted:
         run('hyprpm', 'enable', name)
     # Autoload refuses stale COPR builds, even though their Git hash is "unknown".
     stamp = {'rpm': bundle.package_version('hyprland'), 'version': running['version'], 'abiHash': running['abiHash']}
@@ -128,14 +133,14 @@ def main():
     run(str(REPO / 'scripts/stow.py'), 'apply')
     run(str(REPO / 'shell/.local/bin/desktop-plugins'), 'reload')
     run('hyprctl', 'reload')
-    missing = set(PLUGINS) - loaded()
+    missing = set(wanted) - loaded()
     if missing:
         sys.exit('Plugins not loaded: ' + ', '.join(sorted(missing)))
     run('hyprctl', 'plugin', 'list')
     errors = subprocess.check_output(['hyprctl', 'configerrors'], text=True).strip()
     if errors:
         sys.exit(errors)
-    print('Four plugins installed and loaded; configuration has no errors.')
+    print(f'{len(wanted)} plugins installed and loaded ({", ".join(wanted)}); configuration has no errors.')
 
 
 if __name__ == '__main__':

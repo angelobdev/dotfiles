@@ -35,8 +35,9 @@ class Home(unittest.TestCase):
         self.root = Path(folder.name)
         self.cache = self.root / 'cache'
         self.stamp_path = self.root / 'state/hypr-plugins.json'
-        for target, value in ((bundle, 'CACHE'), (bundle, 'STAMP')):
-            patcher = mock.patch.object(target, value, {'CACHE': self.cache, 'STAMP': self.stamp_path}[value])
+        # No installer record: every plugin, whatever this machine's record says.
+        for target, value in ((bundle, 'CACHE'), (bundle, 'STAMP'), (bundle, 'RECORD')):
+            patcher = mock.patch.object(target, value, {'CACHE': self.cache, 'STAMP': self.stamp_path, 'RECORD': self.root / 'no-record.json'}[value])
             patcher.start()
             self.addCleanup(patcher.stop)
         home = mock.patch.object(Path, 'home', return_value=self.root / 'home')
@@ -264,6 +265,51 @@ class LoadedTests(unittest.TestCase):
         reply = json.dumps([{'name': 'hyprgrass'}, {'name': 'someone-else'}])
         with mock.patch('subprocess.check_output', return_value=reply):
             self.assertEqual(installer.loaded(), {'hyprgrass'})
+
+
+class SelectionTests(unittest.TestCase):
+    """Which plugins the installed profiles build: Hyprgrass only with tablet."""
+
+    def record(self, value):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        path = Path(folder.name) / 'install.json'
+        path.write_text(json.dumps(value))
+        patcher = mock.patch.object(bundle, 'RECORD', path)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_without_a_record_every_plugin(self):
+        self.record('not a record')
+        self.assertEqual(bundle.selected(), tuple(build.PLUGINS))
+
+    def test_hyprgrass_only_with_tablet(self):
+        self.record({'profiles': ['core', 'hardware', 'plugins'], 'profiles_version': bundle.PROFILES_VERSION})
+        self.assertNotIn('hyprgrass', bundle.selected())
+        self.record({'profiles': ['core', 'tablet', 'plugins'], 'profiles_version': bundle.PROFILES_VERSION})
+        self.assertIn('hyprgrass', bundle.selected())
+
+    def test_a_record_from_before_the_tablet_profile_keeps_hyprgrass(self):
+        # hardware held what tablet holds now.
+        self.record({'profiles': ['core', 'hardware', 'plugins']})
+        self.assertEqual(bundle.recorded_profiles(), ['core', 'hardware', 'tablet', 'plugins'])
+        self.assertIn('hyprgrass', bundle.selected())
+        self.record({'profiles': ['core', 'plugins']})
+        self.assertNotIn('hyprgrass', bundle.selected())
+
+    def test_the_full_set_keeps_its_digest(self):
+        # A laptop with every plugin rebuilds nothing because of the selection.
+        old = __import__('hashlib').sha256(b''.join((bundle.PACKAGING / name).read_bytes() for name in bundle.FILES)).hexdigest()[:16]
+        self.assertEqual(bundle.digest(tuple(build.PLUGINS)), old)
+        self.assertNotEqual(bundle.digest(bundle.selected(['core'])), old)
+
+    def test_the_manifest_lists_only_the_selection(self):
+        import tomllib
+        full = tomllib.loads(bundle.manifest(tuple(build.PLUGINS)))
+        self.assertEqual(set(full) - {'repository'}, set(build.PLUGINS))
+        without = tomllib.loads(bundle.manifest(bundle.selected(['core'])))
+        self.assertEqual(set(without) - {'repository'}, set(build.PLUGINS) - {'hyprgrass'})
+        self.assertEqual(without['HyprCapture'], full['HyprCapture'])
 
 
 if __name__ == '__main__':

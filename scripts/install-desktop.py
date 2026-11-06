@@ -23,7 +23,8 @@ import urllib.request
 
 REPO = Path(__file__).resolve().parent.parent
 INSTALL = REPO / 'scripts/install'
-PROFILES = ('core', 'hardware', 'plugins', 'apps', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs')
+PROFILES = ('core', 'hardware', 'tablet', 'plugins', 'apps', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs')
+# On a 2-in-1 (touch_hardware) tablet joins them: default_profiles().
 DEFAULT_PROFILES = 'core,hardware,plugins'
 MIN_FREE = 30 * 2**30
 SESSION = 'hyprland-uwsm'
@@ -476,6 +477,7 @@ def boot_apply(plan, items):
 
 def load_record(set_aside=False):
     # Missing: an empty record. Unreadable: empty too, said out loud, and moved aside before anything replaces it.
+    # One from before the tablet profile gets it beside hardware, which held it then.
     try:
         record = json.loads(RECORD.read_text(encoding='utf-8'))
     except FileNotFoundError:
@@ -483,7 +485,7 @@ def load_record(set_aside=False):
     except (OSError, ValueError):
         record = None
     if isinstance(record, dict):
-        return record
+        return bundle.migrate(record)
     aside = RECORD.with_name(RECORD.name + '.unreadable')
     if set_aside:
         RECORD.replace(aside)
@@ -494,7 +496,7 @@ def load_record(set_aside=False):
 
 def knows_changes(record):
     # Only profiles: an apply that found nothing to do on an install made before there was a record.
-    return bool(set(record) - {'profiles'})
+    return bool(set(record) - {'profiles', 'profiles_version'})
 
 
 def desktop_present():
@@ -503,6 +505,8 @@ def desktop_present():
 
 
 def save_record(record):
+    if 'profiles' in record:
+        record['profiles_version'] = bundle.PROFILES_VERSION
     RECORD.parent.mkdir(parents=True, exist_ok=True)
     temporary = RECORD.with_name(RECORD.name + '.tmp')
     temporary.write_text(json.dumps(record, indent=1, sort_keys=True) + '\n', encoding='utf-8')
@@ -1368,20 +1372,46 @@ def pins(update):
     return 1 if failed else 0
 
 
+def touch_hardware(devices=Path('/proc/bus/input/devices')):
+    # A 2-in-1: an input device with a tablet mode switch (SW_TABLET_MODE, bit 1 of SW) or a touchscreen (absolute
+    # axes on a direct input device: INPUT_PROP_DIRECT, bit 1 of PROP).
+    try:
+        text = devices.read_text(encoding='utf-8', errors='replace')
+    except OSError:
+        return False
+    for block in text.split('\n\n'):
+        bits = {}
+        for line in block.splitlines():
+            if line.startswith('B: ') and '=' in line:
+                name, _, value = line[3:].partition('=')
+                try:
+                    bits[name] = int(value.split()[-1], 16) if value.split() else 0
+                except ValueError:
+                    continue
+        if bits.get('SW', 0) & 0b10 or (bits.get('PROP', 0) & 0b10 and 'ABS' in bits):
+            return True
+    return False
+
+
+def default_profiles():
+    names = DEFAULT_PROFILES.split(',') + (['tablet'] if touch_hardware() else [])
+    return ','.join(name for name in PROFILES if name in names)
+
+
 def main(argv=None):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('action', nargs='?', choices=('dry-run', 'apply', 'post', 'pins'), default='dry-run',
                         help='pins: newer commits than the manifest pins, of AUR packages and clones (from any distribution)')
     parser.add_argument('--update', action='store_true', help='with pins: pin those newer commits in the manifest')
     parser.add_argument('--firmware', metavar='DIR', help='directory searched (by hash) for the vendor firmware the manifest lists')
-    parser.add_argument('--profiles', default=DEFAULT_PROFILES, help=f'comma separated, from {", ".join(PROFILES)} (default: {DEFAULT_PROFILES})')
+    parser.add_argument('--profiles', help=f'comma separated, from {", ".join(PROFILES)} (default: {DEFAULT_PROFILES}, and tablet on a 2-in-1)')
     parser.add_argument('--uninstall', action='store_true', help='undo what apply set up, from its record (dry-run shows it, apply does it)')
     args = parser.parse_args(argv)
     if args.uninstall and args.action in ('post', 'pins'):
         parser.error('--uninstall goes with dry-run or apply.')
     if args.update and args.action != 'pins':
         parser.error('--update goes with pins.')
-    profiles = tuple(args.profiles.split(','))
+    profiles = tuple((args.profiles or default_profiles()).split(','))
     if not valid_profiles(profiles):
         parser.error(f'--profiles needs core, and takes only {", ".join(PROFILES)}.')
     if os.geteuid() == 0:

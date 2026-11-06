@@ -133,23 +133,30 @@ commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
 path = '.local/share/zsh/plugins/zsh-autocomplete'
 track = 'tags'
 
-# This laptop: an HP OmniBook Ultra Flip. Most of it suits any recent Intel 2-in-1.
+# A recent Intel laptop: firmware, video decoding, cameras, power and the fingerprint reader. The 2-in-1 parts
+# are the tablet profile.
 [fedora.hardware]
 packages = [
     'iwlwifi-mvm-firmware', 'iwlbluetooth-firmware', 'intel-gpu-firmware', 'intel-vsc-firmware', 'intel-npu-firmware',
     'intel-audio-firmware', 'cirrus-audio-firmware', 'alsa-sof-firmware', 'alsa-ucm', 'alsa-utils',
     'intel-vpl-gpu-rt', 'libvpl', 'libva-utils', 'libva-intel-media-driver',
     'libcamera', 'libcamera-ipa', 'pipewire-plugin-libcamera',
-    'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'iio-sensor-proxy', 'libwacom', 'fprintd', 'fprintd-pam',
+    'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'fprintd', 'fprintd-pam',
 ]
 services = ['thermald.service', 'intel_lpmd.service']
 disable = ['sshd.service']
 firewall_zone = 'FedoraWorkstation'
-auth = true
 notes = ['Enroll your fingerprint: fprintd-enroll']
 
+# A 2-in-1 (this laptop: an HP OmniBook Ultra Flip): the accelerometer behind screen rotation, the stylus, the
+# sign-in that skips the fingerprint reader while folded, and the Hyprgrass touchscreen gestures (built only with
+# this profile).
+[fedora.tablet]
+packages = ['iio-sensor-proxy', 'libwacom', 'fprintd', 'fprintd-pam']
+auth = true
+
 # The accelerometer behind screen rotation. linux-firmware has the HP blob for another SKU only.
-[[fedora.hardware.firmware]]
+[[fedora.tablet.firmware]]
 product = 'HP OmniBook Ultra Flip Laptop 14-fh0xxx'
 purpose = 'Screen rotation'
 source = 'HP SoftPaq sp158489, Driver/IshHeciExtension/FWImage/0003/ishC_0207.bin'
@@ -157,7 +164,7 @@ target = '/usr/lib/firmware/intel/ish/ish_lnlm_12128606.bin'
 sha256 = 'aafe1129e21ad0b082333e66dfbd81540c627a9f5d41f8707053362b6de7474f'
 size = 838144
 
-[[fedora.hardware.files]]
+[[fedora.tablet.files]]
 path = '/etc/modules-load.d/hid-sensors.conf'
 content = '''
 intel_ishtp_hid
@@ -291,19 +298,23 @@ commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
 path = '.local/share/zsh/plugins/zsh-autocomplete'
 track = 'tags'
 
-# This laptop: an HP OmniBook Ultra Flip. linux-firmware-intel holds the Wi-Fi, Bluetooth, GPU, VSC, NPU and ISH
-# firmware that Fedora splits in several packages.
+# A recent Intel laptop. linux-firmware-intel holds the Wi-Fi, Bluetooth, GPU, VSC, NPU and ISH firmware that
+# Fedora splits in several packages. The 2-in-1 parts are the tablet profile.
 [arch.hardware]
 packages = [
     'linux-firmware-intel', 'linux-firmware-cirrus', 'sof-firmware', 'alsa-ucm-conf', 'alsa-utils',
     'vpl-gpu-rt', 'libvpl', 'libva-utils', 'intel-media-driver',
     'libcamera', 'libcamera-ipa', 'pipewire-libcamera',
-    'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'iio-sensor-proxy', 'libwacom', 'fprintd',
+    'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'fprintd',
 ]
 services = ['thermald.service', 'intel_lpmd.service']
 notes = ['Enroll your fingerprint: fprintd-enroll. On Arch it signs in at GDM and unlocks the lock screen; sudo and polkit still ask for the password.']
 
-[[arch.hardware.firmware]]
+# A 2-in-1: rotation, the stylus and the Hyprgrass gestures. The tablet sign-in is not ported yet.
+[arch.tablet]
+packages = ['iio-sensor-proxy', 'libwacom']
+
+[[arch.tablet.firmware]]
 product = 'HP OmniBook Ultra Flip Laptop 14-fh0xxx'
 purpose = 'Screen rotation'
 source = 'HP SoftPaq sp158489, Driver/IshHeciExtension/FWImage/0003/ishC_0207.bin'
@@ -311,7 +322,7 @@ target = '/usr/lib/firmware/intel/ish/ish_lnlm_12128606.bin'
 sha256 = 'aafe1129e21ad0b082333e66dfbd81540c627a9f5d41f8707053362b6de7474f'
 size = 838144
 
-[[arch.hardware.files]]
+[[arch.tablet.files]]
 path = '/etc/modules-load.d/hid-sensors.conf'
 content = '''
 intel_ishtp_hid

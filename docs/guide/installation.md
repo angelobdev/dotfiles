@@ -43,7 +43,8 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 | Profile | Installs |
 | --- | --- |
 | `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls; zsh as your login shell, with its [plugins](../features/shell.md) |
-| `hardware` | Firmware, video decoding and sensors of an Intel 2-in-1, fingerprint and [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), firewall zone, `sshd` off; on the OmniBook, HP's sensor hub firmware for rotation from `--firmware DIR` (see [Tablet and touch](../features/tablet-and-touch.md#tablet-mode-and-rotation)) |
+| `hardware` | Firmware, video decoding, cameras and power of a recent Intel laptop, the fingerprint reader, firewall zone, `sshd` off |
+| `tablet` | A 2-in-1: the accelerometer (`iio-sensor-proxy`) and its sensor hub modules, the stylus (`libwacom`), [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), and the Hyprgrass touchscreen gestures, the only [plugin](plugins.md) built for this profile alone; on the OmniBook, HP's sensor hub firmware for rotation from `--firmware DIR` (see [Tablet and touch](../features/tablet-and-touch.md#tablet-mode-and-rotation)) |
 | `plugins` | What building the [Hyprland plugins](plugins.md) needs, from RPM Fusion too; the RPM Fusion `ffmpeg` replaces `ffmpeg-free` |
 | `apps` | Zen Browser, 1Password, VS Code, Neovim, `gh`, `glab`, `uv`, `gcc` and a few command-line tools |
 | `containers` | Docker (`moby-engine`, `docker-compose`, the `docker` group) and Tailscale, with its tray icon |
@@ -56,14 +57,14 @@ On Arch the profiles are the same, from the official repositories, with these di
 
 - Hyprland, `hyprpm`, its headers and the `hyprland-uwsm` session entry come from `extra`: no COPR, no `-devel` packages.
 - No swaps: Arch's `ffmpeg` and `intel-media-driver` are already the complete builds, so `codecs` only adds the GStreamer plugins (bad, ugly, libav).
-- `hardware` installs `fprintd` but not the [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), which is not ported yet: the fingerprint works at GDM and on the lock screen, sudo and polkit ask for the password. It sets no firewall zone and leaves `sshd` alone, since Arch enables neither. The firmware Fedora splits in several packages is in `linux-firmware-intel`; the initramfs is rebuilt with `mkinitcpio -P` (or dracut, if the system uses it).
+- `hardware` installs `fprintd`, and `tablet` leaves out the [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), which is not ported yet: the fingerprint works at GDM and on the lock screen, sudo and polkit ask for the password. It sets no firewall zone and leaves `sshd` alone, since Arch enables neither. The firmware Fedora splits in several packages is in `linux-firmware-intel`; the initramfs is rebuilt with `mkinitcpio -P` (or dracut, if the system uses it).
 - `gaming` first enables the `multilib` repository in `/etc/pacman.conf`.
 - `containers` has no tray icon for Tailscale: Arch's package has no unit for it.
 - `apps` builds Zen Browser, 1Password and VS Code from the AUR: see [AUR packages](#aur-packages-arch).
 
 pacman installs with `-Syu` (a partial upgrade is not supported on Arch), never installs optional dependencies, and picks `pipewire-jack` where something needs a JACK library.
 
-The default is `core,hardware,plugins`; the others are opt-in. No Flatpak is installed: Flathub is yours to choose from. GDM needs GNOME Shell and GNOME Settings; the extras they recommend (Tour, Parental Controls, Color Profile Viewer, remote desktop, Rygel) are kept out. The manifest is the only list of packages: a new dependency goes there.
+The default is `core,hardware,plugins`, with `tablet` too on a 2-in-1 (a tablet mode switch or a touchscreen in `/proc/bus/input/devices`); the others are opt-in. An install made before `tablet` existed counts it as installed with `hardware`, which held it then. No Flatpak is installed: Flathub is yours to choose from. GDM needs GNOME Shell and GNOME Settings; the extras they recommend (Tour, Parental Controls, Color Profile Viewer, remote desktop, Rygel) are kept out. The manifest is the only list of packages: a new dependency goes there.
 
 After the reboot, sign in at GDM. A terminal opens by itself and runs `install-desktop.py post`, which builds the plugins (hyprpm asks for confirmation) and lists what is left by hand. If it fails it comes back at the next login; to run it yourself, press `Super + Return`.
 

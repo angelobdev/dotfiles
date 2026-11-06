@@ -5,13 +5,13 @@
 #   git ls-files -co --exclude-standard -z | tar --null -T - -c | docker run -i --rm archlinux:latest \
 #       bash -c 'mkdir /src && tar -x -C /src && exec bash /src/scripts/tests/install-container-arch.sh'
 #
-# Environment: PROFILES (default core,hardware,plugins), COMPILE=1 also builds the plugins (slow). apps builds the
+# Environment: PROFILES (default core,hardware,tablet,plugins), COMPILE=1 also builds the plugins (slow). apps builds the
 # AUR packages with makepkg and gaming enables multilib. The container runs no systemd, so the Flatpak and login
 # steps skip themselves: only a VM covers those.
 set -euo pipefail
 
 source=${1:-/src}
-profiles=${PROFILES:-core,hardware,plugins}
+profiles=${PROFILES:-core,hardware,tablet,plugins}
 user=ci
 home=/home/$user
 repo=$home/.dotfiles

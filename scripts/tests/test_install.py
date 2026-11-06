@@ -771,7 +771,8 @@ class UninstallTests(unittest.TestCase):
         with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True, 'packages': ['a.x86_64']}), \
                 mock.patch('subprocess.run'):
             installer.run_steps(plan(fake_distro(pending=False)), False)
-        self.assertEqual(installer.load_record(), {'reconstructed': True, 'packages': ['a.x86_64'], 'profiles': ['core', 'plugins']})
+        self.assertEqual(installer.load_record(), {'reconstructed': True, 'packages': ['a.x86_64'], 'profiles': ['core', 'plugins'],
+                                                   'profiles_version': installer.bundle.PROFILES_VERSION})
 
     def test_a_new_install_after_an_uninstall_starts_a_new_record(self):
         self.system(True)
@@ -1279,6 +1280,30 @@ class FedoraTests(unittest.TestCase):
             fedora.auth_apply([fedora.AUTH_FEATURE, fedora.AUTH_PROFILE], Path('/repo/tablet-auth.sh'))
         self.assertEqual([call[0] for call in order.mock_calls], ['sudo', 'run'])
         self.assertEqual(order.run.call_args.args[0], ('/repo/tablet-auth.sh', 'install'))
+
+
+class TouchHardwareTests(unittest.TestCase):
+    """A 2-in-1 is told by /proc/bus/input/devices: a tablet mode switch or a touchscreen."""
+
+    def found(self, text):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'devices'
+            path.write_text(text)
+            return installer.touch_hardware(path)
+
+    def test_a_tablet_mode_switch(self):
+        self.assertTrue(self.found('N: Name="Intel HID switches"\nB: PROP=0\nB: EV=21\nB: SW=22\n'))
+
+    def test_a_touchscreen(self):
+        self.assertTrue(self.found('N: Name="ELAN2513:00 04F3:4302"\nB: PROP=2\nB: EV=1b\nB: ABS=3273800000000003\n'))
+
+    def test_a_laptop_lid_and_touchpad_are_not(self):
+        lid = 'N: Name="Lid Switch"\nB: PROP=0\nB: EV=21\nB: SW=1\n'
+        touchpad = 'N: Name="SYNA Touchpad"\nB: PROP=5\nB: EV=1b\nB: ABS=2e0800000000003\n'
+        self.assertFalse(self.found(lid + '\n' + touchpad))
+
+    def test_no_file(self):
+        self.assertFalse(installer.touch_hardware(Path('/nonexistent/devices')))
 
 
 if __name__ == '__main__':

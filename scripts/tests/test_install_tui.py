@@ -55,7 +55,7 @@ class ChoiceTests(unittest.TestCase):
         self.assertEqual(tui.command(plan(firmware='~/HP pack')), "./scripts/install-desktop.py apply --profiles core,plugins --firmware '~/HP pack'")
 
     def test_every_plugin_state_is_described(self):
-        states = {value for name, value in vars(tui.bundle).items() if name.isupper() and name not in ('FILES', 'REPOSITORY', 'VERIFIED', 'CACHE', 'STAMP', 'PACKAGING', 'PLUGINS')}
+        states = {value for name, value in vars(tui.bundle).items() if name.isupper() and name not in ('FILES', 'REPOSITORY', 'VERIFIED', 'CACHE', 'STAMP', 'PACKAGING', 'PLUGINS', 'RECORD', 'PROFILE_OF', 'PROFILES_VERSION')}
         self.assertEqual(set(tui.PLUGIN_STATES), states)
 
     def test_finish_only_while_the_first_login_has_not(self):
@@ -193,7 +193,10 @@ class StatusTests(unittest.TestCase):
         self.assertEqual(tui.preselected(ALL), installer.PROFILES)
 
     def test_a_fresh_system_starts_from_the_defaults(self):
-        self.assertEqual(tui.preselected({**FRESH, 'apps': tui.Status([], 2)}), tuple(installer.DEFAULT_PROFILES.split(',')))
+        with mock.patch.object(installer, 'touch_hardware', return_value=False):
+            self.assertEqual(tui.preselected({**FRESH, 'apps': tui.Status([], 2)}), tuple(installer.DEFAULT_PROFILES.split(',')))
+        with mock.patch.object(installer, 'touch_hardware', return_value=True):
+            self.assertEqual(tui.preselected(FRESH), ('core', 'hardware', 'tablet', 'plugins'))
 
     def test_a_partial_profile_names_what_is_missing(self):
         self.assertEqual(tui.status_text(tui.Status(['a', 'b'], 5)), 'Partly installed (3/5); missing: a, b.')
