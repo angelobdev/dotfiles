@@ -864,3 +864,9 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Found on the way: Tab never reached the controls inside a section, so the keyboard model is arrows + Space/Enter, like the rest of the shell.
 - `test_settings.py`: every schema option exists in `Config.qml` with the same default, its default fits its limits and step (or its choices), and every section, group, label and hint is in both catalogs, with no hint text left without an option.
 - Not tried: a missing `~/.config/desktop` folder (the first write creates it with `mkdir -p`), text and time fields from the keyboard, the compact layout.
+
+## Settings, phase 3 (devices), 2026-11-06 (#8)
+
+- The Network, Bluetooth, Displays and Sound panels became a frame (card, header, Back/Close) around a view that Settings shows too. Live on eDP-1, with the user's permission: the four sections render in Settings (the Wi-Fi list fills after the scan starts, a few seconds), the four quick panels look as before plus **Settings…**, Esc closes Settings when no network details are open. No connection, pairing, volume or display mode was changed.
+- A restart failed once: `escape` is not a legal QML method name (a JavaScript global) and `NetworkView.qml` did not load, so the shell was down for about a minute until it was renamed `goBack` and restarted. `qmllint` with the categories `check.sh` disables does not report it.
+- Not tried: opening a network's details inside Settings and Esc back from them (no way to click without a pointer tool here), the **Settings…** links themselves (they call `ShellState.openSection`, exercised through the IPC in phase 1).

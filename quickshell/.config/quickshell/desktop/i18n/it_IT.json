@@ -655,6 +655,7 @@
       "clipboardEnabled": "Testi e immagini che copi, tenuti su questo computer."
     },
     "navigationHint": "↑↓ seleziona · Spazio o Invio cambia · ←→ regola · Esc chiudi",
+    "open": "Impostazioni…",
     "options": {
       "barMedia": "Mostra cosa è in riproduzione",
       "workspaceScroll": "Scorri sui workspace per cambiarli",
@@ -696,11 +697,15 @@
     "resetHint": "Torna al predefinito (%1)",
     "sections": {
       "appearance": "Aspetto",
+      "bluetooth": "Bluetooth",
       "desktop": "Desktop",
+      "displays": "Schermi",
       "keyboard": "Tastiera",
-      "tablet": "Tablet e touch",
+      "network": "Rete",
       "power": "Energia",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "sound": "Audio",
+      "tablet": "Tablet e touch"
     },
     "title": "Impostazioni",
     "unreadable": "%1 non è JSON valido: qui non si può cambiare nulla finché non lo correggi o lo rimuovi."

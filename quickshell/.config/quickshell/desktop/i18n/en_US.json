@@ -655,6 +655,7 @@
       "clipboardEnabled": "Text and images you copy, kept on this computer."
     },
     "navigationHint": "↑↓ select · Space or Enter change · ←→ adjust · Esc close",
+    "open": "Settings…",
     "options": {
       "barMedia": "Show what is playing",
       "workspaceScroll": "Scroll over the workspaces to switch",
@@ -696,11 +697,15 @@
     "resetHint": "Back to the default (%1)",
     "sections": {
       "appearance": "Appearance",
+      "bluetooth": "Bluetooth",
       "desktop": "Desktop",
+      "displays": "Displays",
       "keyboard": "Keyboard",
-      "tablet": "Tablet and touch",
+      "network": "Network",
       "power": "Power",
-      "privacy": "Privacy"
+      "privacy": "Privacy",
+      "sound": "Sound",
+      "tablet": "Tablet and touch"
     },
     "title": "Settings",
     "unreadable": "%1 is not valid JSON, so nothing can be changed here until it is fixed or removed."
