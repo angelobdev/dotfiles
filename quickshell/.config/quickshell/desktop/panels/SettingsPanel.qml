@@ -20,69 +20,81 @@ Overlay {
     id: root
     panelName: "settings"
     dialog: true
-    // Every section, in sidebar order, after GNOME Settings. Network, Bluetooth, Displays and Sound show the views
+    // Every section, in sidebar order and grouped under a label (settings.sidebar.<group>), after GNOME Settings. Network, Bluetooth, Displays and Sound show the views
     // of their quick panels, Appearance the Theming view; the others are built from SettingsSchema.js
     // (settings/OptionsSection.qml).
     readonly property var sections: [
         {
             name: "network",
             icon: "wifi",
-            label: I18n.tr("settings.sections.network")
+            label: I18n.tr("settings.sections.network"),
+            group: "connections"
         },
         {
             name: "bluetooth",
             icon: "bluetooth",
-            label: I18n.tr("settings.sections.bluetooth")
+            label: I18n.tr("settings.sections.bluetooth"),
+            group: "connections"
         },
         {
             name: "displays",
             icon: "monitor",
-            label: I18n.tr("settings.sections.displays")
+            label: I18n.tr("settings.sections.displays"),
+            group: "devices"
         },
         {
             name: "sound",
             icon: "volume-high",
-            label: I18n.tr("settings.sections.sound")
-        },
-        {
-            name: "appearance",
-            icon: "palette",
-            label: I18n.tr("settings.sections.appearance")
-        },
-        {
-            name: "desktop",
-            icon: "apps",
-            label: I18n.tr("settings.sections.desktop")
-        },
-        {
-            name: "keyboard",
-            icon: "keyboard",
-            label: I18n.tr("settings.sections.keyboard")
-        },
-        {
-            name: "tablet",
-            icon: "rotate",
-            label: I18n.tr("settings.sections.tablet")
-        },
-        {
-            name: "assistant",
-            icon: "assistant",
-            label: I18n.tr("settings.sections.assistant")
+            label: I18n.tr("settings.sections.sound"),
+            group: "devices"
         },
         {
             name: "power",
             icon: "battery-75",
-            label: I18n.tr("settings.sections.power")
+            label: I18n.tr("settings.sections.power"),
+            group: "devices"
+        },
+        {
+            name: "appearance",
+            icon: "palette",
+            label: I18n.tr("settings.sections.appearance"),
+            group: "personalization"
+        },
+        {
+            name: "desktop",
+            icon: "apps",
+            label: I18n.tr("settings.sections.desktop"),
+            group: "personalization"
+        },
+        {
+            name: "assistant",
+            icon: "assistant",
+            label: I18n.tr("settings.sections.assistant"),
+            group: "personalization"
+        },
+        {
+            name: "keyboard",
+            icon: "keyboard",
+            label: I18n.tr("settings.sections.keyboard"),
+            group: "input"
+        },
+        {
+            name: "tablet",
+            icon: "rotate",
+            label: I18n.tr("settings.sections.tablet"),
+            group: "input"
         },
         {
             name: "privacy",
             icon: "eye-off",
-            label: I18n.tr("settings.sections.privacy")
+            label: I18n.tr("settings.sections.privacy"),
+            group: "system"
         },
         {
             name: "system",
             icon: "controls",
-            label: I18n.tr("settings.sections.system")
+            label: I18n.tr("settings.sections.system"),
+            group: "system"
         }
     ]
     // Names that open a tab of a section: the updates panel links to System → Updates.
@@ -90,6 +102,36 @@ Overlay {
             updates: ["system", "updates"]
         })
     readonly property var sectionNames: sections.map(entry => entry.name)
+    readonly property var groupLabels: ({
+            connections: I18n.tr("settings.sidebar.connections"),
+            devices: I18n.tr("settings.sidebar.devices"),
+            personalization: I18n.tr("settings.sidebar.personalization"),
+            input: I18n.tr("settings.sidebar.input"),
+            system: I18n.tr("settings.sidebar.system")
+        })
+    // The sidebar: each group's label, then its sections.
+    readonly property var sidebarRows: {
+        const rows = [];
+        for (const entry of sections) {
+            if (rows.length === 0 || rows[rows.length - 1].group !== entry.group)
+                rows.push({
+                    heading: true,
+                    group: entry.group,
+                    label: groupLabels[entry.group] ?? entry.group
+                });
+            rows.push(entry);
+        }
+        return rows;
+    }
+    // Up and down in the sidebar skip the labels.
+    function sidebarStep(step) {
+        let index = sidebarRows.findIndex(row => !row.heading && row.name === section);
+        do
+            index += step;
+        while (index >= 0 && index < sidebarRows.length && sidebarRows[index].heading);
+        if (index >= 0 && index < sidebarRows.length)
+            showSection(sidebarRows[index].name, "");
+    }
     property string section: ShellState.recall("settings/section", "appearance")
     onSectionChanged: ShellState.remember("settings/section", section)
     // Narrow screens show the sidebar or a section, not both; Back returns to the sidebar.
@@ -166,25 +208,45 @@ Overlay {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
-                    spacing: 3
-                    model: root.sections
-                    currentIndex: Math.max(0, root.sectionNames.indexOf(root.section))
-                    keyNavigationEnabled: true
+                    spacing: 2
+                    model: root.sidebarRows
+                    currentIndex: Math.max(0, root.sidebarRows.findIndex(row => !row.heading && row.name === root.section))
+                    keyNavigationEnabled: false
                     highlightMoveDuration: Theme.motionNormal
                     Accessible.role: Accessible.List
                     Accessible.name: I18n.tr("settings.title")
-                    Keys.onReturnPressed: root.showSection(root.sectionNames[currentIndex], "")
-                    Keys.onEnterPressed: root.showSection(root.sectionNames[currentIndex], "")
-                    delegate: ActionButton {
+                    Keys.onUpPressed: root.sidebarStep(-1)
+                    Keys.onDownPressed: root.sidebarStep(1)
+                    // A group label, or a section.
+                    delegate: Item {
+                        id: sidebarRow
                         required property var modelData
                         required property int index
                         width: sidebar.width
-                        implicitHeight: Theme.hit(44)
-                        alignLeft: true
-                        iconName: modelData.icon
-                        text: modelData.label
-                        highlighted: modelData.name === root.section
-                        onClicked: root.showSection(modelData.name, "")
+                        height: modelData.heading ? Theme.hit(30) : Theme.hit(38)
+                        Text {
+                            visible: sidebarRow.modelData.heading === true
+                            anchors {
+                                left: parent.left
+                                leftMargin: 10
+                                bottom: parent.bottom
+                                bottomMargin: 6
+                            }
+                            text: sidebarRow.modelData.label
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(11)
+                            font.weight: Font.DemiBold
+                        }
+                        ActionButton {
+                            visible: sidebarRow.modelData.heading !== true
+                            anchors.fill: parent
+                            alignLeft: true
+                            iconName: sidebarRow.modelData.icon ?? ""
+                            text: sidebarRow.modelData.label
+                            highlighted: sidebarRow.modelData.name === root.section
+                            onClicked: root.showSection(sidebarRow.modelData.name, "")
+                        }
                     }
                 }
             }

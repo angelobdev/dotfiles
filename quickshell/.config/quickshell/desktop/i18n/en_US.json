@@ -320,8 +320,13 @@
   },
   "desktopMenu": {
     "launcher": "Applications",
+    "logout": "Log out…",
+    "open": "Open",
+    "powerOff": "Shut down…",
+    "reboot": "Restart…",
+    "session": "Session",
     "settings": "Settings",
-    "session": "Session…"
+    "suspend": "Suspend…"
   },
   "directions": {
     "down": "down",
@@ -713,6 +718,13 @@
       "sound": "Sound",
       "system": "System",
       "tablet": "Tablet and touch"
+    },
+    "sidebar": {
+      "connections": "Connections",
+      "devices": "Devices",
+      "input": "Input",
+      "personalization": "Personalization",
+      "system": "System"
     },
     "system": {
       "about": "About",
