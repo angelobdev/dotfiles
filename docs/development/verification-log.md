@@ -857,3 +857,10 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - The first hot reload after removing `ThemingPanel.qml` failed ("SettingsPanel is not a type") because the new files had no Stow links yet; Quickshell kept the previous configuration running. `stow.py apply` linked `SettingsPanel.qml`, `ThemingView.qml` and the `.desktop` entry, the dangling `ThemingPanel.qml` link was removed by hand, and the restart through the supervisor came up clean.
 - `test_panels.py` now also requires the aliases of `ShellState.aliases` in `desktop-shell toggle` and nowhere among the panels. `desktop-file-validate` passes on `desktop-settings.desktop`.
 - Not tried: the compact layout (both screens are wider than its threshold), and launching **Settings** from the launcher.
+
+## Settings, phase 2, 2026-11-06 (#8)
+
+- Live on eDP-1, with the user's permission (no `shell.json` before): the five new sections render with their groups, switches, sliders with value and unit, choices and hints. From the keyboard (`wtype`): Space on "Show what is playing" wrote `{"barMedia": false}` and the bar dropped the media item at once, with **Reset** shown; ↓↓ → wrote `minimumWorkspaces: 3`, ← removed it again; Space back on the first row left `{}`. A deliberately broken `shell.json` showed the warning, disabled the controls, and Space left the file untouched. `shell.json` was deleted afterwards, as it was.
+- Found on the way: Tab never reached the controls inside a section, so the keyboard model is arrows + Space/Enter, like the rest of the shell.
+- `test_settings.py`: every schema option exists in `Config.qml` with the same default, its default fits its limits and step (or its choices), and every section, group, label and hint is in both catalogs, with no hint text left without an option.
+- Not tried: a missing `~/.config/desktop` folder (the first write creates it with `mkdir -p`), text and time fields from the keyboard, the compact layout.

@@ -49,7 +49,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Alt + +` / `-` / `0` | Zoom in / out around the pointer (up to 800%) / back to 100%, with an OSD |
 | `Super + Shift + P` | Color picker: click a point (`Esc` cancels); its hex code is copied and named in a notification |
 | `Super + Ctrl + W` | Next wallpaper of the current theme |
-| `Super + I` | Settings: a sidebar of sections, for now Appearance; also **Settings** in the launcher |
+| `Super + I` | Settings: Appearance, Desktop, Keyboard, Tablet and touch, Power, Privacy; ↑↓ pick an option, Space or Enter change it, ←→ adjust it. Also **Settings** in the launcher |
 | `Super + Ctrl + T` | Settings → Appearance: theme, wallpaper, font, icons, cursors |
 | `Super + Ctrl + N` | Do Not Disturb on/off |
 | `Super + Ctrl + K` | Keep awake on/off |
