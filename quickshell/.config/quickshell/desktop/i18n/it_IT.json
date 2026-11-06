@@ -664,6 +664,34 @@
       "touchScale": "In modalità tablet barra, pulsanti, righe e icone del dock crescono di tanto.",
       "clipboardEnabled": "Testi e immagini che copi, tenuti su questo computer."
     },
+    "hypr": {
+      "add": "Aggiungi una scorciatoia",
+      "assistantGroup": "Lingua",
+      "assistantLanguage": "Dettatura e risposte",
+      "assistantLanguageHint": "Chiudi una volta la finestra dell'assistente perché una nuova sessione la usi.",
+      "bindsGroup": "Le tue scorciatoie",
+      "bindsHint": "Tasti come SUPER + SHIFT + B e un comando da eseguire. Una scorciatoia viene salvata quando entrambi sono validi; hypr.lua può ancora assegnare qualunque altra cosa.",
+      "command": "Comando",
+      "description": "Descrizione",
+      "keys": "Tasti",
+      "languages": {
+        "default": "Lingua dell'interfaccia",
+        "english": "Inglese",
+        "italian": "Italiano",
+        "spanish": "Spagnolo",
+        "french": "Francese",
+        "german": "Tedesco",
+        "portuguese": "Portoghese"
+      },
+      "layout": "Layout",
+      "layoutGroup": "Tastiera fisica",
+      "layoutHint": "Uno o più layout XKB, come us o us,it. Vuoto: quello di sistema.",
+      "layoutInvalid": "Un layout è di due-otto lettere minuscole, più layout separati da virgole (us,it); una variante allo stesso modo, oppure vuota.",
+      "layoutSystem": "Quello di sistema, ora %1 (localectl set-x11-keymap). Scrivine uno per usarne un altro qui.",
+      "remove": "Rimuovi",
+      "skipped": "Lasciato fuori perché non valido: %1",
+      "variant": "Variante"
+    },
     "navigationHint": "↑↓ seleziona · Spazio o Invio cambia · ←→ regola · Esc chiudi",
     "open": "Impostazioni…",
     "options": {

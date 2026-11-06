@@ -17,6 +17,8 @@ ColumnLayout {
     readonly property var flat: Schema.forSection(section)
     property int current: 0
     property var rows: ({})
+    // More groups of a section, below those of the schema (Keyboard: layout and shortcuts).
+    default property alias extra: extraColumn.data
     spacing: 14
     function move(step) {
         current = Math.max(0, Math.min(flat.length - 1, current + step));
@@ -124,6 +126,11 @@ ColumnLayout {
                         }
                     }
                 }
+            }
+            ColumnLayout {
+                id: extraColumn
+                Layout.fillWidth: true
+                spacing: 18
             }
         }
     }

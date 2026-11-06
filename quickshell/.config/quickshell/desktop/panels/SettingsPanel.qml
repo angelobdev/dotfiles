@@ -302,7 +302,8 @@ Overlay {
                                     displays: displaysView,
                                     sound: soundView,
                                     assistant: assistantView,
-                                    system: systemView
+                                    system: systemView,
+                                    keyboard: keyboardView
                                 })[modelData.name] ?? optionsView
                             // Appearance: the theme, wallpaper, font, icons and cursors (panels/theming).
                             Component {
@@ -409,6 +410,7 @@ Overlay {
                                         Layout.fillWidth: true
                                         shown: page.shownHere
                                     }
+                                    AssistantLanguage {}
                                     Item {
                                         Layout.fillHeight: true
                                     }
@@ -420,6 +422,15 @@ Overlay {
                                 SystemView {
                                     title: page.modelData.label
                                     shown: page.shownHere
+                                }
+                            }
+                            // Keyboard: the on-screen keyboard options, then the layout and personal shortcuts.
+                            Component {
+                                id: keyboardView
+                                OptionsSection {
+                                    section: page.modelData.name
+                                    title: page.modelData.label
+                                    KeyboardHyprland {}
                                 }
                             }
                             Component {
