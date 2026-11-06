@@ -21,7 +21,7 @@ Claude Code stays a real terminal app, with its voice and permission prompts, an
 
 Later presses toggle the console, so the same session stays alive while hidden; closing the window ends the session and the next press starts a new one. The session starts in the dotfiles repository (found from the Stow link of `desktop-ai`), so Claude Code reads its `.claude/CLAUDE.md`; `DESKTOP_AI_DIRECTORY` names another folder, and `$HOME` is the fallback. If `claude` is missing, a notification points here.
 
-The session gets `--settings` for this window only, so the global `~/.claude/settings.json` is untouched: voice dictation in hold mode and `language`, which Claude Code uses both for dictation and for its replies. The language comes from the system locale (`assistant.language` in the catalogs: `english`, `italian`); set `DESKTOP_AI_LANGUAGE` (e.g. `hl.env("DESKTOP_AI_LANGUAGE", "italian")` in `local.lua`, then close the assistant window) for another one.
+The session gets `--settings` for this window only, so the global `~/.claude/settings.json` is untouched: voice dictation in hold mode and `language`, which Claude Code uses both for dictation and for its replies. The language comes from the system locale (`assistant.language` in the catalogs: `english`, `italian`); choose another in **Settings → Assistant → Language**, or set `DESKTOP_AI_LANGUAGE` by hand (`hl.env("DESKTOP_AI_LANGUAGE", "italian")` in `~/.config/desktop/hypr.lua`, which wins over Settings), then close the assistant window.
 
 The same `--settings` give the session a status line and hooks, both run by `libexec/desktop/agent.py`. They apply to sessions started after a change, so close the assistant window once; `/resume` in the new one continues an earlier conversation with them.
 

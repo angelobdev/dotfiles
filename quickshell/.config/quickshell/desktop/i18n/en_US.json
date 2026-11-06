@@ -664,6 +664,34 @@
       "touchScale": "In tablet mode the bar, buttons, rows and dock icons grow by this much.",
       "clipboardEnabled": "Text and images you copy, kept on this computer."
     },
+    "hypr": {
+      "add": "Add a shortcut",
+      "assistantGroup": "Language",
+      "assistantLanguage": "Dictation and replies",
+      "assistantLanguageHint": "Close the assistant window once for a new session to take it.",
+      "bindsGroup": "Your shortcuts",
+      "bindsHint": "Keys as SUPER + SHIFT + B and a command to run. A shortcut is saved once both are valid; hypr.lua can still bind anything else.",
+      "command": "Command",
+      "description": "Description",
+      "keys": "Keys",
+      "languages": {
+        "default": "Interface language",
+        "english": "English",
+        "italian": "Italian",
+        "spanish": "Spanish",
+        "french": "French",
+        "german": "German",
+        "portuguese": "Portuguese"
+      },
+      "layout": "Layout",
+      "layoutGroup": "Physical keyboard",
+      "layoutHint": "One or more XKB layouts, as us or us,it. Empty: the system's.",
+      "layoutInvalid": "A layout is two to eight lowercase letters, several separated by commas (us,it); a variant likewise, or empty.",
+      "layoutSystem": "The system's, now %1 (localectl set-x11-keymap). Type one to use another here.",
+      "remove": "Remove",
+      "skipped": "Left out as not valid: %1",
+      "variant": "Variant"
+    },
     "navigationHint": "↑↓ select · Space or Enter change · ←→ adjust · Esc close",
     "open": "Settings…",
     "options": {

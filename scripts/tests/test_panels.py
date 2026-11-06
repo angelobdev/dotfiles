@@ -33,6 +33,14 @@ class PanelTests(unittest.TestCase):
             for name in re.findall(r'^\s*function (\w+)\(', path.read_text(), re.M):
                 self.assertNotIn(name, globals_, f'{path.relative_to(SHELL)}: function {name}()')
 
+    def test_every_singleton_of_services_is_registered(self):
+        # A singleton missing from services/qmldir is not found by the files that use it, and the shell does not
+        # start.
+        registered = set(re.findall(r'^singleton (\w+) ', (SHELL / 'services/qmldir').read_text(), re.M))
+        for path in (SHELL / 'services').glob('*.qml'):
+            if 'pragma Singleton' in path.read_text():
+                self.assertIn(path.stem, registered, f'services/{path.name} is not in services/qmldir')
+
 
 if __name__ == '__main__':
     unittest.main()
