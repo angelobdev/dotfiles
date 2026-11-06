@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Troubleshooting guide
+    url: https://github.com/angelobdev/dotfiles/blob/main/docs/guide/troubleshooting.md
+    about: The most common problems and the commands to diagnose them.
+  - name: Documentation
+    url: https://github.com/angelobdev/dotfiles/blob/main/docs/README.md
+    about: Installation, interface and shortcuts, configuration, plugins and every feature.

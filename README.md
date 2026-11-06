@@ -68,6 +68,7 @@ At the first login a terminal opens and builds the [Hyprland plugins](docs/guide
 - **[Guides](docs/README.md#guides):** installation, interface and shortcuts, configuration, plugins, integrations, troubleshooting.
 - **[Features](docs/README.md#features):** one page for each area of the desktop.
 - **[Development](docs/README.md#development):** architecture, conventions, workflow, roadmap and the verification log.
+- **[Issues](https://github.com/angelobdev/dotfiles/issues/new/choose):** bug reports, feature requests and enhancements, each with its own form.
 
 ## Built with
 

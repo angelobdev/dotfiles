@@ -1,0 +1,40 @@
+name: Feature request
+description: Something new the desktop cannot do yet.
+labels: ["feature", "needs triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you would like to do
+      description: The problem or the use case, before any solution. What are you trying to do, and what stops you today?
+      placeholder: "I'd like to install the desktop straight from the Fedora Server ISO, without a separate install first."
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How it could work
+      description: Your idea of the solution, if you have one. Screenshots, mockups and links to other projects are welcome.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Shell (bar, panels, Control Center, notifications, OSD)
+        - Hyprland config (binds, rules, displays)
+        - Installer or updates
+        - Theming
+        - Tablet mode, touch or on-screen keyboard
+        - Hyprland plugins
+        - Translations
+        - Something else
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to work on this myself.

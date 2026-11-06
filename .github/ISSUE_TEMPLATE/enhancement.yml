@@ -1,0 +1,39 @@
+name: Enhancement
+description: Something that already exists could work better, look better or be easier to use.
+labels: ["enhancement", "needs triage"]
+body:
+  - type: textarea
+    id: current
+    attributes:
+      label: What exists today
+      description: The feature, panel or command, and how it behaves now.
+      placeholder: "The emoji picker has no skin-tone variants."
+    validations:
+      required: true
+  - type: textarea
+    id: better
+    attributes:
+      label: What would be better
+      description: How it should behave instead, and why. Screenshots are welcome.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Shell (bar, panels, Control Center, notifications, OSD)
+        - Hyprland config (binds, rules, displays)
+        - Installer or updates
+        - Theming
+        - Tablet mode, touch or on-screen keyboard
+        - Hyprland plugins
+        - Translations
+        - Documentation
+        - Something else
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I would like to work on this myself.

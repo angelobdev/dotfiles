@@ -38,6 +38,10 @@ journalctl --user -b -t desktop-shell   # the shell's supervisor and the lock
 
 **The keyboard offers no suggestions.** The word lists download on first use: run `~/.local/libexec/desktop/predict.py fetch`. Suggestions stay away from terminals, passwords and URLs by design.
 
+## Reporting a problem
+
+If none of the above helps, [open an issue](https://github.com/angelobdev/dotfiles/issues/new/choose): there are forms for bug reports, feature requests and enhancements. For a bug, the output of the [diagnostics](#diagnostics) above helps most; read it first and leave out anything personal. `desktop-shell status` in particular includes your calendar, notifications and clipboard.
+
 ## References
 
 [Hyprland Lua](https://wiki.hypr.land/Configuring/Start/), [Quickshell](https://quickshell.org/docs/v0.3.0/types/), [PopupAnchor](https://quickshell.org/docs/v0.3.0/types/Quickshell/PopupAnchor/), [IdleInhibitor](https://quickshell.org/docs/v0.3.0/types/Quickshell.Wayland/IdleInhibitor/), [Hyprshot](https://github.com/Gustash/Hyprshot), [DDC/CI brightness](https://www.ddcutil.com/command_getvcp/), [hypridle](https://wiki.hypr.land/Hypr-Ecosystem/hypridle/), [hyprlock](https://wiki.hypr.land/Hypr-Ecosystem/hyprlock/), [hyprpaper](https://wiki.hypr.land/Hypr-Ecosystem/hyprpaper/), [Hyprland portal](https://wiki.hypr.land/Hypr-Ecosystem/xdg-desktop-portal-hyprland/), [Electron Wayland](https://www.electronjs.org/blog/tech-talk-wayland), [cliphist](https://github.com/sentriz/cliphist), [wf-recorder](https://github.com/ammen99/wf-recorder), [Kitty](https://sw.kovidgoyal.net/kitty/conf/).

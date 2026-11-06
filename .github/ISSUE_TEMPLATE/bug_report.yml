@@ -1,0 +1,76 @@
+name: Bug report
+description: Something in the desktop, the shell or the installer does not work as described.
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. The [troubleshooting guide](https://github.com/angelobdev/dotfiles/blob/main/docs/guide/troubleshooting.md) covers the most common problems; please check it first.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you saw, and what you expected instead.
+      placeholder: "I opened the Control Center with the bar on the external monitor, and it appeared on the laptop screen instead."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Shell (bar, panels, Control Center, notifications, OSD)
+        - Hyprland config (binds, rules, displays)
+        - Installer or updates (install-tui.py, install-desktop.py, stow.py)
+        - Theming (themes, wallpapers, GTK/Qt/kitty, fonts, icons)
+        - Tablet mode, touch or on-screen keyboard
+        - Hyprland plugins
+        - Translations
+        - Something else
+    validations:
+      required: true
+  - type: dropdown
+    id: distro
+    attributes:
+      label: Distribution
+      options:
+        - Fedora 45
+        - Arch Linux
+        - Other (say which below)
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware
+      description: Laptop or desktop model, GPU, and any external monitor or touchscreen involved.
+      placeholder: "Lenovo ThinkPad X1 Yoga Gen 8, Intel Iris Xe, external 4K monitor"
+  - type: input
+    id: commit
+    attributes:
+      label: Repository commit
+      description: "The output of `git -C ~/.dotfiles log -1 --oneline`."
+      placeholder: "72651d2 docs: the README animation without the flickering capture icon"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        Whatever applies: `hyprctl configerrors`, `qs log -c desktop | tail -50`, `journalctl --user -b -t desktop-shell`, or the installer's output.
+        Please read them before pasting and remove anything personal (names, network names, file paths). Do not paste the full `desktop-shell status`: it contains your calendar, notifications and clipboard.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing issues and this is not a duplicate.
+          required: true
