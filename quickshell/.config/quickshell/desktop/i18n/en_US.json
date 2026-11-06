@@ -685,6 +685,7 @@
     "shellIconsPack": "Icon pack",
     "size": "Size",
     "tabs": {
+      "cursors": "Cursors",
       "font": "Font",
       "icons": "Icons",
       "theme": "Theme",
@@ -726,7 +727,6 @@
       "bevelStrength": "Window bevel",
       "noiseStrength": "Grain"
     },
-    "cursor": "Cursor",
     "cursorSize": "Cursor size",
     "cursorDownload": "%1 (download)",
     "shellText": "Shell text"

@@ -315,6 +315,74 @@ class CursorTests(unittest.TestCase):
                 self.assertEqual(fetched.call_count, 2)
                 self.assertEqual(sorted(path.name for path in (root / 'icons').iterdir()), ['pack-light'])
 
+    @staticmethod
+    def xcursor(*images):
+        # An XCursor file with one image chunk per (nominal size, width, height, ARGB pixel) entry.
+        import struct
+        chunks, toc, position = b'', b'', 16 + 12 * len(images)
+        for size, width, height, pixel in images:
+            chunk = struct.pack('<IIIIIIIII', 36, theme.XCURSOR_IMAGE, size, 1, width, height, 0, 0, 0) + pixel * (width * height)
+            toc += struct.pack('<III', theme.XCURSOR_IMAGE, size, position)
+            chunks += chunk
+            position += len(chunk)
+        return b'Xcur' + struct.pack('<III', 16, 0x10000, len(images)) + toc + chunks
+
+    @staticmethod
+    def png_size_and_first_pixel(data):
+        import struct
+        import zlib
+        width, height = struct.unpack('>II', data[16:24])
+        rows = zlib.decompress(data[data.index(b'IDAT') + 4:data.index(b'IEND') - 8])
+        return (width, height), rows[1:5]
+
+    def test_an_xcursor_preview_takes_the_largest_fitting_size_unpremultiplied(self):
+        # Premultiplied half-transparent red (B, G, R, A little endian) becomes straight red at alpha 128.
+        data = self.xcursor((24, 24, 24, bytes((0, 0, 255, 255))), (48, 48, 48, bytes((0, 0, 64, 128))), (128, 128, 128, bytes((0, 0, 0, 0))))
+        self.assertEqual(self.png_size_and_first_pixel(theme.xcursor_png(data)), ((48, 48), bytes((127, 0, 0, 128))))
+        # Only sizes above the largest: the smallest of them.
+        self.assertEqual(self.png_size_and_first_pixel(theme.xcursor_png(data, largest=16))[0], (24, 24))
+        for broken in (b'not a cursor', data[:40], b'Xcur' + data[4:16]):
+            with self.assertRaises(ValueError):
+                theme.xcursor_png(broken)
+
+    def test_cursor_samples_fall_back_to_x11_names_and_are_cached(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'Old/cursors').mkdir(parents=True)
+            (root / 'Old/cursors/left_ptr').write_bytes(self.xcursor((32, 32, 32, bytes((0, 0, 0, 255)))))
+            (root / 'Old/cursors/hand2').write_bytes(b'broken')
+            (root / 'Old/cursors/pointer').symlink_to('hand2')
+            with mock.patch.object(theme, 'CURSOR_PREVIEWS', root / 'cache'):
+                samples = theme.cursor_samples(theme.cursor_theme_dir('Old', [root]))
+                # Arrow from left_ptr; the broken hand and the missing shapes stay empty.
+                self.assertTrue(samples[0].endswith('.png'))
+                self.assertEqual(samples[1:], ['', '', '', ''])
+                self.assertEqual(self.png_size_and_first_pixel(Path(samples[0]).read_bytes())[0], (32, 32))
+                # A second listing reads the cache; a changed file gets a new preview.
+                self.assertEqual(theme.cursor_samples(root / 'Old')[0], samples[0])
+                (root / 'Old/cursors/left_ptr').write_bytes(self.xcursor((24, 24, 24, bytes((0, 0, 0, 255)))))
+                self.assertNotEqual(theme.cursor_samples(root / 'Old')[0], samples[0])
+            self.assertIsNone(theme.cursor_theme_dir('Missing', [root]))
+
+    def test_hyprcursor_samples_come_from_the_shape_archives(self):
+        import zipfile
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'Hypr/shapes').mkdir(parents=True)
+            (root / 'Hypr/manifest.hl').write_text('name = Hypr\ncursors_directory = shapes\n')
+            with zipfile.ZipFile(root / 'Hypr/shapes/default.hlc', 'w') as shape:
+                shape.writestr('meta.hl', 'resize_algorithm = bilinear\ndefine_size = 32, small.png\ndefine_size = 64, large.png\ndefine_size = 256, huge.png\n')
+                for name in ('small.png', 'large.png', 'huge.png'):
+                    shape.writestr(name, name.encode())
+            with zipfile.ZipFile(root / 'Hypr/shapes/text.hlc', 'w') as shape:
+                shape.writestr('meta.hl', 'define_size = 0, text.svg\n')
+                shape.writestr('text.svg', b'<svg/>')
+            with mock.patch.object(theme, 'CURSOR_PREVIEWS', root / 'cache'):
+                samples = theme.cursor_samples(theme.cursor_theme_dir('Hypr', [root]))
+            self.assertEqual(Path(samples[0]).read_bytes(), b'large.png')
+            self.assertEqual((Path(samples[2]).suffix, Path(samples[2]).read_bytes()), ('.svg', b'<svg/>'))
+            self.assertEqual(samples[1], '')
+
     def test_a_second_fetch_waits_for_the_first_and_finds_it_done(self):
         import fcntl
         import threading

@@ -112,7 +112,7 @@ ShellRoot {
             if (tab === "store-icons" || tab === "store-cursors")
                 panel.openStore(tab.slice(6));
             else
-                panel.showTab(["theme", "wallpaper", "font", "icons"].includes(tab) ? tab : "theme");
+                panel.showTab(["theme", "wallpaper", "font", "icons", "cursors"].includes(tab) ? tab : "theme");
         }
         function loadedPanels(): var {
             // data, not children: the loaders are not items.

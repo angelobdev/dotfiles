@@ -835,3 +835,10 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Cause: a screencopy client (`wf-recorder`, also behind the shell's own recorder) makes Hyprland send `screencast>>1` and `screencast>>0` for every frame it copies: 157 of each in a 3-second capture of eDP-1, read from socket2. The bar's monitor icon followed each one and flickered.
 - `Privacy.qml` now turns the indicator on at once and off only after 1.5 s without a new `1`. A 4-second `wf-recorder` capture sampled through `desktop-shell status` every ~100 ms: `privacy.sharing` false, then true in one run for the whole capture, then false once.
 - Not tried: a portal share (XDPH), which also counts through its PipeWire stream and is unaffected by the delay apart from the 1.5 s at its end.
+
+## Cursors tab, 2026-11-06 (#5)
+
+- `theme.py cursors` now gives each installed theme five preview shapes (arrow, hand, text, busy, resize). On this laptop: all seven themes (Adwaita, Bibata Modern Classic and Ice, Breeze Dark and Light, macOS, macOS White) found every shape; 35 PNGs in 0.2 s the first time, 0.06 s from the cache. A montage of them checked by eye: transparency and colours right (premultiplied ARGB unpremultiplied), animated shapes on their first frame.
+- Tests: an XCursor file built by hand (largest fitting size, unpremultiplied pixels, broken files), the X11-name fallback, a broken shape, the cache and its invalidation on change, and a hyprcursor theme from synthetic `.hlc` archives (PNG by size, SVG). No hyprcursor theme is installed here, so that path is tested only that way.
+- Live, on eDP-1 with the user's permission: `theming cursors` opens the new tab with the five chips, the list, previews at 24 px and the chosen theme highlighted; `theming store-cursors` keeps the Cursors chip and its back button says Cursors; `theming store-icons` goes back to Icons; the Icons tab keeps only the shell icons and the packs. No errors in `qs log`. The cursor itself was not changed.
+- `stow.py apply` linked the new `CursorsPage.qml` before the shell restart. `check.sh` passes; its warnings are the same as on main.

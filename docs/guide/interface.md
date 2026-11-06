@@ -49,7 +49,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Alt + +` / `-` / `0` | Zoom in / out around the pointer (up to 800%) / back to 100%, with an OSD |
 | `Super + Shift + P` | Color picker: click a point (`Esc` cancels); its hex code is copied and named in a notification |
 | `Super + Ctrl + W` | Next wallpaper of the current theme |
-| `Super + Ctrl + T` | Theming: theme, wallpaper, font, icons |
+| `Super + Ctrl + T` | Theming: theme, wallpaper, font, icons, cursors |
 | `Super + Ctrl + N` | Do Not Disturb on/off |
 | `Super + Ctrl + K` | Keep awake on/off |
 | `Super + Ctrl + F` | Focus session on/off (Do Not Disturb for 25 minutes) |

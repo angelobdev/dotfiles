@@ -13,9 +13,11 @@ Overlay {
     property string tab: ShellState.recall("theming/tab", "theme")
     onTabChanged: ShellState.remember("theming/tab", tab)
     // "glass" is a page of the Theme tab, reached from the card of a theme with liquid glass.
-    // "store" is a page of the Icons tab: the KDE Store, for cursor or icon themes (Store.kind).
-    readonly property var tabs: ["theme", "wallpaper", "font", "icons", "glass", "store"]
-    readonly property var cycle: ["theme", "wallpaper", "font", "icons"]
+    // "store" is a page of the Cursors or Icons tab: the KDE Store, for cursor or icon themes (Store.kind).
+    readonly property var tabs: ["theme", "wallpaper", "font", "icons", "cursors", "glass", "store"]
+    readonly property var cycle: ["theme", "wallpaper", "font", "icons", "cursors"]
+    // The tab a page belongs to: glass to Theme, the store to the kind it shows.
+    readonly property string shownTab: tab === "glass" ? "theme" : tab === "store" ? (Store.kind === "cursors" ? "cursors" : "icons") : tab
     function showTab(name) {
         tab = name;
         if (name === "wallpaper")
@@ -23,7 +25,7 @@ Overlay {
         // The tab shown by then: a later showTab in the same turn (IPC right after opening) wins, so focus never
         // stays on a hidden page, where Enter would act on it.
         Qt.callLater(() => {
-            const page = [themePage, wallpaperPage, fontPage, iconsPage, glassPage, storePage][tabs.indexOf(root.tab)];
+            const page = [themePage, wallpaperPage, fontPage, iconsPage, cursorsPage, glassPage, storePage][tabs.indexOf(root.tab)];
             page?.item?.focusItem?.forceActiveFocus();
         });
     }
@@ -34,7 +36,7 @@ Overlay {
         showTab("store");
     }
     function cycleTab(step) {
-        const from = Math.max(0, cycle.indexOf(tab === "glass" ? "theme" : tab === "store" ? "icons" : tab));
+        const from = Math.max(0, cycle.indexOf(shownTab));
         showTab(cycle[(from + step + cycle.length) % cycle.length]);
     }
     // Labels of the glass options theme.py offers (GLASS_TUNING); an unknown one shows its own name.
@@ -112,9 +114,13 @@ Overlay {
                         {
                             name: "icons",
                             label: I18n.tr("theming.tabs.icons")
+                        },
+                        {
+                            name: "cursors",
+                            label: I18n.tr("theming.tabs.cursors")
                         }
                     ]
-                    current: root.tab === "glass" ? "theme" : root.tab === "store" ? "icons" : root.tab
+                    current: root.shownTab
                     onChosen: name => root.showTab(name)
                 }
             }
@@ -159,8 +165,7 @@ Overlay {
                         panel: root
                     }
                 }
-                // Icons: each pack with its own sample icons, and where the shell glyphs come from. The cursor
-                // theme and size come first.
+                // Icons: each pack with its own sample icons, and where the shell glyphs come from.
                 // Built the first time its tab shows, then kept (Theming opens on one tab).
                 Loader {
                     id: iconsPage
@@ -168,6 +173,17 @@ Overlay {
                     active: visited || root.tab === "icons"
                     onLoaded: visited = true
                     sourceComponent: IconsPage {
+                        panel: root
+                    }
+                }
+                // Cursors: each theme with five of its own shapes at the chosen size, and the size.
+                // Built the first time its tab shows, then kept (Theming opens on one tab).
+                Loader {
+                    id: cursorsPage
+                    property bool visited: false
+                    active: visited || root.tab === "cursors"
+                    onLoaded: visited = true
+                    sourceComponent: CursorsPage {
                         panel: root
                     }
                 }

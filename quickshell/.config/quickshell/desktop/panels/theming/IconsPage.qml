@@ -17,46 +17,6 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 10
         Text {
-            text: I18n.tr("theming.cursor")
-            color: Theme.muted
-            font.family: Theme.font
-            font.pixelSize: Theme.textSize(12)
-        }
-        ChoiceCombo {
-            Accessible.name: I18n.tr("theming.cursor")
-            options: [
-                {
-                    name: "",
-                    label: I18n.tr("theming.themeDefaultNamed", [Theming.cursors.theme ?? ""])
-                }
-            ].concat((Theming.cursors.themes ?? []).map(t => ({
-                        name: t.id,
-                        label: t.download ? I18n.tr("theming.cursorDownload", [t.name]) : t.name
-                    })))
-            current: Theming.cursors.chosen?.theme ?? ""
-            onChosen: name => Theming.setCursor(name, undefined)
-        }
-        ChoiceChips {
-            Accessible.name: I18n.tr("theming.cursorSize")
-            options: (Theming.cursors.sizes ?? []).map(size => ({
-                        name: String(size),
-                        label: String(size)
-                    }))
-            current: String(Theming.cursors.size ?? 24)
-            onChosen: name => Theming.setCursor(undefined, Number(name))
-        }
-        Item {
-            Layout.fillWidth: true
-        }
-        ActionButton {
-            text: I18n.tr("store.getMore")
-            onClicked: page.panel.openStore("cursors")
-        }
-    }
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: 10
-        Text {
             text: I18n.tr("theming.shellIcons")
             color: Theme.muted
             font.family: Theme.font
