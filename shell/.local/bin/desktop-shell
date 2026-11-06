@@ -121,9 +121,15 @@ case "${1:-start}" in
         exec qs ipc -p "$config" call desktop switcher "$2"
         ;;
     toggle)
-        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent|updates|emoji|displays) ;;
-            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|theming|clipboard|recording|power|agent|updates|emoji|displays}' >&2; exit 2 ;;
+        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays) ;;
+            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays} [SECTION]' >&2; exit 2 ;;
         esac
+        # settings SECTION opens Settings on that section (appearance, …) instead of toggling it; theming is
+        # Settings → Appearance (ShellState.aliases).
+        if [[ $2 == settings && -n ${3:-} ]]; then
+            [[ $3 =~ ^[a-z-]+$ ]] || { echo 'Usage: desktop-shell toggle settings [SECTION]' >&2; exit 2; }
+            exec qs ipc -p "$config" call desktop settings "$3"
+        fi
         exec qs ipc -p "$config" call desktop toggle "$2"
         ;;
     media)

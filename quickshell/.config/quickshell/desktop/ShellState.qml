@@ -35,14 +35,48 @@ Singleton {
     }
     // Every panel: shell.qml has a LazyPanel for each and desktop-shell toggle accepts the same names
     // (scripts/tests/test_panels.py keeps the three in step).
-    readonly property var panels: ["launcher", "controls", "network", "bluetooth", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "theming", "clipboard", "recording", "power", "agent", "updates", "emoji", "displays"]
+    readonly property var panels: ["launcher", "controls", "network", "bluetooth", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "settings", "clipboard", "recording", "power", "agent", "updates", "emoji", "displays"]
+    // Former panels that are now a section of another: their names keep working (shortcuts, desktop-shell
+    // toggle, assist actions) and open that section.
+    readonly property var aliases: ({
+            theming: {
+                panel: "settings",
+                section: "appearance"
+            }
+        })
+    // A panel already open is asked to move to another of its sections (panels/SettingsPanel.qml).
+    signal sectionRequested(string name, string section)
     function show(name, screen, direction) {
+        const alias = aliases[name];
+        if (alias) {
+            openSection(alias.panel, alias.section, screen, true);
+            return;
+        }
         if (!panels.includes(name))
             return;
         // Set before the panel changes so both the closing and the opening panel read the same direction.
         navigation = direction ?? 0;
         activeScreen = screen || screenNamed(Hyprland.focusedMonitor?.name);
         panel = panel === name ? "" : name;
+    }
+    // Opens a panel on one of its sections, or moves it there when it is open on another. With toggle, asking
+    // again for the section on screen closes it, as toggle() does for a panel.
+    function openSection(name, section, screen, toggle) {
+        if (!panels.includes(name))
+            return;
+        if (panel === name && recall(name + "/section", "") === section) {
+            if (toggle)
+                close();
+            return;
+        }
+        remember(name + "/section", section);
+        if (panel === name) {
+            sectionRequested(name, section);
+            return;
+        }
+        navigation = 0;
+        activeScreen = screen || screenNamed(Hyprland.focusedMonitor?.name);
+        panel = name;
     }
     function screenNamed(name) {
         return Quickshell.screens.find(s => s.name === name) || Quickshell.screens[0];

@@ -621,6 +621,12 @@
     "suspend": "Sospendi",
     "title": "Sessione"
   },
+  "settings": {
+    "sections": {
+      "appearance": "Aspetto"
+    },
+    "title": "Impostazioni"
+  },
   "sharing": {
     "chooseSourceHint": "Scegli il monitor o la finestra da rendere visibile all’applicazione.",
     "errors": {

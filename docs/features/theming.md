@@ -6,7 +6,7 @@ One panel switches the whole desktop: shell, terminal, GTK and Qt apps, lock scr
 
 ## The Theming panel
 
-`Super + Ctrl + T` opens the Theming panel. `Ctrl+Tab` / `Ctrl+Shift+Tab` (or `Ctrl+PgDown` / `Ctrl+PgUp`) switch tabs, and so does a one-finger swipe sideways over the page by touch (to the left for the next tab); arrows move within a tab, Enter applies, and Esc closes.
+The Theming panel is the **Appearance** section of **Settings**. `Super + Ctrl + T` opens Settings there (and closes it when Appearance is already on screen); `Super + I`, the Settings entry in the launcher or `desktop-shell toggle settings` open Settings on the section seen last. Settings has a sidebar of sections after GNOME Settings; more of the desktop's configuration moves in over time ([#8](https://github.com/angelobdev/dotfiles/issues/8)). On a screen narrower than the sidebar and a section together, it shows one of the two, with a back button. `Ctrl+Tab` / `Ctrl+Shift+Tab` (or `Ctrl+PgDown` / `Ctrl+PgUp`) switch tabs, and so does a one-finger swipe sideways over the page by touch (to the left for the next tab); arrows move within a tab, Enter applies, and Esc closes.
 
 **Tabs**
 - **Theme:** a card per theme with a small mock-up of its surfaces, text and accent, plus its terminal colours; the current one is marked. Choosing one switches colours at once, and the theme's wallpaper follows.

@@ -850,3 +850,10 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Tests: the choice reaches both rendered files (and a hand-edited non-boolean does not), only `true` is saved, `toggle` flips it, Hyprland reloads each time; the Graphite fallbacks in `Theme.qml` and `theme.lua` match the rendered defaults, now `bool` properties included.
 - The assistant's pulsing dot already honoured `reduceMotion` (the issue said otherwise); it now follows `Theme.reduceMotion`, like the workspace pills, the OSD and Alt + Tab, which used `Config.reduceMotion` directly.
 - Not tried: the look of every theme with Reduce effects on (checked with Gruvbox); an automatic mode is not part of this change.
+
+## Settings, phase 1, 2026-11-06 (#8)
+
+- Live on eDP-1, with the user's permission, through `desktop-shell` and the IPC: `toggle settings` opens Settings (sidebar with Appearance, the section on the right, in Italian); `toggle theming` with Appearance on screen closes it, and again opens Settings → Appearance; `toggle settings appearance` opens without toggling; `theming store-cursors` and `theming font` reach the KDE Store page and the Font tab inside Settings; an unknown section falls back to Appearance; a malformed section name is refused by `desktop-shell` (exit 2). No errors in `qs log`. `Super + I` is bound (checked with `hyprctl binds`); not pressed.
+- The first hot reload after removing `ThemingPanel.qml` failed ("SettingsPanel is not a type") because the new files had no Stow links yet; Quickshell kept the previous configuration running. `stow.py apply` linked `SettingsPanel.qml`, `ThemingView.qml` and the `.desktop` entry, the dangling `ThemingPanel.qml` link was removed by hand, and the restart through the supervisor came up clean.
+- `test_panels.py` now also requires the aliases of `ShellState.aliases` in `desktop-shell toggle` and nowhere among the panels. `desktop-file-validate` passes on `desktop-settings.desktop`.
+- Not tried: the compact layout (both screens are wider than its threshold), and launching **Settings** from the launcher.

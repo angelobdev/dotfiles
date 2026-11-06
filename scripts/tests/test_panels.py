@@ -15,9 +15,14 @@ class PanelTests(unittest.TestCase):
         lazy = set(re.findall(r'LazyPanel \{\s*(?:id: \w+\s*)?name: "([a-z]+)"', (SHELL / 'shell.qml').read_text()))
         toggle = re.search(r'toggle\)\s*case "\$\{2:-\}" in ([a-z|]+)\)', (REPO / 'shell/.local/bin/desktop-shell').read_text())
         wrapper = set(toggle[1].split('|'))
+        # Former panels that are now a section of another (ShellState.aliases) stay accepted by desktop-shell.
+        aliases = re.search(r'readonly property var aliases: \(\{(.*?)\n        \}\)', (SHELL / 'ShellState.qml').read_text(), re.S)
+        renamed = set(re.findall(r'^            (\w+): \{', aliases[1], re.M))
         self.assertTrue(allowed)
+        self.assertTrue(renamed)
+        self.assertFalse(renamed & allowed, 'an alias is also a panel')
         self.assertEqual(lazy, allowed, 'shell.qml LazyPanels vs ShellState.panels')
-        self.assertEqual(wrapper, allowed, 'desktop-shell toggle vs ShellState.panels')
+        self.assertEqual(wrapper, allowed | renamed, 'desktop-shell toggle vs ShellState.panels and aliases')
 
 
 if __name__ == '__main__':
