@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import ".."
+import "BindKeys.js" as BindKeys
 
 // Hyprland settings chosen in Settings: the keyboard layout, personal shortcuts and the language of the assistant.
 // They are kept under "hyprland" in ~/.config/desktop/shell.json (Config.set) and rendered into
@@ -20,6 +21,15 @@ Singleton {
     property string error: ""
     // The layout Hyprland uses now, shown when none is chosen here.
     property string active: ""
+    // Every bind Hyprland has now outside submaps, as { mask, key, description }, to warn about taken keys.
+    property var taken: []
+    function combo(text) {
+        return BindKeys.combo(text);
+    }
+    // The binds already on these keys, except the one this row itself put there (same description).
+    function takenBy(keys, description) {
+        return BindKeys.takenBy(taken, keys, description);
+    }
     // The same checks as hyprsettings.py, so a field can say what is wrong before it is saved.
     function validLayout(text) {
         return /^[a-z]{2,8}(,[a-z]{2,8})*$/.test(text);
@@ -28,11 +38,7 @@ Singleton {
         return /^[a-z0-9_-]*(,[a-z0-9_-]*)*$/.test(text);
     }
     function validKeys(text) {
-        const parts = String(text).split("+").map(part => part.trim());
-        if (parts.length === 0 || parts.some(part => part === ""))
-            return false;
-        const key = parts.pop();
-        return parts.every(part => ["SUPER", "SHIFT", "CTRL", "CONTROL", "ALT", "MOD2", "MOD3", "MOD5"].includes(part.toUpperCase())) && /^[A-Za-z0-9_]+$/.test(key);
+        return BindKeys.valid(text);
     }
     // Empty parts drop out, so a cleared setting leaves no trace in shell.json.
     function save(next) {
@@ -76,6 +82,25 @@ Singleton {
     function readActive() {
         if (!reader.running)
             reader.running = true;
+        if (!bindReader.running)
+            bindReader.running = true;
+    }
+    Process {
+        id: bindReader
+        command: ["hyprctl", "binds", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.taken = JSON.parse(text).filter(bind => bind.submap === "" && !bind.mouse).map(bind => ({
+                                mask: bind.modmask,
+                                key: String(bind.key).toLowerCase(),
+                                description: bind.description || bind.key
+                            }));
+                } catch (failure) {
+                    root.taken = [];
+                }
+            }
+        }
     }
     Process {
         id: renderer

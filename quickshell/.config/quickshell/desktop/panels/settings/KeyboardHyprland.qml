@@ -11,21 +11,69 @@ ColumnLayout {
     id: root
     Layout.fillWidth: true
     spacing: 18
-    // Rows being edited, saved as a whole each time one is complete; a new row waits for keys and command.
-    property var rows: HyprSettings.binds.map(bind => Object.assign({}, bind))
-    Component.onCompleted: HyprSettings.readActive()
+    // The shortcuts being edited, one row each. A ListModel: changing a field changes that row in place, where
+    // reassigning an array rebuilt every row, the one being edited included (its save never ran).
+    ListModel {
+        id: bindModel
+    }
+    // The valid rows, as HyprSettings keeps them; an unfinished row stays in the list but is not saved.
+    function valid() {
+        const list = [];
+        for (let i = 0; i < bindModel.count; i++) {
+            const row = bindModel.get(i);
+            if (HyprSettings.validKeys(row.keys) && row.command.trim() !== "")
+                list.push({
+                    keys: row.keys.trim(),
+                    command: row.command.trim(),
+                    description: row.description.trim()
+                });
+        }
+        return list;
+    }
+    function load() {
+        bindModel.clear();
+        for (const bind of HyprSettings.binds)
+            bindModel.append({
+                keys: bind.keys ?? "",
+                command: bind.command ?? "",
+                description: bind.description ?? ""
+            });
+    }
+    function save() {
+        HyprSettings.setBinds(valid());
+    }
+    function editRow(index, field, value) {
+        bindModel.setProperty(index, field, value);
+        save();
+    }
+    function removeRow(index) {
+        bindModel.remove(index);
+        save();
+    }
+    // Other rows on the same keys.
+    function duplicates(index, keys) {
+        if (!HyprSettings.validKeys(keys))
+            return 0;
+        const wanted = HyprSettings.combo(keys);
+        let count = 0;
+        for (let i = 0; i < bindModel.count; i++) {
+            const other = HyprSettings.combo(bindModel.get(i).keys);
+            if (i !== index && HyprSettings.validKeys(bindModel.get(i).keys) && other.mask === wanted.mask && other.key === wanted.key)
+                count++;
+        }
+        return count;
+    }
+    Component.onCompleted: {
+        load();
+        HyprSettings.readActive();
+    }
+    // Reloaded only when shell.json says something else than these rows (a hand edit), never after a save.
     Connections {
         target: HyprSettings
         function onBindsChanged() {
-            root.rows = HyprSettings.binds.map(bind => Object.assign({}, bind));
+            if (JSON.stringify(HyprSettings.binds) !== JSON.stringify(root.valid()))
+                root.load();
         }
-    }
-    function saveRows() {
-        HyprSettings.setBinds(rows.filter(row => HyprSettings.validKeys(row.keys ?? "") && (row.command ?? "").trim() !== "").map(row => ({
-                    keys: row.keys.trim(),
-                    command: row.command.trim(),
-                    description: (row.description ?? "").trim()
-                })));
     }
     component GroupTitle: Text {
         color: Theme.muted
@@ -138,68 +186,72 @@ ColumnLayout {
                     text: I18n.tr("settings.hypr.bindsHint")
                 }
                 Repeater {
-                    model: root.rows
-                    RowLayout {
+                    model: bindModel
+                    ColumnLayout {
                         id: bindRow
-                        required property var modelData
                         required property int index
-                        readonly property bool complete: HyprSettings.validKeys(keysField.text) && commandField.text.trim() !== ""
+                        required property string keys
+                        required property string command
+                        required property string description
+                        // What else is on these keys: Hyprland binds (the repository, hypr.lua, this list) and the
+                        // other rows here.
+                        readonly property var takenBy: HyprSettings.takenBy(keys, description.trim() || command.trim())
+                        readonly property int twins: root.duplicates(index, keys)
                         Layout.fillWidth: true
-                        spacing: 8
-                        function edit(field, value) {
-                            const next = root.rows.slice();
-                            next[index] = Object.assign({}, next[index], {
-                                [field]: value
-                            });
-                            root.rows = next;
-                            root.saveRows();
-                        }
-                        InputField {
-                            id: keysField
-                            Layout.preferredWidth: 180
-                            text: bindRow.modelData.keys ?? ""
-                            placeholderText: "SUPER + B"
-                            color: text === "" || HyprSettings.validKeys(text) ? Theme.text : Theme.danger
-                            Accessible.name: I18n.tr("settings.hypr.keys")
-                            onEditingFinished: if (text !== (bindRow.modelData.keys ?? ""))
-                                bindRow.edit("keys", text)
-                        }
-                        InputField {
-                            id: commandField
+                        spacing: 4
+                        RowLayout {
                             Layout.fillWidth: true
-                            text: bindRow.modelData.command ?? ""
-                            placeholderText: I18n.tr("settings.hypr.command")
-                            Accessible.name: I18n.tr("settings.hypr.command")
-                            onEditingFinished: if (text !== (bindRow.modelData.command ?? ""))
-                                bindRow.edit("command", text)
-                        }
-                        InputField {
-                            Layout.preferredWidth: 160
-                            text: bindRow.modelData.description ?? ""
-                            placeholderText: I18n.tr("settings.hypr.description")
-                            Accessible.name: I18n.tr("settings.hypr.description")
-                            onEditingFinished: if (text !== (bindRow.modelData.description ?? ""))
-                                bindRow.edit("description", text)
-                        }
-                        PanelIconButton {
-                            iconName: "trash"
-                            tooltip: I18n.tr("settings.hypr.remove")
-                            onClicked: {
-                                const next = root.rows.slice();
-                                next.splice(bindRow.index, 1);
-                                root.rows = next;
-                                root.saveRows();
+                            spacing: 8
+                            InputField {
+                                Layout.preferredWidth: 180
+                                text: bindRow.keys
+                                placeholderText: "SUPER + B"
+                                color: text === "" || HyprSettings.validKeys(text) ? Theme.text : Theme.danger
+                                Accessible.name: I18n.tr("settings.hypr.keys")
+                                onEditingFinished: if (text !== bindRow.keys)
+                                    root.editRow(bindRow.index, "keys", text)
                             }
+                            InputField {
+                                Layout.fillWidth: true
+                                text: bindRow.command
+                                placeholderText: I18n.tr("settings.hypr.command")
+                                Accessible.name: I18n.tr("settings.hypr.command")
+                                onEditingFinished: if (text !== bindRow.command)
+                                    root.editRow(bindRow.index, "command", text)
+                            }
+                            InputField {
+                                Layout.preferredWidth: 160
+                                text: bindRow.description
+                                placeholderText: I18n.tr("settings.hypr.description")
+                                Accessible.name: I18n.tr("settings.hypr.description")
+                                onEditingFinished: if (text !== bindRow.description)
+                                    root.editRow(bindRow.index, "description", text)
+                            }
+                            PanelIconButton {
+                                iconName: "trash"
+                                tooltip: I18n.tr("settings.hypr.remove")
+                                onClicked: root.removeRow(bindRow.index)
+                            }
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            visible: bindRow.takenBy.length > 0 || bindRow.twins > 0
+                            text: bindRow.takenBy.length > 0 ? I18n.tr("settings.hypr.taken", [bindRow.takenBy.join(", ")]) : I18n.tr("settings.hypr.twice")
+                            textFormat: Text.PlainText
+                            wrapMode: Text.WordWrap
+                            color: Theme.danger
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(11)
                         }
                     }
                 }
                 ActionButton {
                     text: I18n.tr("settings.hypr.add")
-                    onClicked: root.rows = root.rows.concat([{
-                                keys: "",
-                                command: "",
-                                description: ""
-                            }])
+                    onClicked: bindModel.append({
+                        keys: "",
+                        command: "",
+                        description: ""
+                    })
                 }
             }
         }

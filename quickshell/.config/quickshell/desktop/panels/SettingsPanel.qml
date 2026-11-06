@@ -133,7 +133,11 @@ Overlay {
             showSection(sidebarRows[index].name, "");
     }
     property string section: ShellState.recall("settings/section", "appearance")
-    onSectionChanged: ShellState.remember("settings/section", section)
+    onSectionChanged: {
+        ShellState.remember("settings/section", section);
+        if (!visited.includes(section))
+            visited = visited.concat([section]);
+    }
     // Narrow screens show the sidebar or a section, not both; Back returns to the sidebar.
     readonly property bool compact: card.width < 820
     property bool showingSidebar: false
@@ -141,6 +145,9 @@ Overlay {
     property var appearance: null
     // A tab asked for before its section page existed.
     property string requestedTab: ""
+    // Sections shown at least once: their pages stay loaded.
+    property var visited: []
+
     // A section by name, an unknown one falls back to the first. tab: a tab inside it (Appearance), "" for the
     // one it remembers.
     function showSection(name, tab) {
@@ -284,10 +291,9 @@ Overlay {
                             required property var modelData
                             // This section is on screen: its view scans, polls and lists only then.
                             readonly property bool shownHere: root.open && root.section === modelData.name && (!root.compact || !root.showingSidebar)
-                            property bool visited: false
-                            active: visited || root.section === modelData.name
+                            // Built the first time it shows, then kept (root.visited, set outside this binding).
+                            active: root.visited.includes(modelData.name) || root.section === modelData.name
                             onLoaded: {
-                                visited = true;
                                 if (modelData.name === "appearance")
                                     root.appearance = item;
                                 if (root.section === modelData.name && item.open) {
