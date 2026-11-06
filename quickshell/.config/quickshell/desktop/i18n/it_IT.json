@@ -694,6 +694,27 @@
       "twice": "Usata anche da un'altra delle tue scorciatoie.",
       "variant": "Variante"
     },
+    "monitors": {
+      "apply": "Applica",
+      "confirm": "Mantenere queste impostazioni dello schermo? Si torna indietro tra %1 s.",
+      "hertz": "%1 Hz",
+      "keep": "Mantieni",
+      "panelHint": "La frequenza dello schermo integrato si sceglie per fonte di alimentazione nel pannello della batteria; qui la sua scala e la sua posizione.",
+      "position": "Posizione",
+      "positions": {
+        "auto": "Automatica",
+        "left": "A sinistra degli altri",
+        "right": "A destra degli altri",
+        "up": "Sopra gli altri",
+        "down": "Sotto gli altri"
+      },
+      "refresh": "Frequenza di aggiornamento",
+      "reset": "Torna al predefinito",
+      "resolution": "Risoluzione",
+      "revert": "Torna indietro",
+      "scale": "Scala",
+      "title": "Monitor"
+    },
     "navigationHint": "↑↓ seleziona · Spazio o Invio cambia · ←→ regola · Esc chiudi",
     "open": "Impostazioni…",
     "options": {

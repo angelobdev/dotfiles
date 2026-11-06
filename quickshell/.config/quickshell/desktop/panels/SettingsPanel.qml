@@ -382,6 +382,9 @@ Overlay {
                                         Layout.fillWidth: true
                                         shown: page.shownHere
                                     }
+                                    MonitorSettings {
+                                        shown: page.shownHere
+                                    }
                                     Item {
                                         Layout.fillHeight: true
                                     }

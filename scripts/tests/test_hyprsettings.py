@@ -57,6 +57,27 @@ class RenderTests(unittest.TestCase):
         self.assertEqual(text, '')
         self.assertEqual(skipped, ['keyboard', 'assistantLanguage', 'binds.0', 'binds.1', 'binds.2', 'binds.3'])
 
+    def test_monitors_go_through_displays_with_listed_modes_only(self):
+        available = {'DP-1': ['1920x1080@60.00', '1280x720@60.00'], 'eDP-1': ['2880x1800@120.00']}
+        text, skipped = hyprsettings.render({'monitors': {
+            'DP-1': {'mode': '1920x1080@60.00', 'position': 'auto-right', 'scale': 1.25},
+            'eDP-1': {'scale': 1.6667, 'position': 'auto'},
+            'HDMI-A-1': {'mode': '3840x2160@60.00'}}}, available)
+        self.assertEqual(skipped, [])
+        self.assertIn('local displays = require("config.displays")', text)
+        self.assertIn('displays.configure("DP-1", { mode = "1920x1080@60.00", position = "auto-right", scale = "1.25" })', text)
+        self.assertIn('displays.configure("eDP-1", { position = "auto", scale = "1.667" })', text)
+        # Not connected now: its mode cannot be checked, and stays as chosen when it was.
+        self.assertIn('displays.configure("HDMI-A-1", { mode = "3840x2160@60.00" })', text)
+
+    def test_a_mode_the_monitor_does_not_report_is_refused(self):
+        available = {'DP-1': ['1920x1080@60.00']}
+        for fields in ({'mode': '1920x1080@75.00'}, {'mode': '1920x1080@60.00@x'}, {'position': '100x0'}, {'scale': 7},
+                       {'scale': True}, {'scale': '2'}, {}, 'nonsense'):
+            text, skipped = hyprsettings.render({'monitors': {'DP-1': fields}}, available)
+            self.assertEqual((text, skipped), ('', ['monitors.DP-1']), fields)
+        self.assertEqual(hyprsettings.render({'monitors': {'DP 1; os.exit()': {'scale': 1}}}, {})[1], ['monitors.DP 1; os.exit()'])
+
     def test_write_only_on_change_and_remove_when_empty(self):
         with tempfile.TemporaryDirectory() as folder:
             target = Path(folder) / 'desktop/settings.lua'
