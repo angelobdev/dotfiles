@@ -7,11 +7,14 @@ import "../../components"
 RowLayout {
     id: setting
     property string label: ""
+    // A fixed width for the label, so drop-downs in a column line up (LayoutPage); -1 keeps its own width.
+    property int labelWidth: -1
     property alias options: combo.options
     property alias current: combo.current
     signal chosen(string name)
     spacing: 8
     Text {
+        Layout.preferredWidth: setting.labelWidth
         text: setting.label
         color: Theme.muted
         font.family: Theme.font

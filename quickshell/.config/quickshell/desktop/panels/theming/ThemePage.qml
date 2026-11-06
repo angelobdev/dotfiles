@@ -13,11 +13,42 @@ ColumnLayout {
     required property var panel
     readonly property Item focusItem: themeGrid
     spacing: 10
-    // Light or dark for the dynamic theme; the other drop-downs are on the Layout tab (LayoutPage.qml).
+    // Bar, effects and light or dark for the dynamic theme; the window drop-downs are on the Layout tab
+    // (LayoutPage.qml).
     Flow {
         Layout.fillWidth: true
-        visible: Theming.dynamic.available
         spacing: 16
+        Setting {
+            label: I18n.tr("theming.bar")
+            options: [
+                {
+                    name: "shade",
+                    label: I18n.tr("theming.barShaded")
+                },
+                {
+                    name: "transparent",
+                    label: I18n.tr("theming.barTransparent")
+                }
+            ]
+            current: Theme.barStyle
+            onChosen: name => Theming.setBarStyle(name)
+        }
+        // Reduced: no animations, blur, shadows or glass, for less powerful machines (theme.py reduce-effects).
+        Setting {
+            label: I18n.tr("theming.effects")
+            options: [
+                {
+                    name: "full",
+                    label: I18n.tr("theming.effectsFull")
+                },
+                {
+                    name: "reduced",
+                    label: I18n.tr("theming.effectsReduced")
+                }
+            ]
+            current: Theme.reduceEffects ? "reduced" : "full"
+            onChosen: name => Theming.setReduceEffects(name === "reduced")
+        }
         // Dynamic theme: light or dark (Auto lets the image decide).
         Setting {
             visible: Theming.dynamic.available
@@ -39,6 +70,14 @@ ColumnLayout {
             current: Theming.dynamic.mode
             onChosen: name => Theming.setDynamic("mode", name)
         }
+    }
+    Text {
+        Layout.fillWidth: true
+        text: I18n.tr("theming.barHint")
+        elide: Text.ElideRight
+        color: Theme.muted
+        font.family: Theme.font
+        font.pixelSize: Theme.textSize(11)
     }
     GridView {
         id: themeGrid
