@@ -3,7 +3,10 @@
 
 The choices live under "hyprland" in ~/.config/desktop/shell.json (Settings writes them there, Config.qml):
 {"keyboard": {"layout": "it", "variant": ""}, "assistantLanguage": "italian",
- "binds": [{"keys": "SUPER + B", "command": "zen-browser", "description": "Browser"}]}.
+ "binds": [{"keys": "SUPER + B", "command": "zen-browser", "description": "Browser"}],
+ "monitors": {"DP-1": {"mode": "1920x1080@60.00", "position": "auto-right", "scale": 1.25}}}.
+Monitors go through config/displays.lua (displays.configure): on the laptop panel only scale and position count.
+A mode must be one the monitor reports (hyprctl monitors all): custom modes crashed Hyprland 0.57.1.
 hyprland.lua loads settings.lua after its own modules and before the user's hypr.lua, which still wins.
 
 render [--json TEXT]: writes settings.lua from TEXT (or from shell.json), or removes it when nothing is set, and
@@ -24,6 +27,9 @@ CONFIG = Path(os.environ.get('XDG_CONFIG_HOME') or Path.home() / '.config') / 'd
 LAYOUT = re.compile(r'^[a-z]{2,8}(,[a-z]{2,8})*$')
 VARIANT = re.compile(r'^[a-z0-9_-]*(,[a-z0-9_-]*)*$')
 LANGUAGE = re.compile(r'^[a-z]{2,20}$')
+OUTPUT = re.compile(r'^[A-Za-z0-9-]{1,32}$')
+MODE = re.compile(r'^\d{3,5}x\d{3,5}@\d{2,3}(\.\d{1,3})?$')
+POSITIONS = ('auto', 'auto-left', 'auto-right', 'auto-up', 'auto-down')
 # Modifiers and one key, as Hyprland binds take them: "SUPER + SHIFT + B", "SUPER + period", "XF86AudioMute".
 MODIFIERS = {'SUPER', 'SHIFT', 'CTRL', 'CONTROL', 'ALT', 'MOD2', 'MOD3', 'MOD5'}
 KEY = re.compile(r'^[A-Za-z0-9_]+$')
@@ -48,8 +54,48 @@ def valid_keys(keys):
     return ' + '.join([part.upper() for part in modifiers] + [key])
 
 
-def render(settings):
-    """The text of settings.lua, '' when nothing is set, and what was left out as not valid."""
+def available_modes():
+    # Each connected monitor's modes, "1920x1080@60.00" as Hyprland lists them without "Hz"; {} outside Hyprland.
+    if not os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
+        return {}
+    try:
+        result = subprocess.run(['hyprctl', 'monitors', 'all', '-j'], capture_output=True, text=True, timeout=5, check=True)
+        monitors = json.loads(result.stdout)
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return {}
+    return {monitor['name']: [mode.removesuffix('Hz') for mode in monitor.get('availableModes', [])]
+            for monitor in monitors if isinstance(monitor, dict) and 'name' in monitor}
+
+
+def monitor_line(name, fields, available):
+    # displays.configure(...) for one monitor, or None when something in it is not valid.
+    if not OUTPUT.match(str(name)) or not isinstance(fields, dict):
+        return None
+    parts = []
+    mode = fields.get('mode')
+    if mode not in (None, '', 'preferred'):
+        if not MODE.match(str(mode)) or (name in available and mode not in available[name]):
+            return None
+        parts.append(f'mode = {lua_string(mode)}')
+    position = fields.get('position')
+    if position not in (None, ''):
+        if position not in POSITIONS:
+            return None
+        parts.append(f'position = {lua_string(position)}')
+    scale = fields.get('scale')
+    if scale not in (None, ''):
+        if isinstance(scale, bool) or not isinstance(scale, (int, float)) or not 0.5 <= scale <= 3:
+            return None
+        parts.append(f'scale = {lua_string(format(scale, ".4g"))}')
+    if not parts:
+        return None
+    return f'displays.configure({lua_string(name)}, {{ {", ".join(parts)} }})'
+
+
+def render(settings, available=None):
+    """The text of settings.lua, '' when nothing is set, and what was left out as not valid. available: each
+    monitor's modes (available_modes()); a monitor not in it is not checked against its modes."""
+    available = available or {}
     lines, skipped = [], []
     if not isinstance(settings, dict):
         return '', ['hyprland'] if settings not in (None, {}) else []
@@ -79,6 +125,17 @@ def render(settings):
             continue
         description = str(bind.get('description') or '').strip() or command
         lines.append(f'hl.bind({lua_string(keys)}, hl.dsp.exec_cmd({lua_string(command)}), {{ description = {lua_string(description)} }})')
+    monitors = settings.get('monitors') if isinstance(settings.get('monitors'), dict) else {}
+    configured = []
+    for name in sorted(monitors):
+        line = monitor_line(name, monitors[name], available)
+        if line:
+            configured.append(line)
+        else:
+            skipped.append(f'monitors.{name}')
+    if configured:
+        lines.append('local displays = require("config.displays")')
+        lines.extend(configured)
     return (HEADER + '\n'.join(lines) + '\n') if lines else '', skipped
 
 
@@ -116,7 +173,7 @@ def main():
     rendering.add_argument('--json')
     arguments = parser.parse_args()
     settings = from_shell_json() if arguments.json is None else json.loads(arguments.json)
-    text, skipped = render(settings)
+    text, skipped = render(settings, available_modes())
     changed = write(text)
     if changed and os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
         subprocess.run(['hyprctl', 'reload'], capture_output=True, check=False, timeout=10)

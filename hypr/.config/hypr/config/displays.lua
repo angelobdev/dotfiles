@@ -31,6 +31,9 @@ local panel_off = false
 local current = 0
 -- Called after each rule of the panel with its transform and output: tablet.lua rotates touch input with it.
 local transform_hook
+-- The panel's scale and position chosen in Settings (M.configure, from settings.lua), over its own rule. Its mode
+-- stays with the refresh per power source.
+local panel_settings = {}
 
 local function saved()
     local ok, value = pcall(dofile, state)
@@ -105,6 +108,9 @@ local applied_refresh = false
 local function apply(transform)
     local spec = {}
     for key, value in pairs(panel) do
+        spec[key] = value
+    end
+    for key, value in pairs(panel_settings) do
         spec[key] = value
     end
     current = transform
@@ -273,6 +279,32 @@ end
 function M.monitor(spec)
     specs[spec.output] = spec
     hl.monitor(spec)
+end
+
+-- A monitor as Settings sets it (settings.lua): on the internal display only scale and position, over its rule
+-- (its mode is the refresh per power source); on another, a whole rule, through M.monitor, at the defaults
+-- for what is not said.
+function M.configure(name, fields)
+    if type(name) ~= "string" or type(fields) ~= "table" then
+        return
+    end
+    if internal(name) or (panel and panel.output == name) then
+        panel_settings = { scale = fields.scale, position = fields.position }
+        if find_panel() then
+            apply(current)
+        end
+        return
+    end
+    local spec = { output = name }
+    for key, value in pairs(M.DEFAULT) do
+        spec[key] = value
+    end
+    for _, key in ipairs({ "mode", "position", "scale" }) do
+        if fields[key] ~= nil then
+            spec[key] = fields[key]
+        end
+    end
+    M.monitor(spec)
 end
 
 -- The lid switch, by its name in `hyprctl devices`. Bound locked: the lock screen moves too.

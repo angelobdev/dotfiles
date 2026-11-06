@@ -16,6 +16,8 @@ Singleton {
     readonly property string variant: current.keyboard?.variant ?? ""
     readonly property string language: current.assistantLanguage ?? ""
     readonly property var binds: Array.isArray(current.binds) ? current.binds : []
+    // Per monitor name: { mode, position, scale } as chosen in Settings → Displays.
+    readonly property var monitors: (current.monitors && typeof current.monitors === "object" && !Array.isArray(current.monitors)) ? current.monitors : ({})
     // What hyprsettings.py left out as not valid, by name (keyboard, assistantLanguage, binds.N).
     property var skipped: []
     property string error: ""
@@ -53,6 +55,8 @@ Singleton {
             cleaned.assistantLanguage = next.assistantLanguage;
         if ((next.binds ?? []).length > 0)
             cleaned.binds = next.binds;
+        if (Object.keys(next.monitors ?? {}).length > 0)
+            cleaned.monitors = next.monitors;
         if (!Config.set("hyprland", cleaned, {})) {
             error = I18n.tr("settings.unreadable", [Config.directory + "/shell.json"]);
             return;
@@ -72,6 +76,23 @@ Singleton {
     function setLanguage(language) {
         save(Object.assign({}, current, {
             assistantLanguage: language
+        }));
+    }
+    // A monitor's settings, or null to give it back to its own rules.
+    function setMonitor(name, fields) {
+        const monitors = Object.assign({}, current.monitors ?? {});
+        if (fields)
+            monitors[name] = fields;
+        else
+            delete monitors[name];
+        save(Object.assign({}, current, {
+            monitors: monitors
+        }));
+    }
+    // All monitors at once (the revert of Settings → Displays).
+    function setMonitors(monitors) {
+        save(Object.assign({}, current, {
+            monitors: monitors
         }));
     }
     function setBinds(list) {

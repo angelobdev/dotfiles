@@ -21,8 +21,9 @@ require("config.session")
 local user = (os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")) .. "/desktop/?.lua"
 for _, name in ipairs({ "settings", "hypr" }) do
     if package.searchpath(name, user) then
+        -- The user's folder first, then these modules, which settings.lua uses (config.displays).
         local path = package.path
-        package.path = user
+        package.path = user .. ";" .. path
         require(name)
         package.path = path
     end

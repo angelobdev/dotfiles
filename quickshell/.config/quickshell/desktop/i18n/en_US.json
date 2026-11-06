@@ -694,6 +694,27 @@
       "twice": "Also used by another of your shortcuts.",
       "variant": "Variant"
     },
+    "monitors": {
+      "apply": "Apply",
+      "confirm": "Keep these display settings? Going back in %1 s.",
+      "hertz": "%1 Hz",
+      "keep": "Keep",
+      "panelHint": "The refresh of the built-in display is chosen per power source in the battery panel; here its scale and position.",
+      "position": "Position",
+      "positions": {
+        "auto": "Automatic",
+        "left": "Left of the others",
+        "right": "Right of the others",
+        "up": "Above the others",
+        "down": "Below the others"
+      },
+      "refresh": "Refresh rate",
+      "reset": "Back to default",
+      "resolution": "Resolution",
+      "revert": "Go back",
+      "scale": "Scale",
+      "title": "Monitor"
+    },
     "navigationHint": "↑↓ select · Space or Enter change · ←→ adjust · Esc close",
     "open": "Settings…",
     "options": {
