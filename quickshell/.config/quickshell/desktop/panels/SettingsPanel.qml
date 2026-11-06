@@ -309,7 +309,8 @@ Overlay {
                                     sound: soundView,
                                     assistant: assistantView,
                                     system: systemView,
-                                    keyboard: keyboardView
+                                    keyboard: keyboardView,
+                                    power: powerView
                                 })[modelData.name] ?? optionsView
                             // Appearance: the theme, wallpaper, font, icons and cursors (panels/theming).
                             Component {
@@ -437,6 +438,15 @@ Overlay {
                                     section: page.modelData.name
                                     title: page.modelData.label
                                     KeyboardHyprland {}
+                                }
+                            }
+                            // Power: the battery warnings, then the power profile of the battery panel.
+                            Component {
+                                id: powerView
+                                OptionsSection {
+                                    section: page.modelData.name
+                                    title: page.modelData.label
+                                    PowerProfileGroup {}
                                 }
                             }
                             Component {
