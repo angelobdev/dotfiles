@@ -877,3 +877,9 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Found and fixed: on the first opening after a restart, a tab asked for (`system/advanced`) was lost because the section page did not exist yet; it is now kept (`requestedTab`) and applied when the page loads. The same path now runs Appearance's `activate()` on that first opening, which phase 1 skipped.
 - `test_about.py`: vendor named once, firmware placeholders left out, processor with threads, memory, distribution, a folder without git.
 - Not tried: the Reset confirmation and the open buttons (`xdg-open`), clicking the **Settings…** links.
+
+## Desktop menu, 2026-11-06 (#8, phase 4)
+
+- `hyprctl layers` after the restart: one `desktop-menu-catcher` per monitor on the Bottom level, full size (1728×1080 logical on eDP-1, 1920×1080 on DP-1).
+- Live on eDP-1, with the user's permission, through `desktop-shell desktop-menu` and the keyboard: the menu shows Applications, Settings, a separator and Session…; Down + Enter opened the launcher, then Settings, then the session menu (closed with Esc, nothing chosen); Esc closes the menu itself.
+- Found and fixed: opened from the IPC the menu landed in the top left corner, because the layer had no size yet when the middle was computed; the middle is now a binding.

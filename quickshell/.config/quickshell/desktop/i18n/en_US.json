@@ -318,6 +318,11 @@
   "controlCenter": {
     "title": "Control Center"
   },
+  "desktopMenu": {
+    "launcher": "Applications",
+    "settings": "Settings",
+    "session": "Session…"
+  },
   "directions": {
     "down": "down",
     "left": "left",
