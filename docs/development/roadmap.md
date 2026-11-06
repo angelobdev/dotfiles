@@ -335,6 +335,7 @@ Found during the October 27, 2026 repository review. Checked items were approved
 - [x] Shell text scale, an emoji page on the on-screen keyboard, pinch zoom, and cursor packs (Adwaita, Breeze installed; macOS and Bibata fetched on demand) (2026-11-05).
   - [x] Pinch zoom and the emoji page tried by touch by the user (2026-11-05).
 - [x] Cursor customization (requested 2026-11-05): theme and size from the Theming panel, applied everywhere the cursor is set today (Hyprland/hyprcursor and `HYPRCURSOR_SIZE`, GSettings `cursor-theme` from `theme.py`, the GTK `settings.ini` files that pin Adwaita 24, XWayland through `xwayland.py`, Qt). Done the same day in the Icons tab.
+- [x] Reduce effects (#3, 2026-11-06): one choice in Theming → Theme turns off Hyprland's animations, blur, shadows and the Hyprglass glass and the shell's motion, with near-opaque shell surfaces so translucent themes stay readable. Not done: an automatic mode (on battery, or from the machine profile).
 - [x] Cursors tab of its own in the Theming panel (#5, 2026-11-06): each theme with five shapes previewed at the chosen size from its own XCursor or hyprcursor files, the size, and the KDE Store for cursors; the Icons tab keeps only icon packs.
   - [x] Cursor themes: Breeze in the manifest, macOS and Bibata on demand (Phinger dropped).
 - [x] Cursor and icon themes from the KDE Store, searched and installed from the Theming panel (2026-11-05).

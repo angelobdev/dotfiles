@@ -842,3 +842,11 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Tests: an XCursor file built by hand (largest fitting size, unpremultiplied pixels, broken files), the X11-name fallback, a broken shape, the cache and its invalidation on change, and a hyprcursor theme from synthetic `.hlc` archives (PNG by size, SVG). No hyprcursor theme is installed here, so that path is tested only that way.
 - Live, on eDP-1 with the user's permission: `theming cursors` opens the new tab with the five chips, the list, previews at 24 px and the chosen theme highlighted; `theming store-cursors` keeps the Cursors chip and its back button says Cursors; `theming store-icons` goes back to Icons; the Icons tab keeps only the shell icons and the packs. No errors in `qs log`. The cursor itself was not changed.
 - `stow.py apply` linked the new `CursorsPage.qml` before the shell restart. `check.sh` passes; its warnings are the same as on main.
+
+## Reduce effects, 2026-11-06 (#3)
+
+- `desktop-theme reduce-effects on` on the live session (with the user's permission): Hyprland reloaded with `animations:enabled`, `decoration:blur:enabled` and `decoration:shadow:enabled` false and `plugin:hyprglass:enabled` and `plugin:hyprglass:layers:enabled` 0; `quickshell.json` had `reduceEffects: true`; `hyprctl configerrors` empty. The Theming panel showed **Effects: Reduced** and an opaque panel. `off` put all five options back to true/1, and `preferences.json` came back byte for byte as before.
+- `Hyprland --verify-config` passes with a rendered `hyprland.lua` that has `reduceEffects = true`, and without one (defaults).
+- Tests: the choice reaches both rendered files (and a hand-edited non-boolean does not), only `true` is saved, `toggle` flips it, Hyprland reloads each time; the Graphite fallbacks in `Theme.qml` and `theme.lua` match the rendered defaults, now `bool` properties included.
+- The assistant's pulsing dot already honoured `reduceMotion` (the issue said otherwise); it now follows `Theme.reduceMotion`, like the workspace pills, the OSD and Alt + Tab, which used `Config.reduceMotion` directly.
+- Not tried: the look of every theme with Reduce effects on (checked with Gruvbox); an automatic mode is not part of this change.

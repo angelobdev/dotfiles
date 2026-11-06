@@ -32,6 +32,22 @@ ColumnLayout {
             current: Theme.barStyle
             onChosen: name => Theming.setBarStyle(name)
         }
+        // Reduced: no animations, blur, shadows or glass, for less powerful machines (theme.py reduce-effects).
+        Setting {
+            label: I18n.tr("theming.effects")
+            options: [
+                {
+                    name: "full",
+                    label: I18n.tr("theming.effectsFull")
+                },
+                {
+                    name: "reduced",
+                    label: I18n.tr("theming.effectsReduced")
+                }
+            ]
+            current: Theme.reduceEffects ? "reduced" : "full"
+            onChosen: name => Theming.setReduceEffects(name === "reduced")
+        }
         // Windows: corner rounding and border width; the border colours come from the theme.
         Setting {
             label: I18n.tr("theming.windowRounding")

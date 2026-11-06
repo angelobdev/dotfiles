@@ -660,6 +660,9 @@
     "custom": "Custom…",
     "download": "Download wallpapers",
     "downloading": "Downloading wallpapers…",
+    "effects": "Effects",
+    "effectsFull": "Full",
+    "effectsReduced": "Reduced",
     "errors": {
       "fontMissing": "No installed font family is called “%1”.",
       "iconsMissing": "No installed icon theme is called “%1”.",

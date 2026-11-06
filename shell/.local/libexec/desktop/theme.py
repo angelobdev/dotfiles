@@ -77,6 +77,9 @@ def convert(value, path, name, alpha):
         return json.dumps(str(value), ensure_ascii=False)
     if name == 'lua':
         return '"' + str(value).replace('\\', '\\\\').replace('"', '\\"') + '"'
+    # true or false, as Lua and JSON both write it.
+    if name == 'bool':
+        return 'true' if value is True else 'false'
     rgb, own = split_color(value, path)
     alpha = alpha or own
     if name == 'hex':
@@ -197,6 +200,8 @@ def complete(theme):
     preferences.setdefault('iconSource', 'desktop')
     preferences.setdefault('barStyle', 'shade')
     preferences.setdefault('textScale', 1)
+    # Reduce effects (Theming panel): no animations, blur, shadows or glass, and near-opaque shell surfaces.
+    preferences.setdefault('reduceEffects', False)
     return theme
 
 
@@ -275,6 +280,8 @@ def with_preferences(theme, chosen, name=None):
     for key, value in (('iconSource', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle')), ('textScale', chosen.get('textScale'))):
         if value:
             theme.setdefault('preferences', {})[key] = value
+    if chosen.get('reduceEffects') is True:
+        theme.setdefault('preferences', {})['reduceEffects'] = True
     for key in WINDOW_KEYS:
         if isinstance(chosen.get('windows', {}).get(key), int):
             theme.setdefault('hyprland', {})[key] = chosen['windows'][key]
@@ -301,6 +308,7 @@ def save_preferences(chosen):
     cleaned = {key: value for key, value in (('fonts', fonts), ('iconTheme', chosen.get('iconTheme')), ('cursor', cursor),
                                               ('shellIcons', chosen.get('shellIcons')), ('barStyle', chosen.get('barStyle')),
                                               ('textScale', chosen.get('textScale') if chosen.get('textScale') in TEXT_SCALES[1:] else None),
+                                              ('reduceEffects', chosen.get('reduceEffects') is True),
                                               ('windows', windows), ('dynamic', dynamic), ('glass', glass))
                if value}
     write_atomic(STATE / 'preferences.json', json.dumps(cleaned, ensure_ascii=False) + '\n')
@@ -1235,6 +1243,8 @@ def build_parser():
     glass.add_argument('--reset', action='store_true')
     text_scale = commands.add_parser('text-scale')
     text_scale.add_argument('scale', type=float, choices=TEXT_SCALES)
+    effects = commands.add_parser('reduce-effects')
+    effects.add_argument('action', choices=('on', 'off', 'toggle'))
     bar = commands.add_parser('bar-style')
     bar.add_argument('style', choices=('shade', 'transparent', 'toggle'))
     commands.add_parser('tone')
@@ -1261,7 +1271,7 @@ def build_parser():
 # Commands that change the theme state run one at a time: the panel queue and DynamicTheme.qml can overlap,
 # and each rewrites current.json, preferences.json and the rendered files.
 LOCKED = {'apply', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme', 'cursor', 'shell-icons',
-          'bar-style', 'glass', 'text-scale'}
+          'bar-style', 'glass', 'text-scale', 'reduce-effects'}
 
 
 # Read the preferences, change them, save them and apply the current theme with them.
@@ -1381,6 +1391,15 @@ def command_text_scale(arguments):
 
 def command_shell_icons(arguments):
     update_preferences(lambda chosen: chosen.update(shellIcons=None if arguments.source == 'desktop' else arguments.source), reloading=False)
+
+
+# Hyprland reloads (animations, blur, shadows, glass in appearance.lua and plugins.lua); the shell follows
+# quickshell.json by itself.
+def command_reduce_effects(arguments):
+    def change(chosen):
+        reduced = not chosen.get('reduceEffects') if arguments.action == 'toggle' else arguments.action == 'on'
+        chosen['reduceEffects'] = reduced or None
+    update_preferences(change)
 
 
 def command_bar_style(arguments):

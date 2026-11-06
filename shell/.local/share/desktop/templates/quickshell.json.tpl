@@ -24,6 +24,7 @@
   "iconSource": {{ preferences.iconSource | json }},
   "barStyle": {{ preferences.barStyle | json }},
   "textScale": {{ preferences.textScale }},
+  "reduceEffects": {{ preferences.reduceEffects | bool }},
   "rounding": {{ hyprland.rounding }},
   "borderSize": {{ hyprland.borderSize }},
   "activeBorder": "{{ hyprland.activeBorder | qt }}",

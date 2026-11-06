@@ -6,12 +6,19 @@ import "services"
 
 Singleton {
     id: root
-    readonly property color background: colors.background
-    readonly property color surface: colors.surface
+    // Reduce effects (Theming panel): Hyprland draws no blur, shadows or glass, so the surfaces that relied on
+    // them become nearly opaque and keep their text readable; motion stops as with Config.reduceMotion.
+    readonly property bool reduceEffects: colors.reduceEffects
+    readonly property bool reduceMotion: Config.reduceMotion || reduceEffects
+    function solid(value) {
+        return reduceEffects && value.a < 0.94 ? Qt.rgba(value.r, value.g, value.b, 0.94) : value;
+    }
+    readonly property color background: solid(colors.background)
+    readonly property color surface: solid(colors.surface)
     readonly property color raised: colors.raised
     readonly property color tile: colors.tile
     // Background of popup notifications; the same as raised unless the theme sets it.
-    readonly property color notice: colors.notice
+    readonly property color notice: solid(colors.notice)
     readonly property color accentText: colors.accentText
     readonly property color track: colors.track
     readonly property color stroke: colors.stroke
@@ -22,7 +29,7 @@ Singleton {
     readonly property color scrim: colors.scrim
     readonly property color scrimModal: colors.scrimModal
     readonly property color scrimStrong: colors.scrimStrong
-    readonly property color tooltip: colors.tooltip
+    readonly property color tooltip: solid(colors.tooltip)
     readonly property color handlePressed: colors.handlePressed
     readonly property color handleFocus: colors.handleFocus
     // Bar gradient and the share picker shade, formerly literals in Bar.qml and share.qml.
@@ -57,9 +64,9 @@ Singleton {
     // The height a side panel or dialog leaves free: the bar above it and a margin below.
     readonly property int panelClearance: 76
     // Motion shared with Hyprland's "out" and "accel" curves in appearance.lua.
-    readonly property int motionFast: Config.reduceMotion ? 0 : 120
-    readonly property int motionNormal: Config.reduceMotion ? 0 : 220
-    readonly property int motionSlow: Config.reduceMotion ? 0 : 320
+    readonly property int motionFast: reduceMotion ? 0 : 120
+    readonly property int motionNormal: reduceMotion ? 0 : 220
+    readonly property int motionSlow: reduceMotion ? 0 : 320
     readonly property var easeOut: [0.16, 1, 0.3, 1, 1, 1]
     readonly property var easeIn: [0.3, 0, 0.8, 0.15, 1, 1]
     function corner(size) {
@@ -105,6 +112,7 @@ Singleton {
             property string iconSource: "desktop"
             property string barStyle: "shade"
             property real textScale: 1
+            property bool reduceEffects: false
             property real rounding: 16
             property real borderSize: 0
             property color activeBorder: "#d4d6dc"
