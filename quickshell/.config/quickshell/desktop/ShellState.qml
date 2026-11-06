@@ -8,6 +8,8 @@ Singleton {
     property string panel: ""
     // Opens the window menu of the bar on that monitor (assist button, IPC).
     signal windowMenuRequested(string screenName)
+    // Opens the desktop menu in the middle of that monitor (IPC; the desktop itself opens it at the pointer).
+    signal desktopMenuRequested(string screenName)
     function requestWindowMenu() {
         windowMenuRequested(Hyprland.focusedMonitor?.name ?? "");
     }

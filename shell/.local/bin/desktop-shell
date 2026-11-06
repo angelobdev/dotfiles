@@ -222,6 +222,8 @@ case "${1:-start}" in
         exec qs ipc -p "$config" call desktop assist -- "$2"
         ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
+    # The desktop menu (launcher, Settings, session), as a right click on the empty desktop opens it.
+    desktop-menu) exec qs ipc -p "$config" call desktop desktopMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu|desktop-menu}' >&2; exit 2 ;;
 esac

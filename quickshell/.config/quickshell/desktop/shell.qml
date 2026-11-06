@@ -100,6 +100,10 @@ ShellRoot {
         function close(): void {
             ShellState.close();
         }
+        // The desktop menu in the middle of the focused monitor.
+        function desktopMenu(): void {
+            ShellState.desktopMenuRequested(Hyprland.focusedMonitor?.name ?? "");
+        }
         // Opens Settings on a section (appearance, …), or toggles it with none.
         function settings(section: string): void {
             if (section === "")
@@ -271,6 +275,16 @@ ShellRoot {
             ConsoleCatcher {
                 screen: scope.modelData
                 screenName: scope.modelData.name
+            }
+            // A right click or long press on the empty desktop: launcher, Settings, session.
+            DesktopCatcher {
+                screen: scope.modelData
+                screenName: scope.modelData.name
+                onMenuRequested: (x, y) => desktopMenu.popup(x, y)
+            }
+            DesktopMenuWindow {
+                id: desktopMenu
+                screen: scope.modelData
             }
         }
     }
