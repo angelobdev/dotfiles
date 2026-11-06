@@ -621,6 +621,12 @@
     "suspend": "Suspend",
     "title": "Session"
   },
+  "settings": {
+    "sections": {
+      "appearance": "Appearance"
+    },
+    "title": "Settings"
+  },
   "sharing": {
     "chooseSourceHint": "Choose the display or window to share with the application.",
     "errors": {

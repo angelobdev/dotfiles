@@ -100,19 +100,19 @@ ShellRoot {
         function close(): void {
             ShellState.close();
         }
-        // Opens the Theming panel on a tab; desktop-shell uses it to come back after a restart.
+        // Opens Settings on a section (appearance, …), or toggles it with none.
+        function settings(section: string): void {
+            if (section === "")
+                ShellState.toggle("settings");
+            else
+                ShellState.openSection("settings", section, null, false);
+        }
+        // Opens Settings → Appearance on a tab; desktop-shell uses it to come back after a restart.
         // A tab, or store-icons / store-cursors for the KDE Store page.
         function theming(tab: string): void {
-            if (ShellState.panel !== "theming")
-                ShellState.toggle("theming");
+            ShellState.openSection("settings", "appearance", null, false);
             // Opening creates it at once (LazyPanel).
-            const panel = themingPanel.item;
-            if (!panel)
-                return;
-            if (tab === "store-icons" || tab === "store-cursors")
-                panel.openStore(tab.slice(6));
-            else
-                panel.showTab(["theme", "wallpaper", "font", "icons", "cursors"].includes(tab) ? tab : "theme");
+            settingsPanel.item?.showSection("appearance", tab);
         }
         function loadedPanels(): var {
             // data, not children: the loaders are not items.
@@ -335,9 +335,9 @@ ShellRoot {
             WallpaperPicker {}
         }
         LazyPanel {
-            id: themingPanel
-            name: "theming"
-            ThemingPanel {}
+            id: settingsPanel
+            name: "settings"
+            SettingsPanel {}
         }
         LazyPanel {
             name: "emoji"
