@@ -685,6 +685,7 @@
     "shellIconsPack": "Icon pack",
     "size": "Dimensione",
     "tabs": {
+      "cursors": "Cursori",
       "font": "Font",
       "icons": "Icone",
       "theme": "Tema",
@@ -726,7 +727,6 @@
       "bevelStrength": "Smussatura finestre",
       "noiseStrength": "Grana"
     },
-    "cursor": "Cursore",
     "cursorSize": "Dimensione del cursore",
     "cursorDownload": "%1 (da scaricare)",
     "shellText": "Testo della shell"

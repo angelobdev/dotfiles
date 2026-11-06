@@ -18,8 +18,8 @@ ColumnLayout {
         spacing: 10
         ActionButton {
             iconName: "arrow-left"
-            text: I18n.tr("theming.tabs.icons")
-            onClicked: page.panel.showTab("icons")
+            text: Store.kind === "cursors" ? I18n.tr("theming.tabs.cursors") : I18n.tr("theming.tabs.icons")
+            onClicked: page.panel.showTab(Store.kind === "cursors" ? "cursors" : "icons")
         }
         InputField {
             id: storeSearch

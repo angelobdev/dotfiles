@@ -11,10 +11,13 @@ import os
 from pathlib import Path
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tarfile
 import tempfile
+import zipfile
+import zlib
 
 HOME = Path.home()
 STATE = Path(os.environ.get('XDG_STATE_HOME') or HOME / '.local/state') / 'desktop-theme'
@@ -642,6 +645,125 @@ def cursor_themes(roots=None):
             info = read_index(base / 'index.theme').get('Icon Theme', {}) if (base / 'index.theme').is_file() else {}
             listed[base.name] = {'id': base.name, 'name': info.get('Name', base.name)}
     return sorted(listed.values(), key=lambda t: t['name'].lower())
+
+
+# The shapes a cursor preview shows: arrow, hand, text, busy and resize, each by its CSS name first and the
+# X11 names older themes use.
+CURSOR_SAMPLES = (('default', 'left_ptr', 'arrow'), ('pointer', 'hand2', 'hand1', 'pointing_hand'), ('text', 'xterm', 'ibeam'),
+                  ('wait', 'watch'), ('ew-resize', 'sb_h_double_arrow', 'h_double_arrow', 'size_hor'))
+CURSOR_PREVIEWS = Path(os.environ.get('XDG_CACHE_HOME') or HOME / '.cache') / 'desktop-theme/cursors'
+# The largest image a preview takes: 48 logical pixels on a 2x screen.
+CURSOR_PREVIEW_SIZE = 96
+XCURSOR_IMAGE = 0xfffd0002
+
+
+def png_bytes(width, height, rgba):
+    # Enough PNG for a preview: 8-bit RGBA, no filtering.
+    def chunk(kind, data):
+        return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind + data) & 0xffffffff)
+    stride = width * 4
+    rows = b''.join(b'\0' + rgba[y * stride:(y + 1) * stride] for y in range(height))
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0))
+            + chunk(b'IDAT', zlib.compress(rows, 9)) + chunk(b'IEND', b''))
+
+
+def xcursor_png(data, largest=CURSOR_PREVIEW_SIZE):
+    # The first frame of the largest nominal size up to `largest` (else the smallest), as PNG. Pixels are
+    # premultiplied ARGB, little endian, which PNG wants straight.
+    if data[:4] != b'Xcur' or len(data) < 16:
+        raise ValueError('not an XCursor file')
+    header, _version, count = struct.unpack_from('<III', data, 4)
+    entries = []
+    for index in range(count):
+        offset = header + index * 12
+        if offset + 12 > len(data):
+            break
+        kind, size, position = struct.unpack_from('<III', data, offset)
+        if kind == XCURSOR_IMAGE:
+            entries.append((size, position))
+    if not entries:
+        raise ValueError('no image in the XCursor file')
+    fitting = [entry for entry in entries if entry[0] <= largest]
+    size, position = max(fitting) if fitting else min(entries)
+    if position + 36 > len(data):
+        raise ValueError('truncated XCursor file')
+    width, height = struct.unpack_from('<II', data, position + 16)
+    if not (0 < width <= 1024 and 0 < height <= 1024) or position + 36 + width * height * 4 > len(data):
+        raise ValueError('bad XCursor image')
+    pixels = memoryview(data)[position + 36:position + 36 + width * height * 4]
+    rgba = bytearray(width * height * 4)
+    for index in range(width * height):
+        b, g, r, a = pixels[index * 4:index * 4 + 4]
+        if a:
+            rgba[index * 4:index * 4 + 4] = bytes((min(255, r * 255 // a), min(255, g * 255 // a), min(255, b * 255 // a), a))
+    return png_bytes(width, height, bytes(rgba))
+
+
+def hyprcursor_image(path, largest=CURSOR_PREVIEW_SIZE):
+    # A .hlc shape is a zip with meta.hl ("define_size = SIZE, FILE[, DELAY]", 0 for an SVG) and its images:
+    # the SVG when there is one, else the largest PNG up to `largest`.
+    with zipfile.ZipFile(path) as archive:
+        sizes = []
+        for line in archive.read('meta.hl').decode('utf-8', 'replace').splitlines():
+            key, _, value = line.partition('=')
+            if key.strip() == 'define_size':
+                parts = [part.strip() for part in value.split(',')]
+                if len(parts) >= 2 and parts[0].isdigit():
+                    sizes.append((int(parts[0]), parts[1]))
+        if not sizes:
+            raise ValueError('no image in the hyprcursor shape')
+        vector = [entry for entry in sizes if entry[0] == 0 or entry[1].lower().endswith('.svg')]
+        fitting = [entry for entry in sizes if 0 < entry[0] <= largest]
+        _size, name = vector[0] if vector else max(fitting) if fitting else min(sizes)
+        return archive.read(name), Path(name).suffix.lower() or '.png'
+
+
+def cursor_sample(base, names):
+    # The preview of one shape, cached under the cursor file's path, size and time: '' when the theme lacks it.
+    base = Path(base)
+    candidates = [(base / 'cursors' / name, 'xcursor') for name in names]
+    if (base / 'manifest.hl').is_file():
+        folder = 'hyprcursors'
+        for line in (base / 'manifest.hl').read_text(encoding='utf-8', errors='replace').splitlines():
+            key, _, value = line.partition('=')
+            if key.strip() == 'cursors_directory' and value.strip():
+                folder = value.strip()
+        candidates += [(base / folder / (name + '.hlc'), 'hyprcursor') for name in names]
+    for path, kind in candidates:
+        if not path.is_file():
+            continue
+        info = path.stat()
+        key = hashlib.sha1(f'{path.resolve()}\0{info.st_mtime_ns}\0{info.st_size}'.encode()).hexdigest()
+        cached = [CURSOR_PREVIEWS / (key + suffix) for suffix in ('.png', '.svg')]
+        for target in cached:
+            if target.is_file():
+                return str(target)
+        try:
+            if kind == 'xcursor':
+                image, suffix = xcursor_png(path.read_bytes()), '.png'
+            else:
+                image, suffix = hyprcursor_image(path)
+        except (OSError, ValueError, KeyError, struct.error, zipfile.BadZipFile):
+            continue
+        target = CURSOR_PREVIEWS / (key + ('.svg' if suffix == '.svg' else '.png'))
+        with replacing(target, suffix=target.suffix) as temporary:
+            temporary.write_bytes(image)
+        return str(target)
+    return ''
+
+
+def cursor_theme_dir(name, roots=None):
+    # The folder cursor_themes() lists for this name: the first root wins, as there.
+    for root in roots or ICON_DIRS:
+        base = root / name
+        if (base / 'cursors').is_dir() or (base / 'manifest.hl').is_file():
+            return base
+    return None
+
+
+def cursor_samples(base):
+    # One broken file hides only its own shape.
+    return [cursor_sample(base, names) for names in CURSOR_SAMPLES]
 
 
 def apply_cursor(theme):
@@ -1313,8 +1435,10 @@ def command_cursors(arguments):
     chosen = preferences()
     system = with_preferences(load(current()), chosen).get('system', {})
     installed = cursor_themes()
-    offered = installed + [{'id': key, 'name': pack['name'], 'download': True} for key, pack in CURSOR_PACKS.items()
-                           if key not in {theme['id'] for theme in installed}]
+    # Each installed theme with its preview shapes (cursor_samples); a pack still to download has none yet.
+    offered = [dict(theme, samples=cursor_samples(cursor_theme_dir(theme['id']))) for theme in installed]
+    offered += [{'id': key, 'name': pack['name'], 'download': True, 'samples': []} for key, pack in CURSOR_PACKS.items()
+                if key not in {theme['id'] for theme in installed}]
     print(json.dumps({'themes': sorted(offered, key=lambda t: t['name'].lower()), 'theme': system.get('cursorTheme'), 'size': system.get('cursorSize'),
                       'sizes': list(CURSOR_SIZES), 'chosen': chosen.get('cursor', {})}, ensure_ascii=False))
 
