@@ -56,7 +56,8 @@ end
 function desktop_console_hide(name)
     for _, monitor in ipairs(hl.get_monitors()) do
         if (name == nil or monitor.name == name) and console_on(monitor) then
-            monitor:set_special_workspace({})
+            -- nil hides it: 0.57 refuses an empty table ("expected a workspace object or selector", #14).
+            monitor:set_special_workspace(nil)
         end
     end
 end
