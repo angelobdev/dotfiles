@@ -231,12 +231,14 @@ ColumnLayout {
                         highlighted: Networking.wifiEnabled
                         onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
                     }
+                    // Wi-Fi on the left, the connectivity on the right.
                     Text {
                         text: I18n.networkDescription(NetworkConnectivity.toString(Networking.connectivity))
                         color: Theme.muted
                         font.pixelSize: Theme.textSize(11)
                         Layout.fillWidth: true
-                        elide: Text.ElideRight
+                        horizontalAlignment: Text.AlignRight
+                        elide: Text.ElideLeft
                     }
                 }
                 ColumnLayout {
@@ -311,17 +313,33 @@ ColumnLayout {
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                         }
-                        Repeater {
+                        // At most seven networks at a time; more scroll inside the list, and Other network stays
+                        // right below it.
+                        ListView {
+                            id: networkList
+                            readonly property int rowHeight: Theme.hit(36)
+                            readonly property int shownRows: Math.min(count, 7)
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: shownRows * rowHeight + Math.max(0, shownRows - 1) * spacing
+                            visible: count > 0
+                            spacing: 2
+                            clip: true
+                            interactive: count > 7
+                            boundsBehavior: Flickable.StopAtBounds
+                            ScrollBar.vertical: ScrollBar {
+                                policy: networkList.count > 7 ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+                            }
                             // Rows follow their network: a reorder while scanning moves them instead of recreating
                             // every row, which lost the keyboard focus and a press in progress.
                             model: ScriptModel {
                                 values: deviceRow.modelData.networks.values.filter(n => n.name.toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
                             }
-                            RowLayout {
+                            delegate: RowLayout {
                                 id: networkRow
                                 required property var modelData
                                 readonly property bool secured: !deviceRow.wired && modelData.security !== WifiSecurityType.Open && modelData.security !== WifiSecurityType.Owe
-                                Layout.fillWidth: true
+                                width: networkList.width - (networkList.count > 7 ? 10 : 0)
+                                height: networkList.rowHeight
                                 spacing: 2
                                 ActionButton {
                                     Layout.fillWidth: true
