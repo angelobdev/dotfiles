@@ -782,3 +782,12 @@ Decided with the user: **Update** in the updates panel opens the updates screen 
 - `check.sh` passes.
 - `desktop-updates run` in a pseudo-terminal: the updates screen drew every source, `q` quit with "Nothing changed.", then "Premi Invio per chiudere." and exit 0 after Enter.
 - Not yet: the button pressed on screen, and an apply from that window.
+
+## README screenshots, 2026-11-06
+
+Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper, then Gruvbox, its wallpaper (same hyprpaper file as before), the volume and the Italian shell were put back.
+
+- The shell ran in English for the shots: `desktop-shell restart` with `LC_MESSAGES` and `LC_TIME` set to `en_US.UTF-8` (the environment comes before `/etc/locale.conf`).
+- Demo content only: fastfetch titled `demo@omnibook`, notifications from `notify-send`, a stand-in MPRIS player for the media card ("Winding Road"), a zenity note for the keyboard. The Wi-Fi name in the Control Center was painted over as "Home Wi-Fi"; in the console shot, the bar title (Claude Code names the window in the user's language) and a `/clear` line were edited out.
+- Keys and taps came from small clients of the Wayland virtual keyboard (`osk.py run`) and virtual pointer protocols: the keyboard's suggestions (`desks`, `desktop`) appeared from real taps on its keys.
+- Found: `install-tui.py` stops with `locale.Error: unsupported locale setting` when the environment names a locale that is not installed (here `LC_MESSAGES=en_US.UTF-8` on a system with only Italian locales): `locale.setlocale(locale.LC_ALL, '')` at startup.

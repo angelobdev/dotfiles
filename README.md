@@ -1,12 +1,13 @@
 <h1 align="center">Hyprland + Quickshell</h1>
 
 <p align="center">
-  A complete Fedora desktop for a 2-in-1 laptop: every panel hand-written in Quickshell,<br>
+  A complete Fedora and Arch Linux desktop for a 2-in-1 laptop: every panel hand-written in Quickshell,<br>
   Hyprland configured in Lua, and a tablet mode that actually feels like one.
 </p>
 
 <p align="center">
   <img alt="Fedora 45" src="https://img.shields.io/badge/Fedora-45-51A2DA?logo=fedora&logoColor=white">
+  <img alt="Arch Linux" src="https://img.shields.io/badge/Arch_Linux-rolling-1793D1?logo=archlinux&logoColor=white">
   <img alt="Hyprland 0.57" src="https://img.shields.io/badge/Hyprland-0.57-58E1FF?logo=hyprland&logoColor=white">
   <img alt="Quickshell 0.3" src="https://img.shields.io/badge/Quickshell-0.3-7C6FE0">
   <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-green">
@@ -22,19 +23,22 @@
 - **One shell, no external applets.** Bar, launcher, Control Center, dock, notifications, calendar, clipboard, power menu, Polkit agent and screen-sharing picker are all [Quickshell](https://quickshell.org/) and share one design.
 - **[A real tablet mode](docs/features/tablet-and-touch.md).** Fold the laptop and the shell grows its touch targets, the display follows the sensor, and gestures take over. Gesture touches never reach the app underneath, so a swipe over a video does not pause it.
 - **[An on-screen keyboard written for this desktop](docs/features/on-screen-keyboard.md).** Slide between keys, hit likely letters more easily, tap word suggestions in Italian and English. It learns your words, and nothing you type leaves the machine.
-- **[Themes that reach everything](docs/features/theming.md).** One click changes the shell, terminal, GTK and Qt apps, lock screen, wallpapers, fonts and icons. Five hand-made themes, plus a dynamic one drawn from your wallpaper.
+- **[Themes that reach everything](docs/features/theming.md).** One click changes the shell, terminal, GTK and Qt apps, lock screen, wallpapers, fonts and icons. Eight hand-made themes, liquid Glass and High Contrast among them, plus a dynamic one drawn from your wallpaper, and cursor and icon themes straight from the KDE Store.
 - **[Notifications in decks](docs/features/notifications.md).** Popups stack per app, or per site for browsers, and open on hover or tap.
 - **[Claude Code as part of the desktop](docs/features/ai-assistant.md).** A drop-down console, a state icon in the bar, usage meters and notifications when it needs you.
-- **The small things.** Italian and English everywhere, Steam and gamescope launchers tuned for HiDPI, system updates in the bar, automounted drives, fingerprint unlock.
+- **[A guided installer](docs/guide/installation.md).** Pick profiles, review every change, then apply. The same tool [checks for updates](docs/guide/installation.md#checking-for-updates) later: system packages, pinned plugins and, on Arch, AUR packages; the update icon in the bar opens it.
+- **The small things.** Italian and English everywhere, Alt + Tab, per-app volume, an emoji picker, a color picker and text from the screen, a camera and microphone indicator, Steam and gamescope launchers tuned for HiDPI, automounted drives, fingerprint unlock.
 
 ## Gallery
 
 | | |
 | --- | --- |
 | ![The application launcher](docs/screenshots/launcher.webp) | ![The Control Center](docs/screenshots/control-center.webp) |
-| **Launcher.** Search, icons and keyboard navigation. | **Control Center.** Network, audio, brightness, media and switches. |
-| ![The Theming panel](docs/screenshots/theming.webp) | ![Notifications stacked in decks](docs/screenshots/notifications.webp) |
-| **Theming.** Themes, wallpapers, fonts and icons in one place. | **Notifications.** One deck per app, newest on top. |
+| **Launcher.** Apps as you type, then files, sums and unit conversions. | **Control Center.** Network, audio, brightness, media and switches. |
+| ![The Theming panel](docs/screenshots/theming.webp) | ![Icon themes from the KDE Store in the Theming panel](docs/screenshots/kde-store.webp) |
+| **Theming.** Eight themes, wallpapers, fonts and icons in one place. | **KDE Store.** Cursor and icon themes, searched and installed in place. |
+| ![Notifications stacked in decks](docs/screenshots/notifications.webp) | ![The emoji picker](docs/screenshots/emoji.webp) |
+| **Notifications.** One deck per app, newest on top. | **Emoji.** Search by name or browse by group, and paste into the focused window. |
 | ![The on-screen keyboard with word suggestions](docs/screenshots/keyboard.webp) | ![The Claude Code console](docs/screenshots/console.webp) |
 | **On-screen keyboard.** Suggestions above the keys. | **AI console.** Claude Code dropping down from the bar, ready in this repository. |
 
