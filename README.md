@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img alt="The desktop with the bar, the dock and a terminal" src="docs/screenshots/hero.webp">
+  <img alt="The Theming panel switching themes live: wallpaper, shell, terminal and borders change together" src="docs/screenshots/themes.webp">
 </p>
 
 ## Highlights
@@ -42,7 +42,7 @@
 | ![The on-screen keyboard with word suggestions](docs/screenshots/keyboard.webp) | ![The Claude Code console](docs/screenshots/console.webp) |
 | **On-screen keyboard.** Suggestions above the keys. | **AI console.** Claude Code dropping down from the bar, ready in this repository. |
 
-All shots use the Tokyo Night theme with a wallpaper from [Omarchy](https://github.com/basecamp/omarchy).
+The animation at the top cycles through the themes; the stills use the Tokyo Night theme with a wallpaper from [Omarchy](https://github.com/basecamp/omarchy).
 
 ## Getting started
 
