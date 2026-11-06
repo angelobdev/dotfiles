@@ -6,7 +6,7 @@ import "../../components"
 import "../../services"
 import "../../components/FileUrl.js" as FileUrl
 
-// The cursors page of the Theming panel (panels/ThemingPanel.qml), built the first time its tab shows: each
+// The cursors page of Settings → Appearance (panels/theming/ThemingView.qml), built the first time its tab shows: each
 // cursor theme with five of its own shapes (theme.py cursor_samples), drawn at the chosen size.
 ColumnLayout {
     id: page

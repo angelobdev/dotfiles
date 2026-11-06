@@ -7,7 +7,7 @@ import "../../components"
 import "../../services"
 import "../../components/FileUrl.js" as FileUrl
 
-// The wallpaper page of the Theming panel (panels/ThemingPanel.qml), built the first time its tab shows.
+// The wallpaper page of Settings → Appearance (panels/theming/ThemingView.qml), built the first time its tab shows.
 ColumnLayout {
     id: page
     // The Theming panel: the tab and the actions shared by its pages.

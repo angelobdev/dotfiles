@@ -5,7 +5,7 @@ import "../.."
 import "../../components"
 import "../../services"
 
-// The font page of the Theming panel (panels/ThemingPanel.qml), built the first time its tab shows.
+// The font page of Settings → Appearance (panels/theming/ThemingView.qml), built the first time its tab shows.
 ColumnLayout {
     id: page
     // The Theming panel: the tab and the actions shared by its pages.
