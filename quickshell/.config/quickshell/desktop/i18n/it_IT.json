@@ -690,6 +690,8 @@
       "layoutSystem": "Quello di sistema, ora %1 (localectl set-x11-keymap). Scrivine uno per usarne un altro qui.",
       "remove": "Rimuovi",
       "skipped": "Lasciato fuori perché non valido: %1",
+      "taken": "Già usata da: %1. Partirebbero entrambe.",
+      "twice": "Usata anche da un'altra delle tue scorciatoie.",
       "variant": "Variante"
     },
     "navigationHint": "↑↓ seleziona · Spazio o Invio cambia · ←→ regola · Esc chiudi",

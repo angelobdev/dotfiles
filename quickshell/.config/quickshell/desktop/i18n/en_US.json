@@ -690,6 +690,8 @@
       "layoutSystem": "The system's, now %1 (localectl set-x11-keymap). Type one to use another here.",
       "remove": "Remove",
       "skipped": "Left out as not valid: %1",
+      "taken": "Already taken by: %1. Both would run.",
+      "twice": "Also used by another of your shortcuts.",
       "variant": "Variant"
     },
     "navigationHint": "↑↓ select · Space or Enter change · ←→ adjust · Esc close",
