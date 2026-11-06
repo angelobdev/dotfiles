@@ -24,6 +24,15 @@ class PanelTests(unittest.TestCase):
         self.assertEqual(lazy, allowed, 'shell.qml LazyPanels vs ShellState.panels')
         self.assertEqual(wrapper, allowed | renamed, 'desktop-shell toggle vs ShellState.panels and aliases')
 
+    def test_no_method_is_named_after_a_javascript_global(self):
+        # QML refuses such a method ("Illegal method name") and the whole file fails to load: a NetworkView with
+        # escape() took the shell down on 2026-11-06.
+        globals_ = {'escape', 'unescape', 'eval', 'isNaN', 'isFinite', 'parseInt', 'parseFloat', 'encodeURI',
+                    'decodeURI', 'encodeURIComponent', 'decodeURIComponent'}
+        for path in SHELL.rglob('*.qml'):
+            for name in re.findall(r'^\s*function (\w+)\(', path.read_text(), re.M):
+                self.assertNotIn(name, globals_, f'{path.relative_to(SHELL)}: function {name}()')
+
 
 if __name__ == '__main__':
     unittest.main()
