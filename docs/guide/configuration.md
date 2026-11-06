@@ -2,6 +2,24 @@
 
 [← README](../../README.md)
 
+## Your own settings
+
+Two files outside this repository hold what is yours, so `git pull` (or **Repository** in the [updates screen](installation.md#checking-for-updates)) never meets a local change. Neither exists until you create it.
+
+- `~/.config/desktop/hypr.lua`: Hyprland settings, loaded after every module of `~/.config/hypr/config/`, so it can override them. It takes anything of `hl.*` the modules use, and Hyprland reloads it on save; a mistake shows in `hyprctl configerrors` and leaves the rest of the configuration working.
+
+  ```lua
+  hl.env("DESKTOP_AI_LANGUAGE", "italian")
+  hl.bind("SUPER + B", hl.dsp.exec_cmd("zen-browser"), { description = "Browser" })
+  hl.monitor({ output = "DP-1", mode = "preferred", position = "auto", scale = 1.25 })
+  ```
+
+- `~/.config/desktop/shell.json`: options of the shell by name, with the defaults and their meaning in `Config.qml` (every option this guide names as "in `Config.qml`"). The shell reads it again on save. A value of another type than the default is ignored, with a warning in `qs log -p ~/.config/quickshell/desktop`.
+
+  ```json
+  { "dockIconSize": 48, "dockPinned": ["kitty", "org.gnome.Nautilus"], "weatherCity": "Turin" }
+  ```
+
 ## Quickshell layout
 
 Under `quickshell/.config/quickshell/desktop/`, `shell.qml` is the desktop entry point and `share.qml` is the sharing picker's entry point. `Config.qml`, `Theme.qml`, `ShellState.qml`, and the `I18n.qml` singleton remain at the root.
@@ -89,7 +107,7 @@ The first pin change (menu, drag, launcher) writes `~/.local/state/desktop-shell
 
 ## Control Center configuration
 
-Edit `quickshell/.config/quickshell/desktop/Config.qml`. Configuration is declarative, with no UI editor:
+Set these in `~/.config/desktop/shell.json` ([your own settings](#your-own-settings)); the defaults are in `quickshell/.config/quickshell/desktop/Config.qml`:
 
 ```qml
 readonly property var controlCenterModules: ["network", "bluetooth", "brightness", "audio", "media", "switches"]
@@ -126,7 +144,7 @@ OSDs update when system levels change, including through multimedia keys or exte
 
 The indicator appears on the monitor whose brightness changed, or on the focused monitor for audio. It disappears 1.7 seconds after the last update. It is suppressed on initial device readings and while the Control Center is open; audio indicators are also suppressed in the Audio panel, where the level is already visible. Do Not Disturb silences notifications and leaves OSDs available. No new packages are needed.
 
-Configuration lives in `quickshell/.config/quickshell/desktop/Config.qml`:
+The defaults live in `quickshell/.config/quickshell/desktop/Config.qml`, and `~/.config/desktop/shell.json` changes them ([your own settings](#your-own-settings)):
 
 ```qml
 readonly property bool osdEnabled: true
@@ -157,7 +175,7 @@ See [Theming](../features/theming.md#themes).
 
 Animations are restrained: quick ease-out entrances, quicker accelerating exits, and no overshoot. Hyprland (`appearance.lua`) defines the curves `out`, `accel`, and `inout` plus a critically damped spring `move`. Windows pop in from 87% with a fade (about 220 ms) and pop out to 92% (about 150 ms); tiling reflow, dragging, and resizing use the spring; workspaces slide with a fade over 18% of the width (special workspace vertically); focus, dim, shadow, border, layer, and popup fades take 140–250 ms. `speed` is in deciseconds. A layer rule in `rules.lua` turns compositor animations off for `desktop-overlay`, `desktop-osd`, `desktop-dock`, `desktop-notifications` and `desktop-osk`, which Quickshell animates itself (the keyboard is not animated, and its re-map over a panel must not fade).
 
-Quickshell panels share the same curves through `Theme.easeOut`/`Theme.easeIn` and the durations `Theme.motionFast` (120 ms), `motionNormal` (220 ms), and `motionSlow` (320 ms). Side panels slide 10 px down from the bar and scale from 97% while fading in; centred dialogs scale from the middle. Closing reverses it in 120 ms, during which the panel no longer takes keyboard focus or clicks. Moving between the Control Center and its sub-panels (Network, Bluetooth, Audio tiles; Back) pushes sideways instead: the new panel enters from the direction of travel and the old one leaves the other way (`ShellState.push()`/`back()`); the network list and details view slide the same way. Notification toasts slide in from the right, leave to the right, and the stack moves smoothly to fill gaps; the OSD rises 8 px while fading in. `desktop-notifications` is also excluded from compositor layer animations. Smaller touches: Control Center sections (audio devices, other displays) grow and fade open with a rotating chevron; buttons sink slightly while pressed (by at most about 6 px, so wide rows barely move); the launcher selection glides between rows; notification-center entries fade in, leave to the right, and the list closes the gap; icons cross-fade when they change (mute, Wi-Fi strength, play/pause, battery level). Set `reduceMotion: true` in `Config.qml` to turn the shell's animations off; turn Hyprland's off with `animations = { enabled = false }` in `config/local.lua`.
+Quickshell panels share the same curves through `Theme.easeOut`/`Theme.easeIn` and the durations `Theme.motionFast` (120 ms), `motionNormal` (220 ms), and `motionSlow` (320 ms). Side panels slide 10 px down from the bar and scale from 97% while fading in; centred dialogs scale from the middle. Closing reverses it in 120 ms, during which the panel no longer takes keyboard focus or clicks. Moving between the Control Center and its sub-panels (Network, Bluetooth, Audio tiles; Back) pushes sideways instead: the new panel enters from the direction of travel and the old one leaves the other way (`ShellState.push()`/`back()`); the network list and details view slide the same way. Notification toasts slide in from the right, leave to the right, and the stack moves smoothly to fill gaps; the OSD rises 8 px while fading in. `desktop-notifications` is also excluded from compositor layer animations. Smaller touches: Control Center sections (audio devices, other displays) grow and fade open with a rotating chevron; buttons sink slightly while pressed (by at most about 6 px, so wide rows barely move); the launcher selection glides between rows; notification-center entries fade in, leave to the right, and the list closes the gap; icons cross-fade when they change (mute, Wi-Fi strength, play/pause, battery level). Set `"reduceMotion": true` in `~/.config/desktop/shell.json` to turn the shell's animations off; turn Hyprland's off with `hl.config({ animations = { enabled = false } })` in `~/.config/desktop/hypr.lua`.
 
 ## Media and calendars
 

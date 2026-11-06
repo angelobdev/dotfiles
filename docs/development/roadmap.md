@@ -203,6 +203,18 @@ Backlog from tablet use (reported 2026-10-30):
 - [x] Kitty by touch: Kitty never asks for `wl_touch`, so touches reached nothing and a tap was no click either. The Hyprgrass patch now turns one finger into the pointer on such clients: a drag scrolls, a tap clicks. Tested in a nested compositor (6 of 6 on Kitty, 19 of 19 on touch clients) and confirmed by the user, gestures on Kitty and YouTube included.
 - [x] Notification stacking from Omarchy 4.5 rc2 (`shell/plugins/notifications/`, same numbers: 10 px peek, 3.5% shrink, three cards drawn, 120 ms grace, 30 s hold-back): decks per app or site, hover to open, countdowns paused and new cards held while open. Added here: a tap opens a deck in tablet mode, a lone card keeps six lines, and the notification center groups too (Omarchy 4.5 has no center). Confirmed by the user.
 
+### Installable by others (epic, decided with the user 2026-11-06)
+
+Goal: anyone can install the desktop from GitHub on an ordinary laptop or desktop and keep it updated from the guided installer, while this OmniBook keeps behaving as it does today.
+
+- [x] Overrides outside the repository: `~/.config/desktop/hypr.lua`, loaded last by Hyprland, and `~/.config/desktop/shell.json` for the options of `Config.qml`. The personal lines of `local.lua` (AI language, Zen, 1Password) move there.
+- [ ] Machine profiles: the OmniBook's values (tablet switch, lid, panel scale, ELAN touch and pen, action keys, stylus battery) in a tracked profile chosen by DMI, instead of `local.lua`, `monitors.lua` and `Config.qml`.
+- [ ] `tablet.lua` split: display modes, lid and refresh per power source in a generic module that finds the internal panel (`eDP`, `LVDS`, `DSI`) and leaves the rules of other monitors alone; rotation and the tablet switch stay in the tablet module.
+- [ ] Touch only where there is touch: the on-screen keyboard's input method and the gestures in Hints only with a touchscreen.
+- [ ] Installer: a `tablet` profile apart from `hardware` (iio-sensor-proxy, libwacom, hid-sensors modules, tablet sign-in, ISH firmware), preselected by the TUI when it finds a touchscreen or a tablet switch. Hyprgrass built and loaded only with it (per-plugin selection: the bundle digest changes, the plugins rebuild once at the next login).
+- [ ] Updates screen: after a pull, stow and a shell restart through the supervisor; the pin lines (zsh plugins, AUR, plugins) only for the maintainer, other installs get the pins with the repository.
+- [ ] Personal defaults: keyboard layout from the system (`localectl`) instead of `it`, the OSK layout to match, docs and README no longer assuming the OmniBook.
+
 ### Codebase review
 
 - [x] Full review of the repository (2026-10-29): four read-only reviews (helpers and scripts, Hyprland and config packages, Quickshell services and IPC, Quickshell UI) plus a live UI and touch pass with screenshots of every panel in laptop, tablet and portrait. Findings below, by batch.
