@@ -855,6 +855,7 @@
       "cursors": "Cursors",
       "font": "Font",
       "icons": "Icons",
+      "layout": "Layout",
       "theme": "Theme",
       "wallpaper": "Wallpaper"
     },

@@ -81,8 +81,8 @@ case "${1:-start}" in
         # "restart theming TAB" reopens the Theming panel on TAB once the new instance answers.
         case "${2:-}" in
             '') ;;
-            theming) [[ "${3:-}" =~ ^(theme|wallpaper|font|icons|cursors)$ ]] || { echo 'Usage: desktop-shell restart [theming theme|wallpaper|font|icons|cursors]' >&2; exit 2; } ;;
-            *) echo 'Usage: desktop-shell restart [theming theme|wallpaper|font|icons|cursors]' >&2; exit 2 ;;
+            theming) [[ "${3:-}" =~ ^(theme|layout|wallpaper|font|icons|cursors)$ ]] || { echo 'Usage: desktop-shell restart [theming theme|layout|wallpaper|font|icons|cursors]' >&2; exit 2; } ;;
+            *) echo 'Usage: desktop-shell restart [theming theme|layout|wallpaper|font|icons|cursors]' >&2; exit 2 ;;
         esac
         old=$(qs list --json -p "$config" 2>/dev/null | grep -o '"pid": *[0-9]*' | grep -o '[0-9]*$' || true)
         qs kill -p "$config" 2>/dev/null || true
