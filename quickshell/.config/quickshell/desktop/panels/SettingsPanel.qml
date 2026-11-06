@@ -10,6 +10,8 @@ import "network"
 import "bluetooth"
 import "displays"
 import "audio"
+import "agent"
+import "system"
 
 // Settings: one entry point for configuring the desktop, after GNOME Settings. A sidebar of sections on the
 // left, the chosen section on the right; on a narrow screen one of the two at a time, with Back. Sections are
@@ -63,6 +65,11 @@ Overlay {
             label: I18n.tr("settings.sections.tablet")
         },
         {
+            name: "assistant",
+            icon: "assistant",
+            label: I18n.tr("settings.sections.assistant")
+        },
+        {
             name: "power",
             icon: "battery-75",
             label: I18n.tr("settings.sections.power")
@@ -71,8 +78,17 @@ Overlay {
             name: "privacy",
             icon: "eye-off",
             label: I18n.tr("settings.sections.privacy")
+        },
+        {
+            name: "system",
+            icon: "controls",
+            label: I18n.tr("settings.sections.system")
         }
     ]
+    // Names that open a tab of a section: the updates panel links to System → Updates.
+    readonly property var sectionAliases: ({
+            updates: ["system", "updates"]
+        })
     readonly property var sectionNames: sections.map(entry => entry.name)
     property string section: ShellState.recall("settings/section", "appearance")
     onSectionChanged: ShellState.remember("settings/section", section)
@@ -81,14 +97,29 @@ Overlay {
     property bool showingSidebar: false
     // The page of the Appearance section, for IPC (shell.qml theming()); set when it loads.
     property var appearance: null
+    // A tab asked for before its section page existed.
+    property string requestedTab: ""
     // A section by name, an unknown one falls back to the first. tab: a tab inside it (Appearance), "" for the
     // one it remembers.
     function showSection(name, tab) {
+        // "section/tab" names a tab too (system/advanced, appearance/font).
+        if (name.includes("/")) {
+            tab = name.split("/")[1];
+            name = name.split("/")[0];
+        }
+        const alias = sectionAliases[name];
+        if (alias) {
+            name = alias[0];
+            tab = alias[1];
+        }
         section = sectionNames.includes(name) ? name : sectionNames[0];
         showingSidebar = false;
-        // Set above, so the section's page is loaded by now.
-        if (section === "appearance")
-            appearance?.open(tab ?? "");
+        // Set above, so the page is loaded by now, unless the panel is being created: then the page takes the
+        // tab when it loads (requestedTab).
+        const item = pages.itemAt(sectionNames.indexOf(section))?.item;
+        requestedTab = item ? "" : (tab ?? "");
+        if (item && (section === "appearance" || section === "system"))
+            item.open(tab ?? "");
         else
             Qt.callLater(() => pages.itemAt(sectionNames.indexOf(section))?.item?.focusItem?.forceActiveFocus());
     }
@@ -197,13 +228,19 @@ Overlay {
                                 visited = true;
                                 if (modelData.name === "appearance")
                                     root.appearance = item;
+                                if (root.section === modelData.name && item.open) {
+                                    item.open(root.requestedTab);
+                                    root.requestedTab = "";
+                                }
                             }
                             sourceComponent: ({
                                     appearance: appearanceView,
                                     network: networkView,
                                     bluetooth: bluetoothView,
                                     displays: displaysView,
-                                    sound: soundView
+                                    sound: soundView,
+                                    assistant: assistantView,
+                                    system: systemView
                                 })[modelData.name] ?? optionsView
                             // Appearance: the theme, wallpaper, font, icons and cursors (panels/theming).
                             Component {
@@ -294,6 +331,33 @@ Overlay {
                                         Layout.fillWidth: true
                                         Layout.fillHeight: true
                                     }
+                                }
+                            }
+                            Component {
+                                id: assistantView
+                                ColumnLayout {
+                                    readonly property Item focusItem: assistant.focusItem
+                                    spacing: 14
+                                    Heading {
+                                        Layout.fillWidth: true
+                                        text: page.modelData.label
+                                    }
+                                    AgentView {
+                                        id: assistant
+                                        Layout.fillWidth: true
+                                        shown: page.shownHere
+                                    }
+                                    Item {
+                                        Layout.fillHeight: true
+                                    }
+                                }
+                            }
+                            // System: About, Updates and Advanced, as tabs.
+                            Component {
+                                id: systemView
+                                SystemView {
+                                    title: page.modelData.label
+                                    shown: page.shownHere
                                 }
                             }
                             Component {

@@ -29,6 +29,13 @@ Singleton {
         delete next[name];
         return save(next);
     }
+    // Several options back to their defaults at once (Settings → System → Advanced).
+    function resetMany(names) {
+        const next = Object.assign({}, user);
+        for (const name of names)
+            delete next[name];
+        return save(next);
+    }
     function save(next) {
         if (unreadable)
             return false;

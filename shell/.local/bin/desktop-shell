@@ -124,10 +124,10 @@ case "${1:-start}" in
         case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays) ;;
             *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays} [SECTION]' >&2; exit 2 ;;
         esac
-        # settings SECTION opens Settings on that section (appearance, …) instead of toggling it; theming is
-        # Settings → Appearance (ShellState.aliases).
+        # settings SECTION[/TAB] opens Settings on that section (appearance, system/advanced, …) instead of
+        # toggling it; theming is Settings → Appearance (ShellState.aliases).
         if [[ $2 == settings && -n ${3:-} ]]; then
-            [[ $3 =~ ^[a-z-]+$ ]] || { echo 'Usage: desktop-shell toggle settings [SECTION]' >&2; exit 2; }
+            [[ $3 =~ ^[a-z-]+(/[a-z-]+)?$ ]] || { echo 'Usage: desktop-shell toggle settings [SECTION[/TAB]]' >&2; exit 2; }
             exec qs ipc -p "$config" call desktop settings "$3"
         fi
         exec qs ipc -p "$config" call desktop toggle "$2"
