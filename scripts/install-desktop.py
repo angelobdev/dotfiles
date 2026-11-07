@@ -1073,13 +1073,17 @@ def unfirmware_apply(plan, targets):
 def removal_split(plan):
     # What apply installed and is still there: swapped packages go back by swap, prerequisites stay. A package
     # someone installed by hand would go with them as a dependent: it stays, and so does everything of ours it needs.
+    # Removing some profiles, the packages of those that stay count as installed by hand.
     news = {new for _, new in plan.record.get('swaps', ())}
     names = plan.distro.installed_names([package for package in plan.record.get('packages', ()) if package not in news])
     names = [name for name in names if name.rsplit('.', 1)[0] not in plan.distro.PROTECTED + tuple(news)]
+    staying = set(plan.distro.installed_names(plan.record['staying'])) if plan.record.get('staying') else set()
+    names = [name for name in names if name not in staying]
     kept = []
     for _ in range(5):  # Each round keeps more; dnf's answer settles in one or two.
         rows = plan.distro.removal(names)
-        theirs = plan.distro.installed_by_hand([row for row in rows if row not in names])
+        others = [row for row in rows if row not in names]
+        theirs = plan.distro.installed_by_hand(others) | (staying & set(others))
         needed = plan.distro.requirements(sorted(theirs)) if theirs else set()
         if not needed & set(names):
             return names, kept, rows, theirs
@@ -1187,6 +1191,189 @@ UNSTEPS = (
 )
 
 
+# Removing some profiles: the steps above, on the part of the record that only those profiles name in the
+# manifest. What a profile that stays wants stays (gcc of apps and gaming, the RPM Fusion repositories, the ffmpeg
+# swap), and so do its packages when dnf would remove them as dependents. core is the desktop itself: removing it is
+# the uninstall above.
+
+def removable_profiles(profiles):
+    return bool(profiles) and 'core' not in profiles and not set(profiles) - set(PROFILES)
+
+
+def staying_profiles(record, removed):
+    # The profiles the record says are installed, but those; without a record of them, every other profile, so that
+    # nothing another one may need goes.
+    recorded = record.get('profiles') if isinstance(record.get('profiles'), list) and not record.get('uninstalled') else None
+    return tuple(name for name in PROFILES if name not in removed and (recorded is None or name in recorded or name == 'core'))
+
+
+def profile_record(plan, record, removed):
+    """The part of record that only the removed profiles set up, as a record for the steps of PROFILE_UNSTEPS."""
+    real = load_record()
+    going = plan._replace(profiles=tuple(name for name in PROFILES if name in removed and name in plan.table))
+    staying = plan._replace(profiles=tuple(name for name in staying_profiles(real, removed) if name in plan.table))
+
+    def only(key):
+        kept = merged(staying, key)
+        return [item for item in merged(going, key) if item not in kept]
+
+    def aur(part):
+        return [item['package'] for item in merged(part, 'aur')]
+    wanted = set(wanted_packages(staying) + aur(staying))
+    packages = set(wanted_packages(going) + aur(going)) - wanted
+    swapped = [list(pair) for pair in swaps(going) if pair not in swaps(staying)]
+    files = {item['path'] for item in only('files')}
+    firmware = {item['target'] for item in only('firmware')}
+    archives = {path for item in only('archives') for path in archive_paths(item)}
+    clones = {item['path'] for item in only('clones')}
+    services = record.get('services', {})
+    narrowed = {
+        'removing': list(going.profiles), 'staying': sorted(wanted),
+        'packages': [name for name in record.get('packages', ()) if name in packages],
+        'swaps': [pair for pair in record.get('swaps', ()) if list(pair) in swapped],
+        'repos': [name for name in record.get('repos', ()) if name in only('repos')],
+        'files': {path: before for path, before in record.get('files', {}).items() if path in files},
+        'written': {path: digest for path, digest in record.get('written', {}).items() if path in files},
+        'firmware': {target: existed for target, existed in record.get('firmware', {}).items() if target in firmware},
+        'groups': [group for group in record.get('groups', ()) if group in only('groups')],
+        'services': {'enabled': [unit for unit in services.get('enabled', ()) if unit in only('services')],
+                     'disabled': [unit for unit in services.get('disabled', ()) if unit in only('disable')],
+                     'global': [unit for unit in services.get('global', ()) if unit in only('user_services')]},
+        'flatpaks': [app for app in record.get('flatpaks', ()) if app in only('flatpaks')],
+        'archives': [path for path in record.get('archives', ()) if path in archives],
+        'clones': [path for path in record.get('clones', ()) if path in clones],
+        'aur': only('aur'), 'stow': only('stow'),
+    }
+    for key in ('firewall_zone', 'login_shell'):
+        if key in record and setting(going, key) and not setting(staying, key):
+            narrowed[key] = record[key]
+    if record.get('auth') and setting(going, 'auth') and not setting(staying, 'auth'):
+        narrowed['auth'] = record['auth']
+    if record.get('reconstructed'):
+        narrowed['reconstructed'] = True
+    return narrowed
+
+
+def removal_plan(plan, removed, preview=True):
+    whole = uninstall_plan(plan, preview)
+    return plan._replace(record=profile_record(plan, whole.record, removed))
+
+
+def removing_plugins(plan):
+    return 'plugins' in plan.record.get('removing', ())
+
+
+def unprofile_plugins_pending(plan):
+    # Without the plugins profile the login check cannot read the headers' version, and nothing can rebuild them.
+    return unplugins_pending(plan) if removing_plugins(plan) else []
+
+
+def unprofile_aur_pending(plan):
+    return [str(aur_path(item)) for item in plan.record.get('aur', ()) if aur_path(item).exists()]
+
+
+def unprofile_aur_apply(plan, paths):
+    for path in paths:
+        shutil.rmtree(path)
+
+
+def profile_links(plan):
+    # The links of the profile's own Stow packages (steam-hidpi), and the files Stow moved aside for them.
+    links, restorable = [], []
+    for package in plan.record.get('stow', ()):
+        root = REPO / package
+        for source in sorted(root.rglob('*')) if root.is_dir() else ():
+            target = Path.home() / source.relative_to(root)
+            if source.is_file() and target.is_symlink() and target.resolve() == source.resolve():
+                links.append(target)
+        relative = {source.relative_to(root) for source in root.rglob('*')} if root.is_dir() else set()
+        restorable += [(folder, path) for folder, path in backups() if path.relative_to(folder) in relative]
+    return links, restorable
+
+
+def unprofile_stow_pending(plan):
+    links, restorable = profile_links(plan)
+    return [f'unlink {link}' for link in links] + [f'put back {Path.home() / path.relative_to(folder)}' for folder, path in restorable
+                                                     if not (Path.home() / path.relative_to(folder)).is_file()]
+
+
+def unprofile_stow_apply(plan, items):
+    links, restorable = profile_links(plan)
+    for link in links:
+        link.unlink()
+    for folder, path in restorable:
+        target = Path.home() / path.relative_to(folder)
+        if not target.exists() and not target.is_symlink():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(path), str(target))
+
+
+def unprofile_record_pending(plan):
+    recorded = load_record().get('profiles')
+    listed = [name for name in plan.record['removing'] if isinstance(recorded, list) and name in recorded]
+    return [f'note in {RECORD} that {", ".join(listed)} ' + ('is' if len(listed) == 1 else 'are') + ' no longer installed'] if listed else []
+
+
+def unprofile_record_apply(plan, items):
+    # The record without the profiles, and without what is undone: a package installed again later by hand is the
+    # user's, and the full uninstall leaves it. What stays (a package something needs, a repository in use) stays there.
+    record = load_record()
+    if not record or record.get('uninstalled'):
+        return
+    narrowed = plan.record
+    if isinstance(record.get('profiles'), list):
+        record['profiles'] = [name for name in record['profiles'] if name not in narrowed['removing']]
+    gone = {
+        'packages': plan.distro.missing(narrowed['packages']) if narrowed['packages'] else [],
+        'swaps': [pair for pair in narrowed['swaps'] if not plan.distro.installed(pair[1])],
+        'repos': [name for name in narrowed['repos'] if name not in recorded_repos(plan)],
+        'groups': [group for group in narrowed['groups'] if not member(getpass.getuser(), group)],
+        'flatpaks': [app for app in narrowed['flatpaks'] if app not in unflatpak_pending(plan)],
+        'archives': [path for path in narrowed['archives'] if not os.path.lexists(Path.home() / path)],
+        'clones': [path for path in narrowed['clones'] if not (Path.home() / path).exists()],
+    }
+    for key, values in gone.items():
+        if key in record:
+            record[key] = [value for value in record[key] if value not in values]
+    ours = set(changed_files(plan)[0])
+    for path in narrowed['files']:
+        if path not in ours:
+            record.get('files', {}).pop(path, None)
+            record.get('written', {}).pop(path, None)
+    for target in narrowed['firmware']:
+        if target not in unfirmware_pending(plan):
+            record.get('firmware', {}).pop(target, None)
+    for kind, units in narrowed['services'].items():
+        if kind in record.get('services', {}):
+            record['services'][kind] = [unit for unit in record['services'][kind] if unit not in units]
+    if 'firewall_zone' in narrowed and not unfirewall_pending(plan):
+        record.pop('firewall_zone', None)
+    if narrowed.get('auth') and not unauth_pending(plan):
+        record.pop('auth', None)
+    save_record(record)
+
+
+# In the order of UNSTEPS; the boot, the clones of core, the GNOME settings and the login shell belong to core.
+PROFILE_UNSTEPS = (
+    Step('plugins', unprofile_plugins_pending, unplugins_apply),
+    Step('clones', unclones_pending, unclones_apply),
+    Step('archives', unarchives_pending, unarchives_apply),
+    Step('aur', unprofile_aur_pending, unprofile_aur_apply),
+    Step('stow', unprofile_stow_pending, unprofile_stow_apply),
+    Step('flatpak', unflatpak_pending, unflatpak_apply),
+    Step('auth', unauth_pending, unauth_apply),
+    Step('firewall', unfirewall_pending, unfirewall_apply),
+    Step('services', unservices_pending, services_apply),
+    Step('groups', ungroups_pending, ungroups_apply),
+    Step('files', unfiles_pending, unfiles_apply),
+    Step('firmware', unfirmware_pending, unfirmware_apply),
+    Step('packages', unpackages_pending, unpackages_apply),
+    Step('swaps', unswaps_pending, unswaps_apply),
+    Step('repos', unrepos_pending, unrepos_apply),
+    Step('record', unprofile_record_pending, unprofile_record_apply),
+)
+
+
 def os_release(path=Path('/etc/os-release')):
     fields = {}
     for line in path.read_text(encoding='utf-8').splitlines():
@@ -1280,9 +1467,10 @@ def run_steps(plan, preview, steps=STEPS):
 
 
 def refuse_uninstall():
+    # Also for the plugins profile alone: its builds are loaded in the running Hyprland.
     if hyprland_running():
-        sys.exit('Hyprland is running: uninstalling removes the configuration it runs on. '
-                 'Log out, switch to a console (Ctrl+Alt+F3), sign in there and run this again.')
+        sys.exit('Hyprland is running: uninstalling removes the configuration it runs on (or, for the plugins profile, '
+                 'the plugins it has loaded). Log out, switch to a console (Ctrl+Alt+F3), sign in there and run this again.')
 
 
 def after_uninstall(plan, done):
@@ -1559,9 +1747,16 @@ def main(argv=None):
     parser.add_argument('--firmware', metavar='DIR', help='directory searched (by hash) for the vendor firmware the manifest lists')
     parser.add_argument('--profiles', help=f'comma separated, from {", ".join(PROFILES)} (default: {DEFAULT_PROFILES}, and tablet on a 2-in-1)')
     parser.add_argument('--uninstall', action='store_true', help='undo what apply set up, from its record (dry-run shows it, apply does it)')
+    parser.add_argument('--remove', metavar='PROFILES', help='undo what only these profiles set up (comma separated, not core), '
+                        'leaving what the other installed profiles need')
     args = parser.parse_args(argv)
-    if args.uninstall and args.action in ('post', 'pins'):
-        parser.error('--uninstall goes with dry-run or apply.')
+    if (args.uninstall or args.remove) and args.action in ('post', 'pins'):
+        parser.error('--uninstall and --remove go with dry-run or apply.')
+    if args.uninstall and args.remove:
+        parser.error('--uninstall removes every profile: leave --remove out.')
+    removed = tuple(args.remove.split(',')) if args.remove else ()
+    if args.remove and not removable_profiles(removed):
+        parser.error(f'--remove takes {", ".join(PROFILES[1:])}; core goes only with --uninstall.')
     if args.update and args.action != 'pins':
         parser.error('--update goes with pins.')
     profiles = tuple((args.profiles or default_profiles()).split(','))
@@ -1573,6 +1768,19 @@ def main(argv=None):
         return pins(args.update)
     plan = load_plan(profiles, firmware=args.firmware, any_version=args.uninstall)
     plan.distro.remember_answers()
+    if removed:
+        refuse(plan)
+        if args.action == 'apply' and 'plugins' in removed:
+            refuse_uninstall()
+        plan = removal_plan(plan, removed, preview=args.action == 'dry-run')
+        for note in record_notes(plan):
+            print('Note: ' + note)
+        done = run_steps(plan, args.action == 'dry-run', PROFILE_UNSTEPS)
+        if not done:
+            print('Nothing to do.')
+        elif args.action == 'apply':
+            print(f'Done: {", ".join(removed)} removed. Not undone: what you changed by hand.')
+        return 0
     if args.uninstall:
         refuse(plan)
         if args.action == 'apply':
