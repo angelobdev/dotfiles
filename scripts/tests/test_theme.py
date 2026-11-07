@@ -246,6 +246,45 @@ class ReduceEffectsTests(unittest.TestCase):
         self.assertIn('layers = { enabled = not theme.reduceEffects,', plugins)
 
 
+class HerdrTests(unittest.TestCase):
+    def test_every_theme_gives_herdr_a_complete_theme(self):
+        for name in [t['id'] for t in theme.themes() if t['id'] != 'dynamic']:
+            data = theme.herdr_theme(theme.complete(theme.load(name)))
+            self.assertEqual(len(data['ansi']), 16, name)
+            colors = [data['background'], data['foreground'], data['selection'], data['cursor']] + data['ansi'] + list(data['colors'].values())
+            for color in colors:
+                self.assertRegex(color, r'^#[0-9a-f]{6}$', name)
+            self.assertEqual(data['colors']['accent'], data['cursor'], name)
+
+    def test_only_unset_or_own_keys_change(self):
+        wanted = {'theme': 'desktop', 'font': 'Fira Code', 'font_size': 15}
+        # A first run sets what is unset and keeps a value picked by hand.
+        self.assertEqual(theme.herdr_settings({'zoom': 1, 'font': 'Iosevka'}, wanted, {}),
+                         {'zoom': 1, 'font': 'Iosevka', 'theme': 'desktop', 'font_size': 15})
+        # A later run follows the desktop where the value is still the one written last time.
+        self.assertEqual(theme.herdr_settings({'theme': 'desktop', 'font': 'Fira Code'}, {'theme': 'desktop', 'font': 'JetBrains Mono'}, {'theme': 'desktop', 'font': 'Fira Code'}),
+                         {'theme': 'desktop', 'font': 'JetBrains Mono'})
+        self.assertEqual(theme.herdr_settings({'theme': 'moss'}, wanted, {'theme': 'desktop'})['theme'], 'moss')
+
+    def test_apply_writes_the_theme_and_leaves_a_broken_settings_alone(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            herdr, state = root / 'herdr-app', root / 'state'
+            completed = theme.complete(GRAPHITE)
+            with mock.patch.object(theme, 'HERDR', herdr), mock.patch.object(theme, 'STATE', state):
+                theme.apply_herdr(completed)
+                self.assertFalse(herdr.exists(), 'no Herdr app, nothing written')
+                herdr.mkdir()
+                (herdr / 'settings.json').write_text('{"zoom": 1.2, "sounds": {"enabled": true}}')
+                theme.apply_herdr(completed)
+                self.assertEqual(json.loads((herdr / 'themes/desktop.json').read_text())['background'], completed['palette']['bg'])
+                settings = json.loads((herdr / 'settings.json').read_text())
+                self.assertEqual((settings['zoom'], settings['theme'], settings['font']), (1.2, 'desktop', completed['fonts']['mono']))
+                (herdr / 'settings.json').write_text('{ "zoom": 1.2, // a comment\n }')
+                theme.apply_herdr(completed)
+                self.assertEqual((herdr / 'settings.json').read_text(), '{ "zoom": 1.2, // a comment\n }')
+
+
 class IconThemeTests(unittest.TestCase):
     def test_a_malformed_size_hides_no_other_theme(self):
         with tempfile.TemporaryDirectory() as folder:
