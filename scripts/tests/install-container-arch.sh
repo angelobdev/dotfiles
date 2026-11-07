@@ -5,13 +5,13 @@
 #   git ls-files -co --exclude-standard -z | tar --null -T - -c | docker run -i --rm archlinux:latest \
 #       bash -c 'mkdir /src && tar -x -C /src && exec bash /src/scripts/tests/install-container-arch.sh'
 #
-# Environment: PROFILES (default core,hardware,tablet,plugins,herdr,steam-hidpi), COMPILE=1 also builds the plugins (slow). apps builds the
+# Environment: PROFILES (default core,hardware,tablet,plugins,herdr,steam-hidpi,media), COMPILE=1 also builds the plugins (slow). apps builds the
 # AUR packages with makepkg and gaming enables multilib. The container runs no systemd, so the Flatpak and login
 # steps skip themselves: only a VM covers those.
 set -euo pipefail
 
 source=${1:-/src}
-profiles=${PROFILES:-core,hardware,tablet,plugins,herdr,steam-hidpi}
+profiles=${PROFILES:-core,hardware,tablet,plugins,herdr,steam-hidpi,media}
 user=ci
 home=/home/$user
 repo=$home/.dotfiles
@@ -64,11 +64,13 @@ again=$(as_user ./scripts/install-desktop.py apply --profiles "$profiles")
 printf '%s\n' "$again"
 grep -qx 'Nothing to do.' <<<"$again"
 
-if [[ ,$profiles, == *,tablet,* && ,$profiles, == *,herdr,* && ,$profiles, == *,steam-hidpi,* ]]; then
-    section 'Removing profiles: tablet, herdr and steam-hidpi'
-    as_user ./scripts/install-desktop.py dry-run --remove tablet,herdr,steam-hidpi | grep -E '^[a-z]+: '
-    as_user ./scripts/install-desktop.py apply --remove tablet,herdr,steam-hidpi | grep -vE '^  '
-    ! pacman -Q iio-sensor-proxy >/dev/null 2>&1 || { echo 'iio-sensor-proxy left with tablet removed' >&2; exit 1; }
+if [[ ,$profiles, == *,tablet,* && ,$profiles, == *,herdr,* && ,$profiles, == *,steam-hidpi,* && ,$profiles, == *,media,* ]]; then
+    section 'Removing profiles: tablet, herdr, steam-hidpi and media'
+    as_user ./scripts/install-desktop.py dry-run --remove tablet,herdr,steam-hidpi,media
+    as_user ./scripts/install-desktop.py apply --remove tablet,herdr,steam-hidpi,media | grep -vE '^  '
+    for package in loupe papers showtime; do
+        ! pacman -Q "$package" >/dev/null 2>&1 || { echo "$package left with media removed" >&2; exit 1; }
+    done
     [[ ! -e /etc/modules-load.d/hid-sensors.conf ]] || { echo 'hid-sensors.conf left with tablet removed' >&2; exit 1; }
     for path in .local/bin/herdr-core .local/bin/hc .local/bin/herdr-app .local/share/herdr-app .local/share/applications/herdr-app.desktop; do
         [[ ! -e $home/$path && ! -L $home/$path ]] || { echo "~/$path left with herdr removed" >&2; exit 1; }
@@ -76,11 +78,12 @@ if [[ ,$profiles, == *,tablet,* && ,$profiles, == *,herdr,* && ,$profiles, == *,
     links=$(find "$home" -type l -lname "*.dotfiles/steam-hidpi/*")
     [[ -z $links ]] || { printf 'steam-hidpi links left:\n%s\n' "$links" >&2; exit 1; }
     # What the profiles that stay need stays (fprintd: hardware wants it too).
-    pacman -Q hyprland fprintd >/dev/null || { echo 'a package of a profile that stays went' >&2; exit 1; }
+    # iio-sensor-proxy and libwacom stay too: GDM and Hyprland (core) need them, and would go with them.
+    pacman -Q hyprland fprintd iio-sensor-proxy libwacom >/dev/null || { echo 'a package of a profile that stays, or one it needs, went' >&2; exit 1; }
     [[ -L $home/.config/hypr/hyprland.lua ]] || { echo 'the links of core went' >&2; exit 1; }
     python3 -c 'import json, sys; profiles = json.load(open(sys.argv[1]))["profiles"]
-assert not {"tablet", "herdr", "steam-hidpi"} & set(profiles) and "core" in profiles, profiles' "$home/.local/state/dotfiles/install.json"
-    again=$(as_user ./scripts/install-desktop.py apply --remove tablet,herdr,steam-hidpi)
+assert not {"tablet", "herdr", "steam-hidpi", "media"} & set(profiles) and "core" in profiles, profiles' "$home/.local/state/dotfiles/install.json"
+    again=$(as_user ./scripts/install-desktop.py apply --remove tablet,herdr,steam-hidpi,media)
     grep -qx 'Nothing to do.' <<<"$again" || { printf '%s\n' "$again" >&2; exit 1; }
 
     section 'Adding them back'

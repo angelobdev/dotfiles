@@ -42,7 +42,7 @@ jobs:
         run: bash scripts/tests/install-container.sh "$PWD"
         env:
           # Without apps, for the disk of the runner. The plugins take long: only when started by hand.
-          PROFILES: core,hardware,tablet,plugins,herdr,steam-hidpi
+          PROFILES: core,hardware,tablet,plugins,herdr,steam-hidpi,media
           COMPILE: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}
 
   install-arch:
@@ -54,5 +54,5 @@ jobs:
       - name: Run the installer on a fresh system
         run: bash scripts/tests/install-container-arch.sh "$PWD"
         env:
-          PROFILES: core,hardware,tablet,plugins,herdr,steam-hidpi
+          PROFILES: core,hardware,tablet,plugins,herdr,steam-hidpi,media
           COMPILE: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}

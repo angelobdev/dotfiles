@@ -1101,6 +1101,10 @@ def unpackages_pending(plan):
     # installed by hand that still goes needs one of them in a way dnf did not tell: it is marked, for the review.
     names, kept, rows, theirs = removal_split(plan)
     marked = [row + ('  (installed by hand: it needs one of the others)' if row in theirs else '') for row in rows]
+    if plan.record.get('removing'):
+        # Removing profiles: a package kept because one that stays (or one installed by hand) needs it is no work of
+        # its own, and is listed only beside what goes.
+        return marked + [f'keep {name}  (a package that stays needs it)' for name in kept] if rows else []
     return marked + [f'keep {name}  (a package installed by hand needs it)' for name in kept]
 
 
@@ -1210,7 +1214,11 @@ def staying_profiles(record, removed):
 def profile_record(plan, record, removed):
     """The part of record that only the removed profiles set up, as a record for the steps of PROFILE_UNSTEPS."""
     real = load_record()
-    going = plan._replace(profiles=tuple(name for name in PROFILES if name in removed and name in plan.table))
+    # Only profiles still installed by the record's account: one removed already has nothing left to undo, and what of
+    # it stayed (a package core needs) is core's now.
+    recorded = real.get('profiles') if isinstance(real.get('profiles'), list) and not real.get('uninstalled') else None
+    undone = [name for name in PROFILES if name in removed and name in plan.table and (recorded is None or name in recorded)]
+    going = plan._replace(profiles=tuple(undone))
     staying = plan._replace(profiles=tuple(name for name in staying_profiles(real, removed) if name in plan.table))
 
     def only(key):
@@ -1228,7 +1236,7 @@ def profile_record(plan, record, removed):
     clones = {item['path'] for item in only('clones')}
     services = record.get('services', {})
     narrowed = {
-        'removing': list(going.profiles), 'staying': sorted(wanted),
+        'removing': [name for name in PROFILES if name in removed], 'undone': undone, 'staying': sorted(wanted),
         'packages': [name for name in record.get('packages', ()) if name in packages],
         'swaps': [pair for pair in record.get('swaps', ()) if list(pair) in swapped],
         'repos': [name for name in record.get('repos', ()) if name in only('repos')],
@@ -1260,7 +1268,7 @@ def removal_plan(plan, removed, preview=True):
 
 
 def removing_plugins(plan):
-    return 'plugins' in plan.record.get('removing', ())
+    return 'plugins' in plan.record.get('undone', ())
 
 
 def unprofile_plugins_pending(plan):

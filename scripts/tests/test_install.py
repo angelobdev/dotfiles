@@ -943,7 +943,7 @@ class ProfileRemovalTests(unittest.TestCase):
         current = self.plan(self.recorded(), ('apps',))
         with mock.patch.object(installer, 'unplugins_pending', return_value=['builds']):
             self.assertEqual(installer.unprofile_plugins_pending(current), [])
-            self.assertEqual(installer.unprofile_plugins_pending(current._replace(record={**current.record, 'removing': ['plugins']})),
+            self.assertEqual(installer.unprofile_plugins_pending(current._replace(record={**current.record, 'undone': ['plugins']})),
                              ['builds'])
 
     def test_the_plugins_profile_waits_until_hyprland_is_gone(self):
@@ -959,6 +959,23 @@ class ProfileRemovalTests(unittest.TestCase):
             refused.assert_not_called()
             installer.main(['apply', '--remove', 'plugins'])
             refused.assert_called_once()
+
+    def test_a_profile_removed_already_has_nothing_left_to_undo(self):
+        # gaming is no longer in the record: game, kept then because core needed it, is core's now.
+        narrowed = self.plan(self.recorded(profiles=['core', 'apps']), ('gaming',)).record
+        self.assertEqual((narrowed['removing'], narrowed['undone']), (['gaming'], []))
+        self.assertEqual((narrowed['packages'], narrowed['swaps'], narrowed['services']['disabled']), ([], [], []))
+        self.assertNotIn('firewall_zone', narrowed)
+
+    def test_packages_that_only_stay_are_no_work(self):
+        current = self.plan(self.recorded(), ('apps',))
+        # shared needs apponly (and, first, zen too): dnf would take it with them.
+        current.distro.removal.side_effect = lambda names: list(names) + (['shared.x86_64'] if set(names) & {'apponly.x86_64', 'zen.x86_64'} else [])
+        current.distro.requirements.side_effect = lambda names: {'apponly.x86_64', 'zen.x86_64'} if 'shared.x86_64' in names else set()
+        self.assertEqual(installer.unpackages_pending(current), [])
+        current.distro.removal.side_effect = lambda names: list(names) + (['shared.x86_64'] if 'apponly.x86_64' in names else [])
+        current.distro.requirements.side_effect = lambda names: {'apponly.x86_64'} if 'shared.x86_64' in names else set()
+        self.assertEqual(installer.unpackages_pending(current), ['zen.x86_64', 'keep apponly.x86_64  (a package that stays needs it)'])
 
     def test_nothing_recorded_for_the_profile_is_nothing_to_do(self):
         self.recorded(profiles=['core', 'gaming'])
