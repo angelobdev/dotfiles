@@ -270,6 +270,11 @@ def archives_unsupported(plan):
     return [item['name'] for item in merged(plan, 'archives') if machine() not in item['sha256']]
 
 
+def open_url(url, timeout):
+    # With a name of its own: releases.herdr.dev refuses urllib's default User-Agent (403).
+    return urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': 'install-desktop.py (dotfiles)'}), timeout=timeout)
+
+
 def archive_url(item):
     return item['url'].format(version=item['version'], arch=machine())
 
@@ -279,7 +284,7 @@ def unpack_archive(item):
     with tempfile.TemporaryDirectory() as folder:
         folder = Path(folder)
         tarball = folder / 'archive.tar.gz'
-        with urllib.request.urlopen(archive_url(item), timeout=60) as response, tarball.open('wb') as out:
+        with open_url(archive_url(item), 60) as response, tarball.open('wb') as out:
             shutil.copyfileobj(response, out)
         if sha256(tarball) != item['sha256'][machine()]:
             sys.exit(f'{archive_label(item)}: the download does not match its sha256 in the manifest.')
@@ -1402,7 +1407,7 @@ def pin_entries(tables, profiles=PROFILES):
 
 def newer_archive(item):
     try:
-        with urllib.request.urlopen(item['latest'], timeout=30) as response:
+        with open_url(item['latest'], 30) as response:
             latest = json.load(response)
         new, targets = latest['version'], latest['targets']
         hashes = {arch: targets[f'linux-{arch}']['sha256'] for arch in item['sha256']}

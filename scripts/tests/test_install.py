@@ -1153,9 +1153,10 @@ class ArchiveTests(unittest.TestCase):
             patcher.start()
             self.addCleanup(patcher.stop)
 
-    def urlopen(self, url, timeout=None):
-        self.fetched.append(url)
-        return io.BytesIO(self.CORE if '/core/' in url else self.APP)
+    def urlopen(self, request, timeout=None):
+        self.assertEqual(request.get_header('User-agent'), 'install-desktop.py (dotfiles)')
+        self.fetched.append(request.full_url)
+        return io.BytesIO(self.CORE if '/core/' in request.full_url else self.APP)
 
     def apply(self):
         items = installer.archives_pending(self.plan)
