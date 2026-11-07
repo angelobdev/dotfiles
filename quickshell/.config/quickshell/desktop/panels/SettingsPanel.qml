@@ -420,6 +420,7 @@ Overlay {
                                         Layout.fillWidth: true
                                         shown: page.shownHere
                                     }
+                                    AgentsGroup {}
                                     AssistantLanguage {}
                                     Item {
                                         Layout.fillHeight: true

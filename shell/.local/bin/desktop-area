@@ -36,9 +36,14 @@ if [[ $mode == text ]]; then
     notify edit-copy-symbolic "$(message 'area.textCopied')" "$(printf '%s' "$text" | head -c 240)"
     exit 0
 fi
-# ask: desktop-ai starts its kitty with a remote-control socket for this.
+# ask: desktop-ai starts its kitty with a remote-control socket for this; the path is typed as the primary
+# agent takes an image (agents.py image: "@path" for some, the bare path for others).
 socket="${XDG_RUNTIME_DIR:-/tmp}/desktop-ai-kitty"
-if [[ -S $socket ]] && kitty @ --to "unix:$socket" send-text --match all "$image " >/dev/null 2>&1; then
+agents="$HOME/.local/libexec/desktop/agents.py"
+primary="$(python3 "$agents" primary 2>/dev/null || true)"
+typed="$image"
+[[ -n $primary ]] && typed="$(python3 "$agents" image "$primary" "$image" 2>/dev/null || printf '%s' "$image")"
+if [[ -S $socket ]] && kitty @ --to "unix:$socket" send-text --match all "$typed " >/dev/null 2>&1; then
     hyprctl eval 'desktop_console_show()' >/dev/null
     exit 0
 fi

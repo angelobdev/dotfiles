@@ -7,8 +7,12 @@
   },
   "assistant": {
     "errors": {
-      "claudeMissing": "Claude Code non è installato: vedi docs/features/ai-assistant.md",
-      "usage": "Uso: agent.py hook|statusline (JSON su stdin, da Claude Code)"
+      "usage": "Uso: agent.py hook|statusline (JSON su stdin, da Claude Code)",
+      "unknownAgent": "Nessun agente si chiama %1",
+      "agentMissing": "%1 non è installato: installalo in Impostazioni → Assistente",
+      "noInstall": "%1 non ha un comando di installazione: installalo tu",
+      "installNeeds": "Per installare %1 serve %2",
+      "anyMissing": "Nessun agente installato: scegline uno in Impostazioni → Assistente"
     },
     "language": "italian",
     "title": "Assistente AI",
@@ -33,17 +37,18 @@
       "pro": "Pro"
     },
     "states": {
-      "missing": "Claude Code non è installato",
-      "off": "Non avviato: apri la console per avviare Claude",
+      "missing": "Nessun agente installato",
+      "off": "Non avviato: apri la console per avviare %1",
       "ready": "Pronto",
       "working": "Al lavoro…",
       "permission": "Aspetta un tuo permesso",
       "finished": "Ha finito",
-      "error": "Si è fermato con un errore"
+      "error": "Si è fermato con un errore",
+      "offAny": "Non avviato: apri la console per avviare un agente",
+      "running": "In esecuzione"
     },
     "dayFormat": "ddd",
     "since": "Dalle %1",
-    "panelTooltip": "Claude",
     "usage": {
       "title": "Utilizzo",
       "titlePlan": "Utilizzo · %1",
@@ -58,7 +63,27 @@
       "updatedOn": "Aggiornato %1"
     },
     "agents": "Agenti",
-    "noAgents": "Nessun agente in esecuzione. Apri la console per avviarne uno in Herdr."
+    "noAgents": "Nessun agente in esecuzione. Apri la console per avviarne uno in Herdr.",
+    "install": {
+      "running": "Installo %1…",
+      "done": "%1 è installato.",
+      "failed": "Installazione di %1 non riuscita: vedi i messaggi sopra.",
+      "close": "Premi Invio per chiudere questa finestra.",
+      "title": "Installa %1"
+    },
+    "agentsGroup": "Agenti",
+    "primary": "Agente principale (Super + A)",
+    "primaryAutomatic": "Automatico (%1)",
+    "primaryNone": "Nessuno installato",
+    "primaryOverride": "DESKTOP_AI_AGENT vale %1 e ha la precedenza su questa scelta.",
+    "primaryHerdr": "Herdr è installato: la console è l’app Herdr, e l’agente principale è quello che avvia quando non ne gira nessuno.",
+    "primaryKitty": "La console avvia l’agente principale in una finestra di Kitty.",
+    "installedAt": "Installato: %1",
+    "notInstalled": "Non installato",
+    "needs": "Per installarlo serve %1",
+    "installing": "Installo…",
+    "agentsHint": "Installa apre un terminale con l’installer ufficiale dell’agente. Ogni agente è un file JSON: aggiungi i tuoi in ~/.config/desktop/agents (vedi docs/features/ai-assistant.md).",
+    "installAction": "Installa"
   },
   "audio": {
     "devices": "Ingressi e uscite",
@@ -1006,7 +1031,7 @@
       "session": "Sessione",
       "colorPicker": "Scegli un colore",
       "areaText": "Copia testo",
-      "areaAsk": "Chiedi a Claude"
+      "areaAsk": "Chiedi all’assistente"
     },
     "pages": {
       "apps": "App",
@@ -1142,10 +1167,10 @@
     "ocrMissing": "Il riconoscimento del testo richiede tesseract: %1",
     "noText": "Nessun testo trovato in quell’area.",
     "textCopied": "Testo copiato",
-    "imageCopied": "Area copiata per Claude",
+    "imageCopied": "Area copiata per l’assistente",
     "pasteHint": "Incollala nel prompt con Ctrl + V.",
     "text": "Testo da un’area dello schermo",
-    "ask": "Chiedi a Claude di un’area dello schermo"
+    "ask": "Chiedi all’assistente di un’area dello schermo"
   },
   "privacy": {
     "title": "Privacy",

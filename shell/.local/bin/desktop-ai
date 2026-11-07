@@ -1,7 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Hyprland's exec PATH does not include ~/.local/bin, where the Claude Code installer puts `claude`.
+# Hyprland's exec PATH does not include ~/.local/bin, where the agents' installers put them.
 export PATH="$HOME/.local/bin:$PATH"
+agents="$HOME/.local/libexec/desktop/agents.py"
+# The primary agent (agents.py: DESKTOP_AI_AGENT, else Settings → Assistant, else the first installed).
+primary="$(python3 "$agents" primary 2>/dev/null || true)"
+# In the Herdr app, the primary agent in a new tab when none runs yet, once the app answers.
+herdr_start() {
+    [[ -n $primary ]] || return 0
+    if PATH="$HOME/.local/bin:$PATH" herdr-core ls --json 2>/dev/null | python3 -c '
+import json, sys
+sys.exit(0 if any(t.get("agent") for t in json.load(sys.stdin).get("terminals", [])) else 1)'; then
+        return 0
+    fi
+    local request
+    request="$(python3 -c 'import json, sys; print(json.dumps({"argv": json.loads(sys.argv[1])}))' "$(python3 "$agents" argv "$primary")")" || return 0
+    for attempt in {1..20}; do
+        herdr-app do terminal.open "$request" >/dev/null 2>&1 && return 0
+        sleep 0.5
+    done
+}
 case "${1:-toggle}" in
     toggle)
         # One press at a time, so a second press before the window maps sees the first one's launch.
@@ -20,6 +38,14 @@ import json, sys
 names = [c.get("workspace", {}).get("name", "") for c in json.load(sys.stdin) if c.get("class") == sys.argv[1]]
 print("" if not names else "inside" if "special:ai" in names else "outside")
 ' "$class")"
+        # Opening the Herdr console with no agent running starts the primary one in it.
+        showing=yes
+        if [[ $place == inside ]] && hyprctl monitors -j | grep -q '"name": "special:ai"'; then
+            showing=no
+        fi
+        if [[ $class == herdr-app && $showing == yes ]]; then
+            (herdr_start &) 9>&-
+        fi
         if [[ $place == inside ]]; then
             exec hyprctl dispatch 'hl.dsp.workspace.toggle_special("ai")'
         elif [[ $place == outside ]]; then
@@ -36,15 +62,18 @@ print("" if not names else "inside" if "special:ai" in names else "outside")
             setsid -f herdr-app >/dev/null 2>&1 9>&-
             exit 0
         fi
-        if ! command -v claude >/dev/null; then
-            exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify assistant.title assistant.errors.claudeMissing
+        if [[ -z $primary ]]; then
+            exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify assistant.title assistant.errors.anyMissing
         fi
-        # Session-only settings: hold-Space dictation, and one language for dictation and replies
-        # (the system locale unless DESKTOP_AI_LANGUAGE names another, e.g. "italian"). agent.py gets the
-        # status line (usage for the shell panel) and the hooks that tell the shell what Claude is doing;
-        # they run async, so they never hold Claude up, except SessionEnd, which must finish before exit.
-        language="${DESKTOP_AI_LANGUAGE:-$(python3 "$HOME/.local/libexec/desktop/i18n.py" assistant.language)}"
-        settings="$(python3 -c '
+        # The primary agent's command; Claude Code (hooks "claude") also gets its session settings.
+        mapfile -t argv < <(python3 -c 'import json, sys; print("\n".join(json.loads(sys.argv[1])))' "$(python3 "$agents" argv "$primary")")
+        if [[ $(python3 "$agents" hooks "$primary") == claude ]]; then
+            # Session-only settings: hold-Space dictation, and one language for dictation and replies
+            # (the system locale unless DESKTOP_AI_LANGUAGE names another, e.g. "italian"). agent.py gets the
+            # status line (usage for the shell panel) and the hooks that tell the shell what Claude is doing;
+            # they run async, so they never hold Claude up, except SessionEnd, which must finish before exit.
+            language="${DESKTOP_AI_LANGUAGE:-$(python3 "$HOME/.local/libexec/desktop/i18n.py" assistant.language)}"
+            settings="$(python3 -c '
 import json, sys
 language, helper = sys.argv[1:]
 command = "python3 " + json.dumps(helper)
@@ -59,8 +88,10 @@ print(json.dumps({"voice": {"enabled": True, "mode": "hold"}, "language": langua
                   "statusLine": {"type": "command", "command": command + " statusline", "padding": 0},
                   "disableAllHooks": False, "hooks": hooks}))
 ' "$language" "$HOME/.local/libexec/desktop/agent.py")"
-        # The session starts in the dotfiles repository (this script is a Stow link into it), so Claude
-        # reads its .claude/CLAUDE.md; DESKTOP_AI_DIRECTORY names another folder, $HOME is the fallback.
+            argv+=(--settings "$settings")
+        fi
+        # The session starts in the dotfiles repository (this script is a Stow link into it), so the agent
+        # reads its .claude/CLAUDE.md or AGENTS.md; DESKTOP_AI_DIRECTORY names another folder, $HOME is the fallback.
         repo="$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)"
         directory="${DESKTOP_AI_DIRECTORY:-$repo}"
         [[ -d $directory ]] || directory="$HOME"
@@ -72,7 +103,7 @@ print(json.dumps({"voice": {"enabled": True, "mode": "hold"}, "language": langua
         rm -f "$socket"
         # Without the lock (9>&-): kitty would hold it, and every later press would wait for its lifetime.
         setsid -f kitty --class desktop-ai --directory "$directory" -o allow_remote_control=socket-only \
-            --listen-on "unix:$socket" -e claude --settings "$settings" >/dev/null 2>&1 9>&-
+            --listen-on "unix:$socket" -e "${argv[@]}" >/dev/null 2>&1 9>&-
         ;;
     *) echo 'Usage: desktop-ai [toggle]' >&2; exit 2 ;;
 esac

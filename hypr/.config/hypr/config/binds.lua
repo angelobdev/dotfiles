@@ -98,7 +98,7 @@ bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Battery 
 bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendar")
 bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Keyboard shortcuts")
 bind("SUPER + SHIFT + T", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-area" text'), "Text from screen area")
-bind("SUPER + CTRL + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-area" ask'), "Ask Claude about a screen area")
+bind("SUPER + CTRL + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-area" ask'), "Ask the assistant about a screen area")
 bind("SUPER + ALT + plus", hl.dsp.exec_cmd(shell .. " zoom in"), "Zoom in", { repeating = true })
 bind("SUPER + ALT + minus", hl.dsp.exec_cmd(shell .. " zoom out"), "Zoom out", { repeating = true })
 bind("SUPER + ALT + 0", hl.dsp.exec_cmd(shell .. " zoom reset"), "Reset zoom")

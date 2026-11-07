@@ -102,6 +102,8 @@ Singleton {
         }
     }
     readonly property int minimumWorkspaces: pick("minimumWorkspaces", 2)
+    // The coding agent Super + A opens (an id of agents.py, Settings → Assistant); "" picks the first installed.
+    readonly property string aiPrimary: pick("aiPrimary", "")
     readonly property bool workspaceScroll: pick("workspaceScroll", true)
     // Turns the shell's own animations off (Hyprland's live in hypr/config/appearance.lua).
     readonly property bool reduceMotion: pick("reduceMotion", false)

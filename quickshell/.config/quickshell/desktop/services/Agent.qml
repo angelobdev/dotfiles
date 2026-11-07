@@ -16,10 +16,32 @@ Singleton {
     readonly property string launcher: Quickshell.env("HOME") + "/.local/bin/desktop-ai"
     readonly property string runtimeDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/desktop-shell"
     readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-shell"
-    // Claude Code installed (desktop-ai adds ~/.local/bin, where its installer puts it), or herdr.
-    property bool claude: false
+    // The coding agents (agents.py list: one JSON file each), the primary one Super + A opens, and herdr.
+    property var catalog: ({
+            agents: [],
+            primary: "",
+            chosen: "",
+            override: ""
+        })
+    readonly property var primaryAgent: (catalog.agents ?? []).find(agent => agent.id === catalog.primary) ?? null
+    // Claude Code with its hooks: only then does the Kitty console report a detailed state.
+    readonly property bool claude: primaryAgent?.hooks === "claude"
     property bool herdr: false
-    readonly property bool available: claude || herdr
+    readonly property bool available: primaryAgent !== null || herdr
+    readonly property string title: herdr ? I18n.tr("assistant.agents") : primaryAgent?.name ?? I18n.tr("assistant.title")
+    property bool installing: false
+    function refreshCatalog() {
+        if (!catalogReader.running)
+            catalogReader.running = true;
+    }
+    // An agent installed from Settings: its installer in a terminal, then the list read again.
+    function install(id) {
+        if (installer.running)
+            return;
+        installer.command = ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/agents.py", "install", id];
+        installing = true;
+        installer.running = true;
+    }
     readonly property bool windowOpen: Hyprland.toplevels.values.some(t => (t.wayland?.appId || t.lastIpcObject?.class) === (herdr ? "herdr-app" : "desktop-ai"))
     readonly property bool running: herdr ? windowOpen || agents.length > 0 : windowOpen
     // herdr: every terminal running a known agent, as { address, app, name, state (ready, working, permission,
@@ -33,7 +55,8 @@ Singleton {
     // The first read (a shell start) only takes the state: notifications are for changes after it.
     property bool recordLoaded: false
     // ready, working, permission, finished or error; "" when no agent runs or reported nothing yet.
-    readonly property string state: herdr ? lead?.state ?? "" : running ? record.state ?? "" : ""
+    // Another agent than Claude Code in the Kitty console has no hooks: it is only "running".
+    readonly property string state: herdr ? lead?.state ?? "" : !running ? "" : claude ? record.state ?? "" : "running"
     readonly property string detail: herdr ? lead?.msg ?? "" : running ? record.detail ?? "" : ""
     readonly property real since: herdr ? lead?.since ?? 0 : (record.since ?? 0) * 1000
     // The agent the last notification was about (herdr), shown when it is clicked.
@@ -90,7 +113,11 @@ Singleton {
             return "ready";
         }
     }
+    // herdr's name for an agent, as its JSON file names it, else a few herdr knows that have none here.
     function agentName(app) {
+        const known = (catalog.agents ?? []).find(agent => agent.herdr === app);
+        if (known)
+            return known.name;
         const names = {
             "claude-code": "Claude Code",
             "codex": "Codex",
@@ -219,7 +246,7 @@ Singleton {
         id: notifier
         property string title
         property string body
-        command: ["notify-send", "--wait", "--app-name=" + (root.herdr ? "Herdr" : I18n.tr("assistant.claude")), "--app-icon=" + (root.herdr ? "herdr-app" : "desktopai"), "--hint=string:desktop-entry:desktop-ai", "--action=default=" + I18n.tr("assistant.openConsole"), "--action=open=" + I18n.tr("assistant.openConsole"), title, body]
+        command: ["notify-send", "--wait", "--app-name=" + (root.herdr ? "Herdr" : root.title), "--app-icon=" + (root.herdr ? "herdr-app" : "desktopai"), "--hint=string:desktop-entry:desktop-ai", "--action=default=" + I18n.tr("assistant.openConsole"), "--action=open=" + I18n.tr("assistant.openConsole"), title, body]
         stdout: StdioCollector {
             onStreamFinished: {
                 if (["default", "open"].includes(text.trim()))
@@ -228,9 +255,29 @@ Singleton {
         }
     }
     Process {
-        id: probe
-        command: ["sh", "-c", "PATH=\"$HOME/.local/bin:$PATH\" command -v claude"]
-        onExited: code => root.claude = code === 0
+        id: catalogReader
+        command: ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/agents.py", "list"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const data = root.parse(text);
+                if (Array.isArray(data.agents))
+                    root.catalog = data;
+            }
+        }
+    }
+    Process {
+        id: installer
+        onExited: {
+            root.installing = false;
+            root.refreshCatalog();
+        }
+    }
+    // The primary agent chosen in Settings: read again so the title and the console follow.
+    Connections {
+        target: Config
+        function onUserChanged() {
+            root.refreshCatalog();
+        }
     }
     // herdr: both programs, unless DESKTOP_AI_CONSOLE=kitty keeps the Kitty console (desktop-ai decides alike).
     Process {
@@ -331,7 +378,7 @@ Singleton {
     }
     Component.onCompleted: {
         Hyprland.refreshMonitors();
-        probe.running = true;
+        refreshCatalog();
         herdrProbe.running = true;
     }
 }

@@ -1,0 +1,13 @@
+{
+  "name": "Claude Code",
+  "vendor": "Anthropic",
+  "homepage": "https://claude.com/claude-code",
+  "binary": "claude",
+  "command": ["claude"],
+  "install": "curl -fsSL https://claude.ai/install.sh | bash",
+  "needs": ["curl"],
+  "image": "{path}",
+  "herdr": "claude-code",
+  "hooks": "claude",
+  "order": 1
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Codex",
+  "vendor": "OpenAI",
+  "homepage": "https://github.com/openai/codex",
+  "binary": "codex",
+  "command": ["codex"],
+  "install": "npm install --global --prefix \"$HOME/.local\" @openai/codex",
+  "needs": ["npm"],
+  "image": "{path}",
+  "herdr": "codex",
+  "order": 2
+}

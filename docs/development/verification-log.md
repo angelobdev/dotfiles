@@ -914,3 +914,9 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - The shown layout was **Terminals**, which sets its own theme and fixed colors (`colors.background: #131619` and others), so `herdr-app shot` still measured `#131619`, also after `herdr-app do app.theme '{"name":"desktop"}'` (with the user's permission). A copy made with `layout.clone` (`desktop`), without `colors` and `background` at its root and with `theme: "desktop"`, measured Gruvbox's `#282828`. Switching the desktop to Tokyo Night made it `#1a1b26` within 2.5 s, and back `#282828`; the desktop was put back on Gruvbox with the user's wallpaper.
 - Tests: a complete Herdr theme for every desktop theme, only unset or own keys changed in `settings.json`, nothing written without `~/.config/herdr-app`, a `settings.json` with a comment left untouched.
 - Not changed: Herdr's `telemetry` (on by default), which is the user's to decide.
+
+## Modular coding agents, 2026-11-07 (#2)
+
+- `agents.py` on this laptop: `claude` in `~/.local/bin` is the primary (`primary`, `argv claude` gives its path); `codex` and `agy` are not installed and Codex reports `npm` as present, so its Install is enabled. `image antigravity` gives `@PATH`.
+- `scripts/tests/test_agents.py` (run by `check.sh`): the three shipped descriptors are valid and ordered, invalid ones are left out, the user's own file wins by id, the primary follows the order, `aiPrimary` (only when installed) and `DESKTOP_AI_AGENT`, `install` refuses when a needed program is missing and otherwise opens a Kitty `desktop-updates` window with the installer.
+- The shell restarted with the new Settings group and `Agent.qml` with no warnings in `qs log`; `hyprctl configerrors` empty after the new bind description. The installers were not run here (Claude Code is already installed).
