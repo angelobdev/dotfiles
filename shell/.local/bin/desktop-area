@@ -42,8 +42,9 @@ if [[ -S $socket ]] && kitty @ --to "unix:$socket" send-text --match all "$image
     hyprctl eval 'desktop_console_show()' >/dev/null
     exit 0
 fi
+# Otherwise (the Herdr app is the console, or Kitty without its socket): the image on the clipboard, for Ctrl+V.
 wl-copy --type image/png <"$image"
-if hyprctl clients -j | grep -q '"class": "desktop-ai"'; then
+if hyprctl clients -j | grep -qE '"class": "(desktop-ai|herdr-app)"'; then
     hyprctl eval 'desktop_console_show()' >/dev/null
 else
     "$HOME/.local/bin/desktop-ai" toggle

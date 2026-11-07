@@ -902,6 +902,12 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Tried live with the user's permission, on the console open on eDP-1: `set_special_workspace(nil)` hides it with no error. With the fix, `hyprctl eval 'desktop_console_hide("eDP-1")'` (what the shell runs when the catcher is pressed) closed it and left `configerrors` empty; `desktop_console_show()` brought it back each time.
 - `scripts/tests/test_console.lua` (run by `check.sh`): a stub monitor that refuses anything but nil or a selector, as 0.57 does; the console's monitor is cleared, one showing another special workspace is left alone, and without a name every monitor showing the console. It fails with the old line.
 
+## Any coding agent through herdr, part 1, 2026-11-07 (#2)
+
+- herdr-core 0.1.18 and herdr-app installed by the user in `~/.local/bin`; this very session runs in herdr (`t1`, `claude --continue` in `.dotfiles`).
+- `hc ls --json` gives each live terminal's `agent`, `status` (a word) and `where`; `hc events --json` gives full terminal records with `status: {app, state, kind?, msg, progress?}` and `status_ms`. `Agent.qml` takes membership and state from `ls` and the message from the latest event; the shell's status then reported `herdr: true`, state `working` and the agent `Claude Code · .dotfiles / 1` with herdr's message. A first version read `status.app` from `ls` too and found no agent: the two outputs differ.
+- `desktop-ai`, `console.lua` (the console classes) and the `desktop-ai-herdr` rule: Hyprland reloaded them with no config errors; `test_console.lua` still passes. Not tried here: `Super + A` moving the running Herdr window into the console, the notifications and the panel list (the user to try), and a session without herdr (the probe and `desktop-ai` keep the old path).
+
 ## The Herdr app follows the desktop theme, 2026-11-07 (#2)
 
 - `desktop-theme apply` on this laptop (Gruvbox) wrote `~/.config/herdr-app/themes/desktop.json` and added `theme`, `font` (Fira Code), `font_size` (15, from 11 pt) and `ui_font` to Herdr's `settings.json`, keeping `zoom`, `sounds`, `font_ligatures` and `minimum_contrast`; a copy of the file was kept first. No `*.error` file from Herdr.

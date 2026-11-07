@@ -351,7 +351,7 @@ PanelWindow {
             visible: Agent.available
             iconName: "assistant"
             tooltip: I18n.tr("assistant.panelTooltip")
-            Accessible.name: I18n.tr("assistant.claude")
+            Accessible.name: Agent.herdr ? I18n.tr("assistant.agents") : I18n.tr("assistant.claude")
             onClicked: ShellState.toggle("agent", bar.screen)
             Rectangle {
                 id: agentDot

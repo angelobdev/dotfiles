@@ -5,28 +5,39 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import ".."
 
-// The Claude Code assistant (desktop-ai) and its drop-down console, the special workspace "ai" laid out
-// by hypr/config/console.lua: which screen shows it, what Claude is doing (the hooks of desktop-ai write
-// agent.json through agent.py), the subscription usage of its status line, and the notifications sent
-// while the console is hidden.
+// The coding assistant (desktop-ai) and its drop-down console, the special workspace "ai" laid out by
+// hypr/config/console.lua: which screen shows it, what the agents are doing, the subscription usage of Claude
+// Code status line, and the notifications sent while the console is hidden.
+// With herdr installed (herdr-core and herdr-app) the console is the Herdr app and the state comes from
+// herdr-core (`hc events`, then `hc ls`), for every agent it recognises; without it, from the hooks of Claude Code
+// (desktop-ai, agent.py, agent.json), as before.
 Singleton {
     id: root
     readonly property string launcher: Quickshell.env("HOME") + "/.local/bin/desktop-ai"
     readonly property string runtimeDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/desktop-shell"
     readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-shell"
-    // Claude Code installed (desktop-ai adds ~/.local/bin, where its installer puts it).
-    property bool available: false
-    readonly property bool running: Hyprland.toplevels.values.some(t => (t.wayland?.appId || t.lastIpcObject?.class) === "desktop-ai")
+    // Claude Code installed (desktop-ai adds ~/.local/bin, where its installer puts it), or herdr.
+    property bool claude: false
+    property bool herdr: false
+    readonly property bool available: claude || herdr
+    readonly property bool windowOpen: Hyprland.toplevels.values.some(t => (t.wayland?.appId || t.lastIpcObject?.class) === (herdr ? "herdr-app" : "desktop-ai"))
+    readonly property bool running: herdr ? windowOpen || agents.length > 0 : windowOpen
+    // herdr: every terminal running a known agent, as { address, app, name, state (ready, working, permission,
+    // finished, error), kind, msg, where, since }, the one needing attention first.
+    property var agents: []
+    readonly property var lead: agents[0] ?? null
     // The screen showing the console, or "" while it is hidden.
     property string consoleScreen: ""
     readonly property bool consoleOpen: consoleScreen !== ""
     property var record: ({})
     // The first read (a shell start) only takes the state: notifications are for changes after it.
     property bool recordLoaded: false
-    // ready, working, permission, finished or error; "" when Claude is not running or reported nothing yet.
-    readonly property string state: running ? record.state ?? "" : ""
-    readonly property string detail: running ? record.detail ?? "" : ""
-    readonly property real since: (record.since ?? 0) * 1000
+    // ready, working, permission, finished or error; "" when no agent runs or reported nothing yet.
+    readonly property string state: herdr ? lead?.state ?? "" : running ? record.state ?? "" : ""
+    readonly property string detail: herdr ? lead?.msg ?? "" : running ? record.detail ?? "" : ""
+    readonly property real since: herdr ? lead?.since ?? 0 : (record.since ?? 0) * 1000
+    // The agent the last notification was about (herdr), shown when it is clicked.
+    property string noticeTerminal: ""
     // Finished, failed or asking while the console was hidden, and not looked at since.
     property bool unseen: false
     property var usage: ({})
@@ -56,6 +67,109 @@ Singleton {
         if (!consoleOpen)
             toggleConsole();
     }
+    // The console on one agent of herdr: its terminal shown in the Herdr app.
+    function showAgent(address) {
+        showConsole();
+        if (herdr && address !== "")
+            Quickshell.execDetached(["sh", "-c", "PATH=\"$HOME/.local/bin:$PATH\" exec herdr-app do terminal.show \"$1\"", "sh", JSON.stringify({
+                    terminal: address
+                })]);
+    }
+    // The words of herdr-core for the state, as the rest of the shell names them.
+    function mapped(status) {
+        switch (status?.state) {
+        case "blocked":
+            return "permission";
+        case "done":
+            return "finished";
+        case "error":
+            return "error";
+        case "working":
+            return "working";
+        default:
+            return "ready";
+        }
+    }
+    function agentName(app) {
+        const names = {
+            "claude-code": "Claude Code",
+            "codex": "Codex",
+            "opencode": "opencode",
+            "cursor": "Cursor",
+            "gemini": "Gemini CLI",
+            "grok": "Grok"
+        };
+        return names[app] ?? app;
+    }
+    // A new `hc ls`: the agents, most urgent first, and a notification for each that moved to asking,
+    // finished or failed (none for the first read, a shell start).
+    function takeAgents(text) {
+        const order = {
+            permission: 5,
+            error: 4,
+            working: 3,
+            finished: 2,
+            ready: 1
+        };
+        // `hc ls` says which agents run and their state ("agent", "status" as a word); the events keep the rest of
+        // each one (status.msg, status.kind, status_ms), by address.
+        let list = [];
+        try {
+            list = (JSON.parse(text).terminals ?? []).filter(terminal => terminal.state === "live" && (terminal.agent || details[terminal.address]?.status?.app)).map(terminal => {
+                const detail = details[terminal.address] ?? {};
+                const app = terminal.agent || detail.status?.app;
+                const word = typeof terminal.status === "string" ? terminal.status : detail.status?.state;
+                return {
+                    address: terminal.address,
+                    app: app,
+                    name: agentName(app),
+                    state: mapped({
+                        state: word
+                    }),
+                    kind: detail.status?.kind ?? "",
+                    msg: detail.status?.state === word ? detail.status?.msg ?? "" : "",
+                    where: terminal.where ?? detail.labels?.where ?? "",
+                    since: detail.status_ms ?? 0
+                };
+            });
+        } catch (failure) {
+            return;
+        }
+        list.sort((a, b) => (order[b.state] - order[a.state]) || (b.since - a.since));
+        const before = {};
+        for (const agent of agents)
+            before[agent.address] = agent.state;
+        const first = !herdrLoaded;
+        agents = list;
+        herdrLoaded = true;
+        if (first)
+            return;
+        for (const agent of list)
+            if (agent.state !== before[agent.address] && ["permission", "finished", "error"].includes(agent.state))
+                agentMoved(agent);
+    }
+    property bool herdrLoaded: false
+    // The last full record of each terminal from `hc events`, by address.
+    property var details: ({})
+    function takeEvent(line) {
+        try {
+            const event = JSON.parse(line);
+            const next = Object.assign({}, details);
+            for (const terminal of event.terminals ?? [])
+                if (terminal?.address)
+                    next[terminal.address] = terminal;
+            details = next;
+        } catch (failure) {}
+        relist.restart();
+    }
+    function agentMoved(agent) {
+        if (consoleOpen)
+            return;
+        unseen = true;
+        noticeTerminal = agent.address;
+        const key = agent.state === "permission" ? "assistant.notices.agentPermission" : agent.state === "finished" ? "assistant.notices.agentFinished" : "assistant.notices.agentError";
+        notify(I18n.tr(key, [agent.name]), [agent.msg, agent.where].filter(part => part !== "").join("\n"));
+    }
     function hideConsole(screenName) {
         Quickshell.execDetached(["hyprctl", "eval", "if desktop_console_hide then desktop_console_hide(" + JSON.stringify(screenName) + ") end"]);
     }
@@ -83,7 +197,7 @@ Singleton {
         notifier.running = true;
     }
     function stateMoved() {
-        if (consoleOpen || !running || !["permission", "finished", "error"].includes(state))
+        if (herdr || consoleOpen || !running || !["permission", "finished", "error"].includes(state))
             return;
         unseen = true;
         if (state === "permission")
@@ -105,18 +219,62 @@ Singleton {
         id: notifier
         property string title
         property string body
-        command: ["notify-send", "--wait", "--app-name=" + I18n.tr("assistant.claude"), "--app-icon=desktopai", "--hint=string:desktop-entry:desktop-ai", "--action=default=" + I18n.tr("assistant.openConsole"), "--action=open=" + I18n.tr("assistant.openConsole"), title, body]
+        command: ["notify-send", "--wait", "--app-name=" + (root.herdr ? "Herdr" : I18n.tr("assistant.claude")), "--app-icon=" + (root.herdr ? "herdr-app" : "desktopai"), "--hint=string:desktop-entry:desktop-ai", "--action=default=" + I18n.tr("assistant.openConsole"), "--action=open=" + I18n.tr("assistant.openConsole"), title, body]
         stdout: StdioCollector {
             onStreamFinished: {
                 if (["default", "open"].includes(text.trim()))
-                    root.showConsole();
+                    root.herdr ? root.showAgent(root.noticeTerminal) : root.showConsole();
             }
         }
     }
     Process {
         id: probe
         command: ["sh", "-c", "PATH=\"$HOME/.local/bin:$PATH\" command -v claude"]
-        onExited: code => root.available = code === 0
+        onExited: code => root.claude = code === 0
+    }
+    // herdr: both programs, unless DESKTOP_AI_CONSOLE=kitty keeps the Kitty console (desktop-ai decides alike).
+    Process {
+        id: herdrProbe
+        command: ["sh", "-c", "[ \"${DESKTOP_AI_CONSOLE:-}\" != kitty ] && PATH=\"$HOME/.local/bin:$PATH\" command -v herdr-core >/dev/null && PATH=\"$HOME/.local/bin:$PATH\" command -v herdr-app >/dev/null"]
+        onExited: code => {
+            root.herdr = code === 0;
+            if (root.herdr) {
+                events.running = true;
+                lister.running = true;
+            }
+        }
+    }
+    // Each change herdr-core reports asks for the whole list again, at most every 150 ms.
+    Process {
+        id: events
+        command: ["sh", "-c", "PATH=\"$HOME/.local/bin:$PATH\" exec herdr-core events --json"]
+        stdout: SplitParser {
+            onRead: line => root.takeEvent(line)
+        }
+        // The stream ends when herdr-core restarts or updates: followed again a little later.
+        onExited: if (root.herdr)
+            reconnect.restart()
+    }
+    Timer {
+        id: reconnect
+        interval: 3000
+        onTriggered: {
+            events.running = true;
+            relist.restart();
+        }
+    }
+    Timer {
+        id: relist
+        interval: 150
+        onTriggered: if (!lister.running)
+            lister.running = true
+    }
+    Process {
+        id: lister
+        command: ["sh", "-c", "PATH=\"$HOME/.local/bin:$PATH\" exec herdr-core ls --json"]
+        stdout: StdioCollector {
+            onStreamFinished: root.takeAgents(text)
+        }
     }
     FileView {
         path: root.runtimeDir + "/agent.json"
@@ -174,5 +332,6 @@ Singleton {
     Component.onCompleted: {
         Hyprland.refreshMonitors();
         probe.running = true;
+        herdrProbe.running = true;
     }
 }

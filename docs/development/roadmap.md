@@ -117,6 +117,7 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 
 ### AI assistant (Claude Code)
 
+- [x] Any coding agent through herdr (#2, part 1, 2026-11-07): with herdr installed the console is the Herdr app and the state comes from herdr-core (`hc events` / `hc ls`) for every agent it recognises; without it, Claude Code and its hooks as before. Next: choosing the agent without herdr, modular; an optional installer profile for herdr.
 - [x] The Herdr app follows the desktop theme (#2, part 2, 2026-11-07): `theme.py` writes `themes/desktop.json` and the theme and fonts in its `settings.json`, keeping what is picked in Herdr; layouts with fixed colors (Terminals) need a copy without them.
 
 - [x] `SUPER + A` toggles a floating Kitty window (`--class desktop-ai`) running `claude` on the special workspace `ai`; launched on first use, kept alive afterwards.

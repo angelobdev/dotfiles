@@ -20,9 +20,12 @@
     "openConsole": "Apri console",
     "hideConsole": "Nascondi console",
     "notices": {
-      "permission": "Claude chiede un permesso",
+      "agentError": "%1 si è fermato con un errore",
+      "agentFinished": "%1 ha finito",
+      "agentPermission": "%1 ha bisogno di te",
+      "error": "Claude si è fermato con un errore",
       "finished": "Claude ha finito",
-      "error": "Claude si è fermato con un errore"
+      "permission": "Claude chiede un permesso"
     },
     "plans": {
       "max": "Max %1x",
@@ -53,7 +56,9 @@
       "resetsOn": "Si azzera %1",
       "updatedAt": "Aggiornato alle %1",
       "updatedOn": "Aggiornato %1"
-    }
+    },
+    "agents": "Agenti",
+    "noAgents": "Nessun agente in esecuzione. Apri la console per avviarne uno in Herdr."
   },
   "audio": {
     "devices": "Ingressi e uscite",

@@ -7,6 +7,8 @@
 
 local share = 0.6
 local gap = 8
+-- The console windows: Claude Code in Kitty (desktop-ai), or the Herdr app when herdr is installed.
+local CONSOLE = { ["desktop-ai"] = true, ["herdr-app"] = true }
 
 -- The logical height of a monitor below the bar, whatever the docked keyboard reserves at the bottom.
 local function screen_height(monitor)
@@ -62,11 +64,11 @@ function desktop_console_hide(name)
     end
 end
 
--- desktop-ai, when Claude was moved out of the console: back in, tiled again, and the console shown on
+-- desktop-ai, when the console window was moved out of it: back in, tiled again, and the console shown on
 -- the focused monitor.
 function desktop_console_show()
     for _, window in ipairs(hl.get_windows()) do
-        if window.class == "desktop-ai" and window.workspace and window.workspace.name ~= "special:ai" then
+        if CONSOLE[window.class] and window.workspace and window.workspace.name ~= "special:ai" then
             hl.dispatch(hl.dsp.window.move({ workspace = "special:ai", follow = false, window = window }))
             if window.floating then
                 hl.dispatch(hl.dsp.window.float({ action = "unset", window = window }))
@@ -98,9 +100,9 @@ function desktop_console_move()
 end
 
 -- A window born in the open console (Super + Return, the launcher, the dock) belongs on the workspace
--- under it. Claude itself, and windows moved in on purpose, stay.
+-- under it. The console windows themselves, and windows moved in on purpose, stay.
 hl.on("window.open", function(window)
-    if not window or window.class == "desktop-ai" or not window.workspace
+    if not window or CONSOLE[window.class] or not window.workspace
         or window.workspace.name ~= "special:ai" then
         return
     end
