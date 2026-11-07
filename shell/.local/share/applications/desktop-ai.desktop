@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=AI assistant
-Comment=Claude Code with voice dictation
+Comment=Coding agent in the drop-down console
 Exec=desktop-ai
 TryExec=desktop-ai
 Icon=desktopai
@@ -8,4 +8,4 @@ Terminal=false
 Type=Application
 StartupWMClass=desktop-ai
 Categories=Utility;
-Keywords=claude;assistant;ai;chat;voice;
+Keywords=antigravity;agy;claude;codex;gemini;opencode;assistant;ai;chat;voice;

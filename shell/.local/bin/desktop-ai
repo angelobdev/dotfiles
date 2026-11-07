@@ -1,19 +1,77 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Hyprland's exec PATH does not include ~/.local/bin, where the Claude Code installer puts `claude`.
+# Hyprland's exec PATH may not include ~/.local/bin, where user-installed coding agents live.
 export PATH="$HOME/.local/bin:$PATH"
-case "${1:-toggle}" in
-    toggle)
-        # One press at a time, so a second press before the window maps sees the first one's launch.
-        exec 9>"${XDG_RUNTIME_DIR:-/tmp}/desktop-ai.lock"
-        flock 9
-        starting="${XDG_RUNTIME_DIR:-/tmp}/desktop-ai.starting"
-        # Where Claude runs: in the console (toggle it), moved out of it (bring it back), or not yet.
-        place="$(hyprctl clients -j | python3 -c '
+
+helper="$HOME/.local/libexec/desktop/agent.py"
+runtime="${XDG_RUNTIME_DIR:-/tmp}"
+lock="$runtime/desktop-ai.lock"
+starting="$runtime/desktop-ai.starting"
+socket="$runtime/desktop-ai-kitty"
+repo="$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)"
+
+window_place() {
+    hyprctl clients -j | python3 -c '
 import json, sys
 names = [c.get("workspace", {}).get("name", "") for c in json.load(sys.stdin) if c.get("class") == "desktop-ai"]
 print("" if not names else "inside" if "special:ai" in names else "outside")
-')"
+'
+}
+
+launch_console() {
+    local explicit_dir="${1:-}"
+    mapfile -d '' -t resolved < <(python3 - "$helper" "$explicit_dir" "$repo" <<'PY'
+import json, os, subprocess, sys
+from pathlib import Path
+info = json.loads(subprocess.check_output([sys.executable, sys.argv[1], 'launch', sys.argv[2], sys.argv[3]], text=True))
+items = [
+    '1' if info.get('available') else '0',
+    info.get('agent') or '',
+    info.get('name') or '',
+    info.get('directory') or '',
+    *(info.get('command') or ()),
+]
+if info.get('available') and info.get('command'):
+    runtime = Path(os.environ.get('XDG_RUNTIME_DIR') or f'/run/user/{os.getuid()}') / 'desktop-shell'
+    runtime.mkdir(parents=True, exist_ok=True)
+    session_file = runtime / 'agent-session.json'
+    tmp = session_file.with_suffix('.tmp')
+    tmp.write_text(json.dumps({
+        'agent': info.get('agent') or '',
+        'name': info.get('name') or '',
+        'directory': info.get('directory') or '',
+    }, ensure_ascii=False) + '\n', encoding='utf-8')
+    tmp.replace(session_file)
+sys.stdout.write('\0'.join(items) + '\0')
+PY
+    )
+    local available="${resolved[0]:-0}"
+    local agent_name="${resolved[2]:-}"
+    local directory="${resolved[3]:-$HOME}"
+    local cmd=("${resolved[@]:4}")
+    if [[ $available != 1 || ${#cmd[@]} -eq 0 ]]; then
+        if [[ -n $agent_name ]]; then
+            exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify assistant.title assistant.errors.agentMissing "$agent_name"
+        fi
+        exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify assistant.title assistant.errors.anyMissing
+    fi
+    [[ -d $directory ]] || directory="$HOME"
+    # The desktop-ai window rule places the window on the special workspace "ai".
+    touch "$starting"
+    # Remote control on a socket of this window only (desktop-area ask types an image path at the prompt);
+    # the runtime directory is the user's alone, and other kitty windows keep it off.
+    rm -f "$socket"
+    # Without the lock (9>&-): kitty would hold it, and every later press would wait for its lifetime.
+    setsid -f kitty --class desktop-ai --directory "$directory" -o allow_remote_control=socket-only \
+        --listen-on "unix:$socket" -e "${cmd[@]}" >/dev/null 2>&1 9>&-
+}
+
+case "${1:-toggle}" in
+    toggle)
+        # One press at a time, so a second press before the window maps sees the first one's launch.
+        exec 9>"$lock"
+        flock 9
+        place="$(window_place)"
         if [[ $place == inside ]]; then
             exec hyprctl dispatch 'hl.dsp.workspace.toggle_special("ai")'
         elif [[ $place == outside ]]; then
@@ -23,43 +81,54 @@ print("" if not names else "inside" if "special:ai" in names else "outside")
         if [[ -e $starting ]] && (( $(date +%s) - $(stat -c %Y "$starting") < 10 )); then
             exit 0
         fi
-        if ! command -v claude >/dev/null; then
-            exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify assistant.title assistant.errors.claudeMissing
-        fi
-        # Session-only settings: hold-Space dictation, and one language for dictation and replies
-        # (the system locale unless DESKTOP_AI_LANGUAGE names another, e.g. "italian"). agent.py gets the
-        # status line (usage for the shell panel) and the hooks that tell the shell what Claude is doing;
-        # they run async, so they never hold Claude up, except SessionEnd, which must finish before exit.
-        language="${DESKTOP_AI_LANGUAGE:-$(python3 "$HOME/.local/libexec/desktop/i18n.py" assistant.language)}"
-        settings="$(python3 -c '
-import json, sys
-language, helper = sys.argv[1:]
-command = "python3 " + json.dumps(helper)
-def hook(asynchronous=True, matcher=None):
-    entry = {"hooks": [dict({"type": "command", "command": command + " hook", "timeout": 5},
-                            **({"async": True} if asynchronous else {}))]}
-    return [dict(entry, matcher=matcher) if matcher else entry]
-hooks = {name: hook() for name in ("SessionStart", "UserPromptSubmit", "PermissionRequest", "PostToolUse",
-                                   "PostToolUseFailure", "PermissionDenied", "Stop", "StopFailure")}
-hooks.update(Notification=hook(matcher="permission_prompt"), SessionEnd=hook(asynchronous=False))
-print(json.dumps({"voice": {"enabled": True, "mode": "hold"}, "language": language,
-                  "statusLine": {"type": "command", "command": command + " statusline", "padding": 0},
-                  "disableAllHooks": False, "hooks": hooks}))
-' "$language" "$HOME/.local/libexec/desktop/agent.py")"
-        # The session starts in the dotfiles repository (this script is a Stow link into it), so Claude
-        # reads its .claude/CLAUDE.md; DESKTOP_AI_DIRECTORY names another folder, $HOME is the fallback.
-        repo="$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)"
-        directory="${DESKTOP_AI_DIRECTORY:-$repo}"
-        [[ -d $directory ]] || directory="$HOME"
-        # The desktop-ai window rule places the window on the special workspace "ai".
-        touch "$starting"
-        # Remote control on a socket of this window only (desktop-area ask types an image path at the prompt);
-        # the runtime directory is the user's alone, and other kitty windows keep it off.
-        socket="${XDG_RUNTIME_DIR:-/tmp}/desktop-ai-kitty"
-        rm -f "$socket"
-        # Without the lock (9>&-): kitty would hold it, and every later press would wait for its lifetime.
-        setsid -f kitty --class desktop-ai --directory "$directory" -o allow_remote_control=socket-only \
-            --listen-on "unix:$socket" -e claude --settings "$settings" >/dev/null 2>&1 9>&-
+        launch_console ""
         ;;
-    *) echo 'Usage: desktop-ai [toggle]' >&2; exit 2 ;;
+    restart)
+        shift
+        explicit_dir=""
+        if [[ "${1:-}" == "--directory" && $# -ge 2 ]]; then
+            explicit_dir="$2"
+        fi
+        exec 9>"$lock"
+        flock 9
+        if [[ -n $(window_place) ]]; then
+            hyprctl dispatch 'closewindow class:^desktop-ai$' >/dev/null 2>&1 || true
+            for _ in {1..40}; do
+                [[ -z $(window_place) ]] && break
+                sleep 0.05
+            done
+        fi
+        rm -f "$starting" "$runtime/desktop-shell/agent.json" "$runtime/desktop-shell/agent-session.json"
+        launch_console "$explicit_dir"
+        ;;
+    here)
+        active_pid="$(hyprctl activewindow -j 2>/dev/null | python3 -c 'import json, sys
+try: print(json.load(sys.stdin).get("pid") or "")
+except Exception: print("")')"
+        target_dir=""
+        if [[ -n $active_pid ]]; then
+            target_dir="$(python3 "$helper" cwd "$active_pid" || true)"
+        fi
+        if [[ -z $target_dir ]]; then
+            exec "$0" toggle
+        fi
+        same="$(python3 - "$helper" "$runtime/desktop-shell/agent-session.json" "$target_dir" <<'PY'
+import json, subprocess, sys
+from pathlib import Path
+session_path = Path(sys.argv[2])
+try:
+    session = json.loads(session_path.read_text(encoding='utf-8'))
+except Exception:
+    session = {}
+probe = json.loads(subprocess.check_output([sys.executable, sys.argv[1], 'probe'], text=True))
+print('1' if session.get('directory') == sys.argv[3] and session.get('agent') == probe.get('agent') else '0')
+PY
+        )"
+        place="$(window_place)"
+        if [[ -n $place && $same == 1 ]]; then
+            exec hyprctl eval 'desktop_console_show()'
+        fi
+        exec "$0" restart --directory "$target_dir"
+        ;;
+    *) echo 'Usage: desktop-ai [toggle|restart [--directory DIR]|here]' >&2; exit 2 ;;
 esac

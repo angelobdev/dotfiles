@@ -5,42 +5,72 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import ".."
 
-// The Claude Code assistant (desktop-ai) and its drop-down console, the special workspace "ai" laid out
-// by hypr/config/console.lua: which screen shows it, what Claude is doing (the hooks of desktop-ai write
-// agent.json through agent.py), the subscription usage of its status line, and the notifications sent
-// while the console is hidden.
+// The AI coding assistant (desktop-ai) and its drop-down console, the special workspace "ai" laid out
+// by hypr/config/console.lua: which agent is configured or detected, which screen shows the console, what
+// the agent is doing (agent.json from hooks or session watching in agent.py), optional rate-limit usage,
+// and notifications sent while the console is hidden.
 Singleton {
     id: root
     readonly property string launcher: Quickshell.env("HOME") + "/.local/bin/desktop-ai"
+    readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/agent.py"
     readonly property string runtimeDir: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/desktop-shell"
     readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-shell"
-    // Claude Code installed (desktop-ai adds ~/.local/bin, where its installer puts it).
+    readonly property string configuredAgent: Config.aiAgent
+    readonly property string configuredDirectory: Config.aiDirectory
     property bool available: false
+    property bool probeLoaded: false
+    property string probedAgent: ""
+    property string probedName: ""
+    property string autoAgent: ""
+    property string autoName: ""
+    property var installedAgents: []
+    property bool agyStatusline: false
+    property bool agyStatuslineCustom: false
+    property var sessionRecord: ({})
     readonly property bool running: Hyprland.toplevels.values.some(t => (t.wayland?.appId || t.lastIpcObject?.class) === "desktop-ai")
+    readonly property string sessionAgent: running ? ((sessionRecord.agent || record.agent) ?? "") : ""
+    readonly property string sessionName: running ? ((sessionRecord.name || record.name) ?? "") : ""
+    readonly property string sessionDirectory: running ? (sessionRecord.directory ?? "") : ""
+    readonly property string watchedAgent: sessionAgent !== "" ? sessionAgent : probedAgent
+    readonly property string agent: running && sessionAgent !== "" ? sessionAgent : probedAgent
+    readonly property string name: running && sessionName !== "" ? sessionName : (probedName !== "" ? probedName : I18n.tr("assistant.title"))
+    readonly property bool hasNamedAgent: (running && sessionName !== "") || probedName !== ""
+    readonly property bool needsRestart: running && available && probedAgent !== "" && sessionAgent !== "" && probedAgent !== sessionAgent
     // The screen showing the console, or "" while it is hidden.
     property string consoleScreen: ""
     readonly property bool consoleOpen: consoleScreen !== ""
     property var record: ({})
     // The first read (a shell start) only takes the state: notifications are for changes after it.
     property bool recordLoaded: false
-    // ready, working, permission, finished or error; "" when Claude is not running or reported nothing yet.
+    // ready, working, permission, finished or error; "" when the agent is not running or reported nothing yet.
     readonly property string state: running ? record.state ?? "" : ""
     readonly property string detail: running ? record.detail ?? "" : ""
     readonly property real since: (record.since ?? 0) * 1000
     // Finished, failed or asking while the console was hidden, and not looked at since.
     property bool unseen: false
-    property var usage: ({})
+    property var rawUsage: ({})
+    readonly property var usage: {
+        const recorded = rawUsage.agent ?? "";
+        if (recorded === "" ? agent === "claude" : recorded === agent)
+            return rawUsage;
+        return {};
+    }
     readonly property string plan: {
-        const tier = usage.tier ?? "";
+        const tier = (usage.tier ?? "").toLowerCase();
         const match = /max_(\d+)x/.exec(tier);
         if (match)
             return I18n.tr("assistant.plans.max", [match[1]]);
         if (/max/.test(tier))
             return I18n.tr("assistant.plans.maxPlain");
+        if (/ultra/.test(tier))
+            return I18n.tr("assistant.plans.ultra");
         if (/pro/.test(tier))
             return I18n.tr("assistant.plans.pro");
         return "";
     }
+    readonly property bool hasBuckets: Array.isArray(usage.buckets) && usage.buckets.length > 0
+    readonly property bool hasWindows: (usage.fiveHour !== null && usage.fiveHour !== undefined) || (usage.sevenDay !== null && usage.sevenDay !== undefined)
+    readonly property bool hasLimits: hasBuckets || hasWindows || (agent === "claude" && plan !== "")
     function parse(text) {
         try {
             const data = JSON.parse(text);
@@ -51,6 +81,17 @@ Singleton {
     }
     function toggleConsole() {
         Quickshell.execDetached([launcher]);
+    }
+    function restartConsole() {
+        Quickshell.execDetached([launcher, "restart"]);
+    }
+    function openHere() {
+        Quickshell.execDetached([launcher, "here"]);
+    }
+    function setAgyStatusline(enable) {
+        agyToggle.action = enable ? "on" : "off";
+        agyToggle.running = false;
+        agyToggle.running = true;
     }
     function showConsole() {
         if (!consoleOpen)
@@ -87,11 +128,19 @@ Singleton {
             return;
         unseen = true;
         if (state === "permission")
-            notify(I18n.tr("assistant.notices.permission"), detail);
+            notify(I18n.tr("assistant.notices.permission", [name]), detail);
         else if (state === "finished")
-            notify(I18n.tr("assistant.notices.finished"), detail);
+            notify(I18n.tr("assistant.notices.finished", [name]), detail);
         else
-            notify(I18n.tr("assistant.notices.error"), detail);
+            notify(I18n.tr("assistant.notices.error", [name]), detail);
+    }
+    onConfiguredAgentChanged: {
+        probe.running = false;
+        probe.running = true;
+    }
+    onConfiguredDirectoryChanged: {
+        probe.running = false;
+        probe.running = true;
     }
     onConsoleOpenChanged: {
         if (!consoleOpen)
@@ -105,7 +154,7 @@ Singleton {
         id: notifier
         property string title
         property string body
-        command: ["notify-send", "--wait", "--app-name=" + I18n.tr("assistant.claude"), "--app-icon=desktopai", "--hint=string:desktop-entry:desktop-ai", "--action=default=" + I18n.tr("assistant.openConsole"), "--action=open=" + I18n.tr("assistant.openConsole"), title, body]
+        command: ["notify-send", "--wait", "--app-name=" + root.name, "--app-icon=desktopai", "--hint=string:desktop-entry:desktop-ai", "--action=default=" + I18n.tr("assistant.openConsole"), "--action=open=" + I18n.tr("assistant.openConsole"), title, body]
         stdout: StdioCollector {
             onStreamFinished: {
                 if (["default", "open"].includes(text.trim()))
@@ -115,8 +164,61 @@ Singleton {
     }
     Process {
         id: probe
-        command: ["sh", "-c", "PATH=\"$HOME/.local/bin:$PATH\" command -v claude"]
-        onExited: code => root.available = code === 0
+        command: ["python3", root.helper, "probe"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const info = root.parse(text);
+                root.available = Boolean(info.available);
+                root.probedAgent = info.agent ?? "";
+                root.probedName = info.name ?? "";
+                root.autoAgent = info.autoAgent ?? "";
+                root.autoName = info.autoName ?? "";
+                root.installedAgents = Array.isArray(info.installed) ? info.installed : [];
+                root.agyStatusline = Boolean(info.agyStatusline);
+                root.agyStatuslineCustom = Boolean(info.agyStatuslineCustom);
+                root.probeLoaded = true;
+            }
+        }
+        onExited: code => {
+            if (code !== 0) {
+                root.available = false;
+                root.probeLoaded = true;
+            }
+        }
+    }
+    Process {
+        id: agyToggle
+        property string action: "on"
+        command: ["python3", root.helper, "agy-statusline", action]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const info = root.parse(text);
+                if (info.enabled !== undefined)
+                    root.agyStatusline = Boolean(info.enabled);
+                if (info.custom !== undefined)
+                    root.agyStatuslineCustom = Boolean(info.custom);
+                probe.running = false;
+                probe.running = true;
+            }
+        }
+    }
+    // Non-Claude agents do not get per-window --settings hooks: agent.py watches their session files while the
+    // console window exists, pinned to the harness of the running window, and removes agent.json when it closes.
+    Process {
+        id: watcher
+        running: root.running && root.probeLoaded && root.watchedAgent !== "" && root.watchedAgent !== "claude"
+        command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch", root.watchedAgent])
+        stderr: SplitParser {
+            onRead: line => console.warn("agent.py:", line)
+        }
+    }
+    FileView {
+        path: root.runtimeDir + "/agent-session.json"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: root.sessionRecord = root.parse(text())
+        onLoadFailed: root.sessionRecord = {}
     }
     FileView {
         path: root.runtimeDir + "/agent.json"
@@ -141,8 +243,8 @@ Singleton {
         watchChanges: true
         printErrors: false
         onFileChanged: reload()
-        onLoaded: root.usage = root.parse(text())
-        onLoadFailed: root.usage = {}
+        onLoaded: root.rawUsage = root.parse(text())
+        onLoadFailed: root.rawUsage = {}
     }
     // activespecial>>WORKSPACE,MONITOR, with an empty workspace when the special one closes.
     Connections {

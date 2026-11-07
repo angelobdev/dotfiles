@@ -30,7 +30,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | --- | --- |
 | `Super + Enter` | Kitty |
 | `Alt + Tab` / `Alt + Shift + Tab` | Window switcher: thumbnails of the windows from the most recently used, on the focused monitor; Tab, Shift + Tab or the arrows move, releasing the left `Alt` (or `Return`) focuses the selected one and moves the pointer onto it, `Esc`, any other key or a click outside cancels, a click on a thumbnail picks it. Windows on special workspaces (the assistant console) are left out |
-| `Super + A` | AI assistant: the drop-down console with Claude Code (hold `Space` to dictate); a click or tap outside closes it |
+| `Super + A` | AI assistant: the drop-down console with the configured coding agent (Antigravity, Claude Code, Codex, Gemini CLI…; hold `Space` to dictate in Claude Code); a click or tap outside closes it |
 | `Super + Shift + A` | Move the active window into the assistant console, or back out |
 | `Super + Q` | Close window |
 | `Super + Space` | Applications |
@@ -44,7 +44,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + Q` | Session menu |
 | `Super + Shift + W` | Choose wallpaper |
 | `Super + Shift + T` | Text from a screen area: select it, its text (OCR, Italian and English) is copied |
-| `Super + Ctrl + A` | Ask Claude about a screen area: select it, the image path is typed at the assistant's prompt and the console opens |
+| `Super + Ctrl + A` | Ask the assistant about a screen area: select it, the image path is typed at the assistant's prompt and the console opens |
 | `Super + .` | Emoji: search by name in the interface language or browse by group, recently used first; Enter or a click pastes it into the window that was focused (Ctrl + V, or Ctrl + Shift + V in a terminal) and leaves it on the clipboard |
 | `Super + Alt + +` / `-` / `0` | Zoom in / out around the pointer (up to 800%) / back to 100%, with an OSD |
 | `Super + Shift + P` | Color picker: click a point (`Esc` cancels); its hex code is copied and named in a notification |

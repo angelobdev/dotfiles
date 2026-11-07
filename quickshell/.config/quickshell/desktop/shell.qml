@@ -199,10 +199,17 @@ ShellRoot {
                 },
                 agent: {
                     available: Agent.available,
+                    agent: Agent.agent,
+                    name: Agent.name,
+                    installed: Agent.installedAgents,
                     running: Agent.running,
+                    needsRestart: Agent.needsRestart,
+                    directory: Agent.sessionDirectory,
+                    agyStatusline: Agent.agyStatusline,
                     console: Agent.consoleScreen,
                     state: Agent.state,
                     unseen: Agent.unseen,
+                    hasLimits: Agent.hasLimits,
                     plan: Agent.plan,
                     usage: Agent.usage
                 },

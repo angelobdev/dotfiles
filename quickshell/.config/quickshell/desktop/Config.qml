@@ -116,6 +116,10 @@ Singleton {
     readonly property string weatherCity: pick("weatherCity", "")
     // Bar: what plays, with play/pause on a click (MPRIS).
     readonly property bool barMedia: pick("barMedia", true)
+    // Coding agent for the Super + A console (antigravity, claude, codex, gemini, opencode, pi, or a command)
+    // and its default working folder; empty picks the first installed agent and the dotfiles repository.
+    readonly property string aiAgent: pick("aiAgent", "")
+    readonly property string aiDirectory: pick("aiDirectory", "")
     // Launcher: files in the home folder below the apps (fd, from three typed characters).
     readonly property bool launcherFiles: pick("launcherFiles", true)
     readonly property var launcherHidden: pick("launcherHidden", ["org.gnome.Settings", "opencascade-draw", "uuctl"])

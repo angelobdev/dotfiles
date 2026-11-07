@@ -7,31 +7,36 @@
   },
   "assistant": {
     "errors": {
-      "claudeMissing": "Claude Code is not installed: see docs/features/ai-assistant.md",
-      "usage": "Usage: agent.py hook|statusline (JSON on stdin, from Claude Code)"
+      "agentMissing": "%1 is not installed: see docs/features/ai-assistant.md",
+      "anyMissing": "No coding agent is installed: see docs/features/ai-assistant.md",
+      "usage": "Usage: agent.py probe|launch|watch|hook|statusline|agy-statusline|image-arg|cwd"
     },
+    "folder": "Folder: %1",
     "language": "english",
     "title": "AI assistant",
     "moveWindow": "AI assistant · move window in or out",
     "statusLine": {
       "context": "context %1%"
     },
-    "claude": "Claude",
     "openConsole": "Open console",
+    "openHere": "Open in active folder",
     "hideConsole": "Hide console",
+    "restartWith": "Restart with %1",
     "notices": {
-      "permission": "Claude is asking for permission",
-      "finished": "Claude has finished",
-      "error": "Claude stopped with an error"
+      "permission": "%1 is asking for permission",
+      "finished": "%1 has finished",
+      "error": "%1 stopped with an error"
     },
     "plans": {
       "max": "Max %1x",
       "maxPlain": "Max",
-      "pro": "Pro"
+      "pro": "Pro",
+      "ultra": "Ultra"
     },
     "states": {
-      "missing": "Claude Code is not installed",
-      "off": "Not running: open the console to start Claude",
+      "anyMissing": "No coding agent is installed",
+      "missing": "%1 is not installed",
+      "off": "Not running: open the console to start %1",
       "ready": "Ready",
       "working": "Working…",
       "permission": "Waiting for your permission",
@@ -40,7 +45,6 @@
     },
     "dayFormat": "ddd",
     "since": "Since %1",
-    "panelTooltip": "Claude",
     "usage": {
       "title": "Usage",
       "titlePlan": "Usage · %1",
@@ -666,9 +670,20 @@
     },
     "hypr": {
       "add": "Add a shortcut",
+      "agent": "Coding agent",
+      "agentAuto": "Automatic",
+      "agentAutoDetected": "Automatic (%1)",
+      "agentDirectory": "Working folder",
+      "agentDirectoryHint": "Default folder for new console sessions; empty opens the dotfiles repository.",
+      "agentGroup": "Agent",
+      "agentHint": "Used when starting a new console session; a custom command can also be set as aiAgent in shell.json.",
+      "agentNotInstalled": "%1 (not installed)",
+      "agyGroup": "Antigravity",
+      "agyStatusline": "Quota and status line",
+      "agyStatuslineHint": "Configures statusLine in ~/.gemini/antigravity-cli/settings.json so Antigravity reports live quota buckets, plan tier, model and context to the bar panel.",
       "assistantGroup": "Language",
       "assistantLanguage": "Dictation and replies",
-      "assistantLanguageHint": "Close the assistant window once for a new session to take it.",
+      "assistantLanguageHint": "Passed to Claude Code for voice dictation and replies; close the assistant window once to apply.",
       "bindsGroup": "Your shortcuts",
       "bindsHint": "Keys as SUPER + SHIFT + B and a command to run. A shortcut is saved once both are valid; hypr.lua can still bind anything else.",
       "command": "Command",
@@ -1001,7 +1016,7 @@
       "session": "Session",
       "colorPicker": "Pick a color",
       "areaText": "Copy text",
-      "areaAsk": "Ask Claude"
+      "areaAsk": "Ask assistant"
     },
     "pages": {
       "apps": "Apps",
@@ -1137,10 +1152,10 @@
     "ocrMissing": "Text recognition needs tesseract: %1",
     "noText": "No text found in that area.",
     "textCopied": "Text copied",
-    "imageCopied": "Area copied for Claude",
+    "imageCopied": "Area copied for the assistant",
     "pasteHint": "Paste it at the prompt with Ctrl + V.",
     "text": "Text from screen area",
-    "ask": "Ask Claude about a screen area"
+    "ask": "Ask the assistant about a screen area"
   },
   "privacy": {
     "title": "Privacy",
