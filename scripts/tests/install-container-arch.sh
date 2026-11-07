@@ -5,13 +5,13 @@
 #   git ls-files -co --exclude-standard -z | tar --null -T - -c | docker run -i --rm archlinux:latest \
 #       bash -c 'mkdir /src && tar -x -C /src && exec bash /src/scripts/tests/install-container-arch.sh'
 #
-# Environment: PROFILES (default core,hardware,tablet,plugins), COMPILE=1 also builds the plugins (slow). apps builds the
+# Environment: PROFILES (default core,hardware,tablet,plugins,herdr), COMPILE=1 also builds the plugins (slow). apps builds the
 # AUR packages with makepkg and gaming enables multilib. The container runs no systemd, so the Flatpak and login
 # steps skip themselves: only a VM covers those.
 set -euo pipefail
 
 source=${1:-/src}
-profiles=${PROFILES:-core,hardware,tablet,plugins}
+profiles=${PROFILES:-core,hardware,tablet,plugins,herdr}
 user=ci
 home=/home/$user
 repo=$home/.dotfiles
@@ -50,6 +50,14 @@ for package in power-profiles-daemon pulseaudio jack2 gnome-keyring; do
         exit 1
     fi
 done
+
+if [[ ,$profiles, == *,herdr,* ]]; then
+    section 'Herdr where its installer puts it'
+    [[ -x $home/.local/bin/herdr-core && $(readlink "$home/.local/bin/hc") == "$home/.local/bin/herdr-core" ]] || { echo 'herdr-core or hc missing' >&2; exit 1; }
+    [[ -x $home/.local/share/herdr-app/herdr-app && -L $home/.local/bin/herdr-app ]] || { echo 'the Herdr app is missing' >&2; exit 1; }
+    grep -qx "Exec=$home/.local/bin/herdr-app" "$home/.local/share/applications/herdr-app.desktop" || { echo 'no Herdr launcher entry' >&2; exit 1; }
+    stat -c '%U %n' "$home/.local/bin/herdr-core" "$home/.local/share/herdr-app"
+fi
 
 section 'A second apply finds nothing to do'
 again=$(as_user ./scripts/install-desktop.py apply --profiles "$profiles")
@@ -128,6 +136,9 @@ printf 'Left by the upgrade and check.sh: %s\n' "$(echo $extra)"
 [[ $(sha256sum </etc/pacman.conf) == $(sha256sum </tmp/pacman.conf-before) ]] || { echo 'pacman.conf not restored' >&2; exit 1; }
 links=$(find "$home" -type l -lname "*.dotfiles/*" | head)
 [[ -z $links ]] || { printf 'Links left:\n%s\n' "$links" >&2; exit 1; }
+for path in .local/bin/herdr-core .local/bin/hc .local/bin/herdr-app .local/share/herdr-app .local/share/applications/herdr-app.desktop; do
+    [[ ! -e $home/$path && ! -L $home/$path ]] || { echo "~/$path left" >&2; exit 1; }
+done
 [[ ! -e $home/.cache/dotfiles/aur ]] || { echo 'AUR checkouts left' >&2; exit 1; }
 grep -q '"uninstalled": true' "$home/.local/state/dotfiles/install.json" || { echo 'install record not marked as undone' >&2; exit 1; }
 again=$(as_user ./scripts/install-desktop.py apply --uninstall)

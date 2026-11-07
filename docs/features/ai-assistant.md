@@ -26,7 +26,7 @@ A descriptor has `name`, `binary` (the program that tells it is installed, looke
 
 ## With herdr: any coding agent
 
-With [herdr](https://herdr.dev/) installed (`herdr-app` and `herdr-core` on the `PATH` or in `~/.local/bin`), the console is the **Herdr app** instead of a Kitty window running Claude Code, and the desktop follows **every agent herdr recognises** (Claude Code, Codex, opencode, Cursor and others), several at once:
+With [herdr](https://herdr.dev/) installed (`herdr-app` and `herdr-core` on the `PATH` or in `~/.local/bin`: the installer's optional `herdr` profile puts them there, [installation](../guide/installation.md#automated-installation)), the console is the **Herdr app** instead of a Kitty window running Claude Code, and the desktop follows **every agent herdr recognises** (Claude Code, Codex, opencode, Cursor and others), several at once:
 
 - `Super + A` drops the Herdr app down as the console and, when herdr runs no agent yet, starts the primary agent in a new Herdr terminal (the `desktop-ai-herdr` window rule puts its window in the special workspace `ai`; a Herdr window opened before is moved in); its spaces, tabs and agents list are herdr's. Agents keep running when the console hides or the window closes: herdr-core owns them.
 - The state comes from herdr-core: the shell follows `hc events --json` and reads `hc ls --json` after each change (`services/Agent.qml`). herdr's `blocked` is shown as waiting for you, `done` as finished, `error`, `working` and `idle` as they are, with herdr's message. The bar dot follows the agent needing attention first; the panel lists every agent with its herdr space, and a click shows that agent in the console (`herdr-app do terminal.show`).

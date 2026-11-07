@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """install-desktop.py must preview without changing anything, repeat safely, and refuse what it does not know."""
 import atexit
+import hashlib
 import importlib.util
+import io
 import json
 from pathlib import Path
 import subprocess
 import sys
+import tarfile
 import tempfile
 import tomllib
 import unittest
@@ -27,7 +30,7 @@ installer.RECORD = installer.STATE / 'install.json'
 installer.INTERFACE = installer.STATE / 'interface-before-theme.ini'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
-PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'firmware', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes'}
+PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'firmware', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes', 'archives'}
 TABLE = {
     'repos': {'one': {'kind': 'copr', 'name': 'a/b'}},
     'core': {'repos': ['one'], 'packages': ['a', 'b'], 'exclude': ['tour'], 'services': ['s.service'], 'user_services': ['u.service'],
@@ -120,7 +123,7 @@ class ManifestTests(unittest.TestCase):
         self.assertIn('oo7-daemon.service', self.fedora['core']['user_services'])
 
     def test_personal_apps_are_opt_in(self):
-        for profile in ('apps', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs'):
+        for profile in ('apps', 'herdr', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs'):
             self.assertNotIn(profile, installer.DEFAULT_PROFILES.split(','))
 
     def test_no_flatpak_is_installed_for_you(self):
@@ -281,8 +284,9 @@ class StepTests(unittest.TestCase):
         distro = fake_distro()
         with mock.patch('subprocess.run') as run:
             done = installer.run_steps(plan(distro), True)
-        # All but verify (its commands are found here), firmware (FirmwareTests covers it) and aur (test_install_arch.py).
-        self.assertEqual(done, len(installer.STEPS) - 3)
+        # All but verify (its commands are found here), firmware (FirmwareTests covers it), aur (test_install_arch.py)
+        # and archives (ArchiveTests).
+        self.assertEqual(done, len(installer.STEPS) - 4)
         run.assert_not_called()
         for change in (distro.sudo, distro.add_repo, distro.upgrade, distro.install, distro.write_file, distro.auth_apply):
             change.assert_not_called()
@@ -1117,6 +1121,137 @@ class ClonePinTests(unittest.TestCase):
     def test_the_manifest_clones_say_what_they_follow(self):
         tracks = {clone['path'].rsplit('/', 1)[-1]: clone.get('track') for clone in MANIFEST['fedora']['core']['clones']}
         self.assertEqual(tracks, {'powerlevel10k': None, 'zsh-autocomplete': 'tags'})
+
+
+def tarball(members):
+    # A release archive in memory: {name: (content, mode)}, folders as their files' parents.
+    data = io.BytesIO()
+    with tarfile.open(fileobj=data, mode='w:gz') as archive:
+        for name, (content, mode) in members.items():
+            info = tarfile.TarInfo(name)
+            info.size, info.mode = len(content), mode
+            archive.addfile(info, io.BytesIO(content))
+    return data.getvalue()
+
+
+class ArchiveTests(unittest.TestCase):
+    APP = tarball({'herdr-app/herdr-app': (b'#!/bin/sh\n', 0o755), 'herdr-app/herdr-app.svg': (b'<svg/>', 0o644)})
+    CORE = tarball({'herdr-core': (b'#!/bin/sh\n', 0o755), 'LICENSE': (b'Apache', 0o644)})
+
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.home = Path(folder.name)
+        self.items = [dict(item) for item in MANIFEST['fedora']['herdr']['archives']]
+        self.items[0]['sha256'] = {'x86_64': hashlib.sha256(self.CORE).hexdigest(), 'aarch64': '0' * 64}
+        self.items[1]['sha256'] = {'x86_64': hashlib.sha256(self.APP).hexdigest(), 'aarch64': '0' * 64}
+        self.plan = installer.Plan(fake_distro(), '45', {'herdr': {'archives': self.items}}, [], ('herdr',), record={})
+        self.fetched = []
+        for patcher in (mock.patch.object(installer.Path, 'home', return_value=self.home),
+                        mock.patch.object(installer.platform, 'machine', return_value='x86_64'),
+                        mock.patch.object(installer.urllib.request, 'urlopen', side_effect=self.urlopen)):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def urlopen(self, url, timeout=None):
+        self.fetched.append(url)
+        return io.BytesIO(self.CORE if '/core/' in url else self.APP)
+
+    def apply(self):
+        items = installer.archives_pending(self.plan)
+        installer.archives_remember(self.plan, items, self.plan.record)
+        installer.archives_apply(self.plan, items)
+
+    def test_the_manifest_archives_are_complete(self):
+        for distro in ('fedora', 'arch'):
+            for item in MANIFEST[distro]['herdr']['archives']:
+                self.assertEqual(sorted(item['sha256']), ['aarch64', 'x86_64'])
+                for digest in item['sha256'].values():
+                    self.assertRegex(digest, '^[0-9a-f]{64}$')
+                self.assertTrue(item['url'].startswith('https://releases.herdr.dev/') and '{version}' in item['url'] and '{arch}' in item['url'])
+                for path in installer.archive_paths(item) + list(item.get('links', {}).values()):
+                    self.assertFalse(path.startswith(('/', '~')) or '..' in path, path)
+        self.assertEqual(MANIFEST['fedora']['herdr'], MANIFEST['arch']['herdr'])
+
+    def test_unpacked_where_the_herdr_installers_put_it(self):
+        self.assertEqual(installer.archives_pending(self.plan), ['herdr-core 0.1.18', 'herdr-app 0.1.13'])
+        self.apply()
+        self.assertEqual(self.fetched, ['https://releases.herdr.dev/core/0.1.18/herdr-core-linux-x86_64.tar.gz',
+                                        'https://releases.herdr.dev/app/0.1.13/herdr-app-linux-x86_64.tar.gz'])
+        self.assertTrue((self.home / '.local/bin/herdr-core').stat().st_mode & 0o100)
+        self.assertEqual((self.home / '.local/bin/hc').readlink(), self.home / '.local/bin/herdr-core')
+        self.assertEqual((self.home / '.local/bin/herdr-app').resolve(), self.home / '.local/share/herdr-app/herdr-app')
+        self.assertTrue((self.home / '.local/share/icons/hicolor/scalable/apps/herdr-app.svg').is_file())
+        entry = (self.home / '.local/share/applications/herdr-app.desktop').read_text()
+        self.assertTrue(entry.startswith('[Desktop Entry]\n'))
+        self.assertIn(f'Exec={self.home}/.local/bin/herdr-app\n', entry)
+        self.assertFalse(list(self.home.rglob('*.new')))
+        # Installed: what it updates by itself is never taken back.
+        self.assertEqual(installer.archives_pending(self.plan), [])
+
+    def test_what_is_there_stays(self):
+        (self.home / '.local/bin').mkdir(parents=True)
+        (self.home / '.local/bin/hc').write_text('another hc')
+        (self.home / '.local/share/herdr-app').mkdir(parents=True)
+        self.assertEqual(installer.archives_pending(self.plan), ['herdr-core 0.1.18'])
+        self.apply()
+        self.assertEqual((self.home / '.local/bin/hc').read_text(), 'another hc')
+        self.assertEqual(self.plan.record['archives'], ['.local/bin/herdr-core'])
+
+    def test_a_download_that_does_not_match_installs_nothing(self):
+        self.items[0]['sha256']['x86_64'] = '1' * 64
+        with self.assertRaises(SystemExit):
+            installer.archives_apply(self.plan, ['herdr-core 0.1.18'])
+        self.assertFalse((self.home / '.local/bin').exists())
+
+    def test_no_build_for_this_machine_is_a_warning(self):
+        with mock.patch.object(installer.platform, 'machine', return_value='riscv64'):
+            self.assertEqual(installer.archives_pending(self.plan), [])
+            self.assertEqual(installer.archives_unsupported(self.plan), ['herdr-core', 'herdr-app'])
+
+    def test_uninstall_removes_what_apply_made(self):
+        (self.home / '.local/share/applications').mkdir(parents=True)
+        (self.home / '.local/share/applications/herdr-app.desktop').write_text('my own')
+        self.apply()
+        made = self.plan.record['archives']
+        self.assertNotIn('.local/share/applications/herdr-app.desktop', made)
+        self.assertEqual(installer.unarchives_pending(self.plan), made)
+        installer.unarchives_apply(self.plan, made)
+        self.assertEqual(sorted(str(path.relative_to(self.home)) for path in self.home.rglob('*') if path.is_file()),
+                         ['.local/share/applications/herdr-app.desktop'])
+        self.assertEqual(installer.unarchives_pending(self.plan), [])
+
+    def latest(self, version, arch_url=None):
+        targets = {f'linux-{arch}': {'url': arch_url or f'https://releases.herdr.dev/app/{version}/herdr-app-linux-{arch}.tar.gz',
+                                     'sha256': arch[0] * 64} for arch in ('x86_64', 'aarch64')}
+        return io.BytesIO(json.dumps({'version': version, 'targets': targets}).encode())
+
+    def test_a_newer_release_is_a_pin_with_its_hashes(self):
+        item = MANIFEST['fedora']['herdr']['archives'][1]
+        with mock.patch.object(installer.urllib.request, 'urlopen', return_value=self.latest('0.2.0')):
+            pin = installer.newer_pin('archives', item)
+        self.assertEqual((pin.name, pin.old, pin.new, pin.label), ('herdr-app', '0.1.13', '0.2.0', '0.1.13 -> 0.2.0'))
+        self.assertEqual(pin.hashes, {'x86_64': 'x' * 64, 'aarch64': 'a' * 64})
+        self.assertEqual(pin.url, 'https://github.com/herdrdev/herdr-app/releases')
+        with mock.patch.object(installer.urllib.request, 'urlopen', return_value=self.latest('0.1.13')):
+            self.assertIsNone(installer.newer_pin('archives', item))
+        # A download moved elsewhere, or no answer: not a pin to write.
+        with mock.patch.object(installer.urllib.request, 'urlopen', return_value=self.latest('0.2.0', 'https://elsewhere/x.tar.gz')):
+            self.assertIs(installer.newer_pin('archives', item), False)
+        with mock.patch.object(installer.urllib.request, 'urlopen', side_effect=OSError('offline')):
+            self.assertIs(installer.newer_pin('archives', item), False)
+
+    def test_repin_moves_the_archive_on_both_distributions(self):
+        text = (REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8')
+        pin = installer.Pin('archives', 'herdr-app', '0.1.13', '0.2.0', '', '', '', '', {'x86_64': 'e' * 64, 'aarch64': 'f' * 64})
+        moved = tomllib.loads(installer.apply_pin(text, pin))
+        for distro in ('fedora', 'arch'):
+            core, app = moved[distro]['herdr']['archives']
+            self.assertEqual((app['version'], app['sha256']), ('0.2.0', {'x86_64': 'e' * 64, 'aarch64': 'f' * 64}))
+            self.assertEqual(app['entries'], MANIFEST[distro]['herdr']['archives'][1]['entries'])
+            self.assertEqual(core, MANIFEST[distro]['herdr']['archives'][0])
+        self.assertEqual(len(installer.pin_entries([table for table in MANIFEST.values() if isinstance(table, dict)])),
+                         len(installer.pin_entries([MANIFEST['fedora']])) + len(MANIFEST['arch']['apps']['aur']))
 
 
 class AutostartTests(unittest.TestCase):

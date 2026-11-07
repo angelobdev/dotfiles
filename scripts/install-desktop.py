@@ -17,13 +17,15 @@ import re
 import shutil
 import subprocess
 import sys
+import tarfile
+import tempfile
 import tomllib
 import urllib.parse
 import urllib.request
 
 REPO = Path(__file__).resolve().parent.parent
 INSTALL = REPO / 'scripts/install'
-PROFILES = ('core', 'hardware', 'tablet', 'plugins', 'apps', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs')
+PROFILES = ('core', 'hardware', 'tablet', 'plugins', 'apps', 'herdr', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs')
 # On a 2-in-1 (touch_hardware) tablet joins them: default_profiles().
 DEFAULT_PROFILES = 'core,hardware,plugins'
 MIN_FREE = 30 * 2**30
@@ -235,6 +237,82 @@ def clones_apply(plan, paths):
     for item in merged(plan, 'clones'):
         if item['path'] in paths:
             checkout(clone_path(item), item['repo'], item['commit'])
+
+
+# Release archives: a tarball pinned by version and sha256 per architecture, unpacked into the home as the user, for
+# programs that ship that way and then update themselves (herdr). Only one still missing installs: an update the
+# program made itself is never taken back.
+ARCHES = {'x86_64': 'x86_64', 'amd64': 'x86_64', 'aarch64': 'aarch64', 'arm64': 'aarch64'}
+
+
+def machine():
+    return ARCHES.get(platform.machine().lower(), '')
+
+
+def archive_label(item):
+    return f'{item["name"]} {item["version"]}'
+
+
+def archive_paths(item):
+    # What apply puts in the home: the unpacked files and folders, the links, the written files.
+    return list(item['unpack'].values()) + list(item.get('links', {})) + list(item.get('entries', {}))
+
+
+def archive_missing(item):
+    return not any((Path.home() / path).exists() for path in item['unpack'].values())
+
+
+def archives_pending(plan):
+    return [archive_label(item) for item in merged(plan, 'archives') if machine() in item['sha256'] and archive_missing(item)]
+
+
+def archives_unsupported(plan):
+    return [item['name'] for item in merged(plan, 'archives') if machine() not in item['sha256']]
+
+
+def archive_url(item):
+    return item['url'].format(version=item['version'], arch=machine())
+
+
+def unpack_archive(item):
+    home = Path.home()
+    with tempfile.TemporaryDirectory() as folder:
+        folder = Path(folder)
+        tarball = folder / 'archive.tar.gz'
+        with urllib.request.urlopen(archive_url(item), timeout=60) as response, tarball.open('wb') as out:
+            shutil.copyfileobj(response, out)
+        if sha256(tarball) != item['sha256'][machine()]:
+            sys.exit(f'{archive_label(item)}: the download does not match its sha256 in the manifest.')
+        with tarfile.open(tarball) as archive:
+            archive.extractall(folder / 'unpacked', filter='data')
+        for member, path in item['unpack'].items():
+            # Next to its place first, then renamed into it: never half a program where it runs from.
+            target = home / path
+            staged = target.with_name(target.name + '.new')
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if staged.is_dir():
+                shutil.rmtree(staged)
+            staged.unlink(missing_ok=True)
+            shutil.move(folder / 'unpacked' / member, staged)
+            staged.replace(target)
+    # A link or file already there (a program of the same name, a launcher entry of its own) stays.
+    for link, target in item.get('links', {}).items():
+        path = home / link
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.unlink(missing_ok=True)
+            path.symlink_to(home / target)
+    for path, content in item.get('entries', {}).items():
+        target = home / path
+        if not target.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content.lstrip().replace('{home}', str(home)), encoding='utf-8')
+
+
+def archives_apply(plan, items):
+    for item in merged(plan, 'archives'):
+        if archive_label(item) in items:
+            unpack_archive(item)
 
 
 # The AUR (Arch only): each PKGBUILD at the commit the manifest pins, built by makepkg in a cache of the user.
@@ -608,6 +686,12 @@ def clones_remember(plan, items, record):
     keep(record, 'clones', [path for path in items if not (Path.home() / path).exists()])
 
 
+def archives_remember(plan, items, record):
+    # Only what apply creates; uninstall leaves what was there before.
+    keep(record, 'archives', [path for item in merged(plan, 'archives') if archive_label(item) in items
+                              for path in archive_paths(item) if not os.path.lexists(Path.home() / path)])
+
+
 def aur_remember(plan, items, record):
     # With the other packages: uninstall removes them alike. One installed before, which apply updates, stays.
     keep(record, 'packages', [name for name in (item.split()[0] for item in items) if not plan.distro.installed(name)])
@@ -645,6 +729,7 @@ STEPS = (
     Step('auth', auth_pending, auth_apply, auth_remember),
     Step('stow', stow_pending, stow_apply, stow_remember),
     Step('clones', clones_pending, clones_apply, clones_remember),
+    Step('archives', archives_pending, archives_apply, archives_remember),
     Step('flatpak', flatpak_pending, flatpak_apply, flatpak_remember),
     Step('verify', verify_pending, verify_apply),
     Step('boot', boot_pending, boot_apply, boot_remember),
@@ -780,6 +865,20 @@ def unclones_pending(plan):
 def unclones_apply(plan, paths):
     for path in paths:
         shutil.rmtree(Path.home() / path)
+
+
+def unarchives_pending(plan):
+    # What apply unpacked, as it is now: these programs update themselves, so a newer version goes too.
+    return [path for path in plan.record.get('archives', ()) if os.path.lexists(Path.home() / path)]
+
+
+def unarchives_apply(plan, paths):
+    for path in paths:
+        target = Path.home() / path
+        if target.is_dir() and not target.is_symlink():
+            shutil.rmtree(target)
+        else:
+            target.unlink(missing_ok=True)
 
 
 def unaur_pending(plan):
@@ -1064,6 +1163,7 @@ UNSTEPS = (
     Step('plugins', unplugins_pending, unplugins_apply),
     Step('boot', unboot_pending, unboot_apply),
     Step('clones', unclones_pending, unclones_apply),
+    Step('archives', unarchives_pending, unarchives_apply),
     Step('aur', unaur_pending, unaur_apply),
     Step('stow', unstow_pending, unstow_apply),
     Step('settings', unsettings_pending, unsettings_apply),
@@ -1135,6 +1235,8 @@ def preflight_warnings(plan):
             warnings.append(f'{item["purpose"]} needs {Path(item["target"]).name} ({item["source"]}): {where}.')
     for path in clones_kept(plan):
         warnings.append(f'~/{path} is there already and is not a clone without local changes: it is left alone.')
+    for name in archives_unsupported(plan):
+        warnings.append(f'{name} has no build for {platform.machine()}: it is left out.')
     return warnings
 
 
@@ -1238,10 +1340,11 @@ def post(plan):
         print('  ' + note)
 
 
-# Pins: manifest entries fixed to a commit, AUR packages and clones. Newer is the AUR's latest commit, a clone's
-# latest release tag (track = 'tags'), or else the head of its default branch. version is what the new commit of
-# a PKGBUILD builds, tag the release a clone moves to; url shows the changes to review before applying them.
-Pin = namedtuple('Pin', 'kind name old new label url version tag')
+# Pins: manifest entries fixed to a commit, AUR packages and clones, or to a version, release archives. Newer is the
+# AUR's latest commit, a clone's latest release tag (track = 'tags'), or else the head of its default branch, and an
+# archive's version in its release manifest (latest). version is what the new commit of a PKGBUILD builds, tag the
+# release a clone moves to, hashes the sha256 of each architecture of an archive; url shows the changes to review.
+Pin = namedtuple('Pin', 'kind name old new label url version tag hashes', defaults=(None,))
 
 
 def remote_head(repo):
@@ -1280,6 +1383,8 @@ def remote_tags(repo):
 
 
 def pin_name(kind, item):
+    if kind == 'archives':
+        return item['name']
     return item['package'] if kind == 'aur' else item['path'].rstrip('/').rsplit('/', 1)[-1]
 
 
@@ -1288,14 +1393,35 @@ def pin_entries(tables, profiles=PROFILES):
     entries = {}
     for table in tables:
         for profile in profiles:
-            for kind in ('aur', 'clones'):
+            for kind in ('aur', 'clones', 'archives'):
                 for item in table.get(profile, {}).get(kind, ()):
-                    entries.setdefault((kind, item.get('package') or item['repo'], item['commit']), (kind, item))
+                    key = (kind, item.get('package') or item.get('repo') or item['name'], item.get('commit') or item['version'])
+                    entries.setdefault(key, (kind, item))
     return list(entries.values())
+
+
+def newer_archive(item):
+    try:
+        with urllib.request.urlopen(item['latest'], timeout=30) as response:
+            latest = json.load(response)
+        new, targets = latest['version'], latest['targets']
+        hashes = {arch: targets[f'linux-{arch}']['sha256'] for arch in item['sha256']}
+        # The download URL must still be the one the manifest builds, or apply would fetch something else.
+        urls = [targets[f'linux-{arch}']['url'] for arch in item['sha256']]
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+    if any(url != item['url'].format(version=new, arch=arch) for arch, url in zip(item['sha256'], urls)):
+        return False
+    if new == item['version']:
+        return None
+    return Pin('archives', item['name'], item['version'], new, f'{item["version"]} -> {new}', item.get('changes') or item['latest'],
+               '', '', hashes)
 
 
 def newer_pin(kind, item):
     # The Pin to move to; None when the entry is at its latest; False when its remote did not answer.
+    if kind == 'archives':
+        return newer_archive(item)
     if kind == 'aur':
         new = aur_head(item['package'])
         if not new or new == item['commit']:
@@ -1344,6 +1470,28 @@ def repin(text, old, new, version='', tag=''):
     return ''.join(lines)
 
 
+def repin_archive(text, name, old, new, hashes):
+    # Each archive table of that name at version old: its version and sha256 lines.
+    lines = text.splitlines(keepends=True)
+    starts = [index for index, line in enumerate(lines) if line.startswith('[')] + [len(lines)]
+    for start, end in zip(starts, starts[1:]):
+        block = [line.strip() for line in lines[start:end]]
+        if f"name = '{name}'" not in block or f"version = '{old}'" not in block:
+            continue
+        for index in range(start, end):
+            if lines[index].strip() == f"version = '{old}'":
+                lines[index] = f"version = '{new}'\n"
+            elif lines[index].startswith('sha256 = {'):
+                lines[index] = 'sha256 = { ' + ', '.join(f"{arch} = '{digest}'" for arch, digest in hashes.items()) + ' }\n'
+    return ''.join(lines)
+
+
+def apply_pin(text, pin):
+    if pin.kind == 'archives':
+        return repin_archive(text, pin.name, pin.old, pin.new, pin.hashes)
+    return repin(text, pin.old, pin.new, pin.version, pin.tag)
+
+
 def pins(update):
     # The pins of every distribution, not only this one: they can be moved from any machine.
     path = INSTALL / 'manifest.toml'
@@ -1353,7 +1501,7 @@ def pins(update):
     for kind, item in pin_entries(tables):
         pin = newer_pin(kind, item)
         if pin is False:
-            where = 'the AUR' if kind == 'aur' else item['repo']
+            where = 'the AUR' if kind == 'aur' else item.get('repo') or item['latest']
             print(f'{pin_name(kind, item)}: {where} did not answer.')
             failed += 1
         elif pin:
@@ -1361,7 +1509,7 @@ def pins(update):
             print(f'{pin.name} {pin.label}')
             print(f'  review the changes: {pin.url}')
             if update:
-                text = repin(text, pin.old, pin.new, pin.version, pin.tag)
+                text = apply_pin(text, pin)
     if update and newer:
         path.write_text(text, encoding='utf-8')
         print(f'Pinned in {path.relative_to(REPO)}: install-desktop.py apply builds and checks them out.')

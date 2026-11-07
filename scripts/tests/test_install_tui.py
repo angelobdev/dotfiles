@@ -441,7 +441,7 @@ class UpdateSourceTests(unittest.TestCase):
     def test_the_pins_only_for_the_maintainer(self):
         ui = mock.Mock()
         ui.frame.return_value = None
-        for maintainer, kinds in ((True, ['aur', 'clones']), (False, [])):
+        for maintainer, kinds in ((True, ['aur', 'clones', 'archives']), (False, [])):
             line = lambda _plan, kind, title: tui.Source(kind, title, 'newer', [], '', True)
             with mock.patch.object(tui, 'shell_helper'), mock.patch.object(tui, 'package_source', return_value=None), \
                     mock.patch.object(tui, 'flatpak_source', return_value=None), mock.patch.object(tui, 'pin_source', side_effect=line), \

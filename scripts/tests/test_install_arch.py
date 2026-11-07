@@ -30,7 +30,7 @@ installer.RECORD = installer.STATE / 'install.json'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
 PROFILE_KEYS = {'repos', 'packages', 'services', 'user_services', 'disable', 'files', 'groups', 'stow', 'flatpaks',
-                'login_shell', 'clones', 'firmware', 'aur', 'notes'}
+                'login_shell', 'clones', 'firmware', 'aur', 'notes', 'archives'}
 # The default pacman.conf of Arch, around its repositories.
 PACMAN_CONF = '''[options]
 HoldPkg     = pacman glibc
@@ -185,7 +185,7 @@ class ManifestTests(unittest.TestCase):
                 self.assertIn('base-devel', profile['packages'])
 
     def test_personal_apps_are_opt_in(self):
-        for profile in ('apps', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs'):
+        for profile in ('apps', 'herdr', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs'):
             self.assertNotIn(profile, installer.DEFAULT_PROFILES.split(','))
 
     def test_the_firmware_is_fedora_s(self):

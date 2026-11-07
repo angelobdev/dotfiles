@@ -15,6 +15,11 @@
 #   finds them by sha256 (and size) and installs them to target, then rebuilds the initramfs.
 # aur: [[...]] tables of package, commit and version (Arch only): the AUR PKGBUILD at that commit, built with makepkg.
 #   key is the URL of the PGP key its sources are signed with. install-desktop.py pins shows newer commits.
+# archives: [[...]] tables of name, version, url ({version} and {arch} in it), sha256 per architecture (x86_64,
+#   aarch64) and latest (the release manifest install-desktop.py pins reads): a release tarball unpacked into the home
+#   as the user. unpack maps each top-level member to its path under the home; links (path = target, both under the
+#   home) and entries (path = content, {home} for the home folder) are made beside it unless something is there.
+#   Installed only while every unpack path is missing: these programs update themselves.
 
 # The desktop itself, whatever the distribution calls its packages.
 [verify]
@@ -203,6 +208,48 @@ content = '''
 zen-bin
 '''
 
+# herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, the assistant console for any coding agent
+# (docs/features/ai-assistant.md). Put where their own installers put them (releases.herdr.dev/app/install.sh), from
+# the same release archives, checked against these sha256; after that the app updates itself and hc update the core.
+[fedora.herdr]
+notes = [
+    'Herdr: Super + A opens it as the assistant console; pick the agent it starts in Settings → Assistant',
+    'Herdr sends anonymous usage counts once a day: "telemetry": false in ~/.config/herdr-app/settings.json stops it',
+]
+
+[[fedora.herdr.archives]]
+name = 'herdr-core'
+version = '0.1.18'
+url = 'https://releases.herdr.dev/core/{version}/herdr-core-linux-{arch}.tar.gz'
+sha256 = { x86_64 = '5b2f97cb4b2a9d7a6b2cc5942628203ed9fbb7cc0c2b4b09ad8a6f5648e246b7', aarch64 = 'cf33393cf950bb763734dc3e16610ab9daf8492391a4ef0de56026cd7f752853' }
+latest = 'https://releases.herdr.dev/core/latest.json'
+changes = 'https://github.com/herdrdev/herdr-core/releases'
+unpack = { 'herdr-core' = '.local/bin/herdr-core' }
+links = { '.local/bin/hc' = '.local/bin/herdr-core' }
+
+[[fedora.herdr.archives]]
+name = 'herdr-app'
+version = '0.1.13'
+url = 'https://releases.herdr.dev/app/{version}/herdr-app-linux-{arch}.tar.gz'
+sha256 = { x86_64 = '77b0be72a46ca14bb367365a04164641f914b3a69712bac391d39c56a959bef4', aarch64 = '2e5bb05c47cffbad018ad34217ea4c816476d7eb842692f740798c9020f0281e' }
+latest = 'https://releases.herdr.dev/app/latest.json'
+changes = 'https://github.com/herdrdev/herdr-app/releases'
+unpack = { 'herdr-app' = '.local/share/herdr-app' }
+links = { '.local/bin/herdr-app' = '.local/share/herdr-app/herdr-app', '.local/share/icons/hicolor/scalable/apps/herdr-app.svg' = '.local/share/herdr-app/herdr-app.svg' }
+
+[fedora.herdr.archives.entries]
+'.local/share/applications/herdr-app.desktop' = '''
+[Desktop Entry]
+Type=Application
+Name=Herdr
+Comment=Terminals and coding agents that keep running
+Exec={home}/.local/bin/herdr-app
+Icon=herdr-app
+Terminal=false
+Categories=Development;
+StartupWMClass=herdr-app
+'''
+
 # Docker and Tailscale.
 [fedora.containers]
 packages = ['moby-engine', 'docker-compose', 'tailscale']
@@ -369,6 +416,48 @@ version = '1.145.0-1'
 path = '/etc/1password/custom_allowed_browsers'
 content = '''
 zen-bin
+'''
+
+# herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, the assistant console for any coding agent
+# (docs/features/ai-assistant.md). Put where their own installers put them (releases.herdr.dev/app/install.sh), from
+# the same release archives, checked against these sha256; after that the app updates itself and hc update the core.
+[arch.herdr]
+notes = [
+    'Herdr: Super + A opens it as the assistant console; pick the agent it starts in Settings → Assistant',
+    'Herdr sends anonymous usage counts once a day: "telemetry": false in ~/.config/herdr-app/settings.json stops it',
+]
+
+[[arch.herdr.archives]]
+name = 'herdr-core'
+version = '0.1.18'
+url = 'https://releases.herdr.dev/core/{version}/herdr-core-linux-{arch}.tar.gz'
+sha256 = { x86_64 = '5b2f97cb4b2a9d7a6b2cc5942628203ed9fbb7cc0c2b4b09ad8a6f5648e246b7', aarch64 = 'cf33393cf950bb763734dc3e16610ab9daf8492391a4ef0de56026cd7f752853' }
+latest = 'https://releases.herdr.dev/core/latest.json'
+changes = 'https://github.com/herdrdev/herdr-core/releases'
+unpack = { 'herdr-core' = '.local/bin/herdr-core' }
+links = { '.local/bin/hc' = '.local/bin/herdr-core' }
+
+[[arch.herdr.archives]]
+name = 'herdr-app'
+version = '0.1.13'
+url = 'https://releases.herdr.dev/app/{version}/herdr-app-linux-{arch}.tar.gz'
+sha256 = { x86_64 = '77b0be72a46ca14bb367365a04164641f914b3a69712bac391d39c56a959bef4', aarch64 = '2e5bb05c47cffbad018ad34217ea4c816476d7eb842692f740798c9020f0281e' }
+latest = 'https://releases.herdr.dev/app/latest.json'
+changes = 'https://github.com/herdrdev/herdr-app/releases'
+unpack = { 'herdr-app' = '.local/share/herdr-app' }
+links = { '.local/bin/herdr-app' = '.local/share/herdr-app/herdr-app', '.local/share/icons/hicolor/scalable/apps/herdr-app.svg' = '.local/share/herdr-app/herdr-app.svg' }
+
+[arch.herdr.archives.entries]
+'.local/share/applications/herdr-app.desktop' = '''
+[Desktop Entry]
+Type=Application
+Name=Herdr
+Comment=Terminals and coding agents that keep running
+Exec={home}/.local/bin/herdr-app
+Icon=herdr-app
+Terminal=false
+Categories=Development;
+StartupWMClass=herdr-app
 '''
 
 # Docker and Tailscale. Arch's tailscale has no tray unit: the tray icon is not set up.

@@ -5,13 +5,13 @@
 #   git ls-files -co --exclude-standard -z | tar --null -T - -c | docker run -i --rm fedora:45 \
 #       bash -c 'mkdir /src && tar -x -C /src && exec bash /src/scripts/tests/install-container.sh'
 #
-# Environment: PROFILES (default core,hardware,tablet,plugins), COMPILE=1 also builds the plugins (slow), BASE_EXTRA lists
+# Environment: PROFILES (default core,hardware,tablet,plugins,herdr), COMPILE=1 also builds the plugins (slow), BASE_EXTRA lists
 # packages the system has before the installer (ffmpeg-free makes the swaps run, and their undoing). The container
 # has no systemd, so the firewall, Flatpak and login steps skip themselves: only a VM covers those.
 set -euo pipefail
 
 source=${1:-/src}
-profiles=${PROFILES:-core,hardware,tablet,plugins}
+profiles=${PROFILES:-core,hardware,tablet,plugins,herdr}
 user=ci
 home=/home/$user
 repo=$home/.dotfiles
@@ -59,6 +59,14 @@ for package in ffmpeg-free libavcodec-free power-profiles-daemon; do
         exit 1
     fi
 done
+
+if [[ ,$profiles, == *,herdr,* ]]; then
+    section 'Herdr where its installer puts it'
+    [[ -x $home/.local/bin/herdr-core && $(readlink "$home/.local/bin/hc") == "$home/.local/bin/herdr-core" ]] || { echo 'herdr-core or hc missing' >&2; exit 1; }
+    [[ -x $home/.local/share/herdr-app/herdr-app && -L $home/.local/bin/herdr-app ]] || { echo 'the Herdr app is missing' >&2; exit 1; }
+    grep -qx "Exec=$home/.local/bin/herdr-app" "$home/.local/share/applications/herdr-app.desktop" || { echo 'no Herdr launcher entry' >&2; exit 1; }
+    stat -c '%U %n' "$home/.local/bin/herdr-core" "$home/.local/share/herdr-app"
+fi
 
 section 'A second apply finds nothing to do'
 again=$(as_user ./scripts/install-desktop.py apply --profiles "$profiles")
@@ -116,6 +124,9 @@ print("\n".join(p.split("(")[0] for profile in t.values() if isinstance(profile,
 [[ $(systemctl get-default) == "$before_target" ]] || { echo 'default target not restored' >&2; exit 1; }
 links=$(find "$home" -type l -lname "*.dotfiles/*" | head)
 [[ -z $links ]] || { printf 'Links left:\n%s\n' "$links" >&2; exit 1; }
+for path in .local/bin/herdr-core .local/bin/hc .local/bin/herdr-app .local/share/herdr-app .local/share/applications/herdr-app.desktop; do
+    [[ ! -e $home/$path && ! -L $home/$path ]] || { echo "~/$path left" >&2; exit 1; }
+done
 grep -q '"uninstalled": true' "$home/.local/state/dotfiles/install.json" || { echo 'install record not marked as undone' >&2; exit 1; }
 again=$(as_user ./scripts/install-desktop.py apply --uninstall)
 grep -qx 'Nothing to do.' <<<"$again" || { printf '%s\n' "$again" >&2; exit 1; }

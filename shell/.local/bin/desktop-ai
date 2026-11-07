@@ -59,6 +59,10 @@ print("" if not names else "inside" if "special:ai" in names else "outside")
         # terminals and agents, which the shell follows through hc events.
         if [[ $class == herdr-app ]]; then
             touch "$starting"
+            # Its first start (no folder yet): the desktop theme first, so it opens in it.
+            if [[ ! -d ${XDG_CONFIG_HOME:-$HOME/.config}/herdr-app ]]; then
+                python3 "$HOME/.local/libexec/desktop/theme.py" herdr >/dev/null 2>&1 9>&-
+            fi
             setsid -f herdr-app >/dev/null 2>&1 9>&-
             exit 0
         fi

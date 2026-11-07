@@ -284,6 +284,18 @@ class HerdrTests(unittest.TestCase):
                 theme.apply_herdr(completed)
                 self.assertEqual((herdr / 'settings.json').read_text(), '{ "zoom": 1.2, // a comment\n }')
 
+    def test_the_first_start_gets_the_current_theme(self):
+        # desktop-ai runs theme.py herdr before Herdr has a folder: it opens in the desktop theme.
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            herdr, state = root / 'herdr-app', root / 'state'
+            with mock.patch.object(theme, 'HERDR', herdr), mock.patch.object(theme, 'STATE', state), \
+                    mock.patch.object(theme, 'current', return_value='graphite'), mock.patch.object(theme, 'preferences', return_value={}), \
+                    mock.patch.object(theme, 'load', return_value=GRAPHITE):
+                theme.command_herdr(None)
+            self.assertEqual(json.loads((herdr / 'themes/desktop.json').read_text())['background'], theme.complete(GRAPHITE)['palette']['bg'])
+            self.assertEqual(json.loads((herdr / 'settings.json').read_text())['theme'], 'desktop')
+
 
 class IconThemeTests(unittest.TestCase):
     def test_a_malformed_size_hides_no_other_theme(self):

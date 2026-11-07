@@ -920,3 +920,10 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - `agents.py` on this laptop: `claude` in `~/.local/bin` is the primary (`primary`, `argv claude` gives its path); `codex` and `agy` are not installed and Codex reports `npm` as present, so its Install is enabled. `image antigravity` gives `@PATH`.
 - `scripts/tests/test_agents.py` (run by `check.sh`): the three shipped descriptors are valid and ordered, invalid ones are left out, the user's own file wins by id, the primary follows the order, `aiPrimary` (only when installed) and `DESKTOP_AI_AGENT`, `install` refuses when a needed program is missing and otherwise opens a Kitty `desktop-updates` window with the installer.
 - The shell restarted with the new Settings group and `Agent.qml` with no warnings in `qs log`; `hyprctl configerrors` empty after the new bind description. The installers were not run here (Claude Code is already installed).
+
+## Installer profile for herdr, 2026-11-07 (#2)
+
+- Release manifests read on releases.herdr.dev: herdr-core 0.1.18 and herdr-app 0.1.13, with their x86_64 and aarch64 sha256 (Apache-2.0). The x86_64 archives were downloaded and matched their sha256; the layout follows `releases.herdr.dev/app/install.sh` and `core/install.sh`, read but not run.
+- The `archives` step on a scratch home, from those two downloads: `~/.local/bin/herdr-core` (byte-identical to the one installed on this laptop), the `hc` link, `~/.local/share/herdr-app`, the `herdr-app` link, the icon and a launcher entry identical to the one herdr's installer wrote here; nothing pending afterwards. No downloaded program was run.
+- Tests: `ArchiveTests` in `test_install.py` (pending only while missing, what is there stays, a wrong sha256 installs nothing, no build for the machine is a warning, uninstall removes only what apply made, newer releases become pins with their hashes, a moved download URL is refused, `repin` moves both distributions); `theme.py herdr` in `test_theme.py`.
+- Not tried: the profile in the install containers, and Herdr's first start with the theme written beforehand.
