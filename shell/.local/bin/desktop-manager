@@ -2,7 +2,8 @@
 # The guided installer of this desktop, from anywhere: install or update it, check for updates, remove it.
 #   desktop-manager            the menu
 #   desktop-manager updates    straight to the updates screen
-# Other arguments go to scripts/install-tui.py as they are (--profiles, --firmware).
+# Other arguments go to scripts/install-tui.py as they are (--profiles, --firmware; --add or --remove PROFILES, from
+# Settings → System → Profiles).
 set -euo pipefail
 repo="$(cd -- "$(dirname -- "$(readlink -f -- "$0")")/../../.." && pwd)"
 if [[ ${1:-} == updates ]]; then

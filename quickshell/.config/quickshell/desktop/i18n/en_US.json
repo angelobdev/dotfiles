@@ -825,6 +825,7 @@
       "ownSettings": "Your own settings",
       "ownSettingsHint": "Kept in %1, outside the repository, so an update never meets them: hypr.lua for Hyprland and shell.json for the shell.",
       "processor": "Processor",
+      "profiles": "Profiles",
       "repository": "Repository",
       "reset": "Reset the options…",
       "resetConfirm": "Reset them all",
@@ -834,7 +835,44 @@
       "updates": "Updates"
     },
     "title": "Settings",
-    "unreadable": "%1 is not valid JSON, so nothing can be changed here until it is fixed or removed."
+    "unreadable": "%1 is not valid JSON, so nothing can be changed here until it is fixed or removed.",
+    "profiles": {
+      "intro": "The parts of this desktop the installer sets up. Install and Remove open the guided installer in a terminal: it shows the plan, and asks for your password there.",
+      "installed": "Installed",
+      "partial": "Partly installed: %1 of %2",
+      "notInstalled": "Not installed",
+      "outside": "Installed, but not by the installer: it has no record of it, so it does not remove it.",
+      "default": "default",
+      "install": "Install",
+      "complete": "Complete",
+      "remove": "Remove",
+      "busy": "In the terminal…",
+      "coreHint": "core is the desktop itself: Remove the desktop, in the guided installer, takes it away.",
+      "openManager": "Open the guided installer",
+      "checkAgain": "Check again",
+      "checking": "Checking…",
+      "close": "Press Enter to close.",
+      "installTitle": "Install %1",
+      "removeTitle": "Remove %1",
+      "error": "The profiles cannot be read: %1",
+      "errors": {
+        "name": "Not a profile name: %1"
+      },
+      "descriptions": {
+        "core": "Hyprland, Quickshell, GDM with the hyprland-uwsm session, portals, audio, network, fonts and zsh: the desktop itself.",
+        "hardware": "Firmware, video decoding, cameras and power of a recent Intel laptop, fingerprint reader, firewall zone, sshd off.",
+        "tablet": "A 2-in-1: screen rotation, stylus, sign-in without the fingerprint reader while folded, touchscreen gestures (Hyprgrass).",
+        "plugins": "What building the Hyprland plugins needs, from RPM Fusion too; the RPM Fusion ffmpeg replaces ffmpeg-free.",
+        "apps": "Zen Browser, 1Password, VS Code, Neovim, gh, glab, uv, gcc and a few command-line tools.",
+        "herdr": "The Herdr app and herdr-core in ~/.local: the assistant console for any coding agent; they update themselves.",
+        "containers": "Docker (moby-engine, docker-compose, the docker group) and Tailscale.",
+        "media": "Loupe, Papers and Showtime for images, PDFs and videos.",
+        "gaming": "Steam, gamescope and the 32-bit drivers games need.",
+        "steamHidpi": "The Steam launcher that scales the client for the monitor it opens on.",
+        "codecs": "The RPM Fusion codecs in place of the free builds: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX."
+      },
+      "managerTitle": "Desktop installer"
+    }
   },
   "sharing": {
     "chooseSourceHint": "Choose the display or window to share with the application.",
