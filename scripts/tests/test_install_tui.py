@@ -273,6 +273,40 @@ class FlowTests(unittest.TestCase):
     def test_leaving_the_removal_review_goes_back_to_the_menu(self):
         self.assertIsNone(self.removal_flow(running=False, outcome='back')[0])
 
+    def profile_removal(self, running, start='menu', removal=(), chooser=('next', ('gaming',))):
+        menus = iter(['remove', 'quit'])
+        with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', side_effect=lambda ui: next(menus)), \
+                mock.patch.object(installer, 'hyprland_running', return_value=running), \
+                mock.patch.object(installer, 'removal_plan', side_effect=lambda chosen, removed: chosen._replace(record={'removing': list(removed)})), \
+                mock.patch.object(tui, 'notice') as noticed, mock.patch.object(tui, 'review', return_value='apply') as reviewed, \
+                mock.patch.object(tui, 'detect', return_value=ALL), mock.patch.object(tui, 'choose_removal', return_value=chooser) as chose:
+            result = tui.interface(None, plan(), False, start, (), removal)
+        return result, noticed, reviewed, chose
+
+    def test_profiles_chosen_from_the_menu_come_back_as_their_removal(self):
+        (action, chosen), noticed, _, chose = self.profile_removal(running=True)
+        self.assertEqual((action, chosen.record), ('uninstall', {'removing': ['gaming']}))
+        chose.assert_called_once()
+        noticed.assert_not_called()
+
+    def test_remove_starts_on_the_review(self):
+        (action, chosen), _, _, chose = self.profile_removal(running=False, start='removal', removal=('media',))
+        self.assertEqual(chosen.record, {'removing': ['media']})
+        chose.assert_not_called()
+
+    def test_the_plugins_profile_is_refused_while_hyprland_runs(self):
+        result, noticed, reviewed, _ = self.profile_removal(running=True, start='removal', removal=('plugins',), chooser=('quit', ()))
+        self.assertIsNone(result)
+        noticed.assert_called_once()
+        reviewed.assert_not_called()
+
+    def test_add_checks_the_profile_on_top_of_the_installed_ones(self):
+        with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'detect', return_value=ALL), \
+                mock.patch.object(tui, 'choose_profiles', return_value=('quit', ())) as chose:
+            tui.interface(None, plan(), False, 'profiles', ('herdr',))
+        self.assertIn('herdr', chose.call_args.args[1].profiles)
+        self.assertTrue(set(tui.preselected(ALL)) <= set(chose.call_args.args[1].profiles))
+
     def test_post_skips_the_review(self):
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', return_value='post'), \
                 mock.patch.object(tui, 'detect', return_value=ALL), \
@@ -303,6 +337,21 @@ class ApplyTests(unittest.TestCase):
         refused.assert_called_once()
         steps.assert_called_once_with(removal, False, installer.UNSTEPS)
         after.assert_called_once_with(removal, 0)
+
+    def test_removing_profiles_runs_their_steps_and_needs_a_console_only_for_plugins(self):
+        for removed, console in ((['gaming'], False), (['gaming', 'plugins'], True)):
+            removal = plan()._replace(record={'removing': removed, 'packages': ['steam']})
+            with mock.patch('subprocess.run'), mock.patch.object(installer, 'run_steps', return_value=2) as steps, \
+                    mock.patch.object(installer, 'refuse_uninstall') as refused, mock.patch.object(installer, 'after_uninstall') as after, \
+                    mock.patch.object(installer, 'load_record') as record, mock.patch.object(tui, 'keep_sudo'), \
+                    mock.patch('builtins.print'), mock.patch('builtins.input') as asked:
+                self.assertEqual(tui.apply(removal), 0)
+            self.assertEqual(refused.called, console)
+            steps.assert_called_once_with(removal, False, installer.PROFILE_UNSTEPS)
+            after.assert_not_called()
+            record.assert_not_called()
+            asked.assert_not_called()
+            self.assertEqual(tui.command(removal), './scripts/install-desktop.py apply --remove ' + ','.join(removed))
 
     def test_sudo_asks_once_before_the_first_step(self):
         self.assertEqual(self.apply(3, 'n')[:2], [('sudo', '-v'), 'steps'])
@@ -516,7 +565,16 @@ class UpdateFlowTests(unittest.TestCase):
                 mock.patch.object(installer, 'load_plan', return_value=plan()), mock.patch.object(installer, 'refuse'), \
                 mock.patch('curses.wrapper', return_value=None) as wrapper, mock.patch('builtins.print'):
             tui.main(['--updates'])
-        self.assertEqual(wrapper.call_args.args[-1], 'updates')
+            self.assertEqual(wrapper.call_args.args[3], 'updates')
+            tui.main(['--add', 'gaming'])
+            self.assertEqual(wrapper.call_args.args[3:], ('profiles', ('gaming',), ()))
+            tui.main(['--remove', 'gaming,media'])
+            self.assertEqual(wrapper.call_args.args[3:], ('removal', (), ('gaming', 'media')))
+        for arguments in (['--remove', 'core'], ['--add', 'gaming', '--remove', 'media'], ['--updates', '--add', 'gaming'],
+                          ['--profiles', 'core', '--add', 'gaming']):
+            with mock.patch('sys.stderr'), self.assertRaises(SystemExit) as caught:
+                tui.main(arguments)
+            self.assertEqual(caught.exception.code, 2, arguments)
 
 
 class ApplyUpdatesTests(unittest.TestCase):

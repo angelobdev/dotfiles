@@ -109,7 +109,7 @@ def preselected(statuses):
 
 def status_text(status):
     if installed(status):
-        return 'Installed. Turning it off removes nothing: the installer never uninstalls.'
+        return 'Installed. Turning it off here removes nothing: Remove profiles, in the menu, does.'
     if status_label(status):
         shown = ', '.join(status.missing[:6]) + (', ...' if len(status.missing) > 6 else '')
         return f'Partly installed ({status_label(status)}); missing: {shown}.'
@@ -142,7 +142,18 @@ def removing(plan):
     return plan.record is not None
 
 
+def removed_profiles(plan):
+    # A plan that removes some profiles: the profiles it removes (in its record), else nothing.
+    return tuple(plan.record.get('removing', ())) if removing(plan) else ()
+
+
+def undo_steps(plan):
+    return installer.PROFILE_UNSTEPS if removed_profiles(plan) else installer.UNSTEPS
+
+
 def command(plan, action='apply'):
+    if removed_profiles(plan):
+        return f'./scripts/install-desktop.py {action} --remove {",".join(removed_profiles(plan))}'
     if removing(plan):
         return f'./scripts/install-desktop.py {action} --uninstall'
     words = ['./scripts/install-desktop.py', action, '--profiles', ','.join(plan.profiles)]
@@ -316,6 +327,9 @@ def menu_entries():
                         'than their pins, and this repository: see what is new, check what to take, apply it.'))
     if post_pending():
         entries.append(('post', 'Finish the installation', 'Build the Hyprland plugins and list what is left to do by hand.'))
+    if installer.desktop_present():
+        entries.append(('remove', 'Remove profiles', 'Undo what some profiles set up (Docker, Steam, the apps...), leaving the desktop '
+                        'and what the other profiles need.'))
     entries.append(('uninstall', 'Remove the desktop', 'Undo what the installer set up: plugins, login, links and settings, '
                     'then the packages and repositories it added. From a console, with Hyprland logged out.'))
     entries.append(('quit', 'Quit', 'Leave without changing anything.'))
@@ -415,6 +429,44 @@ def choose_profiles(ui, plan, mode, statuses, preset=False):
             return 'quit', profiles
 
 
+def choose_removal(ui, plan, statuses, chosen=()):
+    # Every profile but core, with what of it is on this system; nothing starts checked.
+    names = [name for name in installer.PROFILES if name != 'core']
+    chosen, cursor = set(chosen), 0
+    while True:
+        row = ui.frame('Remove profiles', 'Up/Down move   Space toggle   Enter continue   Esc back   q quit')
+        if row is None:
+            ui.key()
+            continue
+        row = ui.wrap(row, 'Check the profiles to remove. What another installed profile needs stays; the review shows the rest.') + 1
+        for index, name in enumerate(names):
+            selected = index == cursor
+            ui.put(row, 2, ('> ' if selected else '  ') + f'[{"x" if name in chosen else " "}] {name}', curses.A_REVERSE if selected else 0)
+            ui.put(row, 21, status_label(statuses[name]), ui.style('ok' if installed(statuses[name]) else 'warn'))
+            ui.put(row, 33, clip(DESCRIPTIONS[name], ui.size()[1] - 35), ui.style('dim'))
+            row += 1
+        row += 1
+        name = names[cursor]
+        row = ui.wrap(row, DESCRIPTIONS[name])
+        ui.wrap(row, summary(plan.table, name), ui.style('dim'))
+        key = ui.key()
+        if key in UP:
+            cursor = (cursor - 1) % len(names)
+        elif key in DOWN:
+            cursor = (cursor + 1) % len(names)
+        elif key == ' ':
+            chosen ^= {name}
+        elif key in ENTER and chosen:
+            return 'next', tuple(profile for profile in names if profile in chosen)
+        elif key in ENTER:
+            ui.footer('Nothing is checked: Space checks a profile.', 'warn')
+            ui.key()
+        elif key in BACK:
+            return 'back', ()
+        elif key == 'q':
+            return 'quit', ()
+
+
 def choose_firmware(ui, plan, items):
     text = plan.firmware or ''
     position = len(text)
@@ -484,7 +536,7 @@ def collect(ui, plan):
     plan.distro.remember_answers()
     installer.found_firmware.cache_clear()
     reviews = []
-    steps = installer.UNSTEPS if removing(plan) else installer.STEPS
+    steps = undo_steps(plan) if removing(plan) else installer.STEPS
     for index, step in enumerate(steps):
         row = ui.frame('Checking', 'Ctrl+C quits')
         if row is not None:
@@ -512,7 +564,8 @@ def review(ui, plan):
         work = [entry for entry in reviews if entry.items or entry.error]
         if removing(plan):
             ui.put(row, 2, 'Removing', ui.style('dim'))
-            ui.put(row, 14, 'what the installer set up' + (f', as the {plan.distro.MANAGER} history tells' if plan.record.get('reconstructed') else ', from its record'))
+            what = f'what only {", ".join(removed_profiles(plan))} set up' if removed_profiles(plan) else 'what the installer set up'
+            ui.put(row, 14, what + (f', as the {plan.distro.MANAGER} history tells' if plan.record.get('reconstructed') else ', from its record'))
         else:
             ui.put(row, 2, 'Profiles', ui.style('dim'))
             ui.put(row, 14, ', '.join(plan.profiles))
@@ -527,7 +580,8 @@ def review(ui, plan):
         for warning in warnings:
             row = ui.wrap(row, '! ' + warning, ui.style('warn'))
         if not work:
-            done = 'nothing of the desktop is left.' if removing(plan) else 'this system already matches the chosen profiles.'
+            done = ('nothing of them is left.' if removed_profiles(plan) else 'nothing of the desktop is left.') if removing(plan) \
+                else 'this system already matches the chosen profiles.'
             row = ui.wrap(row, 'Nothing to do: ' + done, ui.style('ok'))
         else:
             steps = '1 step has' if len(work) == 1 else f'{len(work)} steps have'
@@ -560,7 +614,7 @@ def review(ui, plan):
             expanded.clear()
             cursor, top = first_work(reviews), 0
         elif key == 'a' and work:
-            verb = 'Remove the desktop in' if removing(plan) else 'Apply'
+            verb = f'Remove {", ".join(removed_profiles(plan))} in' if removed_profiles(plan) else 'Remove the desktop in' if removing(plan) else 'Apply'
             ui.footer(f'{verb} {steps.split()[0]} {"step" if len(work) == 1 else "steps"} now? sudo asks for your password once. [y/N]', 'warn')
             if ui.key() in ('y', 'Y'):
                 return 'apply'
@@ -851,9 +905,10 @@ def updates_screen(ui, plan):
             return 'quit', None
 
 
-def interface(window, plan, preset=False, start='menu'):
+def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
     # A state machine over the screens; what comes back is run after curses has given the terminal back.
-    # preset: --profiles was given, and wins over what is found on the system. start: menu, or updates.
+    # preset: --profiles was given, and wins over what is found on the system. start: menu, updates, profiles
+    # (adding: profiles checked on top of the installed ones, --add) or removal (removal: the profiles, --remove).
     ui = Screen(window)
     stage, mode, statuses = start, 'install', None
     while True:
@@ -861,7 +916,36 @@ def interface(window, plan, preset=False, start='menu'):
             mode = menu(ui)
             if mode == 'quit':
                 return None
-            stage = mode if mode in ('uninstall', 'updates') else 'profiles'
+            stage = mode if mode in ('uninstall', 'updates', 'remove') else 'profiles'
+        elif stage == 'remove':
+            if statuses is None:
+                statuses = detect(ui, plan)
+            outcome, removal = choose_removal(ui, plan, statuses, removal)
+            if outcome == 'quit':
+                return None
+            stage = 'removal' if outcome == 'next' else 'menu'
+        elif stage == 'removal':
+            # Back to the choice, or to the menu when the profiles came with --remove.
+            stage = 'remove' if start != 'removal' else 'menu'
+            start = 'menu'
+            if 'plugins' in removal and installer.hyprland_running():
+                notice(ui, 'Remove profiles', 'Removing plugins takes away the Hyprland plugins, which the running Hyprland has '
+                       'loaded. Log out, switch to a console with Ctrl+Alt+F3, sign in there and start this again.')
+                continue
+            if ui.frame('Remove profiles', 'Ctrl+C quits') is not None:
+                ui.wrap(2, 'Reading what the installer set up...')
+                ui.window.refresh()
+            try:
+                with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                    current = installer.removal_plan(plan, removal)
+            except (subprocess.CalledProcessError, RuntimeError, OSError) as error:
+                notice(ui, 'Remove profiles', f'What the installer set up could not be read: {error}')
+                continue
+            outcome = review(ui, current)
+            if outcome == 'quit':
+                return None
+            if outcome == 'apply':
+                return 'uninstall', current
         elif stage == 'updates':
             # Of the profiles of this desktop, whatever --profiles says.
             stage = 'menu'
@@ -904,7 +988,8 @@ def interface(window, plan, preset=False, start='menu'):
             if statuses is None:
                 statuses = detect(ui, plan)
                 if not preset:
-                    plan = plan._replace(profiles=preselected(statuses))
+                    found = preselected(statuses)
+                    plan = plan._replace(profiles=tuple(name for name in installer.PROFILES if name in found or name in adding))
             outcome, profiles = choose_profiles(ui, plan, mode, statuses, preset)
             plan = plan._replace(profiles=profiles)
             if outcome == 'quit':
@@ -944,17 +1029,21 @@ def confirm(question):
 
 
 def apply(plan):
-    if removing(plan):
+    if removing(plan) and (not removed_profiles(plan) or 'plugins' in removed_profiles(plan)):
         installer.refuse_uninstall()
+    if removing(plan) and not removed_profiles(plan):
         installer.load_record(set_aside=True)  # An unreadable record is kept aside before uninstall marks it undone.
     print(f'Running: {command(plan)}', flush=True)
     subprocess.run(('sudo', '-v'), check=True)
     stop = threading.Event()
     threading.Thread(target=keep_sudo, args=(stop,), daemon=True).start()
     try:
-        done = installer.run_steps(plan, False, installer.UNSTEPS if removing(plan) else installer.STEPS)
+        done = installer.run_steps(plan, False, undo_steps(plan) if removing(plan) else installer.STEPS)
     finally:
         stop.set()
+    if removed_profiles(plan):
+        print(f'Done: {", ".join(removed_profiles(plan))} removed.' if done else 'Nothing to do.')
+        return 0
     if removing(plan):
         installer.after_uninstall(plan, done)
     else:
@@ -1063,7 +1152,17 @@ def main(argv=None):
     parser.add_argument('--profiles', help='profiles chosen at the start (default: the ones installed, or on a fresh system '
                         f'{installer.DEFAULT_PROFILES}, and tablet on a 2-in-1)')
     parser.add_argument('--updates', action='store_true', help='start on the updates screen')
+    parser.add_argument('--add', metavar='PROFILES', help='start on the profiles, these checked on top of the installed ones')
+    parser.add_argument('--remove', metavar='PROFILES', help='start on the review of removing these profiles (not core)')
     args = parser.parse_args(argv)
+    adding = tuple(args.add.split(',')) if args.add else ()
+    removal = tuple(args.remove.split(',')) if args.remove else ()
+    if sum(bool(value) for value in (args.updates, adding, removal, args.profiles and (adding or removal))) > 1:
+        parser.error('--updates, --add and --remove go one at a time, and --add or --remove without --profiles.')
+    if adding and set(adding) - set(installer.PROFILES):
+        parser.error(f'--add takes {", ".join(installer.PROFILES)}.')
+    if removal and not installer.removable_profiles(removal):
+        parser.error(f'--remove takes {", ".join(installer.PROFILES[1:])}; Remove the desktop removes core.')
     profiles = tuple((args.profiles or installer.default_profiles()).split(','))
     if not installer.valid_profiles(profiles):
         parser.error(f'--profiles needs core, and takes only {", ".join(installer.PROFILES)}.')
@@ -1076,7 +1175,8 @@ def main(argv=None):
     set_locale()
     os.environ.setdefault('ESCDELAY', '25')
     try:
-        choice = curses.wrapper(interface, plan, bool(args.profiles), 'updates' if args.updates else 'menu')
+        start = 'updates' if args.updates else 'profiles' if adding else 'removal' if removal else 'menu'
+        choice = curses.wrapper(interface, plan, bool(args.profiles), start, adding, removal)
     except curses.error as error:
         sys.exit(f'This terminal cannot draw the installer ({error}): use install-desktop.py.')
     if choice is None:

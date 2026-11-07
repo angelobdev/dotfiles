@@ -818,6 +818,171 @@ class UninstallTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, 2)
 
 
+# Three opt-in profiles over core: apps and gaming share a package and a repository.
+PROFILE_TABLE = {
+    'repos': {'one': {'kind': 'copr', 'name': 'a/b'}, 'two': {'kind': 'copr', 'name': 'c/d'}},
+    'core': {'packages': ['a'], 'stow': []},
+    'apps': {'repos': ['one', 'two'], 'packages': ['shared', 'apponly'], 'services': ['s.service'], 'groups': ['g'],
+             'flatpaks': ['org.example.App'], 'files': [{'path': '/etc/apps', 'content': '\nx\n'}],
+             'aur': [{'package': 'zen', 'version': '1'}]},
+    'gaming': {'repos': ['one'], 'packages': ['shared', 'game'], 'swaps': [['old', 'new']], 'disable': ['d.socket'],
+               'firewall_zone': 'Zone'},
+    'steam-hidpi': {'stow': ['steam-hidpi']},
+}
+
+
+class ProfileRemovalTests(unittest.TestCase):
+    setUp = StepTests.setUp
+    system = StepTests.system
+
+    def recorded(self, **changes):
+        # The file apply wrote, as /etc/apps, in the temporary home.
+        self.file = Path.home() / 'etc-apps'
+        self.file.write_text('x\n')
+        record = {'profiles': ['core', 'apps', 'gaming', 'steam-hidpi'], 'packages': ['a', 'shared', 'apponly', 'game', 'zen', 'new'],
+                  'swaps': [['old', 'new']], 'repos': ['one', 'two'], 'files': {str(self.file): None},
+                  'written': {str(self.file): installer.text_digest('x\n')},
+                  'groups': ['g'], 'flatpaks': ['org.example.App'], 'firewall_zone': 'FedoraServer', 'login_shell': '/bin/bash',
+                  'services': {'enabled': ['s.service'], 'disabled': ['d.socket'], 'global': []}}
+        record.update(changes)
+        installer.save_record(record)
+        return record
+
+    def plan(self, record, removed):
+        distro = fake_distro(pending=False)
+        distro.installed_names.side_effect = lambda specs: [spec + '.x86_64' for spec in specs]
+        distro.removal.side_effect = lambda names: list(names)
+        distro.installed_by_hand.return_value = set()
+        removed_packages = set()
+        distro.remove.side_effect = lambda names: removed_packages.update(name.rsplit('.', 1)[0] for name in names)
+        distro.missing.side_effect = lambda packages: [package for package in packages if package in removed_packages]
+        distro.sudo.side_effect = lambda *command: Path(command[-1]).unlink() if command[0] == 'rm' else None
+        table = {**PROFILE_TABLE, 'apps': {**PROFILE_TABLE['apps'], 'files': [{'path': str(self.file), 'content': '\nx\n'}]}}
+        current = installer.Plan(distro, '45', table, [], ('core',))
+        return current._replace(record=installer.profile_record(current, record, removed))
+
+    def test_only_what_no_profile_that_stays_names(self):
+        narrowed = self.plan(self.recorded(), ('apps',)).record
+        self.assertEqual(narrowed['removing'], ['apps'])
+        # shared and the repository one stay for gaming.
+        self.assertEqual((narrowed['packages'], narrowed['repos']), (['apponly', 'zen'], ['two']))
+        self.assertEqual((narrowed['files'], narrowed['groups'], narrowed['flatpaks']), ({str(self.file): None}, ['g'], ['org.example.App']))
+        self.assertEqual(narrowed['services'], {'enabled': ['s.service'], 'disabled': [], 'global': []})
+        self.assertEqual(narrowed['swaps'], [])
+        self.assertNotIn('firewall_zone', narrowed)
+        self.assertNotIn('login_shell', narrowed)
+        self.assertIn('shared', narrowed['staying'])
+
+    def test_settings_and_swaps_go_with_the_last_profile_that_has_them(self):
+        narrowed = self.plan(self.recorded(), ('gaming',)).record
+        self.assertEqual((narrowed['packages'], narrowed['swaps']), (['game', 'new'], [['old', 'new']]))
+        self.assertEqual((narrowed['firewall_zone'], narrowed['services']['disabled']), ('FedoraServer', ['d.socket']))
+        self.assertEqual(narrowed['repos'], [])
+        both = self.plan(self.recorded(), ('apps', 'gaming')).record
+        self.assertEqual((sorted(both['packages']), both['repos']), (['apponly', 'game', 'new', 'shared', 'zen'], ['one', 'two']))
+
+    def test_without_a_record_of_profiles_every_other_one_stays(self):
+        self.assertEqual(installer.staying_profiles({}, ('apps',)), tuple(name for name in installer.PROFILES if name != 'apps'))
+        self.assertEqual(installer.staying_profiles({'profiles': ['core', 'apps', 'media']}, ('apps',)), ('core', 'media'))
+
+    def test_core_is_not_a_profile_to_remove(self):
+        self.assertFalse(installer.removable_profiles(('core',)))
+        self.assertFalse(installer.removable_profiles(('apps', 'nope')))
+        self.assertFalse(installer.removable_profiles(()))
+        self.assertTrue(installer.removable_profiles(('apps', 'gaming')))
+        with mock.patch('sys.stderr'), self.assertRaises(SystemExit) as caught:
+            installer.main(['dry-run', '--remove', 'core'])
+        self.assertEqual(caught.exception.code, 2)
+
+    def test_removing_undoes_it_and_the_record_forgets_it(self):
+        self.system(False)
+        current = self.plan(self.recorded(), ('apps',))
+        with mock.patch('subprocess.run'):
+            installer.run_steps(current, False, installer.PROFILE_UNSTEPS)
+        commands = [call.args for call in current.distro.sudo.call_args_list]
+        self.assertFalse(self.file.exists())
+        for command in (('systemctl', 'disable', 's.service'), ('gpasswd', '-d', 'angelo', 'g'), ('rm', '-f', '--', str(self.file)),
+                        ('flatpak', 'uninstall', '-y', '--noninteractive', 'org.example.App')):
+            self.assertIn(command, commands)
+        self.assertNotIn(('systemctl', 'enable', 'd.socket'), commands)
+        self.assertFalse([command for command in commands if command[0] == 'firewall-cmd'])
+        current.distro.remove.assert_called_once_with(['apponly.x86_64', 'zen.x86_64'])
+        current.distro.remove_repo.assert_called_once_with(PROFILE_TABLE['repos']['two'])
+        current.distro.swap.assert_not_called()
+        saved = json.loads(installer.RECORD.read_text())
+        self.assertEqual(saved['profiles'], ['core', 'gaming', 'steam-hidpi'])
+        self.assertEqual(saved['packages'], ['a', 'shared', 'game', 'new'])
+        self.assertEqual((saved['files'], saved['written'], saved['services']['enabled']), ({}, {}, []))
+        self.assertEqual(saved['firewall_zone'], 'FedoraServer')
+
+    def test_packages_the_profiles_that_stay_need_stay(self):
+        current = self.plan(self.recorded(), ('apps',))
+        # dnf would take shared with apponly, as a dependent: shared stays, and so does what it needs.
+        current.distro.removal.side_effect = lambda names: list(names) + ['shared.x86_64']
+        current.distro.requirements.side_effect = lambda names: {'apponly.x86_64'} if 'shared.x86_64' in names else set()
+        names, kept, _, _ = installer.removal_split(current)
+        self.assertEqual((names, kept), (['zen.x86_64'], ['apponly.x86_64']))
+
+    def test_the_profile_s_own_links_go_and_the_rest_stays(self):
+        self.system(False)
+        home = Path.home()
+        source = next(path for path in sorted((REPO / 'steam-hidpi').rglob('*')) if path.is_file())
+        mine = home / source.relative_to(REPO / 'steam-hidpi')
+        core = home / '.config/hypr/hyprland.lua'
+        for link, target in ((mine, source), (core, REPO / 'hypr/.config/hypr/hyprland.lua')):
+            link.parent.mkdir(parents=True, exist_ok=True)
+            link.symlink_to(target)
+        current = self.plan(self.recorded(), ('steam-hidpi',))
+        with mock.patch.object(installer, 'backups', return_value=[]):
+            self.assertEqual(installer.unprofile_stow_pending(current), [f'unlink {mine}'])
+            installer.unprofile_stow_apply(current, [])
+        self.assertFalse(mine.is_symlink())
+        self.assertTrue(core.is_symlink())
+
+    def test_the_plugin_builds_go_only_with_the_plugins_profile(self):
+        current = self.plan(self.recorded(), ('apps',))
+        with mock.patch.object(installer, 'unplugins_pending', return_value=['builds']):
+            self.assertEqual(installer.unprofile_plugins_pending(current), [])
+            self.assertEqual(installer.unprofile_plugins_pending(current._replace(record={**current.record, 'undone': ['plugins']})),
+                             ['builds'])
+
+    def test_the_plugins_profile_waits_until_hyprland_is_gone(self):
+        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(installer, 'load_plan', return_value=plan(fake_distro())), \
+                mock.patch.object(installer, 'refuse'), mock.patch.object(installer, 'refuse_uninstall') as refused, \
+                mock.patch.object(installer, 'removal_plan', side_effect=lambda current, removed, preview: current._replace(record={})), \
+                mock.patch.object(installer, 'record_notes', return_value=[]), \
+                mock.patch.object(installer, 'run_steps', return_value=0) as steps, mock.patch('builtins.print'):
+            installer.main(['apply', '--remove', 'apps'])
+            refused.assert_not_called()
+            self.assertIs(steps.call_args.args[2], installer.PROFILE_UNSTEPS)
+            installer.main(['dry-run', '--remove', 'plugins'])
+            refused.assert_not_called()
+            installer.main(['apply', '--remove', 'plugins'])
+            refused.assert_called_once()
+
+    def test_a_profile_removed_already_has_nothing_left_to_undo(self):
+        # gaming is no longer in the record: game, kept then because core needed it, is core's now.
+        narrowed = self.plan(self.recorded(profiles=['core', 'apps']), ('gaming',)).record
+        self.assertEqual((narrowed['removing'], narrowed['undone']), (['gaming'], []))
+        self.assertEqual((narrowed['packages'], narrowed['swaps'], narrowed['services']['disabled']), ([], [], []))
+        self.assertNotIn('firewall_zone', narrowed)
+
+    def test_packages_that_only_stay_are_no_work(self):
+        current = self.plan(self.recorded(), ('apps',))
+        # shared needs apponly (and, first, zen too): dnf would take it with them.
+        current.distro.removal.side_effect = lambda names: list(names) + (['shared.x86_64'] if set(names) & {'apponly.x86_64', 'zen.x86_64'} else [])
+        current.distro.requirements.side_effect = lambda names: {'apponly.x86_64', 'zen.x86_64'} if 'shared.x86_64' in names else set()
+        self.assertEqual(installer.unpackages_pending(current), [])
+        current.distro.removal.side_effect = lambda names: list(names) + (['shared.x86_64'] if 'apponly.x86_64' in names else [])
+        current.distro.requirements.side_effect = lambda names: {'apponly.x86_64'} if 'shared.x86_64' in names else set()
+        self.assertEqual(installer.unpackages_pending(current), ['zen.x86_64', 'keep apponly.x86_64  (a package that stays needs it)'])
+
+    def test_nothing_recorded_for_the_profile_is_nothing_to_do(self):
+        self.recorded(profiles=['core', 'gaming'])
+        current = self.plan(installer.load_record(), ('media',))
+        self.assertEqual(installer.unprofile_record_pending(current), [])
+
+
 class ReconstructTests(unittest.TestCase):
     def reconstruct(self, base, installed, shell='/usr/bin/zsh', zone='Zone', session='s "hyprland-uwsm"', target='graphical.target'):
         distro = fake_distro(pending=False)
