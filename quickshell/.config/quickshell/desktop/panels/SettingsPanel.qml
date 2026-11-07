@@ -415,14 +415,21 @@ Overlay {
                                         Layout.fillWidth: true
                                         text: page.modelData.label
                                     }
-                                    AgentView {
-                                        id: assistant
+                                    ScrollView {
                                         Layout.fillWidth: true
-                                        shown: page.shownHere
-                                    }
-                                    AssistantLanguage {}
-                                    Item {
                                         Layout.fillHeight: true
+                                        contentWidth: availableWidth
+                                        clip: true
+                                        ColumnLayout {
+                                            width: parent.width
+                                            spacing: 14
+                                            AgentView {
+                                                id: assistant
+                                                Layout.fillWidth: true
+                                                shown: page.shownHere
+                                            }
+                                            AssistantLanguage {}
+                                        }
                                     }
                                 }
                             }

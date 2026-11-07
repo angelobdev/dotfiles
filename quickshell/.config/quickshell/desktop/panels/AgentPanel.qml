@@ -5,8 +5,8 @@ import "../components"
 import "../services"
 import "agent"
 
-// The Claude Code assistant, opened from its bar icon: what Claude is doing, the subscription usage its
-// status line reports (agent.py), and the drop-down console.
+// The AI coding assistant panel, opened from its bar icon: what the active agent is doing, rate-limit meters
+// when the agent reports them, model and context use, and the drop-down console.
 Overlay {
     id: root
     panelName: "agent"
@@ -15,14 +15,14 @@ Overlay {
         ColumnLayout {
             id: layout
             anchors {
+                top: parent.top
                 left: parent.left
                 right: parent.right
-                top: parent.top
                 margins: Theme.panelPadding
             }
             spacing: 14
             PanelHeader {
-                title: I18n.tr("assistant.claude")
+                title: Agent.name
                 Layout.fillWidth: true
             }
             AgentView {

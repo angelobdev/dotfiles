@@ -7,31 +7,36 @@
   },
   "assistant": {
     "errors": {
-      "claudeMissing": "Claude Code non è installato: vedi docs/features/ai-assistant.md",
-      "usage": "Uso: agent.py hook|statusline (JSON su stdin, da Claude Code)"
+      "agentMissing": "%1 non è installato: vedi docs/features/ai-assistant.md",
+      "anyMissing": "Nessun agente di coding installato: vedi docs/features/ai-assistant.md",
+      "usage": "Uso: agent.py probe|launch|watch|hook|statusline|agy-statusline|image-arg|cwd"
     },
+    "folder": "Cartella: %1",
     "language": "italian",
     "title": "Assistente AI",
     "moveWindow": "Assistente AI · porta dentro o fuori la finestra",
     "statusLine": {
       "context": "contesto %1%"
     },
-    "claude": "Claude",
     "openConsole": "Apri console",
+    "openHere": "Apri nella cartella attiva",
     "hideConsole": "Nascondi console",
+    "restartWith": "Riavvia con %1",
     "notices": {
-      "permission": "Claude chiede un permesso",
-      "finished": "Claude ha finito",
-      "error": "Claude si è fermato con un errore"
+      "permission": "%1 chiede un permesso",
+      "finished": "%1 ha finito",
+      "error": "%1 si è fermato con un errore"
     },
     "plans": {
       "max": "Max %1x",
       "maxPlain": "Max",
-      "pro": "Pro"
+      "pro": "Pro",
+      "ultra": "Ultra"
     },
     "states": {
-      "missing": "Claude Code non è installato",
-      "off": "Non avviato: apri la console per avviare Claude",
+      "anyMissing": "Nessun agente di coding installato",
+      "missing": "%1 non è installato",
+      "off": "Non avviato: apri la console per avviare %1",
       "ready": "Pronto",
       "working": "Al lavoro…",
       "permission": "Aspetta un tuo permesso",
@@ -40,7 +45,6 @@
     },
     "dayFormat": "ddd",
     "since": "Dalle %1",
-    "panelTooltip": "Claude",
     "usage": {
       "title": "Utilizzo",
       "titlePlan": "Utilizzo · %1",
@@ -666,9 +670,20 @@
     },
     "hypr": {
       "add": "Aggiungi una scorciatoia",
+      "agent": "Agente di programmazione",
+      "agentAuto": "Automatico",
+      "agentAutoDetected": "Automatico (%1)",
+      "agentDirectory": "Cartella di lavoro",
+      "agentDirectoryHint": "Cartella predefinita per le nuove sessioni; vuoto apre il repository dei dotfiles.",
+      "agentGroup": "Agente",
+      "agentHint": "Usato all'avvio di una nuova sessione nella console; un comando personalizzato si può indicare come aiAgent in shell.json.",
+      "agentNotInstalled": "%1 (non installato)",
+      "agyGroup": "Antigravity",
+      "agyStatusline": "Quote e riga di stato",
+      "agyStatuslineHint": "Configura statusLine in ~/.gemini/antigravity-cli/settings.json così Antigravity invia quote residue, piano, modello e contesto al pannello della barra.",
       "assistantGroup": "Lingua",
       "assistantLanguage": "Dettatura e risposte",
-      "assistantLanguageHint": "Chiudi una volta la finestra dell'assistente perché una nuova sessione la usi.",
+      "assistantLanguageHint": "Passata a Claude Code per dettatura vocale e risposte; chiudi una volta la finestra dell'assistente per applicarla.",
       "bindsGroup": "Le tue scorciatoie",
       "bindsHint": "Tasti come SUPER + SHIFT + B e un comando da eseguire. Una scorciatoia viene salvata quando entrambi sono validi; hypr.lua può ancora assegnare qualunque altra cosa.",
       "command": "Comando",
@@ -1001,7 +1016,7 @@
       "session": "Sessione",
       "colorPicker": "Scegli un colore",
       "areaText": "Copia testo",
-      "areaAsk": "Chiedi a Claude"
+      "areaAsk": "Chiedi all’assistente"
     },
     "pages": {
       "apps": "App",
@@ -1137,10 +1152,10 @@
     "ocrMissing": "Il riconoscimento del testo richiede tesseract: %1",
     "noText": "Nessun testo trovato in quell’area.",
     "textCopied": "Testo copiato",
-    "imageCopied": "Area copiata per Claude",
+    "imageCopied": "Area copiata per l’assistente",
     "pasteHint": "Incollala nel prompt con Ctrl + V.",
     "text": "Testo da un’area dello schermo",
-    "ask": "Chiedi a Claude di un’area dello schermo"
+    "ask": "Chiedi all’assistente di un’area dello schermo"
   },
   "privacy": {
     "title": "Privacy",

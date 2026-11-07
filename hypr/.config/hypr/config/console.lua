@@ -1,5 +1,5 @@
 -- The assistant console, after the Omarchy 4.5 Quake console: the special workspace "ai" (Super + A runs
--- Claude Code there through desktop-ai) drops down under the bar over a dimmed desktop. Its windows are
+-- the configured coding agent there through desktop-ai) drops down under the bar over a dimmed desktop. Its windows are
 -- tiled by the "console" layout below in one box at the top of the usable area, 60% of the height and
 -- twice as wide, side by side when there are several, and always above the docked on-screen keyboard.
 -- It closes on a workspace change, on a click or tap outside (the shell's catcher layer, desktop-shell
@@ -61,7 +61,7 @@ function desktop_console_hide(name)
     end
 end
 
--- desktop-ai, when Claude was moved out of the console: back in, tiled again, and the console shown on
+-- desktop-ai, when the assistant window was moved out of the console: back in, tiled again, and the console shown on
 -- the focused monitor.
 function desktop_console_show()
     for _, window in ipairs(hl.get_windows()) do
@@ -97,7 +97,7 @@ function desktop_console_move()
 end
 
 -- A window born in the open console (Super + Return, the launcher, the dock) belongs on the workspace
--- under it. Claude itself, and windows moved in on purpose, stay.
+-- under it. The assistant itself, and windows moved in on purpose, stay.
 hl.on("window.open", function(window)
     if not window or window.class == "desktop-ai" or not window.workspace
         or window.workspace.name ~= "special:ai" then

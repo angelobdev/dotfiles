@@ -345,13 +345,13 @@ PanelWindow {
             Accessible.name: I18n.tr("updates.title")
             onClicked: ShellState.toggle("updates", bar.screen)
         }
-        // Claude: a dot while it works (accent), asks (danger) or finished unseen; the panel on click.
+        // Coding agent: a dot while it works (accent), asks (danger) or finished unseen; the panel on click.
         BarButton {
             id: agentButton
-            visible: Agent.available
+            visible: Agent.available || Config.aiAgent !== ""
             iconName: "assistant"
-            tooltip: I18n.tr("assistant.panelTooltip")
-            Accessible.name: I18n.tr("assistant.claude")
+            tooltip: Agent.name
+            Accessible.name: Agent.name
             onClicked: ShellState.toggle("agent", bar.screen)
             Rectangle {
                 id: agentDot

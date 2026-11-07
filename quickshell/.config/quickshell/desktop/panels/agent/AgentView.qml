@@ -1,11 +1,12 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import "../.."
 import "../../components"
 import "../../services"
 
-// The Claude Code assistant: what Claude is doing, the subscription usage its status line reports
-// (agent.py), and the drop-down console. The assistant panel (its bar icon) and Settings → Assistant show it.
+// The AI coding assistant: what the active agent is doing, rate-limit meters when reported,
+// model and context use, and the drop-down console. The assistant panel and Settings → Assistant show it.
 ColumnLayout {
     id: root
     // On screen: the clock that dates the usage runs only then.
@@ -17,9 +18,9 @@ ColumnLayout {
         now = new Date()
     function stateText() {
         if (!Agent.available)
-            return I18n.tr("assistant.states.missing");
+            return Agent.hasNamedAgent ? I18n.tr("assistant.states.missing", [Agent.name]) : I18n.tr("assistant.states.anyMissing");
         if (!Agent.running)
-            return I18n.tr("assistant.states.off");
+            return I18n.tr("assistant.states.off", [Agent.name]);
         switch (Agent.state) {
         case "working":
             return I18n.tr("assistant.states.working");
@@ -142,17 +143,30 @@ ColumnLayout {
         }
     }
     Heading {
+        visible: Agent.hasLimits
         text: Agent.plan !== "" ? I18n.tr("assistant.usage.titlePlan", [Agent.plan]) : I18n.tr("assistant.usage.title")
         font.pixelSize: Theme.textSize(14)
         Layout.topMargin: 4
     }
+    Repeater {
+        model: Agent.hasBuckets ? Agent.usage.buckets : []
+        delegate: Meter {
+            required property var modelData
+            label: modelData.label || I18n.tr("assistant.usage.title")
+            window: modelData
+            now: root.now
+            resets: modelData?.resets ? root.when(modelData.resets, "assistant.usage.resetsAt", "assistant.usage.resetsOn") : ""
+        }
+    }
     Meter {
+        visible: Agent.hasLimits && !Agent.hasBuckets
         label: I18n.tr("assistant.usage.session")
         window: Agent.usage.fiveHour ?? null
         now: root.now
         resets: window?.resets ? root.when(window.resets, "assistant.usage.resetsAt", "assistant.usage.resetsOn") : ""
     }
     Meter {
+        visible: Agent.hasLimits && !Agent.hasBuckets
         label: I18n.tr("assistant.usage.week")
         window: Agent.usage.sevenDay ?? null
         now: root.now
@@ -160,17 +174,36 @@ ColumnLayout {
     }
     Text {
         Layout.fillWidth: true
+        visible: Agent.hasLimits
         text: Agent.usage.limitsUpdated ? root.when(Agent.usage.limitsUpdated, "assistant.usage.updatedAt", "assistant.usage.updatedOn") : I18n.tr("assistant.usage.empty")
         color: Theme.muted
         font.family: Theme.font
         font.pixelSize: Theme.textSize(11)
         wrapMode: Text.Wrap
     }
+    function shortPath(path) {
+        const home = Quickshell.env("HOME") || "";
+        if (home !== "" && path === home)
+            return "~";
+        if (home !== "" && path.startsWith(home + "/"))
+            return "~" + path.slice(home.length);
+        return path;
+    }
     Text {
         Layout.fillWidth: true
-        visible: Agent.running && (Agent.usage.model ?? "") !== ""
-        text: Agent.usage.context !== null && Agent.usage.context !== undefined ? I18n.tr("assistant.usage.modelContext", [Agent.usage.model, Math.round(Agent.usage.context)]) : Agent.usage.model ?? ""
+        visible: (Agent.usage.model ?? "") !== "" && (Agent.running || Agent.hasLimits)
+        text: Agent.running && Agent.usage.context !== null && Agent.usage.context !== undefined ? I18n.tr("assistant.usage.modelContext", [Agent.usage.model, Math.round(Agent.usage.context)]) : Agent.usage.model ?? ""
         textFormat: Text.PlainText
+        color: Theme.muted
+        font.family: Theme.font
+        font.pixelSize: Theme.textSize(11)
+    }
+    Text {
+        Layout.fillWidth: true
+        visible: Agent.running && Agent.sessionDirectory !== ""
+        text: I18n.tr("assistant.folder", [root.shortPath(Agent.sessionDirectory)])
+        textFormat: Text.PlainText
+        elide: Text.ElideMiddle
         color: Theme.muted
         font.family: Theme.font
         font.pixelSize: Theme.textSize(11)
@@ -178,12 +211,33 @@ ColumnLayout {
     ActionButton {
         Layout.fillWidth: true
         enabled: Agent.available
-        highlighted: true
+        highlighted: !Agent.needsRestart
         iconName: "assistant"
         text: Agent.consoleOpen ? I18n.tr("assistant.hideConsole") : I18n.tr("assistant.openConsole")
         onClicked: {
             ShellState.close();
             Agent.toggleConsole();
+        }
+    }
+    ActionButton {
+        Layout.fillWidth: true
+        visible: Agent.needsRestart
+        highlighted: true
+        iconName: "reboot"
+        text: I18n.tr("assistant.restartWith", [Agent.probedName])
+        onClicked: {
+            ShellState.close();
+            Agent.restartConsole();
+        }
+    }
+    ActionButton {
+        Layout.fillWidth: true
+        visible: Agent.available
+        iconName: "folder"
+        text: I18n.tr("assistant.openHere")
+        onClicked: {
+            ShellState.close();
+            Agent.openHere();
         }
     }
 }

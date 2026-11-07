@@ -51,7 +51,7 @@ var bindKeys = {
     "Zoom out": "zoom.out",
     "Reset zoom": "zoom.reset",
     "Text from screen area": "area.text",
-    "Ask Claude about a screen area": "area.ask",
+    "Ask the assistant about a screen area": "area.ask",
     "Focus session": "focus.session",
     "Switch windows": "bindings.switchWindows",
     "Switch windows backwards": "bindings.switchWindowsBack",

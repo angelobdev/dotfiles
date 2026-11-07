@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # A screen area, chosen with slurp (Esc cancels):
 #   text  its text (tesseract, Italian and English), copied to the clipboard;
-#   ask   the area as an image for Claude in the assistant console: its path is typed at the prompt, or, with a
+#   ask   the area as an image for the assistant console: its path is typed at the prompt, or, with a
 #         console started before this existed, the image is copied for Ctrl + V.
 set -euo pipefail
 message() { python3 "$HOME/.local/libexec/desktop/i18n.py" "$@"; }
@@ -36,16 +36,35 @@ if [[ $mode == text ]]; then
     notify edit-copy-symbolic "$(message 'area.textCopied')" "$(printf '%s' "$text" | head -c 240)"
     exit 0
 fi
-# ask: desktop-ai starts its kitty with a remote-control socket for this.
+# ask: desktop-ai starts its kitty with a remote-control socket for this; start it first when not running yet.
 socket="${XDG_RUNTIME_DIR:-/tmp}/desktop-ai-kitty"
-if [[ -S $socket ]] && kitty @ --to "unix:$socket" send-text --match all "$image " >/dev/null 2>&1; then
-    hyprctl eval 'desktop_console_show()' >/dev/null
-    exit 0
+fresh=0
+if ! hyprctl clients -j | grep -q '"class": "desktop-ai"'; then
+    "$HOME/.local/bin/desktop-ai" toggle
+    fresh=1
+    for _ in {1..25}; do
+        [[ -S $socket ]] && break
+        sleep 0.1
+    done
+    # Give the newly started TUI prompt a moment to attach to the PTY before typing.
+    [[ -S $socket ]] && sleep 0.35
+fi
+arg="$(python3 "$HOME/.local/libexec/desktop/agent.py" image-arg "$image")"
+if [[ -S $socket ]]; then
+    for _ in {1..10}; do
+        if kitty @ --to "unix:$socket" send-text --match all -- "$arg" >/dev/null 2>&1; then
+            hyprctl eval 'desktop_console_show()' >/dev/null
+            exit 0
+        fi
+        sleep 0.1
+    done
 fi
 wl-copy --type image/png <"$image"
-if hyprctl clients -j | grep -q '"class": "desktop-ai"'; then
-    hyprctl eval 'desktop_console_show()' >/dev/null
-else
-    "$HOME/.local/bin/desktop-ai" toggle
+if (( fresh == 0 )); then
+    if hyprctl clients -j | grep -q '"class": "desktop-ai"'; then
+        hyprctl eval 'desktop_console_show()' >/dev/null
+    else
+        "$HOME/.local/bin/desktop-ai" toggle
+    fi
 fi
 notify image-x-generic-symbolic "$(message 'area.imageCopied')" "$(message 'area.pasteHint')"
