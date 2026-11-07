@@ -34,6 +34,7 @@ DESCRIPTIONS = {
     'tablet': 'A 2-in-1: screen rotation, stylus, sign-in without the fingerprint reader while folded, touchscreen gestures (Hyprgrass).',
     'plugins': 'What building the Hyprland plugins needs, from RPM Fusion too; the RPM Fusion ffmpeg replaces ffmpeg-free.',
     'apps': 'Zen Browser, 1Password, VS Code, Neovim, gh, glab, uv, gcc and a few command-line tools.',
+    'herdr': 'The Herdr app and herdr-core in ~/.local: the assistant console for any coding agent; they update themselves.',
     'containers': 'Docker (moby-engine, docker-compose, the docker group) and Tailscale.',
     'media': 'Loupe, Papers and Showtime for images, PDFs and videos.',
     'gaming': 'Steam, gamescope and the 32-bit drivers games need.',
@@ -75,14 +76,16 @@ def linked(package, path):
 
 
 def profile_status(plan, name):
-    # Only what can be seen without sudo: its packages, its swaps, its AUR packages and its Stow links.
+    # Only what can be seen without sudo: its packages, its swaps, its AUR packages, its archives and its Stow links.
     one = plan._replace(profiles=(name,))
     wanted = list(dict.fromkeys(installer.wanted_packages(one)))
     missing = (installer.packages_pending(one) if wanted else []) + installer.swaps_pending(one)
     missing += [item.split()[0] for item in installer.aur_pending(one)]
+    missing += [item.split()[0] for item in installer.archives_pending(one)]
     links = [(package, path) for package in plan.table[name].get('stow', ()) for path in stow_files(package)]
     missing += [str(path.relative_to(REPO)) for package, path in links if not linked(package, path)]
-    return Status(missing, len(wanted) + len(installer.swaps(one)) + len(installer.merged(one, 'aur')) + len(links))
+    return Status(missing, len(wanted) + len(installer.swaps(one)) + len(installer.merged(one, 'aur')) + len(installer.merged(one, 'archives'))
+                  + len(links))
 
 
 def installed(status):
@@ -583,7 +586,7 @@ Source = namedtuple('Source', 'key title summary details note selectable pins er
 MANIFEST = REPO / 'scripts/install/manifest.toml'
 HELPERS = REPO / 'shell/.local/libexec/desktop'
 # The installer step that applies each source; Flatpak and the repository are done here.
-STEP_OF = {'system': 'upgrade', 'aur': 'aur', 'clones': 'clones'}
+STEP_OF = {'system': 'upgrade', 'aur': 'aur', 'clones': 'clones', 'archives': 'archives'}
 
 
 def shell_helper(name):
@@ -632,6 +635,8 @@ PIN_NOTES = {
            'scripts/install/manifest.toml, for you to commit, and makepkg builds them.',
     'clones': "Each clone follows its release tags (track = 'tags' in the manifest) or else the head of its branch. "
               'The new commits go into scripts/install/manifest.toml, for you to commit, and the clones step checks them out.',
+    'archives': 'Release archives update themselves once installed (Herdr and hc): a new pin only changes what a new install '
+                'unpacks. The new version and sha256 go into scripts/install/manifest.toml, for you to commit.',
 }
 
 
@@ -658,7 +663,7 @@ def pin_source(plan, kind, title):
             details += [f'{pin.name} {pin.label}', '  changes: ' + pin.url]
     error = f'{", ".join(failed)}: the remote did not answer.' if failed else ''
     summary = (', '.join(f'{pin.name} {pin.label}' for pin in pins) or (f'{", ".join(held)}: newer, but changed here' if held else '')
-               or ('check failed' if failed else 'at their latest commits'))
+               or ('check failed' if failed else ('at their latest versions' if kind == 'archives' else 'at their latest commits')))
     return Source(kind, title, summary, details + ([error] if error else []), PIN_NOTES[kind], bool(pins), tuple(pins), error)
 
 
@@ -726,6 +731,7 @@ def check_updates(ui, plan):
     pins = (
         ('aur', 'AUR packages', lambda: pin_source(plan, 'aur', 'AUR packages')),
         ('clones', 'zsh plugins', lambda: pin_source(plan, 'clones', 'zsh plugins')),
+        ('archives', 'Release archives', lambda: pin_source(plan, 'archives', 'Release archives')),
     ) if maintainer() else ()
     checks = (
         ('system', 'System packages', lambda: package_source(plan, updates)),
@@ -1013,7 +1019,7 @@ def apply_updates(plan, picked):
         if pins:
             text = MANIFEST.read_text(encoding='utf-8')
             for pin in pins:
-                text = installer.repin(text, pin.old, pin.new, pin.version, pin.tag)
+                text = installer.apply_pin(text, pin)
             MANIFEST.write_text(text, encoding='utf-8')
             print(f'Pinned in {MANIFEST.relative_to(REPO)}: ' + ', '.join(f'{pin.name} {pin.label}' for pin in pins), flush=True)
             # Read again: the steps below build and check out what it pins now.

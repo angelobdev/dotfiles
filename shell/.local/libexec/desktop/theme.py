@@ -1273,6 +1273,7 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('apply')
+    commands.add_parser('herdr')
     choose = commands.add_parser('set')
     choose.add_argument('name')
     listing = commands.add_parser('list')
@@ -1340,7 +1341,7 @@ def build_parser():
 
 # Commands that change the theme state run one at a time: the panel queue and DynamicTheme.qml can overlap,
 # and each rewrites current.json, preferences.json and the rendered files.
-LOCKED = {'apply', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme', 'cursor', 'shell-icons',
+LOCKED = {'apply', 'herdr', 'set', 'generate', 'dynamic', 'window-style', 'font', 'icon-theme', 'cursor', 'shell-icons',
           'bar-style', 'glass', 'text-scale', 'reduce-effects'}
 
 
@@ -1358,6 +1359,13 @@ def command_apply(arguments):
     apply(current())
     if not set(CURSOR_PACKS) <= {theme['id'] for theme in cursor_themes()}:
         spawn(['cursor-fetch'])
+
+
+# Herdr before its first start, which has no folder yet: the current theme goes there, so it opens in it.
+def command_herdr(arguments):
+    HERDR.mkdir(parents=True, exist_ok=True)
+    name = current()
+    apply_herdr(complete(with_preferences(load(name), preferences(), name)))
 
 
 def command_cursor_fetch(arguments):
