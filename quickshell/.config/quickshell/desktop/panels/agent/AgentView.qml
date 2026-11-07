@@ -14,18 +14,20 @@ ColumnLayout {
     spacing: 14
     property date now: new Date()
     // The usage of the subscription: Claude Code reports it, so with herdr only while one of its agents runs.
-    readonly property bool claudeShown: !Agent.herdr || Agent.agents.some(agent => agent.app === "claude-code")
+    readonly property bool claudeShown: Agent.herdr ? Agent.agents.some(agent => agent.app === "claude-code") : Agent.claude
     onShownChanged: if (shown)
         now = new Date()
     function stateText() {
         if (!Agent.available)
             return I18n.tr("assistant.states.missing");
         if (!Agent.running)
-            return I18n.tr("assistant.states.off");
+            return Agent.primaryAgent ? I18n.tr("assistant.states.off", [Agent.primaryAgent.name]) : I18n.tr("assistant.states.offAny");
         return stateName(Agent.state);
     }
     function stateName(state) {
         switch (state) {
+        case "running":
+            return I18n.tr("assistant.states.running");
         case "working":
             return I18n.tr("assistant.states.working");
         case "permission":

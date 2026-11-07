@@ -2,26 +2,42 @@
 
 [← Docs](../README.md)
 
-Claude Code stays a real terminal app, with its voice and permission prompts, and the desktop wraps it: a drop-down console, a state icon in the bar, usage meters and notifications. With herdr installed, the console is the Herdr app and the desktop follows any coding agent ([below](#with-herdr-any-coding-agent)).
+A coding agent (Claude Code, Codex, Antigravity CLI or one you declare) stays a real terminal app, and the desktop wraps it: a drop-down console, a state icon in the bar, notifications and, for Claude Code, its voice, permission prompts and usage meters. You choose which agents to install and the primary one in **Settings → Assistant** ([below](#coding-agents)). With herdr installed, the console is the Herdr app and the desktop follows any coding agent ([below](#with-herdr-any-coding-agent)).
 
 ## Using it
 
 `Super + A` drops the Claude Code console down from the bar (details below); a click or tap outside, a workspace change or `Super + A` again hides it, and Claude keeps running. `Super + Shift + A` moves the active window into the console or back out. It is not in the dock: the Claude icon in the bar opens a panel with what Claude is doing, the 5-hour and 7-day usage of the subscription with their reset times, and Open / Hide console. Its dot shows Claude working (pulsing), waiting for a permission (red) or finished while the console was hidden; in those cases a notification with **Open console** arrives too.
 
+## Coding agents
+
+Each agent is a JSON file: the shipped ones are in `shell/.local/share/desktop/agents/` (`claude.json`, `codex.json`, `antigravity.json`), and a file of the same name in `~/.config/desktop/agents/` replaces one or adds another (`agents.py`, which reads them). **Settings → Assistant → Coding agents** lists them: **Install** runs the agent's official installer in a terminal you see (it may ask something or print a sign-in link), and stays disabled while a program it needs is missing (`npm` for Codex). **Primary agent** is the one `Super + A` starts: **Automatic** is the first installed in the list order, and the choice is `aiPrimary` in `~/.config/desktop/shell.json`. `DESKTOP_AI_AGENT` (`hl.env` in `~/.config/desktop/hypr.lua`, then a new session) wins over it.
+
+| Agent | Program | Installer |
+| --- | --- | --- |
+| Claude Code (Anthropic) | `claude` | `curl -fsSL https://claude.ai/install.sh \| bash` |
+| Codex (OpenAI) | `codex` | `npm install --global --prefix "$HOME/.local" @openai/codex` |
+| Antigravity CLI (Google) | `agy` | `curl -fsSL https://antigravity.google/cli/install.sh \| bash` |
+
+A descriptor has `name`, `binary` (the program that tells it is installed, looked up in `~/.local/bin` first), `command` (what the console runs) and optionally `vendor`, `homepage`, `install` (a shell command), `needs` (programs `install` uses), `image` (what **Ask about a screen area** types at its prompt, with `{path}`: `@{path}` for Antigravity), `herdr` (herdr's name for it), `order` and `hooks`. Only Claude Code has `"hooks": "claude"`: the state hooks, the status line, voice and the language setting below are Claude Code's; with another primary agent in the Kitty console the bar shows it running while its window is open, with no finer state. With herdr, every agent herdr recognises reports its own state.
+
+```json
+{"name": "Aider", "binary": "aider", "command": ["aider", "--no-auto-commits"], "install": "pipx install aider-chat", "needs": ["pipx"], "order": 10}
+```
+
 ## With herdr: any coding agent
 
 With [herdr](https://herdr.dev/) installed (`herdr-app` and `herdr-core` on the `PATH` or in `~/.local/bin`), the console is the **Herdr app** instead of a Kitty window running Claude Code, and the desktop follows **every agent herdr recognises** (Claude Code, Codex, opencode, Cursor and others), several at once:
 
-- `Super + A` drops the Herdr app down as the console (the `desktop-ai-herdr` window rule puts its window in the special workspace `ai`; a Herdr window opened before is moved in); its spaces, tabs and agents list are herdr's. Agents keep running when the console hides or the window closes: herdr-core owns them.
+- `Super + A` drops the Herdr app down as the console and, when herdr runs no agent yet, starts the primary agent in a new Herdr terminal (the `desktop-ai-herdr` window rule puts its window in the special workspace `ai`; a Herdr window opened before is moved in); its spaces, tabs and agents list are herdr's. Agents keep running when the console hides or the window closes: herdr-core owns them.
 - The state comes from herdr-core: the shell follows `hc events --json` and reads `hc ls --json` after each change (`services/Agent.qml`). herdr's `blocked` is shown as waiting for you, `done` as finished, `error`, `working` and `idle` as they are, with herdr's message. The bar dot follows the agent needing attention first; the panel lists every agent with its herdr space, and a click shows that agent in the console (`herdr-app do terminal.show`).
 - While the console is hidden, an agent asking for you, finishing or failing sends a notification naming it; **Open console** shows that agent.
 - Claude Code's hooks are not used for the state then. The subscription usage is shown only while a Claude Code agent runs, as last reported by a session started from the Kitty console (herdr starts Claude Code without desktop-ai's status line). Voice dictation is Claude Code's own and works in herdr's terminals as anywhere.
-- **Ask Claude about a screen area** (`Super + Ctrl + A`) copies the image and opens the console: paste it with `Ctrl + V` (herdr pastes images).
+- **Ask the assistant about a screen area** (`Super + Ctrl + A`) copies the image and opens the console: paste it with `Ctrl + V` (herdr pastes images).
 - `DESKTOP_AI_CONSOLE=kitty` (`hl.env` in `~/.config/desktop/hypr.lua`, then a new session) keeps the Kitty console with herdr installed.
 
 ## How it is wired
 
-`Super + A` runs `desktop-ai`: the first press starts Claude Code (`claude`, installed in `~/.local/bin` by its installer) in a Kitty window of class `desktop-ai`, which the `desktop-ai` window rule puts on the special workspace `ai`. That workspace is a drop-down console, after the Omarchy 4.5 Quake console (`hypr/.config/hypr/config/console.lua`):
+`Super + A` runs `desktop-ai`: the first press starts the primary agent (Claude Code by default, `claude` in `~/.local/bin`) in a Kitty window of class `desktop-ai`, which the `desktop-ai` window rule puts on the special workspace `ai`. That workspace is a drop-down console, after the Omarchy 4.5 Quake console (`hypr/.config/hypr/config/console.lua`):
 
 - **Layout:** the Lua layout `lua:console` (`hl.layout.register`) tiles its windows in one box at the top of the usable area, just under the bar: 60% of the height below the bar and twice as wide (at most 92% of the width), centred, without a border. Two or more windows sit side by side across 96% of the width. The box never reaches below the docked on-screen keyboard, and it follows rotation, scale and monitor changes by itself.
 - **Look:** the rest of the screen is dimmed (`decoration.dim_special = 0.45`); the console slides in from the top and back up (`specialWorkspaceIn`/`Out` in `appearance.lua`).
@@ -30,9 +46,9 @@ With [herdr](https://herdr.dev/) installed (`herdr-app` and `herdr-core` on the 
 - **Moving windows:** `Super + Shift + A` puts the active window into the console without showing it, or takes it back out to the normal workspace (`desktop_console_move`). When Claude itself was moved out, `Super + A` brings it back in and shows the console (`desktop_console_show`).
 - **Tablet mode:** the on-screen keyboard opens with the console and closes with it. Kitty keeps its text field active while the console is hidden over an empty workspace (no window takes the focus), so no activate or deactivate arrives; `services/Keyboard.qml` follows `Agent.consoleOpen` for that.
 
-Later presses toggle the console, so the same session stays alive while hidden; closing the window ends the session and the next press starts a new one. The session starts in the dotfiles repository (found from the Stow link of `desktop-ai`), so Claude Code reads its `.claude/CLAUDE.md`; `DESKTOP_AI_DIRECTORY` names another folder, and `$HOME` is the fallback. If `claude` is missing, a notification points here.
+Later presses toggle the console, so the same session stays alive while hidden; closing the window ends the session and the next press starts a new one. The session starts in the dotfiles repository (found from the Stow link of `desktop-ai`), so Claude Code reads its `.claude/CLAUDE.md`; `DESKTOP_AI_DIRECTORY` names another folder, and `$HOME` is the fallback. If no agent is installed, a notification points to Settings → Assistant.
 
-The session gets `--settings` for this window only, so the global `~/.claude/settings.json` is untouched: voice dictation in hold mode and `language`, which Claude Code uses both for dictation and for its replies. The language comes from the system locale (`assistant.language` in the catalogs: `english`, `italian`); choose another in **Settings → Assistant → Language**, or set `DESKTOP_AI_LANGUAGE` by hand (`hl.env("DESKTOP_AI_LANGUAGE", "italian")` in `~/.config/desktop/hypr.lua`, which wins over Settings), then close the assistant window.
+For Claude Code, the session gets `--settings` for this window only, so the global `~/.claude/settings.json` is untouched: voice dictation in hold mode and `language`, which Claude Code uses both for dictation and for its replies. The language comes from the system locale (`assistant.language` in the catalogs: `english`, `italian`); choose another in **Settings → Assistant → Language**, or set `DESKTOP_AI_LANGUAGE` by hand (`hl.env("DESKTOP_AI_LANGUAGE", "italian")` in `~/.config/desktop/hypr.lua`, which wins over Settings), then close the assistant window.
 
 The same `--settings` give the session a status line and hooks, both run by `libexec/desktop/agent.py`. They apply to sessions started after a change, so close the assistant window once; `/resume` in the new one continues an earlier conversation with them.
 

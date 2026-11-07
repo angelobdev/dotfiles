@@ -194,7 +194,7 @@ packages = [
 ]
 notes = [
     'Sign in to GitHub: gh auth login',
-    'Install Claude Code from its own installer: Super + A tells you when it is missing',
+    'Install a coding agent (Claude Code, Codex, Antigravity CLI) in Settings → Assistant',
 ]
 
 [[fedora.apps.files]]
@@ -344,7 +344,7 @@ packages = [
 packages = ['base-devel', 'neovim', 'github-cli', 'glab', 'uv', 'gcc', 'xclip', 'wev', 'unrar', 'fuse2']
 notes = [
     'Sign in to GitHub: gh auth login',
-    'Install Claude Code from its own installer: Super + A tells you when it is missing',
+    'Install a coding agent (Claude Code, Codex, Antigravity CLI) in Settings → Assistant',
 ]
 
 # Not in the Arch repositories. Updating one: install-desktop.py pins (review the PKGBUILD changes it links),

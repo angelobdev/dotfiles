@@ -7,8 +7,12 @@
   },
   "assistant": {
     "errors": {
-      "claudeMissing": "Claude Code is not installed: see docs/features/ai-assistant.md",
-      "usage": "Usage: agent.py hook|statusline (JSON on stdin, from Claude Code)"
+      "usage": "Usage: agent.py hook|statusline (JSON on stdin, from Claude Code)",
+      "unknownAgent": "No coding agent is called %1",
+      "agentMissing": "%1 is not installed: install it in Settings → Assistant",
+      "noInstall": "%1 has no install command: install it yourself",
+      "installNeeds": "%1 needs %2 to install",
+      "anyMissing": "No coding agent is installed: choose one in Settings → Assistant"
     },
     "language": "english",
     "title": "AI assistant",
@@ -33,17 +37,18 @@
       "pro": "Pro"
     },
     "states": {
-      "missing": "Claude Code is not installed",
-      "off": "Not running: open the console to start Claude",
+      "missing": "No coding agent is installed",
+      "off": "Not running: open the console to start %1",
       "ready": "Ready",
       "working": "Working…",
       "permission": "Waiting for your permission",
       "finished": "Finished",
-      "error": "Stopped with an error"
+      "error": "Stopped with an error",
+      "offAny": "Not running: open the console to start an agent",
+      "running": "Running"
     },
     "dayFormat": "ddd",
     "since": "Since %1",
-    "panelTooltip": "Claude",
     "usage": {
       "title": "Usage",
       "titlePlan": "Usage · %1",
@@ -58,7 +63,27 @@
       "updatedOn": "Updated %1"
     },
     "agents": "Agents",
-    "noAgents": "No agent is running. Open the console to start one in Herdr."
+    "noAgents": "No agent is running. Open the console to start one in Herdr.",
+    "install": {
+      "running": "Installing %1…",
+      "done": "%1 is installed.",
+      "failed": "The install of %1 failed: see the messages above.",
+      "close": "Press Enter to close this window.",
+      "title": "Install %1"
+    },
+    "agentsGroup": "Coding agents",
+    "primary": "Primary agent (Super + A)",
+    "primaryAutomatic": "Automatic (%1)",
+    "primaryNone": "None installed",
+    "primaryOverride": "DESKTOP_AI_AGENT is set to %1 and wins over this choice.",
+    "primaryHerdr": "Herdr is installed: the console is the Herdr app, and the primary agent is the one it starts when no agent is running.",
+    "primaryKitty": "The console runs the primary agent in a Kitty window.",
+    "installedAt": "Installed: %1",
+    "notInstalled": "Not installed",
+    "needs": "Needs %1 to install",
+    "installing": "Installing…",
+    "agentsHint": "Install opens a terminal with the official installer of the agent. Each agent is a JSON file: add your own in ~/.config/desktop/agents (see docs/features/ai-assistant.md).",
+    "installAction": "Install"
   },
   "audio": {
     "devices": "Inputs & outputs",
@@ -1006,7 +1031,7 @@
       "session": "Session",
       "colorPicker": "Pick a color",
       "areaText": "Copy text",
-      "areaAsk": "Ask Claude"
+      "areaAsk": "Ask the assistant"
     },
     "pages": {
       "apps": "Apps",
@@ -1142,10 +1167,10 @@
     "ocrMissing": "Text recognition needs tesseract: %1",
     "noText": "No text found in that area.",
     "textCopied": "Text copied",
-    "imageCopied": "Area copied for Claude",
+    "imageCopied": "Area copied for the assistant",
     "pasteHint": "Paste it at the prompt with Ctrl + V.",
     "text": "Text from screen area",
-    "ask": "Ask Claude about a screen area"
+    "ask": "Ask the assistant about a screen area"
   },
   "privacy": {
     "title": "Privacy",

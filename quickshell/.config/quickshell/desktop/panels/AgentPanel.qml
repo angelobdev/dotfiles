@@ -22,7 +22,7 @@ Overlay {
             }
             spacing: 14
             PanelHeader {
-                title: Agent.herdr ? I18n.tr("assistant.agents") : I18n.tr("assistant.claude")
+                title: Agent.title
                 Layout.fillWidth: true
             }
             AgentView {

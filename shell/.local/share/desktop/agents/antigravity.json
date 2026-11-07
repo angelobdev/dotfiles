@@ -1,0 +1,12 @@
+{
+  "name": "Antigravity CLI",
+  "vendor": "Google",
+  "homepage": "https://antigravity.google",
+  "binary": "agy",
+  "command": ["agy"],
+  "install": "curl -fsSL https://antigravity.google/cli/install.sh | bash",
+  "needs": ["curl"],
+  "image": "@{path}",
+  "herdr": "antigravity",
+  "order": 3
+}
