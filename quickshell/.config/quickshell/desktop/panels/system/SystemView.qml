@@ -10,7 +10,7 @@ import "../updates"
 import "../../SettingsSchema.js" as Schema
 
 // Settings → System: About (the computer and the desktop, from about.py), Updates (the view of the updates
-// panel) and Advanced (the folder and files of your own settings, Hyprland's config errors, and the shell
+// panel), Profiles (the installer's, to install or remove: ProfilesView) and Advanced (the folder and files of your own settings, Hyprland's config errors, and the shell
 // options back to their defaults).
 ColumnLayout {
     id: root
@@ -20,7 +20,7 @@ ColumnLayout {
     readonly property Item focusItem: root
     property string tab: ShellState.recall("settings/system", "about")
     onTabChanged: ShellState.remember("settings/system", tab)
-    readonly property var tabs: ["about", "updates", "advanced"]
+    readonly property var tabs: ["about", "updates", "profiles", "advanced"]
     property var about: ({})
     property string configErrors: ""
     property var ownFiles: []
@@ -117,6 +117,10 @@ ColumnLayout {
                     label: I18n.tr("settings.system.updates")
                 },
                 {
+                    name: "profiles",
+                    label: I18n.tr("settings.system.profiles")
+                },
+                {
                     name: "advanced",
                     label: I18n.tr("settings.system.advanced")
                 }
@@ -192,6 +196,10 @@ ColumnLayout {
         // Updates
         UpdatesView {
             shown: root.shown && root.tab === "updates"
+        }
+        // Profiles
+        ProfilesView {
+            shown: root.shown && root.tab === "profiles"
         }
         // Advanced
         ScrollView {
