@@ -966,6 +966,7 @@ def apply(name):
         for config in QTCT:
             install(config, outputs['qtct.conf'])
     apply_btop(outputs.get('btop.theme'))
+    apply_herdr(complete(theme))
     apply_gsettings(theme)
     apply_cursor(theme)
     return theme
@@ -985,6 +986,75 @@ def apply_btop(text):
         changed.append(wanted)
     if changed != lines:
         write_atomic(config, ''.join(changed))
+
+
+# The Herdr app (herdr.dev) redraws itself from files in ~/.config/herdr-app: the desktop theme becomes its theme
+# "desktop" (themes/desktop.json, terminal and panel colors), and settings.json points at it with the desktop's
+# fonts. A key of settings.json is changed only while it is unset or still what was written here last
+# (STATE/herdr-app.json): a theme or font picked in Herdr itself stays. A settings.json that does not parse is
+# left alone. Herdr reloads both live.
+HERDR = Path(os.environ.get('XDG_CONFIG_HOME') or HOME / '.config') / 'herdr-app'
+
+
+def herdr_theme(theme):
+    palette = theme['palette']
+    hex6 = lambda value: '#' + split_color(value, 'herdr')[0]
+    colors = {
+        'canvas': palette['base'], 'chrome': palette['base'], 'surface': palette['bg'], 'popover': palette['raised'],
+        'raised': palette['raised'], 'hover': mix(palette['raised'], palette['fg'], 0.08),
+        'selected': mix(palette['raised'], palette['accent'], 0.25), 'border': palette['border'],
+        'input': mix(palette['border'], palette['fg'], 0.2), 'muted': palette['muted'], 'dim': palette['dim'],
+        'accent': palette['accent'], 'accent_foreground': palette['accentFg'], 'solid': palette['accent'],
+        'solid_foreground': palette['accentFg'], 'working': palette['accent'], 'blocked': palette['danger'],
+        'done': palette['success'],
+    }
+    return {
+        'background': hex6(palette['bg']),
+        'foreground': hex6(palette['fg']),
+        # A background only: the text over it keeps its own color, so the accent is toned down to stay readable.
+        'selection': mix(palette['bg'], palette['accent'], 0.35),
+        'cursor': hex6(palette['accent']),
+        'ansi': [hex6(value) for value in theme['ansi'][:16]],
+        'colors': {key: hex6(value) for key, value in colors.items()},
+    }
+
+
+def herdr_settings(current, wanted, last):
+    # The new settings.json object: each wanted key set where it is unset or still the value written last time.
+    updated = dict(current)
+    for key, value in wanted.items():
+        if key not in current or current[key] == last.get(key):
+            updated[key] = value
+    return updated
+
+
+def apply_herdr(theme):
+    if not HERDR.is_dir():
+        return
+    write_atomic(HERDR / 'themes/desktop.json', json.dumps(herdr_theme(theme), indent=2) + '\n')
+    path = HERDR / 'settings.json'
+    try:
+        current = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+    except (OSError, ValueError):
+        return
+    if not isinstance(current, dict):
+        return
+    fonts = theme.get('fonts', {})
+    wanted = {'theme': 'desktop'}
+    if fonts.get('mono'):
+        wanted['font'] = fonts['mono']
+        # Herdr sizes terminal text in pixels at zoom 1, the desktop in points.
+        wanted['font_size'] = round(fonts.get('terminalSize', fonts.get('size', 11)) * 4 / 3)
+    if fonts.get('sans'):
+        wanted['ui_font'] = fonts['sans']
+    try:
+        last = json.loads((STATE / 'herdr-app.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        last = {}
+    updated = herdr_settings(current, wanted, last if isinstance(last, dict) else {})
+    if updated != current:
+        write_atomic(path, json.dumps(updated, indent=2, ensure_ascii=False) + '\n')
+    write_atomic(STATE / 'herdr-app.json', json.dumps(wanted, ensure_ascii=False) + '\n')
 
 
 def extension_installed(extension):
