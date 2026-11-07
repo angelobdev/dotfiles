@@ -202,6 +202,8 @@ ShellRoot {
                     running: Agent.running,
                     console: Agent.consoleScreen,
                     state: Agent.state,
+                    herdr: Agent.herdr,
+                    agents: Agent.agents,
                     unseen: Agent.unseen,
                     plan: Agent.plan,
                     usage: Agent.usage

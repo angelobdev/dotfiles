@@ -35,6 +35,13 @@ hl.window_rule({
     workspace = "special:ai",
 })
 
+-- With herdr installed the console is the Herdr app (desktop-ai starts it): its window goes there too.
+hl.window_rule({
+    name = "desktop-ai-herdr",
+    match = { class = "^herdr-app$" },
+    workspace = "special:ai",
+})
+
 -- desktop-updates upgrade: the terminal with desktop-manager updates, over the desktop in the middle.
 hl.window_rule({
     name = "desktop-updates",

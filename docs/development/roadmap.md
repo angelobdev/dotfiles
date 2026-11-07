@@ -117,6 +117,8 @@ Planned on October 29, 2026 after a research review (Omarchy 4.x, end-4, noctali
 
 ### AI assistant (Claude Code)
 
+- [x] Any coding agent through herdr (#2, part 1, 2026-11-07): with herdr installed the console is the Herdr app and the state comes from herdr-core (`hc events` / `hc ls`) for every agent it recognises; without it, Claude Code and its hooks as before. Next: the Herdr app following the desktop theme; an optional installer profile for herdr.
+
 - [x] `SUPER + A` toggles a floating Kitty window (`--class desktop-ai`) running `claude` on the special workspace `ai`; launched on first use, kept alive afterwards.
 - [x] Hold-Space dictation through Claude Code voice: `hold` mode passed with `--settings` to the assistant session only, language from the locale (`assistant.language`) or `DESKTOP_AI_LANGUAGE`; claude.ai login present, no `ANTHROPIC_API_KEY`, `arecord` available as recorder fallback. Confirmed by the user with the built-in microphone.
 - [x] Hints, i18n and docs (interface, integrations, troubleshooting).

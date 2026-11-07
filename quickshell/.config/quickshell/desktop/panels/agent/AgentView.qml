@@ -13,6 +13,8 @@ ColumnLayout {
     readonly property Item focusItem: root
     spacing: 14
     property date now: new Date()
+    // The usage of the subscription: Claude Code reports it, so with herdr only while one of its agents runs.
+    readonly property bool claudeShown: !Agent.herdr || Agent.agents.some(agent => agent.app === "claude-code")
     onShownChanged: if (shown)
         now = new Date()
     function stateText() {
@@ -20,7 +22,10 @@ ColumnLayout {
             return I18n.tr("assistant.states.missing");
         if (!Agent.running)
             return I18n.tr("assistant.states.off");
-        switch (Agent.state) {
+        return stateName(Agent.state);
+    }
+    function stateName(state) {
+        switch (state) {
         case "working":
             return I18n.tr("assistant.states.working");
         case "permission":
@@ -98,7 +103,73 @@ ColumnLayout {
             font.pixelSize: Theme.textSize(11)
         }
     }
+    // herdr: every agent, the one needing attention first; a click shows it in the console.
+    ColumnLayout {
+        visible: Agent.herdr
+        Layout.fillWidth: true
+        spacing: 4
+        Text {
+            visible: Agent.agents.length === 0
+            Layout.fillWidth: true
+            text: I18n.tr("assistant.noAgents")
+            wrapMode: Text.Wrap
+            color: Theme.muted
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize(13)
+        }
+        Repeater {
+            model: Agent.agents
+            ActionButton {
+                id: agentRow
+                required property var modelData
+                Layout.fillWidth: true
+                implicitHeight: agentText.implicitHeight + 16
+                alignLeft: true
+                onClicked: Agent.showAgent(modelData.address)
+                RowLayout {
+                    anchors {
+                        fill: parent
+                        leftMargin: 12
+                        rightMargin: 12
+                    }
+                    spacing: 10
+                    Rectangle {
+                        Layout.alignment: Qt.AlignTop
+                        Layout.topMargin: 6
+                        implicitWidth: 8
+                        implicitHeight: 8
+                        radius: 4
+                        color: ["permission", "error"].includes(agentRow.modelData.state) ? Theme.danger : agentRow.modelData.state === "working" ? Theme.accent : Theme.text
+                    }
+                    ColumnLayout {
+                        id: agentText
+                        Layout.fillWidth: true
+                        spacing: 2
+                        Text {
+                            Layout.fillWidth: true
+                            text: agentRow.modelData.name + (agentRow.modelData.where ? " · " + agentRow.modelData.where : "")
+                            textFormat: Text.PlainText
+                            elide: Text.ElideRight
+                            color: Theme.text
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(13)
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            text: [root.stateName(agentRow.modelData.state), agentRow.modelData.msg].filter(part => part !== "").join(" · ")
+                            textFormat: Text.PlainText
+                            elide: Text.ElideRight
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(11)
+                        }
+                    }
+                }
+            }
+        }
+    }
     RowLayout {
+        visible: !Agent.herdr
         Layout.fillWidth: true
         spacing: 12
         Rectangle {
@@ -142,17 +213,20 @@ ColumnLayout {
         }
     }
     Heading {
+        visible: root.claudeShown
         text: Agent.plan !== "" ? I18n.tr("assistant.usage.titlePlan", [Agent.plan]) : I18n.tr("assistant.usage.title")
         font.pixelSize: Theme.textSize(14)
         Layout.topMargin: 4
     }
     Meter {
+        visible: root.claudeShown
         label: I18n.tr("assistant.usage.session")
         window: Agent.usage.fiveHour ?? null
         now: root.now
         resets: window?.resets ? root.when(window.resets, "assistant.usage.resetsAt", "assistant.usage.resetsOn") : ""
     }
     Meter {
+        visible: root.claudeShown
         label: I18n.tr("assistant.usage.week")
         window: Agent.usage.sevenDay ?? null
         now: root.now
@@ -160,6 +234,7 @@ ColumnLayout {
     }
     Text {
         Layout.fillWidth: true
+        visible: root.claudeShown
         text: Agent.usage.limitsUpdated ? root.when(Agent.usage.limitsUpdated, "assistant.usage.updatedAt", "assistant.usage.updatedOn") : I18n.tr("assistant.usage.empty")
         color: Theme.muted
         font.family: Theme.font
@@ -168,7 +243,7 @@ ColumnLayout {
     }
     Text {
         Layout.fillWidth: true
-        visible: Agent.running && (Agent.usage.model ?? "") !== ""
+        visible: root.claudeShown && Agent.running && (Agent.usage.model ?? "") !== ""
         text: Agent.usage.context !== null && Agent.usage.context !== undefined ? I18n.tr("assistant.usage.modelContext", [Agent.usage.model, Math.round(Agent.usage.context)]) : Agent.usage.model ?? ""
         textFormat: Text.PlainText
         color: Theme.muted

@@ -20,9 +20,12 @@
     "openConsole": "Open console",
     "hideConsole": "Hide console",
     "notices": {
-      "permission": "Claude is asking for permission",
+      "agentError": "%1 stopped with an error",
+      "agentFinished": "%1 has finished",
+      "agentPermission": "%1 needs you",
+      "error": "Claude stopped with an error",
       "finished": "Claude has finished",
-      "error": "Claude stopped with an error"
+      "permission": "Claude is asking for permission"
     },
     "plans": {
       "max": "Max %1x",
@@ -53,7 +56,9 @@
       "resetsOn": "Resets %1",
       "updatedAt": "Updated at %1",
       "updatedOn": "Updated %1"
-    }
+    },
+    "agents": "Agents",
+    "noAgents": "No agent is running. Open the console to start one in Herdr."
   },
   "audio": {
     "devices": "Inputs & outputs",

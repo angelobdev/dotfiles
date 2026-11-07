@@ -2,11 +2,22 @@
 
 [← Docs](../README.md)
 
-Claude Code stays a real terminal app, with its voice and permission prompts, and the desktop wraps it: a drop-down console, a state icon in the bar, usage meters and notifications.
+Claude Code stays a real terminal app, with its voice and permission prompts, and the desktop wraps it: a drop-down console, a state icon in the bar, usage meters and notifications. With herdr installed, the console is the Herdr app and the desktop follows any coding agent ([below](#with-herdr-any-coding-agent)).
 
 ## Using it
 
 `Super + A` drops the Claude Code console down from the bar (details below); a click or tap outside, a workspace change or `Super + A` again hides it, and Claude keeps running. `Super + Shift + A` moves the active window into the console or back out. It is not in the dock: the Claude icon in the bar opens a panel with what Claude is doing, the 5-hour and 7-day usage of the subscription with their reset times, and Open / Hide console. Its dot shows Claude working (pulsing), waiting for a permission (red) or finished while the console was hidden; in those cases a notification with **Open console** arrives too.
+
+## With herdr: any coding agent
+
+With [herdr](https://herdr.dev/) installed (`herdr-app` and `herdr-core` on the `PATH` or in `~/.local/bin`), the console is the **Herdr app** instead of a Kitty window running Claude Code, and the desktop follows **every agent herdr recognises** (Claude Code, Codex, opencode, Cursor and others), several at once:
+
+- `Super + A` drops the Herdr app down as the console (the `desktop-ai-herdr` window rule puts its window in the special workspace `ai`; a Herdr window opened before is moved in); its spaces, tabs and agents list are herdr's. Agents keep running when the console hides or the window closes: herdr-core owns them.
+- The state comes from herdr-core: the shell follows `hc events --json` and reads `hc ls --json` after each change (`services/Agent.qml`). herdr's `blocked` is shown as waiting for you, `done` as finished, `error`, `working` and `idle` as they are, with herdr's message. The bar dot follows the agent needing attention first; the panel lists every agent with its herdr space, and a click shows that agent in the console (`herdr-app do terminal.show`).
+- While the console is hidden, an agent asking for you, finishing or failing sends a notification naming it; **Open console** shows that agent.
+- Claude Code's hooks are not used for the state then. The subscription usage is shown only while a Claude Code agent runs, as last reported by a session started from the Kitty console (herdr starts Claude Code without desktop-ai's status line). Voice dictation is Claude Code's own and works in herdr's terminals as anywhere.
+- **Ask Claude about a screen area** (`Super + Ctrl + A`) copies the image and opens the console: paste it with `Ctrl + V` (herdr pastes images).
+- `DESKTOP_AI_CONSOLE=kitty` (`hl.env` in `~/.config/desktop/hypr.lua`, then a new session) keeps the Kitty console with herdr installed.
 
 ## How it is wired
 
