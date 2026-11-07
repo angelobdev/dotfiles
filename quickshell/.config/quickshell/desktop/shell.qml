@@ -192,6 +192,7 @@ ShellRoot {
                     count: Updates.count,
                     packages: Updates.packages.length,
                     flatpaks: Updates.flatpaks.length,
+                    commits: Updates.behind,
                     compositor: Updates.compositor,
                     checked: Updates.checked,
                     checking: Updates.checking,

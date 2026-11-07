@@ -1103,6 +1103,10 @@
       "flatpaks": {
         "one": "%1 Flatpak app",
         "other": "%1 Flatpak apps"
+      },
+      "commits": {
+        "one": "%1 desktop commit",
+        "other": "%1 desktop commits"
       }
     },
     "notice": {
@@ -1119,6 +1123,10 @@
     "install": "Update",
     "packagesHeading": "System",
     "flatpaksHeading": "Flatpak",
+    "repositoryHeading": "Desktop · %1",
+    "repositoryMore": "…and %1 more",
+    "repositoryAhead": "This clone has commits of its own: merge the new ones by hand, the updates screen only fast-forwards.",
+    "repositoryDirty": "This clone has local changes: commit or stash them first, then the updates screen can pull.",
     "terminal": {
       "close": "Press Enter to close.",
       "failed": "Something went wrong (see above). Press Enter to close."
@@ -1127,7 +1135,8 @@
       "dnf": "dnf could not check for updates: %1",
       "pacman": "pacman could not check for updates: %1",
       "flatpak": "Flatpak could not check for updates: %1",
-      "usage": "Usage: updates.py check|status"
+      "git": "git could not check the repository: %1",
+      "usage": "Usage: updates.py check [repository]|status"
     }
   },
   "gaming": {

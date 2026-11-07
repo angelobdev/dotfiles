@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Available system updates (dnf or pacman, and Flatpak) for the shell's update icon.
+"""Available updates (dnf or pacman, Flatpak, and the commits of this repository) for the shell's update icon.
 
 check: refresh the metadata and write ~/.local/state/desktop-shell/updates.json, which services/Updates.qml
 watches (run by desktop-updates.timer 5 minutes after login and every 6 hours, 30 minutes after a failed check,
 and from the panel).
+check repository: only the repository, the other lists as they were (after a pull from the updates screen).
 status: print that file.
 """
 from common import release_id, write_atomic
@@ -21,6 +22,10 @@ STATE = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') /
 RETRY = '30min'
 # Packages whose update needs the Hyprland plugins rebuilt (scripts/install-hypr-plugins.py).
 COMPOSITOR = ('hyprland', 'hyprland-devel', 'hyprland-libs')
+# The clone this helper is linked from (Stow links every file, so the path resolves into it).
+REPO = Path(__file__).resolve().parents[4]
+# The new commits the panel lists; behind counts them all.
+COMMITS = 50
 
 
 def dnf_updates(output):
@@ -86,6 +91,41 @@ def flatpak_updates(output):
     return updates
 
 
+def git(*arguments):
+    # Never a password or passphrase prompt (no one sees this run): ssh fails instead, unless the user set their own
+    # command. The same as the updates screen of the guided installer.
+    environment = dict(os.environ, GIT_TERMINAL_PROMPT='0', LC_ALL='C')
+    command = ['git', '-C', str(REPO)]
+    if 'GIT_SSH_COMMAND' not in environment and not subprocess.run(command + ['config', 'core.sshCommand'], capture_output=True,
+                                                                   text=True, env=environment, timeout=10).stdout.strip():
+        environment['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes'
+    return subprocess.run(command + list(arguments), capture_output=True, text=True, env=environment, timeout=120)
+
+
+def repository_updates():
+    """(state, error): this repository against its upstream branch after a fetch, {} for a clone without one."""
+    if not (REPO / '.git').exists() or not (REPO / 'scripts/install-desktop.py').is_file():
+        return {}, None
+    try:
+        upstream = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}')
+        if upstream.returncode:
+            return {}, None
+        upstream = upstream.stdout.strip()
+        fetched = git('fetch', '--quiet', upstream.split('/', 1)[0])
+        if fetched.returncode:
+            return None, tr('updates.errors.git', [(fetched.stderr or fetched.stdout).strip()[-200:]])
+        behind = int(git('rev-list', '--count', 'HEAD..@{u}').stdout.strip() or 0)
+        ahead = int(git('rev-list', '--count', '@{u}..HEAD').stdout.strip() or 0)
+        log = git('log', f'--max-count={COMMITS}', '--format=%h%x09%s', 'HEAD..@{u}').stdout
+        head = git('rev-parse', '--short', '@{u}').stdout.strip()
+        dirty = bool(git('status', '--porcelain', '--untracked-files=no').stdout.strip())
+    except (OSError, subprocess.SubprocessError, ValueError) as error:
+        return None, tr('updates.errors.git', [str(error)])
+    commits = [{'hash': fields[0], 'subject': fields[1]} for fields in (line.split('\t', 1) for line in log.splitlines())
+               if len(fields) == 2 and fields[0]]
+    return {'upstream': upstream, 'head': head, 'behind': behind, 'ahead': ahead, 'dirty': dirty, 'commits': commits}, None
+
+
 def run(command, timeout):
     return subprocess.run(command, capture_output=True, text=True, timeout=timeout)
 
@@ -98,26 +138,38 @@ def previous():
         return {}
 
 
-def check(before=None):
-    # A source that fails keeps the list it had: being offline is not "no updates", and the icon stays.
+def check(before=None, only=None):
+    # A source that fails keeps the list it had: being offline is not "no updates", and the icon stays. only:
+    # the sources to ask (a pull asks the repository again); the others keep their lists and errors, and the time
+    # of the last check stays.
     before = before or {}
-    errors = []
-    packages = before.get('packages', []) if isinstance(before.get('packages'), list) else []
-    listed, error = system_updates()
-    if error:
-        errors.append(error)
-    else:
-        packages = listed
-    apps = before.get('flatpaks', []) if isinstance(before.get('flatpaks'), list) else []
-    listed, error = flatpak_listing()
-    if error:
-        errors.append(error)
-    else:
-        apps = listed
+    sources = (
+        ('packages', list, system_updates),
+        ('flatpaks', list, flatpak_listing),
+        ('repository', dict, repository_updates),
+    )
+    failed = before.get('failed') if isinstance(before.get('failed'), dict) else {}
+    result, failures, reached = {}, {}, False
+    for name, kind, listing in sources:
+        kept = before.get(name) if isinstance(before.get(name), kind) else kind()
+        if only is not None and name not in only:
+            result[name] = kept
+            if isinstance(failed.get(name), str):
+                failures[name] = failed[name]
+            continue
+        listed, error = listing()
+        if error:
+            failures[name] = error
+            result[name] = kept
+        else:
+            result[name] = listed
+            # A clone without an upstream branch (or no clone) was not a check.
+            reached = reached or name != 'repository' or bool(listed)
     # The time of the last check that reached at least one source.
-    checked = before.get('checked') if len(errors) == 2 else round(time.time(), 3)
-    return {'checked': checked, 'packages': packages, 'flatpaks': apps,
-            'compositor': any(package.get('name') in COMPOSITOR for package in packages), 'errors': errors}
+    checked = round(time.time(), 3) if reached and only is None else before.get('checked')
+    # errors: what the panel shows; failed: the same by source, for a check of only some of them.
+    return dict(result, checked=checked, compositor=any(package.get('name') in COMPOSITOR for package in result['packages']),
+                errors=list(failures.values()), failed=failures)
 
 
 def retry_later():
@@ -131,12 +183,12 @@ def retry_later():
 
 def main():
     arguments = sys.argv[1:]
-    if arguments == ['check']:
+    if arguments in (['check'], ['check', 'repository']):
         STATE.parent.mkdir(parents=True, exist_ok=True)
         # The timer and the panel can start a check at the same time: one runs, the other waits for it.
         with (STATE.parent / '.updates.lock').open('a') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
-            result = check(previous())
+            result = check(previous(), arguments[1:] or None)
             write_atomic(STATE, json.dumps(result, ensure_ascii=False) + '\n')
         if result.get('errors'):
             retry_later()

@@ -1103,6 +1103,10 @@
       "flatpaks": {
         "one": "%1 app Flatpak",
         "other": "%1 app Flatpak"
+      },
+      "commits": {
+        "one": "%1 commit del desktop",
+        "other": "%1 commit del desktop"
       }
     },
     "notice": {
@@ -1119,6 +1123,10 @@
     "install": "Aggiorna",
     "packagesHeading": "Sistema",
     "flatpaksHeading": "Flatpak",
+    "repositoryHeading": "Desktop · %1",
+    "repositoryMore": "…e altri %1",
+    "repositoryAhead": "Questa copia ha commit propri: unisci a mano quelli nuovi, la schermata aggiornamenti fa solo fast-forward.",
+    "repositoryDirty": "Questa copia ha modifiche locali: prima fai commit o stash, poi la schermata aggiornamenti può scaricare.",
     "terminal": {
       "close": "Premi Invio per chiudere.",
       "failed": "Qualcosa non è andato (vedi sopra). Premi Invio per chiudere."
@@ -1127,7 +1135,8 @@
       "dnf": "dnf non è riuscito a cercare aggiornamenti: %1",
       "pacman": "pacman non è riuscito a cercare aggiornamenti: %1",
       "flatpak": "Flatpak non è riuscito a cercare aggiornamenti: %1",
-      "usage": "Uso: updates.py check|status"
+      "git": "git non è riuscito a controllare il repository: %1",
+      "usage": "Uso: updates.py check [repository]|status"
     }
   },
   "gaming": {

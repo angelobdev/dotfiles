@@ -558,10 +558,13 @@ class ApplyUpdatesTests(unittest.TestCase):
 
     def test_a_pull_fast_forwards_and_starts_again_on_the_updates_screen(self):
         with mock.patch('subprocess.run') as run, mock.patch('os.execv') as execv, mock.patch('builtins.print'), \
-                mock.patch.object(tui, 'git', return_value=reply('abc\n')), mock.patch.object(tui, 'after_pull') as after:
+                mock.patch.object(tui, 'git', return_value=reply('abc\n')), mock.patch.object(tui, 'after_pull') as after, \
+                mock.patch.object(tui, 'refresh_bar') as bar:
             tui.pull(plan())
         run.assert_called_once_with(('git', '-C', str(tui.REPO), 'merge', '--ff-only', '@{u}'), check=True)
         self.assertEqual(after.call_args.args[1], 'abc')
+        # The bar no longer lists the commits just pulled.
+        bar.assert_called_once_with('repository')
         self.assertEqual(execv.call_args.args[1][-2:], [str(tui.REPO / 'scripts/install-tui.py'), '--updates'])
 
     def after_pull(self, changed, session):

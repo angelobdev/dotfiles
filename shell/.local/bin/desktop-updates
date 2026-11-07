@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# System updates for the shell's update icon: check (desktop-updates.timer, the panel), status, and
+# System updates for the shell's update icon: check (desktop-updates.timer, the panel; check repository: only
+# this repository, after a pull), status, and
 # upgrade, which opens a terminal on the updates screen of the guided installer (desktop-manager updates), so the
 # choice, the progress and the sudo password prompt are visible (in tablet mode the terminal opens the on-screen
 # keyboard).
 helper="$HOME/.local/libexec/desktop/updates.py"
 message() { python3 "$HOME/.local/libexec/desktop/i18n.py" "$@"; }
 case "${1:-status}" in
-    check|status) exec python3 "$helper" "$1" ;;
+    check) exec python3 "$helper" "$@" ;;
+    status) exec python3 "$helper" status ;;
     upgrade)
         # The desktop-updates window rule floats it in the middle of the screen.
         setsid -f kitty --class desktop-updates --title "$(message 'updates.title')" -e "$0" run >/dev/null 2>&1
@@ -23,5 +25,5 @@ case "${1:-status}" in
         fi
         read -r _ || true
         ;;
-    *) echo 'Usage: desktop-updates {check|status|upgrade}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-updates {check [repository]|status|upgrade}' >&2; exit 2 ;;
 esac
