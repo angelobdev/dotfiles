@@ -970,6 +970,8 @@ def pull(plan):
     print('Running: git merge --ff-only @{u}', flush=True)
     subprocess.run(('git', '-C', str(REPO), 'merge', '--ff-only', '@{u}'), check=True)
     after_pull(plan, before)
+    # The bar listed these commits until now.
+    refresh_bar('repository')
     print('Checking again with the new version...', flush=True)
     os.execv(sys.executable, [sys.executable, str(REPO / 'scripts/install-tui.py'), '--updates'])
 
@@ -1001,11 +1003,12 @@ def update_flatpaks():
         subprocess.run(('flatpak', 'update', '--user', '-y', '--noninteractive'), check=True)
 
 
-def refresh_bar():
-    # The update icon shows what updates.py found last: check again, as the update terminal does.
+def refresh_bar(*sources):
+    # The update icon shows what updates.py found last: check again, as the update terminal does (sources: only
+    # those, as desktop-updates check repository).
     command = Path.home() / '.local/bin/desktop-updates'
     if command.exists():
-        subprocess.run((str(command), 'check'), check=False)
+        subprocess.run((str(command), 'check', *sources), check=False)
 
 
 def apply_updates(plan, picked):

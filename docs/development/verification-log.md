@@ -928,3 +928,8 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Tests: `ArchiveTests` in `test_install.py` (pending only while missing, what is there stays, a wrong sha256 installs nothing, no build for the machine is a warning, uninstall removes only what apply made, newer releases become pins with their hashes, a moved download URL is refused, `repin` moves both distributions); `theme.py herdr` in `test_theme.py`.
 - The first CI run failed in both containers: releases.herdr.dev answers 403 to urllib's default User-Agent (`Python-urllib/3.x`), 200 with one of its own; the installer now sends `install-desktop.py (dotfiles)`. `install-desktop.py`'s `newer_pin` against the live manifests: both pins at their latest.
 - Not tried: Herdr's first start with the theme written beforehand.
+
+## The repository in the update check, 2026-11-07 (#26)
+
+- `repository_updates()` on this clone: the work branch has no upstream, so no repository line (`{}`). On a scratch clone of GitHub reset three commits back: `origin/main`, behind 3, ahead 0, clean, the three commits with their hashes and subjects, the upstream head `76ab712`.
+- `scripts/tests/test_updates.py` (`RepositoryTests`): new commits, commits of its own and local changes, no upstream or no clone (no git run), a failed fetch is an error that keeps the last state and the other lists, `check repository` asks only the repository and keeps the other lists, their errors and the time of the last check, git never prompts. `test_install_tui.py`: a pull checks the repository again for the bar.

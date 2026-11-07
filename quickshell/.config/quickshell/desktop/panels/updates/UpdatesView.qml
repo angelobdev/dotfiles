@@ -5,8 +5,8 @@ import "../.."
 import "../../components"
 import "../../services"
 
-// Available updates: what would be updated, when it was checked, Check now, and Update, which opens a terminal
-// on the updates screen of the guided installer. The updates panel (its bar icon) and Settings → Updates show it.
+// Available updates: what would be updated (packages, Flatpak apps, the new commits of this repository), when it
+// was checked, Check now, and Update, which opens a terminal on the updates screen of the guided installer. The updates panel (its bar icon) and Settings → Updates show it.
 ColumnLayout {
     id: root
     // On screen (kept for its hosts; the lists come from the Updates service).
@@ -27,6 +27,8 @@ ColumnLayout {
             parts.push(I18n.plural("updates.summary.packages.one", "updates.summary.packages.other", Updates.packages.length));
         if (Updates.flatpaks.length > 0)
             parts.push(I18n.plural("updates.summary.flatpaks.one", "updates.summary.flatpaks.other", Updates.flatpaks.length));
+        if (Updates.behind > 0)
+            parts.push(I18n.plural("updates.summary.commits.one", "updates.summary.commits.other", Updates.behind));
         return parts.join(" · ");
     }
     component Entry: RowLayout {
@@ -107,6 +109,37 @@ ColumnLayout {
                     name: modelData.id
                     version: modelData.version
                 }
+            }
+            Heading {
+                visible: Updates.behind > 0
+                text: I18n.tr("updates.repositoryHeading", [Updates.repository.upstream ?? ""])
+                font.pixelSize: Theme.textSize(13)
+                Layout.topMargin: 6
+            }
+            // What stops the fast-forward of the updates screen, as found at the check.
+            Text {
+                Layout.fillWidth: true
+                visible: Updates.behind > 0 && (Updates.repository.ahead > 0 || Updates.repository.dirty === true)
+                text: I18n.tr(Updates.repository.ahead > 0 ? "updates.repositoryAhead" : "updates.repositoryDirty")
+                color: Theme.muted
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(11)
+                wrapMode: Text.Wrap
+            }
+            Repeater {
+                model: Updates.behind > 0 ? Updates.commits : []
+                Entry {
+                    required property var modelData
+                    name: modelData.subject
+                    version: modelData.hash
+                }
+            }
+            Text {
+                visible: Updates.behind > Updates.commits.length && Updates.commits.length > 0
+                text: I18n.tr("updates.repositoryMore", [Updates.behind - Updates.commits.length])
+                color: Theme.muted
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(11)
             }
         }
     }
