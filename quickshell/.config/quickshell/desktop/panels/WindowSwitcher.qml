@@ -87,7 +87,7 @@ PanelWindow {
         windows = [];
     }
 
-    visible: open
+    visible: open && !Tablet.remaps(screen?.name ?? "")
     screen: Quickshell.screens[0]
     anchors {
         top: true

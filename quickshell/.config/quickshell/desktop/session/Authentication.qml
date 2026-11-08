@@ -28,7 +28,7 @@ Scope {
     }
     PanelWindow {
         id: prompt
-        visible: agent.isActive
+        visible: agent.isActive && !Tablet.remaps(screen?.name ?? "")
         screen: root.promptScreen || Quickshell.screens[0]
         anchors {
             top: true

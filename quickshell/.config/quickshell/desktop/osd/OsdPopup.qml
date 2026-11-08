@@ -15,7 +15,7 @@ PanelWindow {
     implicitWidth: Math.min(Math.max(240, Config.osdWidth), (screen?.width ?? 800) - 24)
     implicitHeight: 104
     color: "transparent"
-    visible: Osd.visible || card.opacity > 0
+    visible: (Osd.visible || card.opacity > 0) && !Tablet.remaps(screen?.name ?? "")
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "desktop-osd"
     WlrLayershell.layer: WlrLayer.Overlay
