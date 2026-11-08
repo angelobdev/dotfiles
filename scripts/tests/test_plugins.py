@@ -119,13 +119,30 @@ class StatusTests(Home):
             self.assertEqual(bundle.verify(), RPM)
 
 
-class LoginTests(unittest.TestCase):
+class StateDirectory(unittest.TestCase):
+    """plugins.py writes its rebuild state, log and lock in a temporary state directory."""
+
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.state = Path(folder.name)
+        for name, value in (('STATE', self.state), ('REBUILD', self.state / 'plugin-rebuild.json'),
+                            ('LOG', self.state / 'plugin-rebuild.log'), ('LOCK', self.state / 'plugin-rebuild.lock')):
+            patcher = mock.patch.object(plugins, name, value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def rebuild_state(self):
+        return json.loads(plugins.REBUILD.read_text())
+
+
+class LoginTests(StateDirectory):
     def login(self, state, matches=True):
         with mock.patch.object(bundle, 'status', return_value=state), mock.patch.object(bundle, 'stamp', return_value={}), \
                 mock.patch.object(plugins, 'session_matches', return_value=matches), \
                 mock.patch('subprocess.run') as run, mock.patch('subprocess.Popen') as popen:
             try:
-                plugins.main()
+                plugins.main([])
                 exited = False
             except SystemExit:
                 exited = True
@@ -137,18 +154,25 @@ class LoginTests(unittest.TestCase):
         self.assertEqual((commands, exited), ([], False))
         popen.assert_not_called()
 
+    def test_a_login_with_current_plugins_drops_an_old_request(self):
+        plugins.write_rebuild({'wanted': bundle.PACKAGING_CHANGED})
+        self.login(bundle.CURRENT)
+        self.assertFalse(plugins.REBUILD.exists())
+
     def test_current_plugins_load(self):
         commands, popen, _ = self.login(bundle.CURRENT)
         self.assertEqual(commands, [['hyprpm', 'reload']])
         popen.assert_not_called()
 
-    def test_a_changed_packaging_is_rebuilt_instead_of_loaded(self):
+    def test_a_changed_packaging_asks_the_shell_for_a_rebuild(self):
+        # No terminal: the shell starts plugins.py rebuild once its polkit agent is up.
         for state in (bundle.INCOMPLETE, bundle.PACKAGING_CHANGED, bundle.COMPOSITOR_CHANGED):
             commands, popen, exited = self.login(state)
             self.assertNotIn(['hyprpm', 'reload'], commands)
             self.assertFalse(exited)
-            self.assertEqual(popen.call_args.args[0][-1], str(REPO / 'scripts/install-hypr-plugins.py'))
-            self.assertEqual(popen.call_args.args[0][:2], ['kitty', '--hold'])
+            popen.assert_not_called()
+            self.assertEqual([command[0] for command in commands], ['notify-send'])
+            self.assertEqual(self.rebuild_state()['wanted'], state)
 
     def test_an_unverified_hyprland_stays_without_plugins(self):
         for state in (bundle.UNVERIFIED, bundle.MISMATCHED):
@@ -381,6 +405,105 @@ class CacheTests(unittest.TestCase):
             build.build('Hyprspace')
         run.assert_not_called()
         self.assertEqual((work / 'out/Hyprspace.so').read_bytes(), b'built')
+
+
+class RebuildTests(StateDirectory):
+    def setUp(self):
+        super().setUp()
+        patcher = mock.patch.object(plugins, 'up_to_date', return_value=False)
+        self.up_to_date = patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_nothing_to_rebuild_asks_for_no_password(self):
+        plugins.write_rebuild({'wanted': bundle.PACKAGING_CHANGED})
+        self.up_to_date.return_value = True
+        with mock.patch('subprocess.run') as run:
+            self.assertEqual(plugins.main(['rebuild']), 0)
+        run.assert_not_called()
+        self.assertEqual((self.rebuild_state()['running'], self.rebuild_state()['status']), (False, 0))
+
+    def test_the_rebuild_runs_the_installer_behind_one_pkexec_and_records_the_result(self):
+        plugins.write_rebuild({'wanted': bundle.PACKAGING_CHANGED})
+        calls = []
+
+        def run(command, **kwargs):
+            calls.append(command)
+            if 'stdout' in kwargs and hasattr(kwargs['stdout'], 'write'):
+                kwargs['stdout'].write('4 plugins installed and loaded\n')
+            return mock.Mock(returncode=0)
+
+        with mock.patch('subprocess.run', side_effect=run):
+            self.assertEqual(plugins.main(['rebuild']), 0)
+        runner = calls[0]
+        self.assertEqual(runner[1:3], [str(plugins.HERE / 'privileged.py'), 'run'])
+        self.assertEqual(runner[-1], str(REPO / 'scripts/install-hypr-plugins.py'))
+        self.assertEqual(calls[1][0], 'notify-send')
+        state = self.rebuild_state()
+        self.assertEqual((state['running'], state['status'], state['reason']), (False, 0, bundle.PACKAGING_CHANGED))
+        self.assertEqual(plugins.log_tail(), ['4 plugins installed and loaded'])
+
+    def test_a_failed_rebuild_says_its_last_line(self):
+        def run(command, **kwargs):
+            if 'stdout' in kwargs and hasattr(kwargs['stdout'], 'write'):
+                kwargs['stdout'].write('Authentication was cancelled: nothing was changed.\n')
+            return mock.Mock(returncode=1)
+
+        # The message names the log's last line, whatever the catalog says around it.
+        with mock.patch('subprocess.run', side_effect=run) as runner, \
+                mock.patch.object(plugins, 'tr', side_effect=lambda key, args=(): ' '.join([key, *args])):
+            self.assertEqual(plugins.main(['rebuild']), 1)
+        self.assertIn('Authentication was cancelled', runner.call_args_list[-1].args[0][-1])
+        self.assertEqual(self.rebuild_state()['status'], 1)
+
+    def test_one_rebuild_at_a_time(self):
+        import fcntl
+        with open(plugins.LOCK, 'a') as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            self.assertTrue(plugins.locked())
+            with mock.patch('subprocess.run') as run, self.assertRaises(SystemExit):
+                plugins.main(['rebuild'])
+            run.assert_not_called()
+            # Asked again at login while one runs: the running state stays.
+            plugins.write_rebuild({'running': True})
+            with mock.patch('subprocess.run'):
+                plugins.ask_rebuild(bundle.PACKAGING_CHANGED)
+            self.assertTrue(self.rebuild_state()['running'])
+        self.assertFalse(plugins.locked())
+
+
+class CacheCleanupTests(StateDirectory):
+    def setUp(self):
+        super().setUp()
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.cache = Path(folder.name)
+        for patcher in (mock.patch.object(build, 'CACHE', self.cache), mock.patch.object(build, 'package_version', return_value=RPM)):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        self.current = self.cache / 'Hyprspace' / build.cache_key('Hyprspace')
+        for path in (self.current, self.cache / 'Hyprspace/old', self.cache / 'hyprglass/old', self.cache / '1e76f99bfec7856f2614/Hyprspace'):
+            path.mkdir(parents=True)
+            (path / 'file').write_bytes(b'x' * 10)
+
+    def test_the_entries_and_their_sizes(self):
+        entries = {(entry['plugin'], entry['key']): entry for entry in plugins.cache_entries()}
+        self.assertTrue(entries[('Hyprspace', self.current.name)]['current'])
+        self.assertFalse(entries[('Hyprspace', 'old')]['current'])
+        self.assertFalse(entries[('', '1e76f99bfec7856f2614')]['current'])
+        self.assertEqual(entries[('hyprglass', 'old')]['bytes'], 10)
+
+    def test_old_entries_go_and_the_current_ones_stay(self):
+        plugins.main(['clear-cache', 'old'])
+        self.assertEqual([p.relative_to(self.cache).as_posix() for p in self.cache.glob('*/*')], [f'Hyprspace/{self.current.name}'])
+
+    def test_all_of_it(self):
+        plugins.main(['clear-cache', 'all'])
+        self.assertFalse(self.cache.exists())
+
+    def test_not_while_a_rebuild_runs(self):
+        with mock.patch.object(plugins, 'locked', return_value=True), self.assertRaises(SystemExit):
+            plugins.main(['clear-cache', 'all'])
+        self.assertTrue(self.current.exists())
 
 
 if __name__ == '__main__':

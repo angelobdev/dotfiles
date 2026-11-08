@@ -610,14 +610,19 @@
     "errors": {
       "rebuildRequired": "This Hyprland build is not verified for the plugins yet: they stay off until the pins are checked (docs/guide/plugins.md).",
       "unverifiedBuild": "Build differs from the verified version: autoload suspended.",
-      "headersMismatch": "hyprland and hyprland-devel have different versions: finish the update (sudo dnf upgrade), then log in again."
+      "headersMismatch": "hyprland and hyprland-devel have different versions: finish the update (sudo dnf upgrade), then log in again.",
+      "running": "A plugin rebuild is already running."
     },
     "notificationTitle": "Hyprland plugins not loaded",
     "rebuildTitle": "Rebuilding the Hyprland plugins",
     "rebuild": {
-      "incomplete": "The last rebuild did not finish: it runs again in the terminal that just opened, and they load when it finishes.",
-      "packaging": "Their packaging changed: they are rebuilt in the terminal that just opened, and load when it finishes.",
-      "compositor": "Hyprland was updated: they are rebuilt in the terminal that just opened, and load when it finishes."
+      "incomplete": "The last rebuild did not finish: it runs again in the background once the shell is up. Authenticate when asked; they load when it finishes.",
+      "packaging": "Their packaging changed: they are rebuilt in the background once the shell is up. Authenticate when asked; they load when it finishes.",
+      "compositor": "Hyprland was updated: they are rebuilt in the background once the shell is up. Authenticate when asked; they load when it finishes."
+    },
+    "background": {
+      "done": "The plugins are rebuilt and loaded.",
+      "failed": "The rebuild did not finish: %1 Details in Settings → System → Plugins."
     }
   },
   "recording": {
@@ -835,7 +840,8 @@
       "resetHint": "Every option shown in these settings back to its default. Lists set by hand in shell.json (dock pins, Control Center modules…) stay.",
       "resetTitle": "Shell options",
       "threads": "%1 · %2 threads",
-      "updates": "Updates"
+      "updates": "Updates",
+      "plugins": "Plugins"
     },
     "title": "Settings",
     "unreadable": "%1 is not valid JSON, so nothing can be changed here until it is fixed or removed.",
@@ -875,6 +881,36 @@
         "codecs": "The RPM Fusion codecs in place of the free builds: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX."
       },
       "managerTitle": "Desktop installer"
+    },
+    "plugins": {
+      "intro": "Hyprland plugins built by hyprpm from pinned sources, for the installed Hyprland. A rebuild replaces only plugins that are not loaded: after an update it runs by itself at the next login, behind one password prompt.",
+      "state": {
+        "current": "Built from this packaging for this Hyprland.",
+        "missing": "Not built yet: the installer builds them at the first login after it.",
+        "incomplete": "The last rebuild did not finish.",
+        "packaging": "The packaging changed since they were built.",
+        "compositor": "Hyprland was updated since they were built.",
+        "unverified": "This Hyprland build is not verified for the pins: the plugins stay off.",
+        "mismatched": "hyprland and its headers come from different updates: finish the update first."
+      },
+      "atLogin": "The plugins in use come from another build: log out and back in to rebuild them.",
+      "hyprland": "Hyprland %1 · verified: %2",
+      "profile": "profile %1",
+      "loaded": "Loaded",
+      "built": "Built, not loaded",
+      "notBuilt": "Not built",
+      "notSelected": "Not built: the %1 profile is not installed",
+      "rebuild": "Rebuild",
+      "rebuilding": "Rebuilding…",
+      "lastDone": "Last rebuild: done, %1.",
+      "lastFailed": "Last rebuild: failed, %1 (status %2).",
+      "lastStopped": "The last rebuild stopped before it finished.",
+      "log": "Rebuild log",
+      "cache": "Build cache",
+      "cacheHint": "Finished builds, one per plugin: a rebuild compiles only the plugins that changed and copies the others. %1 in use, %2 no plugin would reuse.",
+      "clearOld": "Remove old builds",
+      "clearAll": "Remove all…",
+      "clearAllConfirm": "Remove all: the next rebuild compiles every plugin"
     }
   },
   "sharing": {

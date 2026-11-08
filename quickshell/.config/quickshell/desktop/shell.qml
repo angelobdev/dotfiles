@@ -383,4 +383,10 @@ ShellRoot {
     Authentication {
         id: authentication
     }
+    // A plugin rebuild asked for at login starts once the polkit prompt can show (services/Plugins.qml).
+    Binding {
+        target: Plugins
+        property: "agentReady"
+        value: authentication.registered
+    }
 }
