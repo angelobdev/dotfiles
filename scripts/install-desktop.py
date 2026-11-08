@@ -167,7 +167,7 @@ def files_pending(plan):
 def files_apply(plan, paths):
     for item in merged(plan, 'files'):
         if item['path'] in paths:
-            plan.distro.write_file(item['path'], item['content'].lstrip())
+            plan.distro.write_file(item['path'], item['content'].lstrip(), item.get('mode', '0644'))
 
 
 def groups_pending(plan):
@@ -1406,7 +1406,18 @@ def load_plan(profiles, release=None, firmware=None, any_version=False):
                      'Removing the desktop still works: install-desktop.py dry-run --uninstall.')
         print(f'Note: {name} {version} is not verified; the uninstall reads the manifest of {table["versions"][-1]}.')
     sys.path.insert(0, str(INSTALL))
+    resolve_files(table)
     return Plan(importlib.import_module(name), version, table, manifest['verify']['commands'], profiles, firmware)
+
+
+def resolve_files(table):
+    # A file is written inline (content) or copied from this repository (source), with its mode (default 0644).
+    for section in table.values():
+        for item in section.get('files', ()) if isinstance(section, dict) else ():
+            if 'source' in item:
+                item['content'] = (REPO / item['source']).read_text(encoding='utf-8')
+            if not re.fullmatch(r'0[0-7]{3}', item.get('mode', '0644')):
+                sys.exit(f'{item["path"]}: mode is four octal digits, such as 0755.')
 
 
 def valid_profiles(profiles):

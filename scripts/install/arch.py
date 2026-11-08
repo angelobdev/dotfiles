@@ -238,11 +238,11 @@ def file_differs(path, content):
         return True
 
 
-def write_file(path, content):
+def write_file(path, content, mode='0644'):
     with tempfile.NamedTemporaryFile('w', encoding='utf-8', prefix='desktop-install-') as temporary:
         temporary.write(content)
         temporary.flush()
-        sudo('install', '-D', '-o', 'root', '-g', 'root', '-m', '0644', temporary.name, str(path))
+        sudo('install', '-D', '-o', 'root', '-g', 'root', '-m', mode, temporary.name, str(path))
 
 
 def install_firmware(source, target):
