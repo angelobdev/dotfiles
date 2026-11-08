@@ -39,6 +39,10 @@ if plugins.hyprgrass then
                 sensitivity = 4.0,
                 long_press_delay = 400,
                 resize_on_border_long_press = true,
+                -- Gesture touches never reach the window under them (upstream, on by default).
+                hold_touches = true,
+                -- One finger is the pointer on clients without touch, such as Kitty (local patch).
+                touch_as_pointer = true,
             }
         }
     })
