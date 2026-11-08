@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Polkit
 import ".."
@@ -33,6 +34,29 @@ Scope {
             return;
         agent.flow.submit(response.text);
         response.clear();
+    }
+    // /etc/pam.d/polkit-1 as the installer writes it (scripts/privileged/polkit-1.*) asks for the password at once and
+    // takes an empty answer as "the fingerprint": offered when that stack is in place and the account has a finger enrolled.
+    // Not in tablet mode, where the stack skips the reader the screen covers.
+    property bool fingerprint: false
+    readonly property string identityUser: (agent.flow?.selectedIdentity?.string ?? "").startsWith("unix-user:") ? agent.flow.selectedIdentity.string.slice(10) : ""
+    onIdentityUserChanged: {
+        fingerprint = false;
+        if (identityUser !== "")
+            prints.running = true;
+    }
+    function useFingerprint() {
+        if (!response.enabled)
+            return;
+        agent.flow.submit("");
+        response.clear();
+    }
+    Process {
+        id: prints
+        command: ["sh", "-c", "grep -qs desktop-fingerprint-wanted /etc/pam.d/polkit-1 && fprintd-list \"$1\" 2>/dev/null", "sh", root.identityUser]
+        stdout: StdioCollector {
+            onStreamFinished: root.fingerprint = /^ - #[0-9]+:/m.test(text)
+        }
     }
     PolkitAgent {
         id: agent
@@ -159,6 +183,12 @@ Scope {
                         text: I18n.tr("authentication.authenticate")
                         enabled: response.enabled
                         onClicked: root.submit()
+                    }
+                    ActionButton {
+                        visible: root.fingerprint && !Tablet.active
+                        text: I18n.tr("authentication.useFingerprint")
+                        enabled: response.enabled
+                        onClicked: root.useFingerprint()
                     }
                     ActionButton {
                         text: I18n.tr("common.cancel")
