@@ -55,12 +55,17 @@ desktop-plugins reload
 `desktop-plugins reload` runs automatically at Hyprland startup, before any plugin is loaded. It compares the package build (`rpm` on Fedora, `pacman` on Arch), ABI and running binary with the last build, and the packaging in `scripts/hyprpm` with the one hyprpm built from:
 
 - **Both match**: it loads the plugins.
-- **The packaging changed, or Hyprland was updated to a [verified build](#installation)**: it does not load the old plugins, and opens a terminal that runs `install-hypr-plugins.py`. With nothing loaded, the script replaces them whole (`hyprpm remove`, and for a new ABI a reset of `/var/cache/hyprpm/$USER`), builds, and loads them; it asks for sudo and for hyprpm's confirmations. If it stops, the session goes on without plugins and the next login tries again.
-- **A rebuild stopped halfway** (offline, the terminal closed, a plugin that failed to build): hyprpm's repository is gone or marks a plugin as failed, so it opens the terminal again, and every login does until a build finishes.
+- **The packaging changed, or Hyprland was updated to a [verified build](#installation)**: it does not load the old plugins. It asks for a rebuild and sends a notification. As soon as the shell's polkit agent is up, the shell runs the rebuild in the background (`plugins.py rebuild`): one password or fingerprint prompt (the [root broker](../development/architecture.md#root-for-operations-from-settings)), then `install-hypr-plugins.py`. With nothing loaded, that script replaces them whole (`hyprpm remove`, and for a new ABI a reset of `/var/cache/hyprpm/$USER`), builds (from the build cache where it can, see below), and loads them. A notification gives the result, and **Settings → System → Plugins** shows the progress and the log. If it stops or the prompt is dismissed, the session goes on without plugins: **Rebuild** in that tab tries again, and so does the next login.
+- **A rebuild stopped halfway** (offline, the prompt dismissed, a plugin that failed to build): hyprpm's repository is gone or marks a plugin as failed, so every login asks again until a build finishes.
 - **Hyprland was updated to a build the pins were not verified against**: it shows a notification, and the session runs without plugins until the pins are checked and the build is added to `VERIFIED` in `scripts/hyprpm/bundle.py`.
 - **`hyprland` and `hyprland-devel` have different versions** (an update that stopped halfway, Fedora only): it shows a notification and loads nothing; finish the update (`sudo dnf upgrade`) and log in again.
 
-The guided installer shows which of these applies on its first screen.
+The guided installer shows which of these applies on its first screen, and so does **Settings → System → Plugins**:
+
+- the state of the bundle and the Hyprland build it was verified against;
+- each plugin with its pin and profile, and whether it is built and loaded;
+- **Rebuild**, which is enabled when a rebuild has something to do that it can do now (nothing of an older build loaded; otherwise log out and back in), with the last result and the log;
+- the build cache with its size: **Remove old builds** drops what no plugin would reuse, **Remove all…** asks first and makes the next rebuild compile everything.
 
 Pins are intentionally explicit in `scripts/hyprpm/build.py`, the accepted package builds (Fedora's RPM, Arch's package) in `scripts/hyprpm/bundle.py`. Arch is a rolling release: a Hyprland update arrives with the next `pacman -Syu`, and the plugins wait for it to be verified as on Fedora. Compositor updates require compatible revisions to be checked, rebuilt, and tested in an isolated session before changing that guard. `hyprpm update` on the local packaging retains pins; it does not automatically select new upstream revisions.
 

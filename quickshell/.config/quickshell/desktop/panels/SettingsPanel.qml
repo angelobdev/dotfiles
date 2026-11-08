@@ -99,7 +99,8 @@ Overlay {
     ]
     // Names that open a tab of a section: the updates panel links to System → Updates.
     readonly property var sectionAliases: ({
-            updates: ["system", "updates"]
+            updates: ["system", "updates"],
+            plugins: ["system", "plugins"]
         })
     readonly property var sectionNames: sections.map(entry => entry.name)
     readonly property var groupLabels: ({
