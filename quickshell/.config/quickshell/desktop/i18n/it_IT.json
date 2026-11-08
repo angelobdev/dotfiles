@@ -67,8 +67,7 @@
     "install": {
       "running": "Installo %1…",
       "done": "%1 è installato.",
-      "failed": "Installazione di %1 non riuscita: vedi i messaggi sopra.",
-      "close": "Premi Invio per chiudere questa finestra.",
+      "failed": "L’installazione di %1 non è finita (stato %2): guarda il log qui sotto.",
       "title": "Installa %1"
     },
     "agentsGroup": "Agenti",
@@ -846,7 +845,7 @@
     "title": "Impostazioni",
     "unreadable": "%1 non è JSON valido: qui non si può cambiare nulla finché non lo correggi o lo rimuovi.",
     "profiles": {
-      "intro": "Le parti di questo desktop che l’installer configura. Installa e Rimuovi aprono l’installer guidato in un terminale: lì mostra il piano e chiede la password.",
+      "intro": "Le parti di questo desktop che l’installer configura. Installa e Rimuovi mostrano qui prima il piano dell’installer; Applica lo esegue in background, con una sola richiesta di password o impronta.",
       "installed": "Installato",
       "partial": "Installato in parte: %1 su %2",
       "notInstalled": "Non installato",
@@ -855,12 +854,11 @@
       "install": "Installa",
       "complete": "Completa",
       "remove": "Rimuovi",
-      "busy": "Nel terminale…",
+      "busy": "In corso…",
       "coreHint": "core è il desktop stesso: lo toglie Rimuovi il desktop, nell’installer guidato.",
       "openManager": "Apri l’installer guidato",
       "checkAgain": "Controlla di nuovo",
       "checking": "Controllo in corso…",
-      "close": "Premi Invio per chiudere.",
       "installTitle": "Installa %1",
       "removeTitle": "Rimuovi %1",
       "error": "Impossibile leggere i profili: %1",
@@ -880,7 +878,15 @@
         "steamHidpi": "L’avvio di Steam che scala il client per il monitor su cui si apre.",
         "codecs": "I codec di RPM Fusion al posto delle versioni libere: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX."
       },
-      "managerTitle": "Installer del desktop"
+      "managerTitle": "Installer del desktop",
+      "reviewInstall": "Installa %1: cosa farà l’installer",
+      "reviewRemove": "Rimuovi %1: cosa farà l’installer",
+      "reading": "Lettura del piano…",
+      "apply": "Applica",
+      "pluginsInSession": "Rimuovere plugins toglie i plugin di Hyprland, che la sessione in corso ha caricato: esci, accedi da una console (Ctrl+Alt+F3) ed esegui lì install-desktop.py apply --remove plugins.",
+      "running": "%1: in corso…",
+      "done": "%1: fatto.",
+      "failed": "%1: non è finito (stato %2). Il log è qui sotto."
     },
     "plugins": {
       "intro": "Plugin di Hyprland compilati da hyprpm da sorgenti fissate, per l’Hyprland installato. Una ricompilazione sostituisce solo plugin non caricati: dopo un aggiornamento parte da sola al login successivo, con una sola richiesta di password.",
@@ -1386,6 +1392,14 @@
       "cancelled": "Autenticazione annullata: non è stato cambiato nulla.",
       "denied": "Questo utente non può agire come amministratore.",
       "failed": "L’assistente per i permessi di amministratore non si è avviato (stato %1)."
+    }
+  },
+  "jobs": {
+    "done": "Fatto.",
+    "failed": "Non è finito: %1",
+    "errors": {
+      "name": "Non è il nome di un’operazione: %1",
+      "running": "È già in corso."
     }
   }
 }

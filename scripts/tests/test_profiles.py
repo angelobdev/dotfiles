@@ -51,20 +51,37 @@ class ProfilesTests(unittest.TestCase):
             profiles.main(['list'])
         self.assertEqual(json.loads(out.getvalue()), {'profiles': [], 'error': 'gone'})
 
-    def test_install_and_remove_open_the_guided_installer_in_a_terminal(self):
-        for action, flag in (('install', '--add'), ('remove', '--remove')):
-            with mock.patch.object(profiles.subprocess, 'run') as run:
-                profiles.main([action, 'steam-hidpi'])
-            argv = run.call_args.args[0]
-            self.assertEqual(argv[:3], ['kitty', '--class', 'desktop-updates'])
-            self.assertIn(f'{profiles.MANAGER} {flag} steam-hidpi\n', argv[-1])
-            self.assertIn('read -r _', argv[-1])
+    def plan(self, action, name, recorded=('core', 'gaming'), running=False):
+        tui = profiles.installer_screens()
+        with mock.patch.object(tui, 'recorded_profiles', return_value=recorded), \
+                mock.patch.object(tui.installer, 'hyprland_running', return_value=running), \
+                mock.patch.object(profiles, 'installer_screens', return_value=tui):
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                profiles.main(['plan', action, name])
+        return json.loads(out.getvalue())
 
-    def test_only_profile_names_reach_the_shell(self):
-        for name in ('gaming; rm -rf ~', '$(id)', ''):
-            with mock.patch.object(profiles.subprocess, 'run') as run, self.assertRaises(ValueError):
-                profiles.main(['remove', name])
-            run.assert_not_called()
+    def test_install_keeps_the_recorded_profiles_and_adds_one(self):
+        value = self.plan('install', 'media')
+        script = str(profiles.REPO / 'scripts/install-desktop.py')
+        self.assertEqual(value['preview'][1:], [script, 'dry-run', '--profiles', 'core,media,gaming'])
+        self.assertEqual(value['apply'][1:], [script, 'apply', '--profiles', 'core,media,gaming'])
+        self.assertEqual(value['blocked'], '')
+
+    def test_remove_undoes_one_profile(self):
+        value = self.plan('remove', 'steam-hidpi')
+        self.assertEqual(value['preview'][-3:], ['dry-run', '--remove', 'steam-hidpi'])
+        self.assertEqual(value['apply'][-3:], ['apply', '--remove', 'steam-hidpi'])
+
+    def test_removing_plugins_waits_for_a_session_without_hyprland(self):
+        self.assertNotEqual(self.plan('remove', 'plugins', running=True)['blocked'], '')
+        self.assertEqual(self.plan('remove', 'plugins', running=False)['blocked'], '')
+
+    def test_only_profile_names_are_planned(self):
+        for action, name in (('remove', 'gaming; rm -rf ~'), ('remove', '$(id)'), ('remove', ''), ('install', 'nothing'),
+                             ('remove', 'core')):
+            with self.assertRaises(ValueError), contextlib.redirect_stdout(io.StringIO()):
+                profiles.main(['plan', action, name])
 
     def test_the_real_installer_loads(self):
         # The helper reads install-tui.py from the repository it is linked from.

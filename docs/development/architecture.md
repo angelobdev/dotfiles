@@ -57,6 +57,15 @@ Settings runs system work without a terminal ([#37](https://github.com/angelobde
 
 The window is the operation: while it runs, another process of the same user could also connect, as with sudo's timestamp.
 
+Operations Settings starts run detached, so a closed panel or a shell restart does not stop them. The plugin rebuild (`plugins.py rebuild`) and updates (`updates.py apply`) have their own runners. Profiles and agent installs go through `jobs.py run NAME [--root] [--title TEXT] -- COMMAND…`, which:
+
+- keeps one run at a time per name (a lock);
+- writes `~/.local/state/desktop-shell/jobs/NAME.json` and `NAME.log`;
+- wraps the command in `privileged.py` with `--root`;
+- ends with a notification titled TEXT.
+
+`services/Job.qml` starts one and follows it, reading `jobs.py status NAME` when the file changes and every 2 s while it runs.
+
 ## Compositor plugins
 
 Hyprspace, Hyprgrass, Hyprglass and HyprCapture are built by hyprpm from the pinned packaging in `scripts/hyprpm/`, which patches Hyprgrass so one finger works as the pointer on apps that ignore touch (`touch_as_pointer`; holding gesture touches back is upstream). `config/plugins.lua` guards every block (`local plugins = hl.plugin or {}`; `if plugins.X then … end`) so `--verify-config` and plugin-less startup work. Actions that need a plugin (screenshots) check `hl.plugin` at press time because plugins load after `hyprland.start`. `desktop-plugins reload` loads them only when they were built from the current packaging (`scripts/hyprpm/bundle.py` digest) for the installed Hyprland; otherwise, at startup with nothing loaded, it writes `{"wanted": …}` to `~/.local/state/dotfiles/plugin-rebuild.json`, or after an unverified compositor update it leaves them off. `services/Plugins.qml` watches that file: once the polkit agent is registered, it starts `plugins.py rebuild` detached. The rebuild holds a lock, runs `install-hypr-plugins.py` through `privileged.py`, writes its log next to the state, and records the result in the same file. It skips the prompt when nothing needs doing. Settings → System → Plugins (`panels/system/PluginsView.qml`) reads `plugins.py status` and cleans the build cache with `plugins.py clear-cache old|all`.

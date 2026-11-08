@@ -5,8 +5,8 @@ import "../../components"
 import "../../services"
 import "../theming"
 
-// Settings → Assistant: the coding agents of agents.py (one JSON file each), installed from here in a terminal
-// the user sees, and the primary one that Super + A opens.
+// Settings → Assistant: the coding agents of agents.py (one JSON file each), installed from here in the background
+// (jobs.py, with their output here), and the primary one that Super + A opens.
 ColumnLayout {
     id: root
     Layout.fillWidth: true
@@ -98,6 +98,36 @@ ColumnLayout {
                         text: Agent.installing ? I18n.tr("assistant.installing") : I18n.tr("assistant.installAction")
                         onClicked: Agent.install(agentRow.modelData.id)
                     }
+                }
+            }
+            // The install from here: its progress, its result and, while it runs or when it failed, its output (a login
+            // link, say).
+            Hint {
+                visible: Agent.installError !== "" || Agent.installJob.running || Agent.installJob.record.finished !== undefined && Agent.installName !== ""
+                text: Agent.installError !== "" ? Agent.installError : Agent.installJob.running ? I18n.tr("assistant.install.running", [Agent.installName]) : Agent.installJob.record.status === 0 ? I18n.tr("assistant.install.done", [Agent.installName]) : I18n.tr("assistant.install.failed", [Agent.installName, Agent.installJob.record.status ?? -1])
+                textFormat: Text.PlainText
+                color: Agent.installError !== "" || Agent.installJob.failed ? Theme.danger : Theme.text
+            }
+            Rectangle {
+                Layout.fillWidth: true
+                visible: Agent.installJob.log.length > 0 && (Agent.installJob.running || Agent.installJob.failed)
+                implicitHeight: installLog.implicitHeight + 16
+                radius: Theme.corner(10)
+                color: Theme.tile
+                Text {
+                    id: installLog
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: parent.top
+                        margins: 8
+                    }
+                    text: Agent.installJob.log.slice(-10).join("\n")
+                    textFormat: Text.PlainText
+                    wrapMode: Text.WrapAnywhere
+                    color: Theme.text
+                    font.family: "monospace"
+                    font.pixelSize: Theme.textSize(10)
                 }
             }
             Hint {
