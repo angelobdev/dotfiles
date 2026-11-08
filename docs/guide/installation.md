@@ -58,7 +58,7 @@ On Arch the profiles are the same, from the official repositories, with these di
 
 - Hyprland, `hyprpm`, its headers and the `hyprland-uwsm` session entry come from `extra`: no COPR, no `-devel` packages.
 - No swaps: Arch's `ffmpeg` and `intel-media-driver` are already the complete builds, so `codecs` only adds the GStreamer plugins (bad, ugly, libav).
-- `hardware` installs `fprintd`, and `tablet` leaves out the [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), which is not ported yet: the fingerprint works at GDM and on the lock screen, sudo and polkit ask for the password. It sets no firewall zone and leaves `sshd` alone, since Arch enables neither. The firmware Fedora splits in several packages is in `linux-firmware-intel`; the initramfs is rebuilt with `mkinitcpio -P` (or dracut, if the system uses it).
+- `hardware` installs `fprintd`, and `tablet` leaves out the [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), which is not ported yet: the fingerprint works at GDM, on the lock screen and in the polkit prompt (its own `/etc/pam.d/polkit-1`, as on Fedora); sudo asks for the password. It sets no firewall zone and leaves `sshd` alone, since Arch enables neither. The firmware Fedora splits in several packages is in `linux-firmware-intel`; the initramfs is rebuilt with `mkinitcpio -P` (or dracut, if the system uses it).
 - `gaming` first enables the `multilib` repository in `/etc/pacman.conf`.
 - `containers` has no tray icon for Tailscale: Arch's package has no unit for it.
 - `apps` builds Zen Browser, 1Password and VS Code from the AUR: see [AUR packages](#aur-packages-arch).

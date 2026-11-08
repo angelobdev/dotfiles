@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Services.Polkit
 import ".."
@@ -13,11 +14,49 @@ Scope {
     readonly property bool registered: agent.isRegistered
     // The focused monitor when the request came, kept while it is open: the last panel may have been elsewhere.
     property var promptScreen: null
+    // A polkit identity: unix-user:angelo or unix-group:wheel, with the full name when the account has one.
+    function identityLabel(identity) {
+        if (!identity)
+            return "";
+        const name = identity.string.replace(/^unix-(user|group):/, "");
+        return identity.displayName && identity.displayName !== name ? identity.displayName + " (" + name + ")" : name;
+    }
+    // The identities as a plain array: Quickshell hands over a QList, which has no map or find.
+    readonly property var identities: {
+        const list = agent.flow?.identities;
+        const result = [];
+        for (let i = 0; i < (list?.length ?? 0); i++)
+            result.push(list[i]);
+        return result;
+    }
     function submit() {
         if (!response.enabled)
             return;
         agent.flow.submit(response.text);
         response.clear();
+    }
+    // /etc/pam.d/polkit-1 as the installer writes it (scripts/privileged/polkit-1.*) asks for the password at once and
+    // takes an empty answer as "the fingerprint": offered when that stack is in place and the account has a finger enrolled.
+    // Not in tablet mode, where the stack skips the reader the screen covers.
+    property bool fingerprint: false
+    readonly property string identityUser: (agent.flow?.selectedIdentity?.string ?? "").startsWith("unix-user:") ? agent.flow.selectedIdentity.string.slice(10) : ""
+    onIdentityUserChanged: {
+        fingerprint = false;
+        if (identityUser !== "")
+            prints.running = true;
+    }
+    function useFingerprint() {
+        if (!response.enabled)
+            return;
+        agent.flow.submit("");
+        response.clear();
+    }
+    Process {
+        id: prints
+        command: ["sh", "-c", "grep -qs desktop-fingerprint-wanted /etc/pam.d/polkit-1 && fprintd-list \"$1\" 2>/dev/null", "sh", root.identityUser]
+        stdout: StdioCollector {
+            onStreamFinished: root.fingerprint = /^ - #[0-9]+:/m.test(text)
+        }
     }
     PolkitAgent {
         id: agent
@@ -94,6 +133,28 @@ Scope {
                     Layout.fillWidth: true
                     textFormat: Text.PlainText
                 }
+                // Whose password PAM asks for; with several administrators, which one (polkit offers the first).
+                Text {
+                    visible: root.identities.length === 1
+                    text: I18n.tr("authentication.identity", [root.identityLabel(agent.flow?.selectedIdentity)])
+                    color: Theme.muted
+                    wrapMode: Text.Wrap
+                    Layout.fillWidth: true
+                    textFormat: Text.PlainText
+                }
+                ChoiceChips {
+                    visible: root.identities.length > 1
+                    options: root.identities.map(identity => ({
+                                name: identity.string,
+                                label: root.identityLabel(identity)
+                            }))
+                    current: agent.flow?.selectedIdentity?.string ?? ""
+                    onChosen: name => {
+                        const identity = root.identities.find(candidate => candidate.string === name);
+                        if (identity)
+                            agent.flow.selectedIdentity = identity;
+                    }
+                }
                 Text {
                     text: agent.flow?.inputPrompt ?? ""
                     color: Theme.text
@@ -106,9 +167,13 @@ Scope {
                     echoMode: agent.flow?.responseVisible ? TextInput.Normal : TextInput.Password
                     onAccepted: root.submit()
                 }
+                // PAM's own messages (the fingerprint reader's among them). pam_unix says nothing about a wrong
+                // password: polkit only starts the prompt again, so that is said here.
                 Text {
-                    text: agent.flow?.supplementaryMessage ?? ""
-                    color: agent.flow?.supplementaryIsError ? Theme.danger : Theme.muted
+                    readonly property bool failedQuietly: !(agent.flow?.supplementaryMessage) && (agent.flow?.failed ?? false)
+                    visible: text !== ""
+                    text: failedQuietly ? I18n.tr("authentication.failed") : agent.flow?.supplementaryMessage ?? ""
+                    color: failedQuietly || agent.flow?.supplementaryIsError ? Theme.danger : Theme.muted
                     wrapMode: Text.Wrap
                     Layout.fillWidth: true
                     textFormat: Text.PlainText
@@ -118,6 +183,12 @@ Scope {
                         text: I18n.tr("authentication.authenticate")
                         enabled: response.enabled
                         onClicked: root.submit()
+                    }
+                    ActionButton {
+                        visible: root.fingerprint && !Tablet.active
+                        text: I18n.tr("authentication.useFingerprint")
+                        enabled: response.enabled
+                        onClicked: root.useFingerprint()
                     }
                     ActionButton {
                         text: I18n.tr("common.cancel")

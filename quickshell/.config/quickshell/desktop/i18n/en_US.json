@@ -116,7 +116,10 @@
   },
   "authentication": {
     "authenticate": "Authenticate",
-    "title": "Authentication required"
+    "title": "Authentication required",
+    "identity": "Account: %1",
+    "failed": "Authentication failed: try again.",
+    "useFingerprint": "Use fingerprint"
   },
   "bar": {
     "dateFormat": "ddd MMM d",
