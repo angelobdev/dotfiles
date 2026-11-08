@@ -14,7 +14,7 @@ PanelWindow {
     readonly property bool inputRequired: ["RequestPinCode", "RequestPasskey"].includes(prompt?.kind)
     readonly property bool displayOnly: ["DisplayPinCode", "DisplayPasskey"].includes(prompt?.kind)
     readonly property bool valid: prompt?.kind === "RequestPasskey" ? /^[0-9]{1,6}$/.test(response.text) : response.text.length > 0 && response.text.length <= 16
-    visible: prompt !== null
+    visible: prompt !== null && !Tablet.remaps(screen?.name ?? "")
     // The focused monitor when the prompt came, kept while it is open: the last panel may have been elsewhere.
     screen: BluetoothAgent.promptScreen || Quickshell.screens[0]
     anchors {

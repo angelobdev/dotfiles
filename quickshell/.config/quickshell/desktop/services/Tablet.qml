@@ -15,7 +15,11 @@ Singleton {
     // Only the desktop shell (shell.qml) enables it; another Quickshell config that loads Theme, like the
     // share picker, just reads the posture and runs no sensor or rotation.
     property bool enabled: false
-    onEnabledChanged: rotate()
+    onEnabledChanged: {
+        rotate();
+        if (enabled)
+            remapIfTurned();
+    }
     readonly property bool active: posture.tablet === true
     readonly property bool locked: SessionState.rotationLock
     // Whether there is an accelerometer at all; the Control Center tile shows only then.
@@ -79,11 +83,64 @@ Singleton {
             }
         }
         // A change during a run is applied after it.
-        onExited: {
+        onExited: exitCode => {
             if (command[3] !== String(root.transform)) {
                 command = ["python3", root.helper, "apply", String(root.transform)];
                 running = true;
+            } else if (exitCode === 0) {
+                root.remapIfTurned();
             }
+        }
+    }
+    // Hyprglass keeps drawing a glassed layer that was mapped before a rotation in the old orientation (an
+    // open panel turns sideways, the dock leaves the screen), and Hyprland reports no event for a rotation.
+    // After each one the screens whose transform changed are listed here for a moment: the glassed surfaces
+    // on them (Overlay, the dock, the OSD, toasts, prompts) unmap and map again upright.
+    property var remapping: []
+    function remaps(screenName) {
+        return remapping.includes(screenName);
+    }
+    function remapIfTurned() {
+        transforms.request();
+    }
+    property var monitorTransforms: ({})
+    CoalescedProcess {
+        id: transforms
+        command: ["hyprctl", "monitors", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let monitors;
+                try {
+                    monitors = JSON.parse(text);
+                } catch (failure) {
+                    return;
+                }
+                const known = root.monitorTransforms;
+                const seen = {};
+                const turned = [];
+                for (const monitor of monitors) {
+                    seen[monitor.name] = monitor.transform;
+                    if (known[monitor.name] !== undefined && known[monitor.name] !== monitor.transform)
+                        turned.push(monitor.name);
+                }
+                root.monitorTransforms = seen;
+                if (turned.length > 0) {
+                    root.remapping = turned;
+                    remapEnd.restart();
+                }
+            }
+        }
+    }
+    // As long as the raise of the on-screen keyboard (osk/KeyboardWindow.qml), for the same reason: the unmap
+    // must reach the compositor first. The keyboard is mapped again last, above the panels mapped with it.
+    Timer {
+        id: remapEnd
+        interval: 60
+        onTriggered: {
+            const turned = root.remapping;
+            root.remapping = [];
+            if (turned.includes(Keyboard.screenName))
+                Keyboard.raise();
         }
     }
     Process {

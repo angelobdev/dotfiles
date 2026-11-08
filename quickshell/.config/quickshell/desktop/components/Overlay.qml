@@ -48,7 +48,7 @@ PanelWindow {
     // panel from another monitor, and the fading panel would be rebuilt there. A screen that went away is not kept.
     property var shownOn: null
     screen: (Quickshell.screens.includes(shownOn) ? shownOn : ShellState.activeScreen) || Quickshell.screens[0]
-    visible: open || reveal > 0
+    visible: (open || reveal > 0) && !Tablet.remaps(screen?.name ?? "")
     anchors {
         top: true
         bottom: true

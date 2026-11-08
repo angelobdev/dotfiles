@@ -43,7 +43,7 @@ PanelWindow {
     implicitWidth: 380
     // Full available height so a deck opens without clipping; the input mask still covers only the stack.
     implicitHeight: (screen?.height ?? 900) - 100
-    visible: count > 0 && !Notices.quiet && ShellState.panel === ""
+    visible: count > 0 && !Notices.quiet && ShellState.panel === "" && !Tablet.remaps(screen?.name ?? "")
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "desktop-notifications"
