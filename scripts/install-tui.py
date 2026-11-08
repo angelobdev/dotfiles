@@ -1135,6 +1135,37 @@ def apply_updates(plan, picked):
     return 0
 
 
+# What Settings can apply without a terminal (updates.py apply): the lines of the updates screen it shows.
+HEADLESS = {'system': 'System packages', 'flatpak': 'Flatpak apps', 'repository': 'Repository'}
+
+
+def apply_headless(keys):
+    """--apply-updates: the updates screen's apply, without the screen, for Settings (updates.py apply runs it behind
+    the root broker). The repository goes first, as on the screen, and the rest is applied by its new version."""
+    if set(keys) - set(HEADLESS) or not keys:
+        sys.exit(f'--apply-updates takes {", ".join(HEADLESS)}.')
+    profiles = recorded_profiles() or tuple(installer.default_profiles().split(','))
+    plan = installer.load_plan(profiles)
+    installer.refuse(plan)
+    rest = [key for key in HEADLESS if key in keys and key != 'repository']
+    if 'repository' in keys:
+        source = repository_source()
+        if not source.selectable:
+            sys.exit(f'Repository: {source.summary}.')
+        before = git('rev-parse', 'HEAD').stdout.strip()
+        print('Running: git merge --ff-only @{u}', flush=True)
+        subprocess.run(('git', '-C', str(REPO), 'merge', '--ff-only', '@{u}'), check=True)
+        after_pull(plan, before)
+        refresh_bar('repository')
+        if rest:
+            # The pins and this program may have changed with the pull: the new version applies the rest.
+            print('Applying the rest with the new version...', flush=True)
+            os.execv(sys.executable, [sys.executable, str(REPO / 'scripts/install-tui.py'), '--apply-updates', ','.join(rest)])
+        print('Done.')
+        return 0
+    return apply_updates(plan, [Source(key, HEADLESS[key], '', [], '', True) for key in rest])
+
+
 def set_locale():
     """The environment's locale, for curses to draw UTF-8. One the system lacks (LC_MESSAGES=en_US.UTF-8 with
     only Italian installed, say) makes setlocale fail: then the character set alone, else C.UTF-8."""
@@ -1154,7 +1185,13 @@ def main(argv=None):
     parser.add_argument('--updates', action='store_true', help='start on the updates screen')
     parser.add_argument('--add', metavar='PROFILES', help='start on the profiles, these checked on top of the installed ones')
     parser.add_argument('--remove', metavar='PROFILES', help='start on the review of removing these profiles (not core)')
+    parser.add_argument('--apply-updates', metavar='KEYS', help='apply these updates without the screen (system, flatpak, '
+                        'repository), as Settings does')
     args = parser.parse_args(argv)
+    if args.apply_updates is not None:
+        if os.geteuid() == 0:
+            sys.exit('Run as the desktop user: the installer asks sudo for each system change.')
+        return apply_headless(tuple(key for key in args.apply_updates.split(',') if key))
     adding = tuple(args.add.split(',')) if args.add else ()
     removal = tuple(args.remove.split(',')) if args.remove else ()
     if sum(bool(value) for value in (args.updates, adding, removal, args.profiles and (adding or removal))) > 1:

@@ -703,5 +703,43 @@ class LocaleTests(unittest.TestCase):
                 tui.locale.setlocale(tui.locale.LC_ALL, saved)
 
 
+class HeadlessTests(unittest.TestCase):
+    """--apply-updates: what Settings applies, without the screen."""
+
+    def run_headless(self, keys, pullable=True):
+        source = tui.Source('repository', 'Repository', '2 commits behind origin/main', [], '', pullable)
+        with mock.patch.object(tui, 'recorded_profiles', return_value=('core',)), \
+                mock.patch.object(installer, 'load_plan', return_value=plan(('core',))), mock.patch.object(installer, 'refuse'), \
+                mock.patch.object(tui, 'repository_source', return_value=source), \
+                mock.patch.object(tui, 'git', return_value=subprocess.CompletedProcess([], 0, 'abc\n', '')), \
+                mock.patch('subprocess.run') as run, mock.patch.object(tui, 'after_pull') as after, \
+                mock.patch.object(tui, 'refresh_bar'), mock.patch.object(tui.os, 'execv') as execv, \
+                mock.patch.object(tui, 'apply_updates', return_value=0) as applied:
+            status = tui.apply_headless(keys)
+        return status, run, after, execv, applied
+
+    def test_system_and_flatpak_are_the_screens_apply(self):
+        status, run, _, execv, applied = self.run_headless(('flatpak', 'system'))
+        self.assertEqual(status, 0)
+        self.assertEqual([source.key for source in applied.call_args.args[1]], ['system', 'flatpak'])
+        run.assert_not_called()
+        execv.assert_not_called()
+
+    def test_the_repository_goes_first_and_its_new_version_applies_the_rest(self):
+        _, run, after, execv, applied = self.run_headless(('system', 'repository'))
+        self.assertEqual(run.call_args.args[0][-2:], ('--ff-only', '@{u}'))
+        after.assert_called_once()
+        self.assertEqual(execv.call_args.args[1][-2:], ['--apply-updates', 'system'])
+        applied.assert_not_called()
+
+    def test_a_repository_that_cannot_fast_forward_is_refused(self):
+        with self.assertRaises(SystemExit):
+            self.run_headless(('repository',), pullable=False)
+
+    def test_only_known_keys(self):
+        with self.assertRaises(SystemExit):
+            tui.apply_headless(('aur',))
+
+
 if __name__ == '__main__':
     unittest.main()

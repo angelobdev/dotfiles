@@ -6,13 +6,53 @@ import "../../components"
 import "../../services"
 
 // Available updates: what would be updated (packages, Flatpak apps, the new commits of this repository), when it
-// was checked, Check now, and Update, which opens a terminal on the updates screen of the guided installer. The updates panel (its bar icon) and Settings → Updates show it.
+// was checked, Check now, and Update, which applies the switched-on sections in the background (Updates.apply: one
+// password or fingerprint prompt when root is needed) and shows its progress and log here. The updates panel (its bar
+// icon) and Settings → Updates show it.
 ColumnLayout {
     id: root
     // On screen (kept for its hosts; the lists come from the Updates service).
     property bool shown: false
     readonly property Item focusItem: root
     spacing: 12
+    // Sections switched off for the next Update; all of them are on by default.
+    property var skipped: ({})
+    // What Update applies: the sections with updates that are switched on. The repository only when it can be
+    // fast-forwarded; it goes first, and the rest is applied by its new version.
+    readonly property var keys: {
+        const keys = [];
+        if (Updates.packages.length > 0 && !skipped.system)
+            keys.push("system");
+        if (Updates.flatpaks.length > 0 && !skipped.flatpak)
+            keys.push("flatpak");
+        if (Updates.pullable && !skipped.repository)
+            keys.push("repository");
+        return keys;
+    }
+    function toggle(key, on) {
+        const next = Object.assign({}, skipped);
+        next[key] = !on;
+        skipped = next;
+    }
+    readonly property var applied: Updates.applyState
+    function result() {
+        if (Updates.applying)
+            return I18n.tr("updates.apply.applying");
+        if (applied.finished === undefined)
+            return applied.status === -1 ? I18n.tr("updates.apply.stopped") : "";
+        if (applied.status === 0)
+            return I18n.tr(applied.compositor ? "updates.apply.lastDoneCompositor" : "updates.apply.lastDone", [root.moment(applied.finished * 1000)]);
+        if (applied.status === -1)
+            return I18n.tr("updates.apply.stopped");
+        return I18n.tr("updates.apply.lastFailed", [applied.status]);
+    }
+    // A time today, or a day and a time.
+    function moment(milliseconds) {
+        const date = new Date(milliseconds);
+        if (date.toDateString() === new Date().toDateString())
+            return I18n.locale.toString(date, I18n.timeFormat);
+        return I18n.locale.toString(date, I18n.tr("assistant.dayFormat") + " " + I18n.timeFormat);
+    }
     function when(milliseconds) {
         const date = new Date(milliseconds);
         if (date.toDateString() === new Date().toDateString())
@@ -30,6 +70,25 @@ ColumnLayout {
         if (Updates.behind > 0)
             parts.push(I18n.plural("updates.summary.commits.one", "updates.summary.commits.other", Updates.behind));
         return parts.join(" · ");
+    }
+    // A heading with the switch that keeps its section in or out of the next Update.
+    component Section: RowLayout {
+        property alias text: heading.text
+        property string key
+        property bool switchable: true
+        Layout.fillWidth: true
+        spacing: 10
+        Heading {
+            id: heading
+            Layout.fillWidth: true
+            font.pixelSize: Theme.textSize(13)
+        }
+        ControlSwitch {
+            visible: parent.switchable
+            enabled: !Updates.applying
+            checked: !root.skipped[parent.key]
+            onToggled: root.toggle(parent.key, checked)
+        }
     }
     component Entry: RowLayout {
         property string name
@@ -83,10 +142,10 @@ ColumnLayout {
             id: list
             width: scroll.availableWidth
             spacing: 6
-            Heading {
+            Section {
                 visible: Updates.packages.length > 0
                 text: I18n.tr("updates.packagesHeading")
-                font.pixelSize: Theme.textSize(13)
+                key: "system"
             }
             Repeater {
                 model: Updates.packages
@@ -96,10 +155,10 @@ ColumnLayout {
                     version: modelData.version
                 }
             }
-            Heading {
+            Section {
                 visible: Updates.flatpaks.length > 0
                 text: I18n.tr("updates.flatpaksHeading")
-                font.pixelSize: Theme.textSize(13)
+                key: "flatpak"
                 Layout.topMargin: 6
             }
             Repeater {
@@ -110,10 +169,11 @@ ColumnLayout {
                     version: modelData.version
                 }
             }
-            Heading {
+            Section {
                 visible: Updates.behind > 0
                 text: I18n.tr("updates.repositoryHeading", [Updates.repository.upstream ?? ""])
-                font.pixelSize: Theme.textSize(13)
+                key: "repository"
+                switchable: Updates.pullable
                 Layout.topMargin: 6
             }
             // What stops the fast-forward of the updates screen, as found at the check.
@@ -156,6 +216,38 @@ ColumnLayout {
             textFormat: Text.PlainText
         }
     }
+    // The last Update: its progress, its result and, while it runs or when it failed, the end of its log.
+    Text {
+        Layout.fillWidth: true
+        visible: text !== ""
+        text: root.result()
+        color: Updates.applying || root.applied.status === 0 ? Theme.text : Theme.danger
+        font.family: Theme.font
+        font.pixelSize: Theme.textSize(12)
+        wrapMode: Text.Wrap
+    }
+    Rectangle {
+        Layout.fillWidth: true
+        visible: Updates.applyLog.length > 0 && (Updates.applying || root.applied.status !== 0)
+        implicitHeight: logText.implicitHeight + 16
+        radius: Theme.corner(10)
+        color: Theme.tile
+        Text {
+            id: logText
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                margins: 8
+            }
+            text: Updates.applyLog.slice(-8).join("\n")
+            textFormat: Text.PlainText
+            wrapMode: Text.WrapAnywhere
+            color: Theme.text
+            font.family: "monospace"
+            font.pixelSize: Theme.textSize(10)
+        }
+    }
     Text {
         Layout.fillWidth: true
         text: Updates.checking ? I18n.tr("updates.checking") : Updates.checked > 0 ? root.when(Updates.checked) : I18n.tr("updates.never")
@@ -176,12 +268,9 @@ ColumnLayout {
             Layout.fillWidth: true
             highlighted: true
             iconName: "update"
-            text: I18n.tr("updates.install")
-            enabled: Updates.count > 0
-            onClicked: {
-                ShellState.close();
-                Updates.upgrade();
-            }
+            text: Updates.applying ? I18n.tr("updates.apply.applying") : I18n.tr("updates.install")
+            enabled: !Updates.applying && root.keys.length > 0
+            onClicked: Updates.apply(root.keys)
         }
     }
 }

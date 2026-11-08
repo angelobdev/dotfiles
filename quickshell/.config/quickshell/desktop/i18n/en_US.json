@@ -1213,7 +1213,18 @@
       "pacman": "pacman could not check for updates: %1",
       "flatpak": "Flatpak could not check for updates: %1",
       "git": "git could not check the repository: %1",
-      "usage": "Usage: updates.py check [repository]|status"
+      "usage": "Usage: updates.py check [repository]|status|apply KEYS|apply-status"
+    },
+    "apply": {
+      "applying": "Updating…",
+      "running": "An update is already running.",
+      "done": "The updates are installed.",
+      "doneCompositor": "The updates are installed. Hyprland was among them: log out and back in, and the plugins are rebuilt at that login.",
+      "failed": "The update did not finish: %1 The log is in the updates panel.",
+      "lastDone": "Updated at %1.",
+      "lastDoneCompositor": "Updated at %1. Hyprland was among them: log out and back in, and the plugins are rebuilt at that login.",
+      "lastFailed": "The last update did not finish (status %1): see its log below, then Update again.",
+      "stopped": "The last update stopped before it finished: Update again."
     }
   },
   "gaming": {
