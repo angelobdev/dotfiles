@@ -1329,5 +1329,13 @@
       "unavailable": "The store could not be reached.",
       "usage": "Usage: store.py search KIND [QUERY] [PAGE] | install KIND ID FILE | remove FOLDER... | installed"
     }
+  },
+  "privileged": {
+    "errors": {
+      "missing": "The helper for administrator rights is not installed (%1): run the installer once, from a terminal, to add it.",
+      "cancelled": "Authentication was cancelled: nothing was changed.",
+      "denied": "This user may not act as administrator.",
+      "failed": "The helper for administrator rights did not start (status %1)."
+    }
   }
 }

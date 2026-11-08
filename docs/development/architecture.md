@@ -46,6 +46,17 @@ Services spawn `python3 ~/.local/libexec/desktop/<helper>.py …` through Quicks
 
 Crashed watchers restart through a `Timer` whose `running` is `<enabled> && !process.running`. Long-lived commands start through `setpriv --pdeathsig TERM --`, so the kernel ends them with the shell even when the shell is killed or crashes (otherwise every restart left them running). Watchers wait on events where the kernel offers them: `brightness.py watch` polls `actual_brightness` for sysfs notifications, `privacy.py watch` uses inotify on `/dev/video*`. Treat argv and stdout formats as a byte-exact contract between QML and Python.
 
+## Root for operations from Settings
+
+Settings runs system work without a terminal ([#37](https://github.com/angelobdev/dotfiles/issues/37)). `privileged.py run COMMAND…` asks for root once per operation:
+
+1. It starts `pkexec /usr/local/libexec/dotfiles-desktop/root-broker SOCKET`. The polkit action is pkexec's own (`auth_admin`, no keep), and the prompt is the shell's polkit agent (`session/Authentication.qml`).
+2. The broker is a root-owned copy of `scripts/privileged/root-broker`, written by the installer's `files` step (core profile). It is never a link, because pkexec must not run a file the desktop user can change. It binds `SOCKET` in a private `0700` directory of `/run/user/<uid>` and serves only the uid pkexec names (`PKEXEC_UID`, checked with `SO_PEERCRED`).
+3. `COMMAND` runs as the desktop user with `shell/.local/libexec/desktop/root/` first in `PATH`. That directory holds a `sudo` shim: each `sudo …` of the installer, makepkg or hyprpm (which picks the first `sudo`, `doas` or `run0` in `PATH`) sends its argv, cwd and standard streams (as file descriptors) to the broker. The broker runs the command as root with sudo's clean environment and returns the status. `sudo -v`, `-n -v` and `-k` do nothing; `-u` is refused. Without `DESKTOP_ROOT_SOCKET`, the shim is the system's sudo.
+4. When `COMMAND` ends, `privileged.py` closes the broker's standard input. The broker then stops what it still runs, removes the socket and exits. The broker also stops a command whose caller goes away.
+
+The window is the operation: while it runs, another process of the same user could also connect, as with sudo's timestamp.
+
 ## Compositor plugins
 
 Hyprspace, Hyprgrass, Hyprglass and HyprCapture are built by hyprpm from the pinned packaging in `scripts/hyprpm/`, which patches Hyprgrass so one finger works as the pointer on apps that ignore touch (`touch_as_pointer`; holding gesture touches back is upstream). `config/plugins.lua` guards every block (`local plugins = hl.plugin or {}`; `if plugins.X then … end`) so `--verify-config` and plugin-less startup work. Actions that need a plugin (screenshots) check `hl.plugin` at press time because plugins load after `hyprland.start`. `desktop-plugins reload` loads them only when they were built from the current packaging (`scripts/hyprpm/bundle.py` digest) for the installed Hyprland; otherwise, at startup with nothing loaded, it opens a terminal running `install-hypr-plugins.py`, or after an unverified compositor update it leaves them off.

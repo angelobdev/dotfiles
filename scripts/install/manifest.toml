@@ -138,6 +138,13 @@ commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
 path = '.local/share/zsh/plugins/zsh-autocomplete'
 track = 'tags'
 
+# Root for one operation started from Settings, behind one pkexec prompt (shell/.local/libexec/desktop/privileged.py).
+# A copy owned by root, never a link: pkexec must not run a file the desktop user can change.
+[[fedora.core.files]]
+path = '/usr/local/libexec/dotfiles-desktop/root-broker'
+source = 'scripts/privileged/root-broker'
+mode = '0755'
+
 # A recent Intel laptop: firmware, video decoding, cameras, power and the fingerprint reader. The 2-in-1 parts
 # are the tablet profile.
 [fedora.hardware]
@@ -344,6 +351,13 @@ repo = 'https://github.com/marlonrichert/zsh-autocomplete'
 commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
 path = '.local/share/zsh/plugins/zsh-autocomplete'
 track = 'tags'
+
+# Root for one operation started from Settings, behind one pkexec prompt (shell/.local/libexec/desktop/privileged.py).
+# A copy owned by root, never a link: pkexec must not run a file the desktop user can change.
+[[arch.core.files]]
+path = '/usr/local/libexec/dotfiles-desktop/root-broker'
+source = 'scripts/privileged/root-broker'
+mode = '0755'
 
 # A recent Intel laptop. linux-firmware-intel holds the Wi-Fi, Bluetooth, GPU, VSC, NPU and ISH firmware that
 # Fedora splits in several packages. The 2-in-1 parts are the tablet profile.

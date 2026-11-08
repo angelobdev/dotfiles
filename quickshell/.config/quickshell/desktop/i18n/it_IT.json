@@ -1329,5 +1329,13 @@
       "unavailable": "Impossibile raggiungere lo store.",
       "usage": "Uso: store.py search TIPO [RICERCA] [PAGINA] | install TIPO ID FILE | remove CARTELLA... | installed"
     }
+  },
+  "privileged": {
+    "errors": {
+      "missing": "L’assistente per i permessi di amministratore non è installato (%1): esegui una volta l’installer da un terminale per aggiungerlo.",
+      "cancelled": "Autenticazione annullata: non è stato cambiato nulla.",
+      "denied": "Questo utente non può agire come amministratore.",
+      "failed": "L’assistente per i permessi di amministratore non si è avviato (stato %1)."
+    }
   }
 }
