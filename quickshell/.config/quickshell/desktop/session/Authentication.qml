@@ -13,6 +13,21 @@ Scope {
     readonly property bool registered: agent.isRegistered
     // The focused monitor when the request came, kept while it is open: the last panel may have been elsewhere.
     property var promptScreen: null
+    // A polkit identity: unix-user:angelo or unix-group:wheel, with the full name when the account has one.
+    function identityLabel(identity) {
+        if (!identity)
+            return "";
+        const name = identity.string.replace(/^unix-(user|group):/, "");
+        return identity.displayName && identity.displayName !== name ? identity.displayName + " (" + name + ")" : name;
+    }
+    // The identities as a plain array: Quickshell hands over a QList, which has no map or find.
+    readonly property var identities: {
+        const list = agent.flow?.identities;
+        const result = [];
+        for (let i = 0; i < (list?.length ?? 0); i++)
+            result.push(list[i]);
+        return result;
+    }
     function submit() {
         if (!response.enabled)
             return;
@@ -94,6 +109,28 @@ Scope {
                     Layout.fillWidth: true
                     textFormat: Text.PlainText
                 }
+                // Whose password PAM asks for; with several administrators, which one (polkit offers the first).
+                Text {
+                    visible: root.identities.length === 1
+                    text: I18n.tr("authentication.identity", [root.identityLabel(agent.flow?.selectedIdentity)])
+                    color: Theme.muted
+                    wrapMode: Text.Wrap
+                    Layout.fillWidth: true
+                    textFormat: Text.PlainText
+                }
+                ChoiceChips {
+                    visible: root.identities.length > 1
+                    options: root.identities.map(identity => ({
+                                name: identity.string,
+                                label: root.identityLabel(identity)
+                            }))
+                    current: agent.flow?.selectedIdentity?.string ?? ""
+                    onChosen: name => {
+                        const identity = root.identities.find(candidate => candidate.string === name);
+                        if (identity)
+                            agent.flow.selectedIdentity = identity;
+                    }
+                }
                 Text {
                     text: agent.flow?.inputPrompt ?? ""
                     color: Theme.text
@@ -106,9 +143,13 @@ Scope {
                     echoMode: agent.flow?.responseVisible ? TextInput.Normal : TextInput.Password
                     onAccepted: root.submit()
                 }
+                // PAM's own messages (the fingerprint reader's among them). pam_unix says nothing about a wrong
+                // password: polkit only starts the prompt again, so that is said here.
                 Text {
-                    text: agent.flow?.supplementaryMessage ?? ""
-                    color: agent.flow?.supplementaryIsError ? Theme.danger : Theme.muted
+                    readonly property bool failedQuietly: !(agent.flow?.supplementaryMessage) && (agent.flow?.failed ?? false)
+                    visible: text !== ""
+                    text: failedQuietly ? I18n.tr("authentication.failed") : agent.flow?.supplementaryMessage ?? ""
+                    color: failedQuietly || agent.flow?.supplementaryIsError ? Theme.danger : Theme.muted
                     wrapMode: Text.Wrap
                     Layout.fillWidth: true
                     textFormat: Text.PlainText

@@ -116,7 +116,9 @@
   },
   "authentication": {
     "authenticate": "Autentica",
-    "title": "Autenticazione richiesta"
+    "title": "Autenticazione richiesta",
+    "identity": "Account: %1",
+    "failed": "Autenticazione non riuscita: riprova."
   },
   "bar": {
     "dateFormat": "ddd d MMM",
