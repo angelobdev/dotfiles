@@ -40,10 +40,14 @@ Scope {
     // Not in tablet mode, where the stack skips the reader the screen covers.
     property bool fingerprint: false
     readonly property string identityUser: (agent.flow?.selectedIdentity?.string ?? "").startsWith("unix-user:") ? agent.flow.selectedIdentity.string.slice(10) : ""
+    // The command is set here, not bound: a binding on identityUser may not have caught up yet when this handler runs,
+    // and the check then asked fprintd-list about an empty name.
     onIdentityUserChanged: {
         fingerprint = false;
-        if (identityUser !== "")
-            prints.running = true;
+        if (identityUser === "")
+            return;
+        prints.command = ["sh", "-c", "grep -qs desktop-fingerprint-wanted /etc/pam.d/polkit-1 && fprintd-list \"$1\" 2>/dev/null", "sh", identityUser];
+        prints.running = true;
     }
     function useFingerprint() {
         if (!response.enabled)
@@ -53,7 +57,6 @@ Scope {
     }
     Process {
         id: prints
-        command: ["sh", "-c", "grep -qs desktop-fingerprint-wanted /etc/pam.d/polkit-1 && fprintd-list \"$1\" 2>/dev/null", "sh", root.identityUser]
         stdout: StdioCollector {
             onStreamFinished: root.fingerprint = /^ - #[0-9]+:/m.test(text)
         }
