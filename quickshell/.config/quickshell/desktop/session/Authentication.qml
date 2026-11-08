@@ -14,11 +14,12 @@ Scope {
     readonly property bool registered: agent.isRegistered
     // The focused monitor when the request came, kept while it is open: the last panel may have been elsewhere.
     property var promptScreen: null
-    // A polkit identity: unix-user:angelo or unix-group:wheel, with the full name when the account has one.
+    // A polkit identity: Quickshell gives the account or group name (string), the full name when the account has one
+    // (displayName), and isGroup.
     function identityLabel(identity) {
         if (!identity)
             return "";
-        const name = identity.string.replace(/^unix-(user|group):/, "");
+        const name = identity.string;
         return identity.displayName && identity.displayName !== name ? identity.displayName + " (" + name + ")" : name;
     }
     // The identities as a plain array: Quickshell hands over a QList, which has no map or find.
@@ -39,7 +40,7 @@ Scope {
     // takes an empty answer as "the fingerprint": offered when that stack is in place and the account has a finger enrolled.
     // Not in tablet mode, where the stack skips the reader the screen covers.
     property bool fingerprint: false
-    readonly property string identityUser: (agent.flow?.selectedIdentity?.string ?? "").startsWith("unix-user:") ? agent.flow.selectedIdentity.string.slice(10) : ""
+    readonly property string identityUser: agent.flow?.selectedIdentity && !agent.flow.selectedIdentity.isGroup ? agent.flow.selectedIdentity.string : ""
     // The command is set here, not bound: a binding on identityUser may not have caught up yet when this handler runs,
     // and the check then asked fprintd-list about an empty name.
     onIdentityUserChanged: {
