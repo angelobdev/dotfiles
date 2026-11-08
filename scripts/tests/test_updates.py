@@ -201,5 +201,77 @@ class RepositoryTests(unittest.TestCase):
             self.assertEqual(check.call_args.args[1], ['repository'])
 
 
+class ApplyTests(unittest.TestCase):
+    """apply: the updates screen's apply in the background, behind one pkexec only when root is needed."""
+
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        root = Path(folder.name)
+        for name, value in (('STATE', root / 'updates.json'), ('APPLY', root / 'updates-apply.json'),
+                            ('APPLY_LOG', root / 'updates-apply.log'), ('APPLY_LOCK', root / '.updates-apply.lock')):
+            patcher = mock.patch.object(updates, name, value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        # The message names the log's last line, whatever the catalog says around it.
+        translate = mock.patch.object(updates, 'tr', side_effect=lambda key, args=(): ' '.join([key, *map(str, args)]))
+        translate.start()
+        self.addCleanup(translate.stop)
+
+    def apply(self, keys, code=0, line='Done.'):
+        calls = []
+
+        def run(command, **kwargs):
+            calls.append(command)
+            if hasattr(kwargs.get('stdout'), 'write'):
+                kwargs['stdout'].write(line + '\n')
+            return done(code=code)
+
+        with mock.patch('subprocess.run', side_effect=run):
+            status = updates.main_with(['apply', keys])
+        return status, calls
+
+    def test_system_and_flatpak_go_through_the_root_broker(self):
+        status, calls = self.apply('flatpak,system')
+        self.assertEqual(status, 0)
+        self.assertEqual(calls[0][1:3], [str(updates.HERE / 'privileged.py'), 'run'])
+        self.assertEqual(calls[0][-3:], [str(updates.REPO / 'scripts/install-tui.py'), '--apply-updates', 'system,flatpak'])
+        self.assertEqual(calls[1][0], 'notify-send')
+        state = json.loads(updates.APPLY.read_text())
+        self.assertEqual((state['running'], state['status'], state['keys']), (False, 0, ['system', 'flatpak']))
+        self.assertEqual(updates.apply_status()['log'], ['Done.'])
+
+    def test_a_pull_alone_asks_for_no_password(self):
+        _, calls = self.apply('repository')
+        self.assertNotIn(str(updates.HERE / 'privileged.py'), calls[0])
+        self.assertEqual(calls[0][-2:], ['--apply-updates', 'repository'])
+
+    def test_a_hyprland_update_says_the_plugins_rebuild_at_login(self):
+        updates.STATE.write_text(json.dumps({'compositor': True}))
+        _, calls = self.apply('system')
+        self.assertIn('updates.apply.doneCompositor', calls[-1][-1])
+        self.assertTrue(json.loads(updates.APPLY.read_text())['compositor'])
+
+    def test_a_failure_says_the_last_line(self):
+        status, calls = self.apply('system', code=1, line='Authentication was cancelled: nothing was changed.')
+        self.assertEqual(status, 1)
+        self.assertIn('Authentication was cancelled', calls[-1][-1])
+
+    def test_unknown_keys_run_nothing(self):
+        status, calls = self.apply('everything')
+        self.assertEqual((status, calls), (2, []))
+
+    def test_one_apply_at_a_time(self):
+        import fcntl
+        with updates.APPLY_LOCK.open('a') as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            status, calls = self.apply('system')
+            self.assertEqual((status, calls), (1, []))
+            updates.APPLY.write_text(json.dumps({'running': True}))
+            self.assertTrue(updates.apply_status()['running'])
+        # The lock is gone without a result: it stopped.
+        self.assertEqual(updates.apply_status()['status'], -1)
+
+
 if __name__ == '__main__':
     unittest.main()

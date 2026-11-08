@@ -47,8 +47,27 @@ Singleton {
         if (!checker.running)
             checker.running = true;
     }
-    function upgrade() {
-        Quickshell.execDetached([wrapper, "upgrade"]);
+    // Applying them, without a terminal: desktop-updates apply runs the updates screen's apply in the background,
+    // with one pkexec prompt when root is needed; updates-apply.json holds its state and the log its output.
+    property var applyState: ({})
+    property var applyLog: []
+    readonly property bool applying: applyState.running === true
+    // The repository can be fast-forwarded: behind its upstream, with nothing of its own and no local changes.
+    readonly property bool pullable: behind > 0 && !(repository.ahead > 0) && repository.dirty !== true
+    function apply(keys) {
+        if (applying || keys.length === 0)
+            return;
+        // Shown at once; updates.py writes the same as soon as it holds its lock.
+        applyState = {
+            running: true,
+            keys: keys
+        };
+        applyLog = [];
+        Quickshell.execDetached([wrapper, "apply", keys.join(",")]);
+    }
+    function readApply() {
+        if (!applyReader.running)
+            applyReader.running = true;
     }
     function announce(next) {
         const before = names(data);
@@ -64,6 +83,35 @@ Singleton {
     Process {
         id: checker
         command: [root.wrapper, "check"]
+    }
+    Process {
+        id: applyReader
+        command: [root.wrapper, "apply-status"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const value = root.parse(text);
+                root.applyLog = Array.isArray(value.log) ? value.log.filter(line => typeof line === "string") : [];
+                // Not the file of an earlier apply over the one just started.
+                if (!(root.applying && !value.running && value.finished === undefined)) {
+                    delete value.log;
+                    root.applyState = value;
+                }
+            }
+        }
+    }
+    // The log grows while it runs.
+    Timer {
+        interval: 2000
+        repeat: true
+        running: root.applying
+        onTriggered: root.readApply()
+    }
+    FileView {
+        path: root.stateDir + "/updates-apply.json"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: root.readApply()
     }
     Process {
         id: notifier

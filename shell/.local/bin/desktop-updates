@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # System updates for the shell's update icon: check (desktop-updates.timer, the panel; check repository: only
-# this repository, after a pull), status, and
-# upgrade, which opens a terminal on the updates screen of the guided installer (desktop-manager updates), so the
+# this repository, after a pull), status, apply KEYS and apply-status (the panel and Settings: in the background,
+# no terminal), and upgrade, for a terminal of your own: it opens one on the updates screen of the guided installer (desktop-manager updates), so the
 # choice, the progress and the sudo password prompt are visible (in tablet mode the terminal opens the on-screen
 # keyboard).
 helper="$HOME/.local/libexec/desktop/updates.py"
@@ -10,6 +10,9 @@ message() { python3 "$HOME/.local/libexec/desktop/i18n.py" "$@"; }
 case "${1:-status}" in
     check) exec python3 "$helper" "$@" ;;
     status) exec python3 "$helper" status ;;
+    # Settings: apply KEYS (system,flatpak,repository) in the background, with one pkexec prompt when root is needed.
+    apply) exec python3 "$helper" apply "${2:?Usage: desktop-updates apply system,flatpak,repository}" ;;
+    apply-status) exec python3 "$helper" apply-status ;;
     upgrade)
         # The desktop-updates window rule floats it in the middle of the screen.
         setsid -f kitty --class desktop-updates --title "$(message 'updates.title')" -e "$0" run >/dev/null 2>&1
@@ -25,5 +28,5 @@ case "${1:-status}" in
         fi
         read -r _ || true
         ;;
-    *) echo 'Usage: desktop-updates {check [repository]|status|upgrade}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-updates {check [repository]|status|apply KEYS|apply-status|upgrade}' >&2; exit 2 ;;
 esac
