@@ -128,20 +128,18 @@ class AgentsTests(unittest.TestCase):
         self.assertEqual(self.run_command('image', 'antigravity', '/tmp/a.png'), '@/tmp/a.png')
 
     def test_install_refuses_missing_needs(self):
-        with mock.patch.object(agents.subprocess, 'run') as run, \
-                self.assertRaisesRegex(ValueError, 'Codex needs npm to install'):
+        with self.assertRaisesRegex(ValueError, 'Codex needs npm to install'):
             self.run_command('install', 'codex')
-        run.assert_not_called()
 
-    def test_install_runs_in_a_terminal(self):
+    def test_install_gives_the_command_for_a_background_job(self):
+        # No terminal: Settings runs it with jobs.py and shows its output.
         self.install('curl')
-        with mock.patch.object(agents.subprocess, 'run') as run:
-            self.run_command('install', 'claude')
-        argv = run.call_args.args[0]
-        self.assertEqual(argv[:3], ['kitty', '--class', 'desktop-updates'])
-        self.assertIn('https://claude.ai/install.sh', argv[-1])
-        self.assertTrue(run.call_args.kwargs['env']['PATH'].startswith(str(self.bin)))
-
+        value = json.loads(self.run_command('install', 'claude'))
+        self.assertEqual(value['name'], 'Claude Code')
+        self.assertEqual(value['argv'][0], 'env')
+        self.assertTrue(value['argv'][1].startswith('PATH=' + str(self.bin)))
+        self.assertEqual(value['argv'][2:4], ['sh', '-c'])
+        self.assertIn('https://claude.ai/install.sh', value['argv'][-1])
 
 if __name__ == '__main__':
     unittest.main()
