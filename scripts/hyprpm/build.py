@@ -8,12 +8,12 @@ import sys
 
 PLUGINS = {
     'Hyprspace': ('KZDKM/Hyprspace', '258b7b8bcea177e99da74946cf5cddd1dfe0e1ab', 'Hyprspace.so'),
-    'hyprgrass': ('horriblename/hyprgrass', '8ca1af717d5b4ea1215a781df52bcef02d7b15e6', 'build/src/libhyprgrass.so'),
+    'hyprgrass': ('horriblename/hyprgrass', '578e9849278eb4ac7445d68f10a0266f740c58a9', 'build/src/libhyprgrass.so'),
     'hyprglass': ('hyprnux/hyprglass', '28b38df92176baf3d42fe58bf6c3b663d230c6c9', 'hyprglass.so'),
     'HyprCapture': ('gfhdhytghd/HyprCapture', 'fd465d85d953592862e30b296dd69ad746bc79af', 'build/libhyprcapture.so'),
 }
-# Keeps the fingers of a gesture from reaching the window under them.
-HYPRGRASS_PATCH = Path(__file__).resolve().with_name('hyprgrass-hold-touches.patch')
+# One finger works as the pointer on clients without touch (hold_touches is upstream since the pin above).
+HYPRGRASS_PATCH = Path(__file__).resolve().with_name('hyprgrass-touch-as-pointer.patch')
 # The Hyprland builds these pins were verified against are in bundle.py, outside the bundle and its digest.
 
 
