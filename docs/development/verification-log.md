@@ -955,3 +955,11 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Built against Hyprland 0.57.1 (`0.57.1-1.fc45.x86_64`) both from a plain checkout and through `build.py hyprgrass` in a scratch directory: compiles cleanly, and `plugin:hyprgrass:hold_touches` and `plugin:hyprgrass:touch_as_pointer` are registered by the library. The build is now in `~/.cache/dotfiles/hyprpm-build/`, so the rebuild at the next login reuses it.
 - Not tried in a session: the running one keeps the old build until the next login, and the nested touch test harness went with the Fedora 45 reset. Not loaded, not tried by touch. `check.sh` passes.
 - After the rebuild at the next login, the user tried the new build by touch and confirmed it works.
+
+## One build cache key per plugin, 2026-11-08
+
+- Before: one key for all four plugins, made from the Hyprland build and the whole text of `build.py` and the patch. After #34 moved only the hyprgrass pin, Hyprspace, hyprglass and HyprCapture compiled again at login (22:43–22:44), and four old key directories held 4.4 GB.
+- `build.py <plugin>` for all four from the branch, in a scratch directory, against Hyprland `0.57.1-1.fc45`: compiled in 25 s (Hyprspace), 15 s (hyprgrass), 40 s (hyprglass) and 156 s (HyprCapture). The cache became `<plugin>/<key>` with one entry each, and the old layout was removed: 1.1 GB left.
+- A second run of all four copied from the cache in about 50 ms per plugin, with no fetch or compile.
+- Unit tests (`test_plugins.py`, 36 tests): moving one pin changes only its key, the patch counts only for hyprgrass, another Hyprland or other build steps change every key, pruning keeps the current entry and the other plugins, and a cached build is copied without running anything. `check.sh` passes.
+- Not tried: a real login with the new bundle. It needs the merge; hyprpm then copies all four from this cache.

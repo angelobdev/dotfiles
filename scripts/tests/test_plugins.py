@@ -312,5 +312,76 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(without['HyprCapture'], full['HyprCapture'])
 
 
+class CacheTests(unittest.TestCase):
+    """The build cache: one key per plugin, so moving one pin rebuilds only that plugin."""
+
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.cache = Path(folder.name)
+        for patcher in (mock.patch.object(build, 'CACHE', self.cache),
+                        mock.patch.object(build, 'package_version', return_value=RPM)):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def keys(self):
+        return {name: build.cache_key(name) for name in build.PLUGINS}
+
+    def test_moving_one_pin_changes_only_its_key(self):
+        before = self.keys()
+        repo, revision, artifact = build.PLUGINS['Hyprspace']
+        with mock.patch.dict(build.PLUGINS, {'Hyprspace': (repo, '0' * 40, artifact)}):
+            after = self.keys()
+        self.assertNotEqual(before['Hyprspace'], after['Hyprspace'])
+        self.assertEqual({k: v for k, v in before.items() if k != 'Hyprspace'},
+                         {k: v for k, v in after.items() if k != 'Hyprspace'})
+
+    def test_the_patch_counts_only_for_hyprgrass(self):
+        before = self.keys()
+        patch = self.cache / 'other.patch'
+        patch.write_text('another patch\n')
+        with mock.patch.object(build, 'HYPRGRASS_PATCH', patch):
+            after = self.keys()
+        self.assertNotEqual(before['hyprgrass'], after['hyprgrass'])
+        self.assertEqual(before['Hyprspace'], after['Hyprspace'])
+
+    def test_another_hyprland_changes_every_key(self):
+        before = self.keys()
+        with mock.patch.object(build, 'package_version', return_value='0.58.0-1.fc45.x86_64'):
+            after = self.keys()
+        self.assertTrue(all(before[name] != after[name] for name in build.PLUGINS))
+
+    def test_the_build_steps_are_part_of_every_key(self):
+        before = self.keys()
+        with mock.patch.object(build.inspect, 'getsource', return_value='other steps'):
+            after = self.keys()
+        self.assertTrue(all(before[name] != after[name] for name in build.PLUGINS))
+
+    def test_prune_keeps_the_current_build_and_the_other_plugins(self):
+        current = self.cache / 'Hyprspace/current'
+        for path in (current, self.cache / 'Hyprspace/old', self.cache / 'hyprglass/kept',
+                     self.cache / '1e76f99bfec7856f2614/Hyprspace'):
+            path.mkdir(parents=True)
+        build.prune('Hyprspace', 'current')
+        self.assertEqual(sorted(p.relative_to(self.cache).as_posix() for p in self.cache.glob('*/*')),
+                         ['Hyprspace/current', 'hyprglass/kept'])
+
+    def test_a_cached_build_is_copied_without_building(self):
+        key = build.cache_key('Hyprspace')
+        cache = self.cache / 'Hyprspace' / key
+        cache.mkdir(parents=True)
+        (cache / 'Hyprspace.so').write_bytes(b'built')
+        (cache / '.dotfiles-built').write_text('revision\n')
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        work = Path(folder.name)
+        with mock.patch.object(build, 'run') as run:
+            os.chdir(work)
+            self.addCleanup(os.chdir, REPO)
+            build.build('Hyprspace')
+        run.assert_not_called()
+        self.assertEqual((work / 'out/Hyprspace.so').read_bytes(), b'built')
+
+
 if __name__ == '__main__':
     unittest.main()
