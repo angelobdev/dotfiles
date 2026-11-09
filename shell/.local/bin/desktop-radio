@@ -11,12 +11,11 @@ case "${1:-panel}" in
         cat <<'EOF'
 Usage:
   desktop-radio                        Toggle the Quickshell Radio & Music panel
-  desktop-radio <station-id|alias>     Start a curated station or vinyl mix
-  desktop-radio play <id|url> [--video]
-  desktop-radio toggle                 Play / pause active radio or mpv stream
+  desktop-radio <station-id|alias>     Play a station or DJ set
+  desktop-radio play <id|url>          Play a station, a stream, a YouTube link or a file
+  desktop-radio toggle                 Play / pause the radio's own mpv
   desktop-radio stop                   Stop playback
-  desktop-radio next | previous        Skip playlist item
-  desktop-radio video [on|off|toggle]  Toggle video window on the active stream
+  desktop-radio next | previous        Skip a playlist item
   desktop-radio search <query> [all|playlist|video]
   desktop-radio list | status
 EOF

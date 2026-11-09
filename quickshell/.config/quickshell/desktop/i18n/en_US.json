@@ -874,7 +874,7 @@
         "apps": "Zen Browser, 1Password, VS Code, Neovim, gh, glab, uv, gcc and a few command-line tools.",
         "herdr": "The Herdr app and herdr-core in ~/.local: the assistant console for any coding agent; they update themselves.",
         "containers": "Docker (moby-engine, docker-compose, the docker group) and Tailscale.",
-        "media": "Loupe, Papers and Showtime for images, PDFs and videos; mpv with mpv-mpris and yt-dlp for the Radio panel.",
+        "media": "Loupe, Papers and Showtime for images, PDFs and videos; mpv with mpv-mpris and yt-dlp for the Radio panel, and Qt Multimedia for its video.",
         "gaming": "Steam, gamescope and the 32-bit drivers games need.",
         "steamHidpi": "The Steam launcher that scales the client for the monitor it opens on.",
         "codecs": "The RPM Fusion codecs in place of the free builds: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX."
@@ -1412,8 +1412,8 @@
     "savedEmpty": "No saved stations or playlists yet. Pin any YouTube result to save it here.",
     "youtubeEmpty": "Type a query and press Enter or click YouTube to search mixes and playlists.",
     "hint": "Up / Down to select · Enter to play or search YouTube · Super + M",
-    "videoOn": "Show video window",
-    "videoOff": "Audio only (hide video)",
+    "videoOn": "Show the video here",
+    "videoOff": "Hide the video: the sound goes on",
     "saveItem": "Save to library",
     "removeSaved": "Remove from saved",
     "categories": {
@@ -1435,13 +1435,17 @@
       "missingUrl": "Not a stream, a YouTube link or a file.",
       "unknown": "Unknown station, or not a stream, a YouTube link or a file: %1",
       "noMpv": "mpv is not installed: the media profile installs it (Settings → System → Profiles).",
-      "usage": "Unknown radio command: %1"
+      "usage": "Unknown radio command: %1",
+      "noVideo": "This has no video, or YouTube did not give one."
     },
     "kinds": {
       "radio": "Web radio",
       "youtube": "YouTube",
       "playlist": "YouTube playlist",
       "file": "File"
-    }
+    },
+    "videoLoading": "Loading the video…",
+    "videoMissing": "Video needs Qt Multimedia: the media profile installs it (Settings → System → Profiles).",
+    "nothingPlaying": "Nothing playing"
   }
 }

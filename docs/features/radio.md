@@ -1,16 +1,28 @@
 # Radio and music
 
-`Super + M`, the antenna button in the Control Center's media tile, **Radio & Music** in the launcher, and `desktop-radio` all open the Radio panel. It plays web radio stations and DJ sets, and it finds YouTube mixes and playlists. Everything plays in one mpv of its own, without a window unless you ask for video.
+`Super + M`, the antenna button in the Control Center's media tile, **Radio & Music** in the launcher, and `desktop-radio` all open the Radio panel. It plays web radio stations and DJ sets, and it finds YouTube mixes and playlists. Sound plays in one mpv of its own, with no window, and video shows in the panel itself.
 
-The `media` profile installs what it needs: `mpv`, `mpv-mpris` and `yt-dlp`, plus `ytfzf` on Arch. `mpv-mpris` puts that mpv on MPRIS, so the bar, the Control Center, the lock screen and the media keys show and control it like any other player. On Fedora `ytfzf` is not packaged, and search uses `yt-dlp` alone.
+The `media` profile installs what it needs: `mpv`, `mpv-mpris`, `yt-dlp` and Qt Multimedia (`qt6-qtmultimedia`; on Arch `qt6-multimedia` with its FFmpeg backend), plus `ytfzf` on Arch. `mpv-mpris` puts that mpv on MPRIS, so the bar, the Control Center, the lock screen and the media keys show and control it like any other player. On Fedora `ytfzf` is not packaged, and search uses `yt-dlp` alone.
 
 ## The panel
 
+From top to bottom:
+
+1. **Header:** the title, the video button and close.
+2. **Content:** search and the list, or, with video on, the picture of what plays.
+3. **Controls:** what plays now, always there. The title is the stream's track title, read from mpv while the panel is open, and the station below it. The buttons are previous and next (playlists), play/pause and stop.
+4. **Footer:** the keys to use, or what went wrong.
+
+The list:
+
 - **Categories:** **All**, **Web radio** (streams only), one chip per category of the stations, **Saved** and **YouTube**. The text field filters the stations as you type.
-- **Playing:** Enter or a click plays the highlighted item. On the item that is playing, it pauses or resumes. The box at the top shows the title (the stream's track title, read from mpv while the panel is open), the station, and previous, play/pause, next and stop.
-- **Video:** the monitor button in the header turns mpv's video window on or off, for what plays now and what comes next. Without video, mpv fetches only the audio of a YouTube item. Turning video on then starts that item again with its picture: a video resumes where it was, and a playlist at the same item, from its beginning. A web radio has no video, so the button is off while one plays.
+- **Playing:** Enter or a click plays the highlighted item. On the item that is playing, it pauses or resumes.
 - **YouTube:** **YouTube**, or Enter when no station matches, searches YouTube with `ytfzf`, or with `yt-dlp` when `ytfzf` finds nothing or is missing. The chips under it pick all results, playlists only, or mixes and videos.
 - **Saved:** the pin on a result saves it; the trash icon removes a saved item.
+
+**Video.** The monitor button is on for a YouTube item or a file, never for a web radio, which has no picture. It puts the video in place of the list, and search is off meanwhile. mpv pauses where it is (`radio.py handoff`), and the panel plays one stream with sound and picture from there, through Qt Multimedia. On YouTube, such a stream is at most 360p: higher qualities come as separate video and audio streams. Turning video off or closing the panel gives the sound back to mpv from where the picture was (`radio.py resume`). At the end of a playlist item, mpv moves to the next one and the picture follows.
+
+While the picture plays, mpv is paused, so the bar and the media keys show it paused. Play and pause in the panel act on the picture. Without Qt Multimedia, the video area says that the media profile installs it, and the rest of the panel works.
 
 ## Stations
 
@@ -41,9 +53,8 @@ Only `http://`, `https://` and `ytdl://` URLs and files on disk are played, what
 | Command | What it does |
 | --- | --- |
 | `desktop-radio ID` (or an alias) | Plays a station |
-| `desktop-radio play ID\|URL [--video]` | Plays a station, a stream, a YouTube link or a file |
+| `desktop-radio play ID\|URL` | Plays a station, a stream, a YouTube link or a file |
 | `desktop-radio toggle`, `stop`, `next`, `previous` | Controls playback |
-| `desktop-radio video [on\|off\|toggle]` | Turns the video window on or off |
 | `desktop-radio search QUERY [all\|playlist\|video]` | Searches YouTube |
 | `desktop-radio list`, `status` | Prints the stations and the state as JSON |
 

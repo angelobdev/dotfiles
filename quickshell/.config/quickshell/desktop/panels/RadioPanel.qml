@@ -6,8 +6,10 @@ import ".."
 import "../components"
 import "../services"
 
-// Radio & music (Super + M): the stations by category (from the stations file, services/Radio.qml), the saved items,
-// YouTube search, and what plays now, with its controls.
+// Radio & music (Super + M), top to bottom: the header (video, close); the content, which is the stations by category
+// (from the stations file, services/Radio.qml), the saved items and YouTube search, or with video on the picture of
+// what plays (RadioVideo.qml, over the list, which is off meanwhile); the controls of what plays, always there; the
+// legend.
 Overlay {
     id: root
     panelName: "radio"
@@ -55,8 +57,29 @@ Overlay {
 
     onOpened: {
         Radio.refresh();
-        if (!Tablet.active)
+        if (!Tablet.active && !Radio.videoOpen)
             search.forceActiveFocus();
+    }
+    // Closed with the picture on: mpv goes on with the sound from where the picture was.
+    onOpenChanged: if (!open)
+        root.closeVideo()
+    function closeVideo() {
+        Radio.closeVideo(videoLoader.item ? videoLoader.item.seconds : Radio.videoStart);
+    }
+    function toggleVideo() {
+        if (Radio.videoOpen)
+            closeVideo();
+        else
+            Radio.openVideo();
+    }
+    // Play and pause act on the picture while it plays, else on mpv.
+    readonly property bool videoPlaying: videoLoader.item ? videoLoader.item.playing : false
+    readonly property bool playing: Radio.videoOpen && videoLoader.item ? videoPlaying : Radio.playing
+    function togglePlaying() {
+        if (Radio.videoOpen && videoLoader.item)
+            videoLoader.item.toggle();
+        else
+            Radio.togglePlaying();
     }
 
     function activateItem(item) {
@@ -87,163 +110,134 @@ Overlay {
             anchors.margins: Theme.dialogPadding
             spacing: 12
 
+            // Header: the title, video, close.
             PanelHeader {
                 title: I18n.tr("radio.title")
                 Layout.fillWidth: true
-                // A web radio has no video; for YouTube, turning it on restarts the stream with its picture.
                 PanelIconButton {
                     iconName: "monitor"
-                    enabled: !(Radio.active && Radio.kind === "radio")
-                    highlighted: Radio.video
-                    tooltip: Radio.video ? I18n.tr("radio.videoOff") : I18n.tr("radio.videoOn")
-                    onClicked: Radio.toggleVideo()
-                }
-                PanelIconButton {
-                    visible: Radio.active
-                    iconName: Radio.playing ? "pause" : "play"
-                    tooltip: Radio.playing ? I18n.tr("media.pause") : I18n.tr("media.play")
-                    onClicked: Radio.togglePlaying()
-                }
-                PanelIconButton {
-                    visible: Radio.active
-                    iconName: "stop"
-                    tooltip: I18n.tr("media.stop")
-                    onClicked: Radio.stop()
+                    enabled: Radio.hasVideo || Radio.videoOpen
+                    highlighted: Radio.videoOpen
+                    tooltip: Radio.videoOpen ? I18n.tr("radio.videoOff") : I18n.tr("radio.videoOn")
+                    onClicked: root.toggleVideo()
                 }
             }
 
-            Rectangle {
-                visible: Radio.active
+            // Content: the picture, with video on.
+            Item {
+                visible: Radio.videoOpen
                 Layout.fillWidth: true
-                implicitHeight: nowPlayingRow.implicitHeight + 16
-                radius: Theme.corner(12)
-                color: Theme.tile
-                RowLayout {
-                    id: nowPlayingRow
+                Layout.fillHeight: true
+                Loader {
+                    id: videoLoader
                     anchors.fill: parent
-                    anchors.margins: 10
-                    spacing: 10
-                    Icon {
-                        name: "volume-high"
-                        color: Theme.accent
+                    active: Radio.videoOpen && Radio.videoStream !== ""
+                    source: Qt.resolvedUrl("radio/RadioVideo.qml")
+                    onLoaded: {
+                        item.start = Radio.videoStart;
+                        item.source = Radio.videoStream;
                     }
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 2
-                        Text {
-                            Layout.fillWidth: true
-                            text: Radio.title || I18n.tr("radio.title")
-                            color: Theme.text
-                            font.family: Theme.font
-                            font.pixelSize: Theme.textSize(13)
-                            font.weight: Font.DemiBold
-                            elide: Text.ElideRight
-                            textFormat: Text.PlainText
+                    Connections {
+                        target: videoLoader.item
+                        // The end of a playlist item: mpv moves to the next, and the picture follows.
+                        function onEnded() {
+                            Radio.next();
                         }
-                        Text {
-                            Layout.fillWidth: true
-                            visible: text !== ""
-                            text: Radio.stationTitle && Radio.stationTitle !== Radio.title ? Radio.stationTitle + (Radio.subtitle ? " · " + Radio.subtitle : "") : Radio.subtitle
-                            color: Theme.muted
-                            font.family: Theme.font
-                            font.pixelSize: Theme.textSize(11)
-                            elide: Text.ElideRight
-                            textFormat: Text.PlainText
+                        function onFailed(message) {
+                            Radio.error = message;
+                            root.closeVideo();
                         }
                     }
-                    PanelIconButton {
-                        iconName: "previous"
-                        tooltip: I18n.tr("media.previous")
-                        onClicked: Radio.previous()
-                    }
-                    PanelIconButton {
-                        iconName: Radio.playing ? "pause" : "play"
-                        tooltip: Radio.playing ? I18n.tr("media.pause") : I18n.tr("media.play")
-                        onClicked: Radio.togglePlaying()
-                    }
-                    PanelIconButton {
-                        iconName: "next"
-                        tooltip: I18n.tr("media.next")
-                        onClicked: Radio.next()
-                    }
-                    PanelIconButton {
-                        iconName: "stop"
-                        tooltip: I18n.tr("media.stop")
-                        onClicked: Radio.stop()
-                    }
+                }
+                Text {
+                    anchors.centerIn: parent
+                    width: parent.width - 32
+                    horizontalAlignment: Text.AlignHCenter
+                    visible: text !== ""
+                    // Without QtMultimedia the loader fails: the media profile installs it.
+                    text: videoLoader.status === Loader.Error ? I18n.tr("radio.videoMissing") : Radio.videoLoading || (videoLoader.item && videoLoader.item.loading) ? I18n.tr("radio.videoLoading") : ""
+                    wrapMode: Text.Wrap
+                    color: videoLoader.status === Loader.Error ? Theme.danger : Theme.muted
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(13)
                 }
             }
 
-            RowLayout {
+            // Content: search and the list, with video off.
+            ColumnLayout {
+                visible: !Radio.videoOpen
+                enabled: !Radio.videoOpen
                 Layout.fillWidth: true
-                spacing: 8
-                InputField {
-                    id: search
+                Layout.fillHeight: true
+                spacing: 12
+
+                RowLayout {
                     Layout.fillWidth: true
-                    placeholderText: I18n.tr("radio.searchPlaceholder")
-                    onTextChanged: stationsList.currentIndex = 0
-                    Keys.onDownPressed: stationsList.currentIndex = Math.min(stationsList.count - 1, stationsList.currentIndex + 1)
-                    Keys.onUpPressed: stationsList.currentIndex = Math.max(0, stationsList.currentIndex - 1)
-                    onAccepted: {
-                        const q = search.text.trim();
-                        const current = root.shown[stationsList.currentIndex] || (root.shown.length > 0 ? root.shown[0] : null);
-                        if (root.shown.length === 0 && q !== "") {
-                            root.runYoutubeSearch();
-                        } else if (root.category === "youtube" && q !== "" && q !== Radio.lastQuery) {
-                            root.runYoutubeSearch();
-                        } else if (current) {
-                            root.activateItem(current);
-                        } else if (q !== "") {
-                            root.runYoutubeSearch();
+                    spacing: 8
+                    InputField {
+                        id: search
+                        Layout.fillWidth: true
+                        placeholderText: I18n.tr("radio.searchPlaceholder")
+                        onTextChanged: stationsList.currentIndex = 0
+                        Keys.onDownPressed: stationsList.currentIndex = Math.min(stationsList.count - 1, stationsList.currentIndex + 1)
+                        Keys.onUpPressed: stationsList.currentIndex = Math.max(0, stationsList.currentIndex - 1)
+                        onAccepted: {
+                            const q = search.text.trim();
+                            const current = root.shown[stationsList.currentIndex] || (root.shown.length > 0 ? root.shown[0] : null);
+                            if (root.shown.length === 0 && q !== "") {
+                                root.runYoutubeSearch();
+                            } else if (root.category === "youtube" && q !== "" && q !== Radio.lastQuery) {
+                                root.runYoutubeSearch();
+                            } else if (current) {
+                                root.activateItem(current);
+                            } else if (q !== "") {
+                                root.runYoutubeSearch();
+                            }
                         }
                     }
-                }
-                ActionButton {
-                    iconName: "zoom"
-                    text: I18n.tr("radio.searchYoutube")
-                    enabled: !Radio.searching && search.text.trim().length > 0
-                    onClicked: root.runYoutubeSearch()
-                }
-            }
-
-            ChoiceChips {
-                Layout.fillWidth: true
-                current: root.category
-                options: [
-                    {
-                        name: "all",
-                        label: I18n.tr("radio.categories.all")
-                    },
-                    {
-                        name: "radio",
-                        label: I18n.tr("radio.categories.webRadio")
+                    ActionButton {
+                        iconName: "zoom"
+                        text: I18n.tr("radio.searchYoutube")
+                        enabled: !Radio.searching && search.text.trim().length > 0
+                        onClicked: root.runYoutubeSearch()
                     }
-                ].concat(Radio.categories.map(name => ({
-                            name: name,
-                            label: root.categoryLabel(name)
-                        })), [
-                    {
-                        name: "saved",
-                        label: I18n.tr("radio.categories.saved")
-                    },
-                    {
-                        name: "youtube",
-                        label: I18n.tr("radio.categories.youtube")
-                    }
-                ])
-                onChosen: name => {
-                    root.category = name;
-                    stationsList.currentIndex = 0;
-                    if (name === "youtube" && Radio.results.length === 0 && search.text.trim() !== "")
-                        root.runYoutubeSearch();
                 }
-            }
 
-            RowLayout {
-                visible: root.category === "youtube"
-                Layout.fillWidth: true
-                spacing: 8
                 ChoiceChips {
+                    Layout.fillWidth: true
+                    current: root.category
+                    options: [
+                        {
+                            name: "all",
+                            label: I18n.tr("radio.categories.all")
+                        },
+                        {
+                            name: "radio",
+                            label: I18n.tr("radio.categories.webRadio")
+                        }
+                    ].concat(Radio.categories.map(name => ({
+                                name: name,
+                                label: root.categoryLabel(name)
+                            })), [
+                        {
+                            name: "saved",
+                            label: I18n.tr("radio.categories.saved")
+                        },
+                        {
+                            name: "youtube",
+                            label: I18n.tr("radio.categories.youtube")
+                        }
+                    ])
+                    onChosen: name => {
+                        root.category = name;
+                        stationsList.currentIndex = 0;
+                        if (name === "youtube" && Radio.results.length === 0 && search.text.trim() !== "")
+                            root.runYoutubeSearch();
+                    }
+                }
+
+                ChoiceChips {
+                    visible: root.category === "youtube"
                     Layout.fillWidth: true
                     current: Radio.searchType
                     options: [
@@ -267,61 +261,129 @@ Overlay {
                             Radio.search(q, name);
                     }
                 }
-            }
 
-            ListView {
-                id: stationsList
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                spacing: 4
-                model: ScriptModel {
-                    values: root.shown
-                    objectProp: "url"
-                }
-                delegate: RowLayout {
-                    id: delegateRow
-                    required property var modelData
-                    required property int index
-                    width: stationsList.width
-                    spacing: 6
-                    readonly property string normRadioUrl: (Radio.url || "").replace(/\/+$/, "")
-                    readonly property string normItemUrl: (modelData.url || "").replace(/\/+$/, "")
-                    readonly property bool isCurrent: Radio.active && ((normRadioUrl !== "" && normRadioUrl === normItemUrl) || (modelData.id && Radio.stationId === modelData.id))
-                    readonly property bool savedEntry: Boolean(modelData.saved) || Radio.isSaved(modelData.url)
-                    ActionButton {
-                        Layout.fillWidth: true
-                        Layout.minimumWidth: 0
-                        implicitHeight: 48
-                        alignLeft: true
-                        highlighted: stationsList.currentIndex === index || delegateRow.isCurrent
-                        iconName: delegateRow.isCurrent ? (Radio.playing ? "volume-high" : "pause") : modelData.kind === "radio" ? "hotspot" : modelData.kind === "playlist" ? "folder" : "play"
-                        text: root.detail(modelData) ? modelData.title + "  —  " + root.detail(modelData) : modelData.title
-                        onClicked: root.activateItem(modelData)
+                ListView {
+                    id: stationsList
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    spacing: 4
+                    model: ScriptModel {
+                        values: root.shown
+                        objectProp: "url"
                     }
-                    PanelIconButton {
-                        visible: root.category === "youtube" || root.category === "saved" || delegateRow.savedEntry
-                        iconName: delegateRow.savedEntry ? "trash" : "pin"
-                        tooltip: delegateRow.savedEntry ? I18n.tr("radio.removeSaved") : I18n.tr("radio.saveItem")
-                        onClicked: {
-                            if (delegateRow.savedEntry)
-                                Radio.removeItem(modelData.url);
-                            else
-                                Radio.saveItem(modelData);
+                    delegate: RowLayout {
+                        id: delegateRow
+                        required property var modelData
+                        required property int index
+                        width: stationsList.width
+                        spacing: 6
+                        readonly property string normRadioUrl: (Radio.url || "").replace(/\/+$/, "")
+                        readonly property string normItemUrl: (modelData.url || "").replace(/\/+$/, "")
+                        readonly property bool isCurrent: Radio.active && ((normRadioUrl !== "" && normRadioUrl === normItemUrl) || (modelData.id && Radio.stationId === modelData.id))
+                        readonly property bool savedEntry: Boolean(modelData.saved) || Radio.isSaved(modelData.url)
+                        ActionButton {
+                            Layout.fillWidth: true
+                            Layout.minimumWidth: 0
+                            implicitHeight: 48
+                            alignLeft: true
+                            highlighted: stationsList.currentIndex === index || delegateRow.isCurrent
+                            iconName: delegateRow.isCurrent ? (Radio.playing ? "volume-high" : "pause") : modelData.kind === "radio" ? "hotspot" : modelData.kind === "playlist" ? "folder" : "play"
+                            text: root.detail(modelData) ? modelData.title + "  —  " + root.detail(modelData) : modelData.title
+                            onClicked: root.activateItem(modelData)
+                        }
+                        PanelIconButton {
+                            visible: root.category === "youtube" || root.category === "saved" || delegateRow.savedEntry
+                            iconName: delegateRow.savedEntry ? "trash" : "pin"
+                            tooltip: delegateRow.savedEntry ? I18n.tr("radio.removeSaved") : I18n.tr("radio.saveItem")
+                            onClicked: {
+                                if (delegateRow.savedEntry)
+                                    Radio.removeItem(modelData.url);
+                                else
+                                    Radio.saveItem(modelData);
+                            }
                         }
                     }
-                }
-                ScrollBar.vertical: ScrollBar {}
-                Text {
-                    anchors.centerIn: parent
-                    visible: stationsList.count === 0
-                    text: Radio.searching ? I18n.tr("radio.searching") : root.category === "youtube" ? I18n.tr("radio.youtubeEmpty") : root.category === "saved" ? I18n.tr("radio.savedEmpty") : I18n.tr("radio.empty")
-                    color: Theme.muted
-                    font.family: Theme.font
-                    font.pixelSize: Theme.textSize(13)
+                    ScrollBar.vertical: ScrollBar {}
+                    Text {
+                        anchors.centerIn: parent
+                        visible: stationsList.count === 0
+                        text: Radio.searching ? I18n.tr("radio.searching") : root.category === "youtube" ? I18n.tr("radio.youtubeEmpty") : root.category === "saved" ? I18n.tr("radio.savedEmpty") : I18n.tr("radio.empty")
+                        color: Theme.muted
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(13)
+                    }
                 }
             }
 
+            // The controls of what plays, always there.
+            Rectangle {
+                Layout.fillWidth: true
+                implicitHeight: controlsRow.implicitHeight + 16
+                radius: Theme.corner(12)
+                color: Theme.tile
+                RowLayout {
+                    id: controlsRow
+                    anchors.fill: parent
+                    anchors.margins: 10
+                    spacing: 10
+                    Icon {
+                        name: Radio.kind === "radio" ? "hotspot" : "volume-high"
+                        color: Radio.active ? Theme.accent : Theme.muted
+                    }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        spacing: 2
+                        Text {
+                            Layout.fillWidth: true
+                            text: Radio.active ? Radio.title || Radio.stationTitle : I18n.tr("radio.nothingPlaying")
+                            color: Radio.active ? Theme.text : Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(13)
+                            font.weight: Radio.active ? Font.DemiBold : Font.Normal
+                            elide: Text.ElideRight
+                            textFormat: Text.PlainText
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            visible: Radio.active && text !== ""
+                            text: Radio.stationTitle && Radio.stationTitle !== Radio.title ? Radio.stationTitle + (Radio.subtitle ? " · " + Radio.subtitle : "") : Radio.subtitle
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(11)
+                            elide: Text.ElideRight
+                            textFormat: Text.PlainText
+                        }
+                    }
+                    PanelIconButton {
+                        iconName: "previous"
+                        enabled: Radio.active && Radio.kind !== "radio"
+                        tooltip: I18n.tr("media.previous")
+                        onClicked: Radio.previous()
+                    }
+                    PanelIconButton {
+                        iconName: root.playing ? "pause" : "play"
+                        enabled: Radio.active
+                        tooltip: root.playing ? I18n.tr("media.pause") : I18n.tr("media.play")
+                        onClicked: root.togglePlaying()
+                    }
+                    PanelIconButton {
+                        iconName: "next"
+                        enabled: Radio.active && Radio.kind !== "radio"
+                        tooltip: I18n.tr("media.next")
+                        onClicked: Radio.next()
+                    }
+                    PanelIconButton {
+                        iconName: "stop"
+                        enabled: Radio.active
+                        tooltip: I18n.tr("media.stop")
+                        onClicked: Radio.stop()
+                    }
+                }
+            }
+
+            // Footer: the legend, or what went wrong.
             Text {
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap

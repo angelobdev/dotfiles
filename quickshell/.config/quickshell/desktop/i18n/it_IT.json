@@ -874,7 +874,7 @@
         "apps": "Zen Browser, 1Password, VS Code, Neovim, gh, glab, uv, gcc e qualche strumento da riga di comando.",
         "herdr": "L’app Herdr e herdr-core in ~/.local: la console dell’assistente per qualsiasi agente; si aggiornano da sole.",
         "containers": "Docker (moby-engine, docker-compose, il gruppo docker) e Tailscale.",
-        "media": "Loupe, Papers e Showtime per immagini, PDF e video; mpv con mpv-mpris e yt-dlp per il pannello Radio.",
+        "media": "Loupe, Papers e Showtime per immagini, PDF e video; mpv con mpv-mpris e yt-dlp per il pannello Radio, e Qt Multimedia per il suo video.",
         "gaming": "Steam, gamescope e i driver a 32 bit che servono ai giochi.",
         "steamHidpi": "L’avvio di Steam che scala il client per il monitor su cui si apre.",
         "codecs": "I codec di RPM Fusion al posto delle versioni libere: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX."
@@ -1412,8 +1412,8 @@
     "savedEmpty": "Nessuna stazione o playlist salvata. Fissa un risultato YouTube per salvarlo qui.",
     "youtubeEmpty": "Scrivi una ricerca e premi Invio o clicca YouTube per cercare mix e playlist.",
     "hint": "Su / Giù per selezionare · Invio per riprodurre o cercare su YouTube · Super + M",
-    "videoOn": "Mostra finestra video",
-    "videoOff": "Solo audio (nascondi video)",
+    "videoOn": "Mostra il video qui",
+    "videoOff": "Nascondi il video: l’audio continua",
     "saveItem": "Salva nella libreria",
     "removeSaved": "Rimuovi dai salvati",
     "categories": {
@@ -1435,13 +1435,17 @@
       "missingUrl": "Non è uno stream, un link di YouTube o un file.",
       "unknown": "Stazione sconosciuta, oppure non è uno stream, un link di YouTube o un file: %1",
       "noMpv": "mpv non è installato: lo installa il profilo media (Impostazioni → Sistema → Profili).",
-      "usage": "Comando della radio sconosciuto: %1"
+      "usage": "Comando della radio sconosciuto: %1",
+      "noVideo": "Questo non ha un video, oppure YouTube non l’ha fornito."
     },
     "kinds": {
       "radio": "Web radio",
       "youtube": "YouTube",
       "playlist": "Playlist di YouTube",
       "file": "File"
-    }
+    },
+    "videoLoading": "Caricamento del video…",
+    "videoMissing": "Il video richiede Qt Multimedia: lo installa il profilo media (Impostazioni → Sistema → Profili).",
+    "nothingPlaying": "Niente in riproduzione"
   }
 }

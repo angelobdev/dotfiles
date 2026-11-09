@@ -982,3 +982,8 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
   - options and other schemes refused, and `--` before the URL;
   - the user's stations replace or add, and saving keeps them.
 - Not tried on screen: mpv is not installed here (the media profile adds it).
+- Asked by the user after trying it (2026-11-09):
+  - **Video in the panel.** It plays through Qt Multimedia (`panels/radio/RadioVideo.qml`, loaded only with video on), with `radio.py handoff` and `resume` passing the position between mpv and the panel. mpv now always plays sound only. The earlier mpv video window never showed a picture: started with `--no-video`, mpv's yt-dlp hook fetched the audio alone.
+  - **Layout:** header (title, video, close), content (list or video), controls always at the bottom, footer.
+  - Tests: `test_radio.py`, 28 tests.
+

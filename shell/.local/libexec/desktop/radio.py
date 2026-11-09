@@ -7,8 +7,10 @@ Stations: ~/.local/share/desktop/radio/stations.json (shipped), then "stations" 
 entries replace a shipped one with the same id or add to them; "saved" there holds what the panel pins.
 
 list: the categories, stations, saved items and state, as JSON.
-status: the state, with the title, pause and video read from the running mpv.
-play ID|ALIAS|URL|JSON [--video], stop, toggle, next, previous, video [on|off|toggle]: the radio's own mpv only.
+status: the state, with the title and pause read from the running mpv.
+play ID|ALIAS|URL|JSON, stop, toggle, next, previous: the radio's own mpv only, sound only.
+handoff: pause mpv and give the panel one stream with sound and picture, and the position, as JSON.
+resume SECONDS: mpv goes on from there (the panel's video closed).
 search QUERY [all|playlist|video]: YouTube results, as JSON.
 save JSON, remove ID|URL: the saved items.
 """
@@ -205,7 +207,7 @@ def remove_saved_item(identifier, path=None):
 def default_state():
     return {
         'active': False, 'playing': False, 'paused': False, 'pid': 0, 'socket': '', 'stationId': '', 'title': '',
-        'stationTitle': '', 'subtitle': '', 'url': '', 'kind': '', 'category': '', 'video': False,
+        'stationTitle': '', 'subtitle': '', 'url': '', 'kind': '', 'category': '',
     }
 
 
@@ -283,7 +285,7 @@ def mpv_property(name):
 
 
 def live_state():
-    """The state file, with what the running mpv says now: its title, pause and video."""
+    """The state file, with what the running mpv says now: its title and pause."""
     state = load_state()
     if not state['active']:
         return state
@@ -293,31 +295,57 @@ def live_state():
     paused = mpv_property('pause')
     if isinstance(paused, bool):
         state['paused'], state['playing'] = paused, not paused
-    video = mpv_property('vid')
-    if video is not None:
-        state['video'] = video not in (False, 'no')
     return state
 
 
-def has_video_track():
-    tracks = mpv_property('track-list')
-    return isinstance(tracks, list) and any(isinstance(track, dict) and track.get('type') == 'video' and not track.get('albumart')
-                                            for track in tracks)
+def current_url(state):
+    """What mpv plays now: the item of a playlist, as a URL yt-dlp takes, or the file."""
+    path = mpv_property('path')
+    path = path if isinstance(path, str) and path else state.get('url', '')
+    if path.startswith('ytdl://'):
+        path = path[len('ytdl://'):]
+        path = f'https://www.youtube.com/watch?v={path}' if youtube_id(path) == path else path
+    return path
 
 
-def restart_with_video(state):
-    # A web radio has no video at all: nothing to restart for.
-    if state.get('kind') not in ('youtube', 'playlist', 'file'):
-        return state
+def video_stream(url):
+    """One stream with sound and picture that Qt Multimedia can play: yt-dlp's best with both (360p on YouTube,
+    which serves higher ones as separate video and audio), or the file itself."""
+    if url.startswith('/'):
+        return 'file://' + url
+    if not shutil.which('yt-dlp'):
+        raise ValueError(tr('radio.errors.noVideo'))
+    command = ['yt-dlp', '--no-playlist', '--no-warnings', '-f', 'best[vcodec!=none][acodec!=none]', '-g', '--', url]
+    try:
+        process = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=30, check=False)
+    except (OSError, subprocess.SubprocessError):
+        raise ValueError(tr('radio.errors.noVideo')) from None
+    lines = [line for line in process.stdout.splitlines() if line.startswith(SCHEMES)]
+    if process.returncode != 0 or len(lines) != 1:
+        raise ValueError(tr('radio.errors.noVideo'))
+    return lines[0]
+
+
+def handoff():
+    """The picture goes to the Radio panel: mpv pauses where it is, and the panel plays this stream from there."""
+    state = live_state()
+    if not state['active'] or state.get('kind') not in ('youtube', 'playlist', 'file'):
+        raise ValueError(tr('radio.errors.noVideo'))
+    url = current_url(state)
     position = mpv_property('time-pos')
-    index = mpv_property('playlist-pos')
-    item = {'id': state.get('stationId', ''), 'title': state.get('stationTitle') or state.get('title'),
-            'subtitle': state.get('subtitle', ''), 'category': state.get('category', ''), 'kind': state.get('kind'),
-            'url': state.get('url')}
-    # --start applies to every file mpv plays: a playlist starts again at the same item, from its beginning.
-    playlist = state.get('kind') == 'playlist'
-    return play_target(item, video=True, start=position if isinstance(position, (int, float)) and not playlist else 0,
-                       playlist_start=index if isinstance(index, int) and playlist else 0)
+    stream = video_stream(url)
+    mpv_ipc(['set_property', 'pause', True])
+    title = mpv_property('media-title')
+    return {'stream': stream, 'position': position if isinstance(position, (int, float)) else 0,
+            'title': title if isinstance(title, str) and not title.startswith(SCHEMES) else state.get('title', '')}
+
+
+def resume(seconds):
+    """Back from the panel's picture: mpv goes on with the sound from where the panel was."""
+    if seconds > 0:
+        mpv_ipc(['seek', seconds, 'absolute'])
+    mpv_ipc(['set_property', 'pause', False])
+    return live_state()
 
 
 def stop_playback():
@@ -372,7 +400,7 @@ def resolve_play_item(target):
     return item
 
 
-def play_target(target, video=False, start=0, playlist_start=0):
+def play_target(target):
     item = resolve_play_item(target)
     url = item['url']
     title = item.get('title') or url
@@ -380,16 +408,10 @@ def play_target(target, video=False, start=0, playlist_start=0):
     stop_playback()
     sock = radio_socket_path()
     sock.unlink(missing_ok=True)
-    command = ['mpv', f'--input-ipc-server={sock}', f'--title={title}', '--vid=' + ('auto' if video else 'no')]
-    if not video:
-        command.append('--no-video')
+    # Sound only: the picture, when asked for, plays in the Radio panel (handoff).
+    command = ['mpv', f'--input-ipc-server={sock}', f'--title={title}', '--no-video']
     if kind == 'playlist':
         command.append('--ytdl-raw-options=yes-playlist=')
-    # Where a restart picks up again (video turned on): the time, and the item of a playlist.
-    if start > 0:
-        command.append(f'--start={int(start)}')
-    if playlist_start > 0:
-        command.append(f'--playlist-start={int(playlist_start)}')
     command += ['--', url]
     try:
         child = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -399,7 +421,7 @@ def play_target(target, video=False, start=0, playlist_start=0):
     return write_state({
         'active': True, 'playing': True, 'paused': False, 'pid': child.pid, 'socket': str(sock),
         'stationId': item.get('id') or '', 'title': title, 'stationTitle': title, 'subtitle': item.get('subtitle') or '',
-        'url': url, 'kind': kind, 'category': item.get('category') or '', 'video': bool(video),
+        'url': url, 'kind': kind, 'category': item.get('category') or '',
     })
 
 
@@ -545,7 +567,7 @@ def main(argv=None):
             print(json.dumps(live_state(), ensure_ascii=False))
             return 0
         if command == 'play' and len(args) >= 2:
-            print(json.dumps(play_target(args[1], video='--video' in args[2:]), ensure_ascii=False))
+            print(json.dumps(play_target(args[1]), ensure_ascii=False))
             return 0
         if command == 'stop':
             print(json.dumps(stop_playback(), ensure_ascii=False))
@@ -554,21 +576,12 @@ def main(argv=None):
             mpv_ipc({'toggle': ['cycle', 'pause'], 'next': ['playlist-next', 'weak'], 'previous': ['playlist-prev', 'weak']}[command])
             print(json.dumps(live_state(), ensure_ascii=False))
             return 0
-        if command == 'video':
-            mode = args[1] if len(args) > 1 else 'toggle'
-            state = live_state()
-            enable = not state['video'] if mode == 'toggle' else mode in ('on', 'true', '1', 'auto')
-            if enable and state['active'] and not has_video_track():
-                # Started without video, mpv's yt-dlp hook fetched the audio alone: there is no picture to turn on.
-                # Start again with video, from where it was.
-                restarted = restart_with_video(state)
-                print(json.dumps(restarted, ensure_ascii=False))
-                return 0
-            mpv_ipc(['set_property', 'vid', 'auto' if enable else 'no'])
-            if state['active']:
-                state['video'] = enable
-                write_state(load_state() | {'video': enable})
-            print(json.dumps(state, ensure_ascii=False))
+        if command == 'handoff':
+            print(json.dumps(handoff(), ensure_ascii=False))
+            return 0
+        if command == 'resume':
+            seconds = float(args[1]) if len(args) > 1 and re.fullmatch(r'[0-9]+(\.[0-9]+)?', args[1]) else 0
+            print(json.dumps(resume(seconds), ensure_ascii=False))
             return 0
         if command == 'search':
             results = search_youtube(args[1] if len(args) > 1 else '', args[2] if len(args) > 2 else 'all')
@@ -585,7 +598,7 @@ def main(argv=None):
         if command not in ('play', 'save', 'remove'):
             matched = match_station(command)
             if matched:
-                print(json.dumps(play_target(matched, video='--video' in args[1:]), ensure_ascii=False))
+                print(json.dumps(play_target(matched), ensure_ascii=False))
                 return 0
     except ValueError as error:
         print(error, file=sys.stderr)

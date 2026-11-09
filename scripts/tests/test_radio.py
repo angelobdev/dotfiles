@@ -346,7 +346,7 @@ class OwnMpvTests(Sandbox):
         self.assertEqual(other, [])
         self.assertFalse(radio.load_state()['active'])
 
-    def test_live_title_pause_and_video(self):
+    def test_live_title_and_pause(self):
         self.serve(self.runtime / 'radio-mpv.sock', {
             'media-title': {'error': 'success', 'data': 'Artist &amp; Track'},
             'pause': {'error': 'success', 'data': True},
@@ -355,59 +355,67 @@ class OwnMpvTests(Sandbox):
         import os
         radio.write_state({'active': True, 'pid': os.getpid(), 'title': 'Station', 'socket': str(self.runtime / 'radio-mpv.sock')})
         state = radio.live_state()
-        self.assertEqual((state['title'], state['paused'], state['playing'], state['video']), ('Artist & Track', True, False, False))
+        self.assertEqual((state['title'], state['paused'], state['playing']), ('Artist & Track', True, False))
 
     def test_no_mpv_no_reply(self):
         self.assertIsNone(radio.mpv_ipc(['get_property', 'pause']))
 
 
 class VideoTests(Sandbox):
-    """Started without video, mpv fetched the audio alone: turning video on starts it again with the picture."""
+    """The picture plays in the panel: handoff pauses mpv and gives one stream from where it was; resume gives back."""
 
-    def video(self, state, tracks, position=95.5, index=3):
+    def handoff(self, state, properties, stream_lines='https://rr1.googlevideo.com/videoplayback?x\n', code=0):
+        import subprocess
+        values = {'time-pos': 95.5, 'media-title': 'Track', **properties}
+        with mock.patch.object(radio, 'live_state', return_value=radio.default_state() | state), \
+                mock.patch.object(radio, 'mpv_property', side_effect=lambda name: values.get(name)), \
+                mock.patch.object(radio, 'mpv_ipc') as ipc, mock.patch.object(radio.shutil, 'which', return_value='/usr/bin/yt-dlp'), \
+                mock.patch('subprocess.run', return_value=subprocess.CompletedProcess([], code, stream_lines, '')) as run:
+            result = radio.handoff()
+        return result, ipc, run
+
+    def test_a_youtube_item_gives_one_stream_from_where_mpv_was(self):
+        result, ipc, run = self.handoff({'active': True, 'kind': 'youtube', 'url': 'https://www.youtube.com/watch?v=Pe_zj-WZotg'},
+                                        {'path': 'https://www.youtube.com/watch?v=Pe_zj-WZotg'})
+        self.assertEqual(result, {'stream': 'https://rr1.googlevideo.com/videoplayback?x', 'position': 95.5, 'title': 'Track'})
+        command = run.call_args.args[0]
+        self.assertEqual(command[-2:], ['--', 'https://www.youtube.com/watch?v=Pe_zj-WZotg'])
+        self.assertIn('best[vcodec!=none][acodec!=none]', command)
+        ipc.assert_called_once_with(['set_property', 'pause', True])
+
+    def test_the_item_of_a_playlist(self):
+        _, _, run = self.handoff({'active': True, 'kind': 'playlist', 'url': 'https://www.youtube.com/playlist?list=PL1'},
+                                 {'path': 'ytdl://Pe_zj-WZotg'})
+        self.assertEqual(run.call_args.args[0][-1], 'https://www.youtube.com/watch?v=Pe_zj-WZotg')
+
+    def test_a_file_plays_as_is(self):
+        result, _, run = self.handoff({'active': True, 'kind': 'file', 'url': '/music/clip.mkv'}, {'path': '/music/clip.mkv'})
+        self.assertEqual(result['stream'], 'file:///music/clip.mkv')
+        run.assert_not_called()
+
+    def test_a_web_radio_or_no_stream_keeps_mpv_playing(self):
+        for state, lines, code in (({'active': True, 'kind': 'radio', 'url': 'https://radio.plaza.one/mp3'}, '', 0),
+                                   ({'active': True, 'kind': 'youtube', 'url': 'https://www.youtube.com/watch?v=Pe_zj-WZotg'}, '', 1)):
+            with self.assertRaisesRegex(ValueError, 'radio.errors.noVideo'):
+                _, ipc, _ = self.handoff(state, {}, stream_lines=lines, code=code)
+
+    def test_resume_seeks_and_plays(self):
         import contextlib
         import io
-        properties = {'track-list': tracks, 'time-pos': position, 'playlist-pos': index}
-        with mock.patch.object(radio, 'live_state', return_value=radio.default_state() | state), \
-                mock.patch.object(radio, 'mpv_property', side_effect=lambda name: properties.get(name)), \
-                mock.patch.object(radio, 'mpv_ipc') as ipc, mock.patch.object(radio, 'play_target', return_value={}) as play, \
+        with mock.patch.object(radio, 'mpv_ipc') as ipc, mock.patch.object(radio, 'live_state', return_value={}), \
                 contextlib.redirect_stdout(io.StringIO()):
-            radio.main(['video', 'on'])
-        return ipc, play
+            radio.main(['resume', '125'])
+            radio.main(['resume', '--1'])
+        self.assertEqual(ipc.call_args_list[0].args[0], ['seek', 125.0, 'absolute'])
+        self.assertEqual(ipc.call_args_list[1].args[0], ['set_property', 'pause', False])
+        # Not a number: no seek, only play.
+        self.assertEqual(ipc.call_args_list[2].args[0], ['set_property', 'pause', False])
 
-    def test_a_youtube_video_without_a_picture_restarts_where_it_was(self):
-        ipc, play = self.video({'active': True, 'kind': 'youtube', 'url': 'https://www.youtube.com/watch?v=Pe_zj-WZotg',
-                                'stationTitle': 'Mix'}, [{'type': 'audio'}])
-        item = play.call_args.args[0]
-        self.assertEqual((item['url'], item['title']), ('https://www.youtube.com/watch?v=Pe_zj-WZotg', 'Mix'))
-        self.assertEqual(play.call_args.kwargs, {'video': True, 'start': 95.5, 'playlist_start': 0})
-        ipc.assert_not_called()
-
-    def test_a_playlist_restarts_at_the_same_item(self):
-        _, play = self.video({'active': True, 'kind': 'playlist', 'url': 'https://www.youtube.com/playlist?list=PL1'}, [{'type': 'audio'}])
-        self.assertEqual(play.call_args.kwargs, {'video': True, 'start': 0, 'playlist_start': 3})
-
-    def test_a_picture_already_there_is_only_shown(self):
-        ipc, play = self.video({'active': True, 'kind': 'youtube', 'url': 'https://www.youtube.com/watch?v=Pe_zj-WZotg'},
-                               [{'type': 'audio'}, {'type': 'video'}])
-        play.assert_not_called()
-        ipc.assert_called_once_with(['set_property', 'vid', 'auto'])
-
-    def test_a_web_radio_is_not_restarted(self):
-        _, play = self.video({'active': True, 'kind': 'radio', 'url': 'https://radio.plaza.one/mp3'}, [{'type': 'audio'}])
-        play.assert_not_called()
-
-    def test_start_options(self):
+    def test_mpv_plays_sound_only(self):
         with mock.patch.object(radio, 'stop_playback'), mock.patch('subprocess.Popen') as popen:
             popen.return_value.pid = 1
-            radio.play_target({'url': 'https://www.youtube.com/playlist?list=PL1', 'kind': 'playlist'}, video=True, playlist_start=3)
-            radio.play_target({'url': 'https://www.youtube.com/watch?v=Pe_zj-WZotg'}, video=True, start=95.5)
-        playlist, single = (call.args[0] for call in popen.call_args_list)
-        self.assertIn('--playlist-start=3', playlist)
-        self.assertFalse(any(part.startswith('--start') for part in playlist))
-        self.assertIn('--start=95', single)
-        self.assertNotIn('--no-video', single)
-
+            radio.play_target({'url': 'https://www.youtube.com/watch?v=Pe_zj-WZotg'})
+        self.assertIn('--no-video', popen.call_args.args[0])
 
 if __name__ == '__main__':
     unittest.main()
