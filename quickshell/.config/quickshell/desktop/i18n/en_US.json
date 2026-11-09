@@ -118,7 +118,8 @@
     "title": "Authentication required",
     "identity": "Account: %1",
     "failed": "Authentication failed: try again.",
-    "useFingerprint": "Use fingerprint"
+    "usePassword": "Use password",
+    "touchReader": "Touch the fingerprint reader, or use your password."
   },
   "bar": {
     "dateFormat": "ddd MMM d",

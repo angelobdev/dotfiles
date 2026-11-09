@@ -118,7 +118,8 @@
     "title": "Autenticazione richiesta",
     "identity": "Account: %1",
     "failed": "Autenticazione non riuscita: riprova.",
-    "useFingerprint": "Usa impronta"
+    "usePassword": "Usa password",
+    "touchReader": "Tocca il lettore d’impronta, oppure usa la password."
   },
   "bar": {
     "dateFormat": "ddd d MMM",
