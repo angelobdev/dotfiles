@@ -316,10 +316,23 @@ class SelectionTests(unittest.TestCase):
     def test_a_record_from_before_the_tablet_profile_keeps_hyprgrass(self):
         # hardware held what tablet holds now.
         self.record({'profiles': ['core', 'hardware', 'plugins']})
-        self.assertEqual(bundle.recorded_profiles(), ['core', 'hardware', 'tablet', 'plugins'])
+        self.assertEqual(bundle.recorded_profiles(), ['core', *bundle.UNITS_OF_V2['hardware'], 'tablet', 'plugins'])
         self.assertIn('hyprgrass', bundle.selected())
         self.record({'profiles': ['core', 'plugins']})
         self.assertNotIn('hyprgrass', bundle.selected())
+
+    def test_a_version_2_record_in_the_names_of_version_3(self):
+        # Only names change: what each old profile installed, in the units that hold it now.
+        self.record({'profiles': ['core', 'tablet', 'apps', 'herdr', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs'],
+                     'profiles_version': 2})
+        self.assertEqual(bundle.recorded_profiles(), [
+            'core', 'tablet', 'apps', 'apps.zen', 'apps.onepassword', 'apps.vscode', 'utils', 'utils.neovim', 'utils.gcc',
+            'utils.xclip', 'utils.unrar', 'utils.fuse', 'utils.gh', 'utils.glab', 'utils.uv', 'utils.wev', 'assistant', 'containers',
+            'utils.tailscale', 'radio', 'apps.loupe', 'apps.papers', 'apps.showtime', 'gaming', 'gaming.steam', 'gaming.gamescope',
+            'gaming.steam-hidpi'])
+        # Already version 3: as it is.
+        self.record({'profiles': ['core', 'radio'], 'profiles_version': 3})
+        self.assertEqual(bundle.recorded_profiles(), ['core', 'radio'])
 
     def test_the_full_set_keeps_its_digest(self):
         # A laptop with every plugin rebuilds nothing because of the selection.

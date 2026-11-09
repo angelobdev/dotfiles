@@ -5,7 +5,7 @@ import "../.."
 // The picture of the Radio panel: the video-only stream of what mpv plays (Radio.videoStream, from radio.py video),
 // muted, since mpv keeps the sound. follow() keeps it in step with mpv: its pause, and its position when they drift
 // apart. The only file of the shell that needs QtMultimedia: RadioPanel loads it, and says so when the module is
-// missing (the media profile installs it).
+// missing (the radio profile installs it).
 Item {
     id: root
     property string source: ""

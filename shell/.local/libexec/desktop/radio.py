@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Radio & music for the shell's Radio panel (Super + M) and desktop-radio: web radio stations, DJ sets and YouTube
-search (ytfzf, else yt-dlp), played by one mpv of its own. mpv-mpris (the media profile) puts that mpv on MPRIS, so
+search (ytfzf, else yt-dlp), played by one mpv of its own. mpv-mpris (the radio profile) puts that mpv on MPRIS, so
 the bar, the Control Center, the lock screen and the media keys follow it like any player.
 
 Stations: ~/.local/share/desktop/radio/stations.json (shipped), then "stations" in ~/.config/desktop/radio.json, whose

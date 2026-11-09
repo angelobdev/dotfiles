@@ -1,17 +1,22 @@
 #!/usr/bin/env python3
-"""The installer's profiles for Settings → System → Profiles: what of each is on this system, and how to add or
-remove one without a terminal.
+"""The installer's profiles and their parts for Settings → System → Profiles: what of each is on this system, and how
+to add or remove them without a terminal.
 
-list: every profile as JSON: installed (all of it there), done of total (what it sets up that can be seen without
-sudo: packages, swaps, AUR packages, release archives, Stow links), recorded (in the installer's record), default.
-plan install NAME / plan remove NAME: JSON with the installer's commands for it: preview (its dry-run, as the
-desktop user) and apply (run by jobs.py behind one pkexec prompt), and blocked, a reason it cannot run now.
-Install keeps the recorded profiles and adds NAME; remove undoes what only NAME set up.
+list: every profile as JSON: installed, done of total (what it sets up that can be seen without sudo: packages, swaps,
+AUR packages, release archives, Stow links), recorded (in the installer's record), default, and its parts, each with
+the same fields.
+plan install UNITS / plan remove UNITS / plan change ADD REMOVE: JSON with the commands for it: preview (the dry-run,
+as the desktop user) and apply (run by jobs.py behind one pkexec prompt), and blocked, a reason it cannot run now.
+Units are profiles or parts (profile.part), comma-separated; "-" is none. Install keeps the recorded units and adds
+these, a profile with its default parts; remove undoes what only they set up, a profile with all of its parts; change
+does both, the adding first.
+run dry-run|apply ADD REMOVE: the installer for a change, one run after the other.
 """
 from contextlib import redirect_stderr, redirect_stdout
 import importlib.util
 import io
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -30,6 +35,12 @@ def installer_screens():
     return module
 
 
+def row(tui, statuses, name, recorded, defaults):
+    status = statuses[name]
+    return {'name': name, 'installed': tui.unit_installed(statuses, name), 'done': status.total - len(status.missing),
+            'total': status.total, 'recorded': name in recorded, 'default': name in defaults}
+
+
 def listing():
     try:
         tui = installer_screens()
@@ -39,12 +50,15 @@ def listing():
             plan = installer.load_plan(('core',))
             plan.distro.remember_answers()
             recorded = tui.recorded_profiles()
-            defaults = installer.default_profiles().split(',')
+            defaults = installer.default_profiles(plan.table).split(',')
+            units = installer.units(plan.table)
+            statuses = {name: tui.profile_status(plan, name) for name in units}
             rows = []
             for name in installer.PROFILES:
-                status = tui.profile_status(plan, name)
-                rows.append({'name': name, 'installed': tui.installed(status), 'done': status.total - len(status.missing),
-                             'total': status.total, 'recorded': name in recorded, 'default': name in defaults})
+                parts = [row(tui, statuses, part, recorded, defaults) | {'part': part.split('.', 1)[1],
+                                                                         'default': part in installer.default_parts(name, plan.table)}
+                         for part in units if installer.parent(part) == name and part != name]
+                rows.append(row(tui, statuses, name, recorded, defaults) | {'parts': parts})
     except SystemExit as stop:
         return {'profiles': [], 'error': str(stop.code or '')}
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
@@ -52,34 +66,62 @@ def listing():
     return {'profiles': rows, 'error': ''}
 
 
-def checked(name):
-    names = [profile for profile in name.split(',') if profile]
-    if not names or not all(profile.replace('-', '').isalnum() for profile in names):
-        raise ValueError(tr('settings.profiles.errors.name', [name]))
+def checked(installer, text):
+    # Units of the manifest, comma-separated; "-" or nothing is none.
+    names = [name for name in text.split(',') if name and name != '-']
+    if not all(re.fullmatch(r'[a-z0-9][a-z0-9.-]*', name) for name in names) or set(names) - set(installer.manifest_units()):
+        raise ValueError(tr('settings.profiles.errors.name', [text]))
     return names
 
 
-def plan(action, name):
-    names = checked(name)
+def install_arguments(tui, names):
+    installer = tui.installer
+    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+        recorded = tui.recorded_profiles()
+    # A profile added here comes with its default parts.
+    added = {part for name in names if name not in recorded for part in installer.default_parts(name)}
+    return ['--profiles', ','.join(installer.normalized(set(recorded) | {'core'} | set(names) | added))]
+
+
+def plan(action, first, second=''):
     tui = installer_screens()
     installer = tui.installer
     script = [sys.executable, str(REPO / 'scripts/install-desktop.py')]
-    blocked = ''
-    if action == 'install':
-        if set(names) - set(installer.PROFILES):
-            raise ValueError(tr('settings.profiles.errors.name', [name]))
-        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-            recorded = tui.recorded_profiles()
-        wanted = [profile for profile in installer.PROFILES if profile == 'core' or profile in recorded or profile in names]
-        arguments = ['--profiles', ','.join(wanted)]
+    if action == 'change':
+        add, remove = checked(installer, first), checked(installer, second)
+        if not add and not remove or remove and not installer.removable_profiles(tuple(remove)):
+            raise ValueError(tr('settings.profiles.errors.name', [f'{first} {second}']))
+        runner = [sys.executable, str(Path(__file__).resolve()), 'run']
+        arguments = [','.join(add) or '-', ','.join(remove) or '-']
+        preview, apply = runner + ['dry-run', *arguments], runner + ['apply', *arguments]
     else:
-        if not installer.removable_profiles(tuple(names)):
-            raise ValueError(tr('settings.profiles.errors.name', [name]))
-        arguments = ['--remove', ','.join(names)]
-        # The running Hyprland has the plugins loaded: the installer refuses, and so does this, before the prompt.
-        if 'plugins' in names and installer.hyprland_running():
-            blocked = tr('settings.profiles.pluginsInSession')
-    return {'preview': script + ['dry-run', *arguments], 'apply': script + ['apply', *arguments], 'blocked': blocked}
+        names = checked(installer, first)
+        if not names:
+            raise ValueError(tr('settings.profiles.errors.name', [first]))
+        if action == 'install':
+            arguments = install_arguments(tui, names)
+            remove = []
+        else:
+            if not installer.removable_profiles(tuple(names)):
+                raise ValueError(tr('settings.profiles.errors.name', [first]))
+            arguments, remove = ['--remove', ','.join(names)], names
+        preview, apply = script + ['dry-run', *arguments], script + ['apply', *arguments]
+    # The running Hyprland has the plugins loaded: the installer refuses, and so does this, before the prompt.
+    blocked = tr('settings.profiles.pluginsInSession') if 'plugins' in remove and installer.hyprland_running() else ''
+    return {'preview': preview, 'apply': apply, 'blocked': blocked}
+
+
+def run(mode, first, second):
+    """A change: the installer adds, then removes. Its status is the first that failed."""
+    tui = installer_screens()
+    add, remove = checked(tui.installer, first), checked(tui.installer, second)
+    script = [sys.executable, str(REPO / 'scripts/install-desktop.py'), mode]
+    status = 0
+    if add:
+        status = subprocess.run(script + install_arguments(tui, add)).returncode
+    if remove and status == 0:
+        status = subprocess.run(script + ['--remove', ','.join(remove)]).returncode
+    return status
 
 
 def main(arguments):
@@ -87,13 +129,18 @@ def main(arguments):
         print(json.dumps(listing(), ensure_ascii=False))
     elif len(arguments) == 3 and arguments[0] == 'plan' and arguments[1] in ('install', 'remove'):
         print(json.dumps(plan(arguments[1], arguments[2])))
+    elif len(arguments) == 4 and arguments[0] == 'plan' and arguments[1] == 'change':
+        print(json.dumps(plan('change', arguments[2], arguments[3])))
+    elif len(arguments) == 4 and arguments[0] == 'run' and arguments[1] in ('dry-run', 'apply'):
+        return run(*arguments[1:])
     else:
         raise ValueError(__doc__)
+    return 0
 
 
 if __name__ == '__main__':
     try:
-        main(sys.argv[1:])
+        sys.exit(main(sys.argv[1:]))
     except (OSError, ValueError) as error:
         print(str(error), file=sys.stderr)
         sys.exit(1)

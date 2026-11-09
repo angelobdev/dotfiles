@@ -867,17 +867,16 @@
         "name": "Non è il nome di un profilo: %1"
       },
       "descriptions": {
-        "core": "Hyprland, Quickshell, GDM con la sessione hyprland-uwsm, portali, audio, rete, font e zsh: il desktop stesso.",
-        "hardware": "Firmware, decodifica video, fotocamere e risparmio energetico di un portatile Intel recente, lettore di impronte, zona del firewall, sshd spento.",
+        "core": "Hyprland, Quickshell, GDM con la sessione hyprland-uwsm, portali, audio, rete, font, zsh e i codec (da RPM Fusion su Fedora): il desktop stesso.",
+        "hardware": "Un portatile, a parti spuntate dove l’hardware c’è: Intel, audio, fotocamera, lettore di impronte, aggiornamenti firmware.",
         "tablet": "Un 2 in 1: rotazione dello schermo, penna, accesso senza lettore di impronte da piegato, gesti sul touchscreen (Hyprgrass).",
         "plugins": "Quello che serve per compilare i plugin di Hyprland, anche da RPM Fusion; l’ffmpeg di RPM Fusion sostituisce ffmpeg-free.",
-        "apps": "Zen Browser, 1Password, VS Code, Neovim, gh, glab, uv, gcc e qualche strumento da riga di comando.",
-        "herdr": "L’app Herdr e herdr-core in ~/.local: la console dell’assistente per qualsiasi agente; si aggiornano da sole.",
-        "containers": "Docker (moby-engine, docker-compose, il gruppo docker) e Tailscale.",
-        "media": "Loupe, Papers e Showtime per immagini, PDF e video; mpv con mpv-mpris e yt-dlp per il pannello Radio, e Qt Multimedia per il suo video.",
-        "gaming": "Steam, gamescope e i driver a 32 bit che servono ai giochi.",
-        "steamHidpi": "L’avvio di Steam che scala il client per il monitor su cui si apre.",
-        "codecs": "I codec di RPM Fusion al posto delle versioni libere: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX."
+        "apps": "App desktop, una per una: Zen Browser, 1Password, VS Code, e Loupe, Papers e Showtime per immagini, PDF e video.",
+        "utils": "Strumenti da riga di comando, uno per uno: Neovim, gcc, xclip, unrar, FUSE, gh, glab, uv, wev e Tailscale.",
+        "assistant": "L’assistente AI: Super + A, la sua icona nella barra e la sua sezione qui, con l’app Herdr e herdr-core in ~/.local, che si aggiornano da sole.",
+        "containers": "Docker (moby-engine, docker-compose, il gruppo docker).",
+        "radio": "Il pannello Radio (Super + M): mpv con mpv-mpris, yt-dlp, e Qt Multimedia per il suo video.",
+        "gaming": "Giochi, uno per uno: Steam con i driver a 32 bit che servono, il suo avvio HiDPI, gamescope."
       },
       "managerTitle": "Installer del desktop",
       "reviewInstall": "Installa %1: cosa farà l’installer",
@@ -887,7 +886,44 @@
       "pluginsInSession": "Rimuovere plugins toglie i plugin di Hyprland, che la sessione in corso ha caricato: esci, accedi da una console (Ctrl+Alt+F3) ed esegui lì install-desktop.py apply --remove plugins.",
       "running": "%1: in corso…",
       "done": "%1: fatto.",
-      "failed": "%1: non è finito (stato %2). Il log è qui sotto."
+      "failed": "%1: non è finito (stato %2). Il log è qui sotto.",
+      "partNames": {
+        "hardware": {
+          "intel": "Intel: Wi-Fi, GPU, decodifica video, energia",
+          "audio": "Firmware audio",
+          "camera": "Fotocamera",
+          "fingerprint": "Lettore di impronte",
+          "firmware": "Aggiornamenti firmware e Thunderbolt"
+        },
+        "apps": {
+          "zen": "Zen Browser",
+          "onepassword": "1Password",
+          "vscode": "Visual Studio Code",
+          "loupe": "Loupe (immagini)",
+          "papers": "Papers (PDF)",
+          "showtime": "Showtime (video)"
+        },
+        "utils": {
+          "neovim": "Neovim",
+          "gcc": "gcc",
+          "xclip": "xclip",
+          "unrar": "unrar",
+          "fuse": "FUSE 2 (AppImage)",
+          "gh": "gh (GitHub)",
+          "glab": "glab (GitLab)",
+          "uv": "uv (Python)",
+          "wev": "wev (eventi di input)",
+          "tailscale": "Tailscale"
+        },
+        "gaming": {
+          "steam": "Steam",
+          "steamHidpi": "Avvio HiDPI di Steam",
+          "gamescope": "gamescope"
+        }
+      },
+      "parts": "Parti",
+      "applyParts": "Applica le modifiche",
+      "reviewChange": "Modifica %1: cosa farà l’installer"
     },
     "plugins": {
       "intro": "Plugin di Hyprland compilati da hyprpm da sorgenti fissate, per l’Hyprland installato. Una ricompilazione sostituisce solo plugin non caricati: dopo un aggiornamento parte da sola al login successivo, con una sola richiesta di password.",
@@ -1434,7 +1470,7 @@
     "errors": {
       "missingUrl": "Non è uno stream, un link di YouTube o un file.",
       "unknown": "Stazione sconosciuta, oppure non è uno stream, un link di YouTube o un file: %1",
-      "noMpv": "mpv non è installato: lo installa il profilo media (Impostazioni → Sistema → Profili).",
+      "noMpv": "mpv non è installato: lo installa il profilo radio (Impostazioni → Sistema → Profili).",
       "usage": "Comando della radio sconosciuto: %1",
       "noVideo": "Questo non ha un video, oppure YouTube non l’ha fornito."
     },
@@ -1445,7 +1481,7 @@
       "file": "File"
     },
     "videoLoading": "Caricamento del video…",
-    "videoMissing": "Il video richiede Qt Multimedia: lo installa il profilo media (Impostazioni → Sistema → Profili).",
+    "videoMissing": "Il video richiede Qt Multimedia: lo installa il profilo radio (Impostazioni → Sistema → Profili).",
     "nothingPlaying": "Niente in riproduzione"
   }
 }

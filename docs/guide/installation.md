@@ -34,7 +34,7 @@ git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
 cd ~/.dotfiles
 ./scripts/install-tui.py                                     # guided, see below; or by hand:
 ./scripts/install-desktop.py                                 # preview: changes nothing
-./scripts/install-desktop.py apply                           # or --profiles core,hardware,plugins,apps,codecs, …
+./scripts/install-desktop.py apply                           # or --profiles core,hardware,plugins,apps.zen,utils.neovim, …
 sudo systemctl reboot
 ```
 
@@ -42,30 +42,36 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 
 | Profile | Installs |
 | --- | --- |
-| `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls; zsh as your login shell, with its [plugins](../features/shell.md) |
-| `hardware` | Firmware, video decoding, cameras and power of a recent Intel laptop, the fingerprint reader, firewall zone, `sshd` off |
+| `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls; zsh as your login shell, with its [plugins](../features/shell.md); the codecs: on Fedora from RPM Fusion, whose `ffmpeg` and `intel-media-driver` replace `ffmpeg-free` and `libva-intel-media-driver`, plus the GStreamer freeworld plugins, libav, OpenH264, HEIF and aptX |
+| `hardware` | Firewall zone and `sshd` off on Fedora, and these parts: `intel` (Wi-Fi and Bluetooth firmware, GPU and video decoding, NPU, thermald and intel-lpmd), `audio` (SOF and Cirrus firmware, ALSA UCM), `camera` (libcamera, the IPU's sensing controller firmware), `fingerprint` (fprintd and the [polkit prompt](integrations.md) that tries it first), `firmware` (fwupd, bolt) |
 | `tablet` | A 2-in-1: the accelerometer (`iio-sensor-proxy`) and its sensor hub modules, the stylus (`libwacom`), [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), and the Hyprgrass touchscreen gestures, the only [plugin](plugins.md) built for this profile alone; on the OmniBook, HP's sensor hub firmware for rotation from `--firmware DIR` (see [Tablet and touch](../features/tablet-and-touch.md#tablet-mode-and-rotation)) |
 | `plugins` | What building the [Hyprland plugins](plugins.md) needs, from RPM Fusion too; the RPM Fusion `ffmpeg` replaces `ffmpeg-free` |
-| `apps` | Zen Browser, 1Password, VS Code, Neovim, `gh`, `glab`, `uv`, `gcc` and a few command-line tools |
-| `herdr` | The [Herdr app and herdr-core](../features/ai-assistant.md#with-herdr-any-coding-agent), the assistant console for any coding agent: their release archives (pinned version and sha256, x86_64 or aarch64) unpacked as you into `~/.local`, where herdr's own installer puts them, with the `hc` link and the launcher entry. Once there they update themselves (the app, and `hc update`), so the installer never installs them again |
-| `containers` | Docker (`moby-engine`, `docker-compose`, the `docker` group) and Tailscale, with its tray icon |
-| `media` | Loupe, Papers and Showtime for images, PDFs and videos; mpv (on MPRIS through mpv-mpris) and yt-dlp for the [Radio panel](../features/radio.md), and ytfzf on Arch |
-| `gaming` | Steam, gamescope and the 32-bit drivers games need; see [Gaming](#gaming) |
-| `steam-hidpi` | The Steam launcher that scales the client for the monitor it opens on (the optional `steam-hidpi` Stow package) |
-| `codecs` | The RPM Fusion codecs: `ffmpeg` and `intel-media-driver` replace `ffmpeg-free` and `libva-intel-media-driver`, plus the GStreamer freeworld plugins, libav, OpenH264, HEIF and aptX |
+| `apps` | Desktop apps, as parts: `zen` (Zen Browser), `onepassword` (1Password, allowed to fill in Zen), `vscode`, and the GNOME viewers `loupe`, `papers` and `showtime` |
+| `utils` | Command-line tools, as parts: `neovim`, `gcc`, `xclip`, `unrar`, `fuse` (FUSE 2 for AppImages), `gh`, `glab`, `uv`, `wev`, and `tailscale` with its tray icon |
+| `assistant` | The AI Assistant: Super + A, its bar icon and its Settings section need it. With it, the [Herdr app and herdr-core](../features/ai-assistant.md#with-herdr-any-coding-agent), the assistant console for any coding agent: their release archives (pinned version and sha256, x86_64 or aarch64) unpacked as you into `~/.local`, where herdr's own installer puts them, with the `hc` link and the launcher entry. Once there they update themselves (the app, and `hc update`), so the installer never installs them again |
+| `containers` | Docker (`moby-engine`, `docker-compose`, the `docker` group) |
+| `radio` | The [Radio panel](../features/radio.md): mpv (on MPRIS through mpv-mpris), yt-dlp, Qt Multimedia for its video, and ytfzf on Arch |
+| `gaming` | `gcc`, and as parts: `steam` with the 32-bit drivers games need, `steam-hidpi` (the launcher that scales the client for the monitor it opens on, the optional `steam-hidpi` Stow package) and `gamescope`; see [Gaming](#gaming) |
+
+**Parts.** A part is picked on its own, as `profile.part` (`apps.zen`, `hardware.camera`), and brings its profile with it. A profile picked alone comes with its default parts:
+
+- `hardware` checks a part where it finds the hardware: `intel` and `audio` on an Intel CPU, `camera` with a V4L2 device or an Intel IPU, `fingerprint` with the USB reader of a known vendor (Synaptics, Goodix, Validity, Egis, FPC, FocalTech, Elan). `firmware` is always checked.
+- `apps` checks Zen and the three viewers, `utils` checks Neovim, gcc, xclip, unrar and FUSE, and `gaming` checks all three.
+
+Removing a profile removes its parts too. Removing one part removes only what nothing that stays needs.
 
 On Arch the profiles are the same, from the official repositories, with these differences:
 
 - Hyprland, `hyprpm`, its headers and the `hyprland-uwsm` session entry come from `extra`: no COPR, no `-devel` packages.
-- No swaps: Arch's `ffmpeg` and `intel-media-driver` are already the complete builds, so `codecs` only adds the GStreamer plugins (bad, ugly, libav).
-- `hardware` installs `fprintd`, and `tablet` leaves out the [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), which is not ported yet: the fingerprint works at GDM, on the lock screen and in the polkit prompt (its own `/etc/pam.d/polkit-1`, as on Fedora); sudo asks for the password. It sets no firewall zone and leaves `sshd` alone, since Arch enables neither. The firmware Fedora splits in several packages is in `linux-firmware-intel`; the initramfs is rebuilt with `mkinitcpio -P` (or dracut, if the system uses it).
+- No swaps: Arch's `ffmpeg` and `intel-media-driver` are already the complete builds, so the codecs in `core` are only the GStreamer plugins (bad, ugly, libav) and libheif.
+- `hardware.fingerprint` installs `fprintd`, and `tablet` leaves out the [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), which is not ported yet: the fingerprint works at GDM, on the lock screen and in the polkit prompt (its own `/etc/pam.d/polkit-1`, as on Fedora); sudo asks for the password. It sets no firewall zone and leaves `sshd` alone, since Arch enables neither. The firmware Fedora splits in several packages is in `linux-firmware-intel`; the initramfs is rebuilt with `mkinitcpio -P` (or dracut, if the system uses it).
 - `gaming` first enables the `multilib` repository in `/etc/pacman.conf`.
 - `containers` has no tray icon for Tailscale: Arch's package has no unit for it.
 - `apps` builds Zen Browser, 1Password and VS Code from the AUR: see [AUR packages](#aur-packages-arch).
 
 pacman installs with `-Syu` (a partial upgrade is not supported on Arch), never installs optional dependencies, and picks `pipewire-jack` where something needs a JACK library.
 
-The default is `core,hardware,plugins`, with `tablet` too on a 2-in-1 (a tablet mode switch or a touchscreen in `/proc/bus/input/devices`); the others are opt-in. An install made before `tablet` existed counts it as installed with `hardware`, which held it then. No Flatpak is installed: Flathub is yours to choose from. GDM needs GNOME Shell and GNOME Settings; the extras they recommend (Tour, Parental Controls, Color Profile Viewer, remote desktop, Rygel) are kept out. The manifest is the only list of packages: a new dependency goes there.
+The default is `core,hardware,plugins` with the default parts of `hardware`, and `tablet` too on a 2-in-1 (a tablet mode switch or a touchscreen in `/proc/bus/input/devices`); the others are opt-in. An install made before `tablet` existed counts it as installed with `hardware`, which held it then. The record of an install made before parts names its profiles in the new ones as it is read: `hardware`, `plugins` and `gaming` with all their parts, `apps` with its apps and the tools that are `utils` now, `herdr` as `assistant`, `media` as `radio` with the three viewers of `apps`, `steam-hidpi` as `gaming.steam-hidpi`, `containers` with `utils.tailscale`, and `codecs` in `core`. Nothing is installed or removed for that. No Flatpak is installed: Flathub is yours to choose from. GDM needs GNOME Shell and GNOME Settings; the extras they recommend (Tour, Parental Controls, Color Profile Viewer, remote desktop, Rygel) are kept out. The manifest is the only list of packages: a new dependency goes there.
 
 After the reboot, sign in at GDM. A terminal opens by itself and runs `install-desktop.py post`, which builds the plugins (hyprpm asks for confirmation) and lists what is left by hand. If it fails it comes back at the next login; to run it yourself, press `Super + Return`.
 
@@ -74,7 +80,7 @@ After the reboot, sign in at GDM. A terminal opens by itself and runs `install-d
 `scripts/install-tui.py` runs the same steps behind a few terminal screens; it needs nothing beyond Python, so it also works on the console of a fresh Server install. Once the desktop is there, it also [keeps it updated](#checking-for-updates), and `desktop-manager` opens it from any terminal (`desktop-manager updates` on the updates screen; other arguments go to it as they are: `--profiles`, `--add PROFILES` starts on the profiles with those checked on top of the installed ones, `--remove PROFILES` on the review of [removing them](#removing-profiles)).
 
 1. **Welcome**: the system, the model, the free space and the state of the [Hyprland plugins](plugins.md#verification-and-updates). Inside Hyprland, while the first login after an install has not finished, it also offers to finish it (`post`). **Check for updates** opens the [updates screen](#checking-for-updates); **Remove profiles** asks which profiles to take away, then reviews [their removal](#removing-profiles); **Remove the desktop** goes straight to a review of the [removal](#removal).
-2. **Profiles**: each one says whether it is `installed`, partly installed (`3/12`, with what is missing) or not, from its packages, swaps and Stow links. On a desktop already set up the installed profiles start on, on a fresh system the defaults do, and `--profiles` wins over both. `Space` toggles one, `d` picks the defaults, `i` the installed ones; `core` always stays on. Turning off an installed profile here removes nothing: **Remove profiles** does. The bottom shows what the highlighted profile adds, read from the manifest.
+2. **Profiles**: each one says whether it is `installed`, partly installed (`3/12`, with what is missing) or not, from its packages, swaps and Stow links; a profile with parts says how many of them are there (`2/5 parts`). On a desktop already set up the installed profiles and parts start on, on a fresh system the defaults do, and `--profiles` wins over both. `Right` opens the parts of a profile and `Left` closes them. `Space` toggles a profile (with its default parts) or a part (with its profile), `d` picks the defaults, `i` the installed ones; `core` always stays on. Turning off an installed profile here removes nothing: **Remove profiles** does. The bottom shows what the highlighted profile adds, read from the manifest.
 3. **Vendor firmware**: only on a model whose firmware is still missing (see `--firmware` above). Type the directory with a copy (`Tab` completes it) or leave it empty to go on without.
 4. **Review**: the preview of every step, the warnings, and the equivalent `install-desktop.py` command. `Enter` opens a step's list, `r` checks again, `a` applies after a confirmation.
 
@@ -202,7 +208,9 @@ It undoes the same way as the uninstall, step by step, but only what the record 
 
 Settings → System → Profiles (`desktop-shell toggle settings system/profiles`) lists every profile with its description and what of it is on this system, as the profiles screen of the guided installer reads it (`profiles.py list`): installed, partly installed (how much of it), not installed, or installed but not by the installer (Herdr from its own installer, say), which the installer has no record of and does not remove. **Install** (**Complete** for one partly there) and **Remove** show the installer's plan in the tab first:
 
-- **Install** previews `install-desktop.py dry-run --profiles` with that profile on top of the recorded ones.
+- **Install** previews `install-desktop.py dry-run --profiles` with that profile, and its default parts, on top of the recorded ones.
 - **Remove**, for a profile the installer recorded, previews `dry-run --remove NAME`; see [its removal](#removing-profiles).
+
+- **Parts**: the arrow beside a profile with parts shows them, one switch each. **Apply changes** previews what the switches changed: the parts switched on are added, those switched off removed (`profiles.py run`, the installer for one, then the other).
 
 Nothing changes before **Apply**. Apply runs the same command with `apply` in the background (`jobs.py`), behind one password or fingerprint prompt through the [root broker](../development/architecture.md#root-for-operations-from-settings). The tab shows the progress, the result and, while it runs or when it failed, the end of the log. A notification gives the result, and the list is read again. Removing `plugins` waits for a session without Hyprland, as the installer requires, and the tab says so before any prompt. `core` has neither button: it is the desktop itself. **Open the guided installer** opens its menu in a terminal, for the rest: the first install, removing the desktop, firmware.

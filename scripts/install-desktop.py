@@ -25,9 +25,15 @@ import urllib.request
 
 REPO = Path(__file__).resolve().parent.parent
 INSTALL = REPO / 'scripts/install'
-PROFILES = ('core', 'hardware', 'tablet', 'plugins', 'apps', 'herdr', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs')
-# On a 2-in-1 (touch_hardware) tablet joins them: default_profiles().
+PROFILES = ('core', 'hardware', 'tablet', 'plugins', 'apps', 'utils', 'assistant', 'containers', 'radio', 'gaming')
+# On a 2-in-1 (touch_hardware) tablet joins them, and each profile brings its default parts: default_profiles().
 DEFAULT_PROFILES = 'core,hardware,plugins'
+# Units: a profile, or a part of one as profile.part ([<distro>.<profile>.parts.<part>] in the manifest), which load_plan
+# makes a table of its own, so that every step, the record and removal work by unit as they do by profile.
+MANIFEST = REPO / 'scripts/install/manifest.toml'
+# USB vendors whose devices there are fingerprint readers: Synaptics, Goodix, Validity, Egis, FPC, FocalTech; Elan's
+# readers are its 0c.. products (its other USB devices are touchscreens).
+FINGERPRINT_VENDORS = {'06cb', '27c6', '138a', '1c7a', '10a5', '2808'}
 MIN_FREE = 30 * 2**30
 SESSION = 'hyprland-uwsm'
 FLATHUB = 'https://dl.flathub.org/repo/flathub.flatpakrepo'
@@ -60,6 +66,97 @@ def query(*command):
         return subprocess.run(command, capture_output=True, text=True)
     except FileNotFoundError:
         return subprocess.CompletedProcess(command, 127, '', '')
+
+
+def parent(unit):
+    return unit.split('.', 1)[0]
+
+
+def flatten_parts(table):
+    """A new table where each [<profile>.parts.<part>] is a table of its own, profile.part, right after its profile's.
+    The manifest's own tables are left as they are."""
+    flat = {}
+    for name, section in table.items():
+        if isinstance(section, dict) and isinstance(section.get('parts'), dict):
+            flat[name] = {key: value for key, value in section.items() if key != 'parts'}
+            flat.update({f'{name}.{part}': value for part, value in section['parts'].items()})
+        else:
+            flat[name] = section
+    return flat
+
+
+def units(table):
+    """Every unit of a (flattened) table, in PROFILES order: each profile, then its parts."""
+    names = []
+    for profile in PROFILES:
+        if profile in table:
+            names += [profile] + [name for name in table if name.startswith(profile + '.')]
+    return tuple(names)
+
+
+@functools.lru_cache(maxsize=None)
+def manifest_units():
+    """The units of every distribution of the manifest, for what is checked before a plan is loaded."""
+    manifest = tomllib.loads(MANIFEST.read_text(encoding='utf-8'))
+    names = []
+    for table in manifest.values():
+        if isinstance(table, dict) and 'versions' in table:
+            names += [name for name in units(flatten_parts(table)) if name not in names]
+    return tuple(name for name in units({name: None for name in names}))
+
+
+def normalized(names, known=None):
+    """These units with the profile of each part, in the order of known (manifest_units())."""
+    known = known or manifest_units()
+    chosen = set(names) | {parent(name) for name in names}
+    return tuple(name for name in known if name in chosen)
+
+
+def with_parts(names, known=None):
+    """These units, and every part of the profiles among them: what removing a profile takes."""
+    known = known or manifest_units()
+    return tuple(name for name in known if name in names or name != parent(name) and parent(name) in names)
+
+
+def detect_intel(cpuinfo=Path('/proc/cpuinfo')):
+    try:
+        return 'GenuineIntel' in cpuinfo.read_text(encoding='utf-8', errors='replace')
+    except OSError:
+        return False
+
+
+def detect_camera(sysfs=Path('/sys')):
+    # A V4L2 device, or an Intel IPU (PCI class 0x0480) whose cameras libcamera drives.
+    if any((sysfs / 'class/video4linux').glob('*')):
+        return True
+    for device in (sysfs / 'bus/pci/devices').glob('*'):
+        try:
+            vendor, kind = (device / 'vendor').read_text().strip(), (device / 'class').read_text().strip()
+        except OSError:
+            continue
+        if vendor == '0x8086' and kind.startswith('0x0480'):
+            return True
+    return False
+
+
+def detect_fingerprint(sysfs=Path('/sys')):
+    for device in (sysfs / 'bus/usb/devices').glob('*'):
+        try:
+            vendor, product = (device / 'idVendor').read_text().strip(), (device / 'idProduct').read_text().strip()
+        except OSError:
+            continue
+        if vendor in FINGERPRINT_VENDORS or vendor == '04f3' and product.startswith('0c'):
+            return True
+    return False
+
+
+# What a part's default may name instead of true or false: checked where the installer runs.
+DETECT = {'intel': detect_intel, 'camera': detect_camera, 'fingerprint': detect_fingerprint}
+
+
+def part_default(part):
+    value = part.get('default', False) if isinstance(part, dict) else False
+    return bool(DETECT[value]()) if isinstance(value, str) and value in DETECT else value is True
 
 
 def merged(plan, key):
@@ -744,7 +841,7 @@ STEPS = (
 # Uninstall: the steps above backwards, from the record. Each one undoes only what is still the way apply left it.
 
 def every_profile(plan):
-    return plan._replace(profiles=tuple(profile for profile in PROFILES if profile in plan.table))
+    return plan._replace(profiles=units(plan.table))
 
 
 def reconstruct(plan):
@@ -1201,14 +1298,14 @@ UNSTEPS = (
 # the uninstall above.
 
 def removable_profiles(profiles):
-    return bool(profiles) and 'core' not in profiles and not set(profiles) - set(PROFILES)
+    return bool(profiles) and 'core' not in profiles and not set(profiles) - set(manifest_units())
 
 
 def staying_profiles(record, removed):
     # The profiles the record says are installed, but those; without a record of them, every other profile, so that
     # nothing another one may need goes.
     recorded = record.get('profiles') if isinstance(record.get('profiles'), list) and not record.get('uninstalled') else None
-    return tuple(name for name in PROFILES if name not in removed and (recorded is None or name in recorded or name == 'core'))
+    return tuple(name for name in manifest_units() if name not in removed and (recorded is None or name in recorded or name == 'core'))
 
 
 def profile_record(plan, record, removed):
@@ -1217,7 +1314,7 @@ def profile_record(plan, record, removed):
     # Only profiles still installed by the record's account: one removed already has nothing left to undo, and what of
     # it stayed (a package core needs) is core's now.
     recorded = real.get('profiles') if isinstance(real.get('profiles'), list) and not real.get('uninstalled') else None
-    undone = [name for name in PROFILES if name in removed and name in plan.table and (recorded is None or name in recorded)]
+    undone = [name for name in units(plan.table) if name in removed and (recorded is None or name in recorded)]
     going = plan._replace(profiles=tuple(undone))
     staying = plan._replace(profiles=tuple(name for name in staying_profiles(real, removed) if name in plan.table))
 
@@ -1236,7 +1333,7 @@ def profile_record(plan, record, removed):
     clones = {item['path'] for item in only('clones')}
     services = record.get('services', {})
     narrowed = {
-        'removing': [name for name in PROFILES if name in removed], 'undone': undone, 'staying': sorted(wanted),
+        'removing': [name for name in manifest_units() if name in removed], 'undone': undone, 'staying': sorted(wanted),
         'packages': [name for name in record.get('packages', ()) if name in packages],
         'swaps': [pair for pair in record.get('swaps', ()) if list(pair) in swapped],
         'repos': [name for name in record.get('repos', ()) if name in only('repos')],
@@ -1406,6 +1503,7 @@ def load_plan(profiles, release=None, firmware=None, any_version=False):
                      'Removing the desktop still works: install-desktop.py dry-run --uninstall.')
         print(f'Note: {name} {version} is not verified; the uninstall reads the manifest of {table["versions"][-1]}.')
     sys.path.insert(0, str(INSTALL))
+    table = flatten_parts(table)
     resolve_files(table)
     return Plan(importlib.import_module(name), version, table, manifest['verify']['commands'], profiles, firmware)
 
@@ -1421,7 +1519,7 @@ def resolve_files(table):
 
 
 def valid_profiles(profiles):
-    return 'core' in profiles and not set(profiles) - set(PROFILES)
+    return 'core' in profiles and not set(profiles) - set(manifest_units())
 
 
 def refuse(plan):
@@ -1600,11 +1698,12 @@ def pin_name(kind, item):
     return item['package'] if kind == 'aur' else item['path'].rstrip('/').rsplit('/', 1)[-1]
 
 
-def pin_entries(tables, profiles=PROFILES):
+def pin_entries(tables, profiles=None):
     # Every pinned entry of these tables, once: the same clone pinned on two distributions moves for both.
     entries = {}
     for table in tables:
-        for profile in profiles:
+        table = flatten_parts(table)
+        for profile in profiles or units(table):
             for kind in ('aur', 'clones', 'archives'):
                 for item in table.get(profile, {}).get(kind, ()):
                     key = (kind, item.get('package') or item.get('repo') or item['name'], item.get('commit') or item['version'])
@@ -1753,9 +1852,24 @@ def touch_hardware(devices=Path('/proc/bus/input/devices')):
     return False
 
 
-def default_profiles():
+@functools.lru_cache(maxsize=None)
+def distro_table():
+    # This distribution's table, flattened: what default parts are checked against. Empty where it is not verified.
+    manifest = tomllib.loads(MANIFEST.read_text(encoding='utf-8'))
+    table = manifest.get(os_release().get('ID', ''))
+    return flatten_parts(table) if isinstance(table, dict) else {}
+
+
+def default_parts(profile, table=None):
+    """The parts of profile that start checked: default true, or a detection that finds the hardware here."""
+    table = distro_table() if table is None else table
+    return tuple(name for name in units(table) if parent(name) == profile and name != profile and part_default(table[name]))
+
+
+def default_profiles(table=None):
     names = DEFAULT_PROFILES.split(',') + (['tablet'] if touch_hardware() else [])
-    return ','.join(name for name in PROFILES if name in names)
+    names += [part for name in names for part in default_parts(name, table)]
+    return ','.join(normalized(names))
 
 
 def main(argv=None):
@@ -1764,7 +1878,8 @@ def main(argv=None):
                         help='pins: newer commits than the manifest pins, of AUR packages and clones (from any distribution)')
     parser.add_argument('--update', action='store_true', help='with pins: pin those newer commits in the manifest')
     parser.add_argument('--firmware', metavar='DIR', help='directory searched (by hash) for the vendor firmware the manifest lists')
-    parser.add_argument('--profiles', help=f'comma separated, from {", ".join(PROFILES)} (default: {DEFAULT_PROFILES}, and tablet on a 2-in-1)')
+    parser.add_argument('--profiles', help=f'comma separated, from {", ".join(PROFILES)} and their parts, as profile.part (default: '
+                        f'{DEFAULT_PROFILES} with their default parts, and tablet on a 2-in-1)')
     parser.add_argument('--uninstall', action='store_true', help='undo what apply set up, from its record (dry-run shows it, apply does it)')
     parser.add_argument('--remove', metavar='PROFILES', help='undo what only these profiles set up (comma separated, not core), '
                         'leaving what the other installed profiles need')
@@ -1775,12 +1890,16 @@ def main(argv=None):
         parser.error('--uninstall removes every profile: leave --remove out.')
     removed = tuple(args.remove.split(',')) if args.remove else ()
     if args.remove and not removable_profiles(removed):
-        parser.error(f'--remove takes {", ".join(PROFILES[1:])}; core goes only with --uninstall.')
+        parser.error(f'--remove takes {", ".join(manifest_units()[1:])}; core goes only with --uninstall.')
+    # Removing a profile removes its parts.
+    removed = with_parts(removed)
     if args.update and args.action != 'pins':
         parser.error('--update goes with pins.')
     profiles = tuple((args.profiles or default_profiles()).split(','))
     if not valid_profiles(profiles):
-        parser.error(f'--profiles needs core, and takes only {", ".join(PROFILES)}.')
+        parser.error(f'--profiles needs core, and takes only {", ".join(manifest_units())}.')
+    # A part brings its profile.
+    profiles = normalized(profiles)
     if os.geteuid() == 0:
         sys.exit('Run as the desktop user: the script asks sudo for each system change.')
     if args.action == 'pins':

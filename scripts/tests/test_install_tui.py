@@ -35,14 +35,34 @@ def plan(profiles=('core', 'plugins'), firmware=None):
 
 class ChoiceTests(unittest.TestCase):
     def test_every_profile_is_described(self):
-        self.assertEqual(set(tui.DESCRIPTIONS), set(installer.PROFILES))
+        self.assertEqual(set(tui.DESCRIPTIONS), set(installer.manifest_units()))
 
     def test_core_cannot_be_turned_off(self):
         self.assertEqual(tui.toggled(('core', 'apps'), 'core'), ('core', 'apps'))
 
     def test_toggling_keeps_the_order_of_the_profiles(self):
-        self.assertEqual(tui.toggled(('core', 'gaming'), 'apps'), ('core', 'apps', 'gaming'))
-        self.assertEqual(tui.toggled(('core', 'apps', 'gaming'), 'apps'), ('core', 'gaming'))
+        # A profile comes with its default parts, and goes with all of them.
+        self.assertEqual(tui.toggled(('core', 'gaming'), 'apps'), ('core', 'apps', 'apps.zen', 'apps.loupe', 'apps.papers', 'apps.showtime', 'gaming'))
+        self.assertEqual(tui.toggled(('core', 'apps', 'apps.zen', 'apps.vscode', 'gaming'), 'apps'), ('core', 'gaming'))
+
+    def test_a_part_comes_with_its_profile_and_goes_alone(self):
+        self.assertEqual(tui.toggled(('core',), 'apps.vscode'), ('core', 'apps', 'apps.vscode'))
+        self.assertEqual(tui.toggled(('core', 'apps', 'apps.zen', 'apps.vscode'), 'apps.zen'), ('core', 'apps', 'apps.vscode'))
+
+    def test_the_accordion_shows_the_parts_of_open_profiles(self):
+        names = installer.manifest_units()
+        self.assertNotIn('apps.zen', tui.visible_units(names, set()))
+        rows = tui.visible_units(names, {'apps'})
+        self.assertEqual(rows[rows.index('apps') + 1], 'apps.zen')
+        cursor, opened = tui.move_in_accordion(tui.RIGHT[0], names, rows.index('apps'), set())
+        self.assertEqual(opened, {'apps'})
+        # Left from a part closes its profile and goes back to it.
+        rows = tui.visible_units(names, opened)
+        cursor, opened = tui.move_in_accordion(tui.LEFT[0], names, rows.index('apps.papers'), opened)
+        self.assertEqual((opened, tui.visible_units(names, opened)[cursor]), (set(), 'apps'))
+        self.assertEqual(tui.unit_row('apps.zen', '[x]', {'apps'}), '    [x] zen')
+        self.assertEqual(tui.unit_row('apps', '[ ]', {'apps'}), 'v [ ] apps')
+        self.assertEqual(tui.unit_row('radio', '[ ]', set()), '  [ ] radio')
 
     def test_the_summary_comes_from_the_manifest(self):
         self.assertEqual(tui.summary(TABLE, 'core'), '2 packages; repositories: one; services: s.service.')
@@ -55,7 +75,7 @@ class ChoiceTests(unittest.TestCase):
         self.assertEqual(tui.command(plan(firmware='~/HP pack')), "./scripts/install-desktop.py apply --profiles core,plugins --firmware '~/HP pack'")
 
     def test_every_plugin_state_is_described(self):
-        states = {value for name, value in vars(tui.bundle).items() if name.isupper() and name not in ('FILES', 'REPOSITORY', 'VERIFIED', 'CACHE', 'STAMP', 'PACKAGING', 'PLUGINS', 'RECORD', 'PROFILE_OF', 'PROFILES_VERSION')}
+        states = {value for name, value in vars(tui.bundle).items() if name.isupper() and name not in ('FILES', 'REPOSITORY', 'VERIFIED', 'CACHE', 'STAMP', 'PACKAGING', 'PLUGINS', 'RECORD', 'PROFILE_OF', 'PROFILES_VERSION', 'UNITS_OF_V2')}
         self.assertEqual(set(tui.PLUGIN_STATES), states)
 
     def test_finish_only_while_the_first_login_has_not(self):
@@ -137,8 +157,8 @@ class CompletionTests(unittest.TestCase):
         self.assertEqual(tui.complete('/no/such/place/x'), '/no/such/place/x')
 
 
-ALL = {name: tui.Status([], 2) for name in installer.PROFILES}
-FRESH = {name: tui.Status(['a', 'b'], 2) for name in installer.PROFILES}
+ALL = {name: tui.Status([], 2) for name in installer.manifest_units()}
+FRESH = {name: tui.Status(['a', 'b'], 2) for name in installer.manifest_units()}
 
 
 class StatusTests(unittest.TestCase):
@@ -188,15 +208,19 @@ class StatusTests(unittest.TestCase):
         self.assertEqual(tui.status_label(tui.Status([], 0)), '')
 
     def test_an_installed_desktop_starts_from_what_it_has(self):
-        statuses = {**FRESH, 'core': tui.Status([], 2), 'apps': tui.Status([], 2), 'gaming': tui.Status(['x'], 2)}
-        self.assertEqual(tui.preselected(statuses), ('core', 'apps'))
-        self.assertEqual(tui.preselected(ALL), installer.PROFILES)
+        statuses = {**FRESH, 'core': tui.Status([], 2), 'apps': tui.Status([], 0), 'apps.zen': tui.Status([], 2), 'gaming': tui.Status(['x'], 2)}
+        self.assertEqual(tui.preselected(statuses), ('core', 'apps', 'apps.zen'))
+        # A profile with parts but none of them there is not.
+        self.assertEqual(tui.preselected({**statuses, 'apps.zen': tui.Status(['zen-browser'], 1)}), ('core',))
+        self.assertEqual(tui.preselected(ALL), installer.manifest_units())
 
     def test_a_fresh_system_starts_from_the_defaults(self):
-        with mock.patch.object(installer, 'touch_hardware', return_value=False):
-            self.assertEqual(tui.preselected({**FRESH, 'apps': tui.Status([], 2)}), tuple(installer.DEFAULT_PROFILES.split(',')))
-        with mock.patch.object(installer, 'touch_hardware', return_value=True):
-            self.assertEqual(tui.preselected(FRESH), ('core', 'hardware', 'tablet', 'plugins'))
+        # Without the hardware the parts detect, hardware brings only its firmware updates.
+        with mock.patch.dict(installer.DETECT, {name: (lambda: False) for name in installer.DETECT}):
+            with mock.patch.object(installer, 'touch_hardware', return_value=False):
+                self.assertEqual(tui.preselected({**FRESH, 'apps': tui.Status([], 2)}), ('core', 'hardware', 'hardware.firmware', 'plugins'))
+            with mock.patch.object(installer, 'touch_hardware', return_value=True):
+                self.assertEqual(tui.preselected(FRESH), ('core', 'hardware', 'hardware.firmware', 'tablet', 'plugins'))
 
     def test_a_partial_profile_names_what_is_missing(self):
         self.assertEqual(tui.status_text(tui.Status(['a', 'b'], 5)), 'Partly installed (3/5); missing: a, b.')
@@ -230,15 +254,15 @@ class FlowTests(unittest.TestCase):
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', return_value='install'), \
                 mock.patch.object(tui, 'detect', return_value=statuses) as detected, \
                 mock.patch.object(tui, 'choose_profiles', return_value=('quit', ())) as chosen:
-            tui.interface(None, plan(('core', 'media')), preset)
+            tui.interface(None, plan(('core', 'radio')), preset)
         detected.assert_called_once()
         return chosen.call_args.args[1].profiles
 
     def test_the_installed_profiles_start_on(self):
-        self.assertEqual(self.first_choice(ALL, False), installer.PROFILES)
+        self.assertEqual(self.first_choice(ALL, False), installer.manifest_units())
 
     def test_given_profiles_win_over_what_is_found(self):
-        self.assertEqual(self.first_choice(ALL, True), ('core', 'media'))
+        self.assertEqual(self.first_choice(ALL, True), ('core', 'radio'))
 
     def test_the_system_is_looked_at_once(self):
         answers = iter([('back', ('core',)), ('quit', ('core',))])
@@ -303,8 +327,8 @@ class FlowTests(unittest.TestCase):
     def test_add_checks_the_profile_on_top_of_the_installed_ones(self):
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'detect', return_value=ALL), \
                 mock.patch.object(tui, 'choose_profiles', return_value=('quit', ())) as chose:
-            tui.interface(None, plan(), False, 'profiles', ('herdr',))
-        self.assertIn('herdr', chose.call_args.args[1].profiles)
+            tui.interface(None, plan(), False, 'profiles', ('assistant',))
+        self.assertIn('assistant', chose.call_args.args[1].profiles)
         self.assertTrue(set(tui.preselected(ALL)) <= set(chose.call_args.args[1].profiles))
 
     def test_post_skips_the_review(self):
@@ -534,8 +558,8 @@ class UpdateFlowTests(unittest.TestCase):
         detected.assert_not_called()
 
     def test_without_a_record_the_installed_profiles(self):
-        (_, chosen, _), _, _, detected = self.interface(('apply', ['s']), recorded=(), statuses={**FRESH, 'media': tui.Status([], 2)})
-        self.assertEqual(chosen.profiles, ('core', 'media'))
+        (_, chosen, _), _, _, detected = self.interface(('apply', ['s']), recorded=(), statuses={**FRESH, 'radio': tui.Status([], 2)})
+        self.assertEqual(chosen.profiles, ('core', 'radio'))
         detected.assert_called_once()
 
     def test_the_repository_comes_back_as_a_pull(self):
@@ -555,7 +579,7 @@ class UpdateFlowTests(unittest.TestCase):
         shown.assert_called_once()
 
     def test_the_record_names_the_profiles_unless_the_desktop_was_removed(self):
-        for record, expected in (({'profiles': ['gaming', 'core', 'apps']}, ('core', 'apps', 'gaming')), ({'profiles': ['media']}, ('core', 'media')),
+        for record, expected in (({'profiles': ['gaming', 'core', 'apps']}, ('core', 'apps', 'gaming')), ({'profiles': ['radio']}, ('core', 'radio')),
                                  ({}, ()), ({'profiles': ['core'], 'uninstalled': True}, ())):
             with mock.patch.object(installer, 'load_record', return_value=record):
                 self.assertEqual(tui.recorded_profiles(), expected)
@@ -566,11 +590,12 @@ class UpdateFlowTests(unittest.TestCase):
                 mock.patch('curses.wrapper', return_value=None) as wrapper, mock.patch('builtins.print'):
             tui.main(['--updates'])
             self.assertEqual(wrapper.call_args.args[3], 'updates')
+            # A profile added comes with its default parts; one removed goes with all of them.
             tui.main(['--add', 'gaming'])
-            self.assertEqual(wrapper.call_args.args[3:], ('profiles', ('gaming',), ()))
-            tui.main(['--remove', 'gaming,media'])
-            self.assertEqual(wrapper.call_args.args[3:], ('removal', (), ('gaming', 'media')))
-        for arguments in (['--remove', 'core'], ['--add', 'gaming', '--remove', 'media'], ['--updates', '--add', 'gaming'],
+            self.assertEqual(wrapper.call_args.args[3:], ('profiles', ('gaming', 'gaming.steam', 'gaming.steam-hidpi', 'gaming.gamescope'), ()))
+            tui.main(['--remove', 'gaming,radio'])
+            self.assertEqual(wrapper.call_args.args[3:], ('removal', (), ('radio', 'gaming', 'gaming.steam', 'gaming.steam-hidpi', 'gaming.gamescope')))
+        for arguments in (['--remove', 'core'], ['--add', 'gaming', '--remove', 'radio'], ['--updates', '--add', 'gaming'],
                           ['--profiles', 'core', '--add', 'gaming']):
             with mock.patch('sys.stderr'), self.assertRaises(SystemExit) as caught:
                 tui.main(arguments)

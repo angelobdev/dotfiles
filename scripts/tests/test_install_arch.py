@@ -30,7 +30,7 @@ installer.RECORD = installer.STATE / 'install.json'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
 PROFILE_KEYS = {'repos', 'packages', 'services', 'user_services', 'disable', 'files', 'groups', 'stow', 'flatpaks',
-                'login_shell', 'clones', 'firmware', 'aur', 'notes', 'archives'}
+                'login_shell', 'clones', 'firmware', 'aur', 'notes', 'archives', 'default'}
 # The default pacman.conf of Arch, around its repositories.
 PACMAN_CONF = '''[options]
 HoldPkg     = pacman glibc
@@ -118,7 +118,9 @@ class Answers:
 class ManifestTests(unittest.TestCase):
     def setUp(self):
         self.arch = MANIFEST['arch']
-        self.profiles = {name: self.arch[name] for name in installer.PROFILES}
+        # Every unit: each profile, and each part as a table of its own.
+        table = installer.flatten_parts(self.arch)
+        self.profiles = {name: table[name] for name in installer.units(table)}
         self.packages = {package for profile in self.profiles.values() for package in profile.get('packages', ())}
 
     def test_every_profile_exists_and_uses_known_keys(self):
@@ -185,7 +187,7 @@ class ManifestTests(unittest.TestCase):
                 self.assertIn('base-devel', profile['packages'])
 
     def test_personal_apps_are_opt_in(self):
-        for profile in ('apps', 'herdr', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs'):
+        for profile in ('apps', 'utils', 'assistant', 'containers', 'radio', 'gaming'):
             self.assertNotIn(profile, installer.DEFAULT_PROFILES.split(','))
 
     def test_the_firmware_is_fedora_s(self):
