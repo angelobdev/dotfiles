@@ -43,6 +43,8 @@ ACCOUNTS = 'org.freedesktop.Accounts'
 STATE = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'dotfiles'
 # What apply changed and what was there before, for uninstall: written before each step runs.
 RECORD = STATE / 'install.json'
+# The units the record names, one per line, for Lua and QML (save_units).
+UNITS = STATE / 'units'
 AUR = 'https://aur.archlinux.org/'
 
 BOOT_SESSION = 'default session ' + SESSION
@@ -691,6 +693,19 @@ def save_record(record):
     temporary = RECORD.with_name(RECORD.name + '.tmp')
     temporary.write_text(json.dumps(record, indent=1, sort_keys=True) + '\n', encoding='utf-8')
     temporary.replace(RECORD)
+    save_units(record)
+
+
+def save_units(record):
+    """UNITS: the installed units, one per line, for what Hyprland (config/installed.lua) and the shell (Installed.qml)
+    show only with their unit. Without a list of profiles (uninstalled, or none yet), no file: everything counts."""
+    profiles = record.get('profiles')
+    if not isinstance(profiles, list) or record.get('uninstalled'):
+        UNITS.unlink(missing_ok=True)
+        return
+    temporary = UNITS.with_name(UNITS.name + '.tmp')
+    temporary.write_text(''.join(f'{name}\n' for name in profiles if isinstance(name, str)), encoding='utf-8')
+    temporary.replace(UNITS)
 
 
 def keep(record, key, values):
@@ -1198,11 +1213,11 @@ def unpackages_pending(plan):
     # installed by hand that still goes needs one of them in a way dnf did not tell: it is marked, for the review.
     names, kept, rows, theirs = removal_split(plan)
     marked = [row + ('  (installed by hand: it needs one of the others)' if row in theirs else '') for row in rows]
+    # A package kept because one that stays (or one installed by hand) needs it is no work of its own: it is listed
+    # only beside what goes, so an uninstall run again over what it had to keep has nothing to do.
     if plan.record.get('removing'):
-        # Removing profiles: a package kept because one that stays (or one installed by hand) needs it is no work of
-        # its own, and is listed only beside what goes.
         return marked + [f'keep {name}  (a package that stays needs it)' for name in kept] if rows else []
-    return marked + [f'keep {name}  (a package installed by hand needs it)' for name in kept]
+    return marked + [f'keep {name}  (a package installed by hand needs it)' for name in kept] if rows else []
 
 
 def unpackages_apply(plan, items):

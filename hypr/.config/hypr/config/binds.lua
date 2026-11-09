@@ -1,4 +1,5 @@
 local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
+local installed = require("config.installed")
 
 -- *** Utilities *** --
 
@@ -81,11 +82,14 @@ bind("SUPER + CTRL + P", hl.dsp.window.pseudo(), "Toggle pseudotiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Toggle split orientation")
 bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Fullscreen")
 
-bind("SUPER + SHIFT + S", screenshot("region"), "Screenshot · Area with editor")
-bind("SUPER + SHIFT + ALT + S", screenshot("fullscreen"), "Screenshot · Display with editor")
+-- Only with the plugin's part installed; installed but not loaded (a rebuild pending), they say so when pressed.
+if installed("plugins.hyprcapture") then
+    bind("SUPER + SHIFT + S", screenshot("region"), "Screenshot · Area with editor")
+    bind("SUPER + SHIFT + ALT + S", screenshot("fullscreen"), "Screenshot · Display with editor")
 
-bind("Print", screenshot("region"), "Screenshot · Area with editor")
-bind("ALT + Print", screenshot("fullscreen"), "Screenshot · Display with editor")
+    bind("Print", screenshot("region"), "Screenshot · Area with editor")
+    bind("ALT + Print", screenshot("fullscreen"), "Screenshot · Display with editor")
+end
 
 -- System (Quickshell)
 bind("SUPER + SHIFT + R", hl.dsp.exec_cmd(shell .. " restart"), "Restart Quickshell")

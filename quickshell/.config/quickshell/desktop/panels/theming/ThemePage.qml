@@ -265,7 +265,7 @@ ColumnLayout {
                         }
                         // Opens the glass page; the MouseArea of the card lies beneath it.
                         CompactIconButton {
-                            visible: themeCell.active && !!Theming.glass
+                            visible: themeCell.active && !!Theming.glass && Installed.has("plugins", "hyprglass")
                             iconName: "controls"
                             iconSize: 16
                             tooltip: I18n.tr("theming.glassSettings")

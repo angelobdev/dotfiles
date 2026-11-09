@@ -308,15 +308,22 @@ class SelectionTests(unittest.TestCase):
         self.assertEqual(bundle.selected(), tuple(build.PLUGINS))
 
     def test_hyprgrass_only_with_tablet(self):
-        self.record({'profiles': ['core', 'hardware', 'plugins'], 'profiles_version': bundle.PROFILES_VERSION})
+        self.record({'profiles': ['core', 'hardware', 'plugins', *bundle.PLUGIN_PARTS], 'profiles_version': bundle.PROFILES_VERSION})
         self.assertNotIn('hyprgrass', bundle.selected())
-        self.record({'profiles': ['core', 'tablet', 'plugins'], 'profiles_version': bundle.PROFILES_VERSION})
+        self.record({'profiles': ['core', 'tablet', 'plugins', *bundle.PLUGIN_PARTS], 'profiles_version': bundle.PROFILES_VERSION})
         self.assertIn('hyprgrass', bundle.selected())
+
+    def test_each_plugin_with_its_part(self):
+        self.record({'profiles': ['core', 'plugins', 'plugins.hyprglass'], 'profiles_version': bundle.PROFILES_VERSION})
+        self.assertEqual(bundle.selected(), ('hyprglass',))
+        # A version 3 record: plugins was every plugin.
+        self.record({'profiles': ['core', 'plugins'], 'profiles_version': 3})
+        self.assertEqual(bundle.selected(), ('Hyprspace', 'hyprglass', 'HyprCapture'))
 
     def test_a_record_from_before_the_tablet_profile_keeps_hyprgrass(self):
         # hardware held what tablet holds now.
         self.record({'profiles': ['core', 'hardware', 'plugins']})
-        self.assertEqual(bundle.recorded_profiles(), ['core', *bundle.UNITS_OF_V2['hardware'], 'tablet', 'plugins'])
+        self.assertEqual(bundle.recorded_profiles(), ['core', *bundle.UNITS_OF_V2['hardware'], 'tablet', 'plugins', *bundle.PLUGIN_PARTS])
         self.assertIn('hyprgrass', bundle.selected())
         self.record({'profiles': ['core', 'plugins']})
         self.assertNotIn('hyprgrass', bundle.selected())
@@ -338,13 +345,13 @@ class SelectionTests(unittest.TestCase):
         # A laptop with every plugin rebuilds nothing because of the selection.
         old = __import__('hashlib').sha256(b''.join((bundle.PACKAGING / name).read_bytes() for name in bundle.FILES)).hexdigest()[:16]
         self.assertEqual(bundle.digest(tuple(build.PLUGINS)), old)
-        self.assertNotEqual(bundle.digest(bundle.selected(['core'])), old)
+        self.assertNotEqual(bundle.digest(bundle.selected(['core', 'plugins', *bundle.PLUGIN_PARTS])), old)
 
     def test_the_manifest_lists_only_the_selection(self):
         import tomllib
         full = tomllib.loads(bundle.manifest(tuple(build.PLUGINS)))
         self.assertEqual(set(full) - {'repository'}, set(build.PLUGINS))
-        without = tomllib.loads(bundle.manifest(bundle.selected(['core'])))
+        without = tomllib.loads(bundle.manifest(bundle.selected(['core', 'plugins', *bundle.PLUGIN_PARTS])))
         self.assertEqual(set(without) - {'repository'}, set(build.PLUGINS) - {'hyprgrass'})
         self.assertEqual(without['HyprCapture'], full['HyprCapture'])
 

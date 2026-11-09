@@ -45,7 +45,7 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 | `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls; zsh as your login shell, with its [plugins](../features/shell.md); the codecs: on Fedora from RPM Fusion, whose `ffmpeg` and `intel-media-driver` replace `ffmpeg-free` and `libva-intel-media-driver`, plus the GStreamer freeworld plugins, libav, OpenH264, HEIF and aptX |
 | `hardware` | Firewall zone and `sshd` off on Fedora, and these parts: `intel` (Wi-Fi and Bluetooth firmware, GPU and video decoding, NPU, thermald and intel-lpmd), `audio` (SOF and Cirrus firmware, ALSA UCM), `camera` (libcamera, the IPU's sensing controller firmware), `fingerprint` (fprintd and the [polkit prompt](integrations.md) that tries it first), `firmware` (fwupd, bolt) |
 | `tablet` | A 2-in-1: the accelerometer (`iio-sensor-proxy`) and its sensor hub modules, the stylus (`libwacom`), [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), and the Hyprgrass touchscreen gestures, the only [plugin](plugins.md) built for this profile alone; on the OmniBook, HP's sensor hub firmware for rotation from `--firmware DIR` (see [Tablet and touch](../features/tablet-and-touch.md#tablet-mode-and-rotation)) |
-| `plugins` | What building the [Hyprland plugins](plugins.md) needs, from RPM Fusion too; the RPM Fusion `ffmpeg` replaces `ffmpeg-free` |
+| `plugins` | The [Hyprland plugins](plugins.md), as parts: `hyprspace` (the overview), `hyprglass` (liquid glass), `hyprcapture` (screenshots, with the Qt, OpenCV, PipeWire and FFmpeg headers it alone needs), all checked; the profile itself has the build tools and Hyprland's headers |
 | `apps` | Desktop apps, as parts: `zen` (Zen Browser), `onepassword` (1Password, allowed to fill in Zen), `vscode`, and the GNOME viewers `loupe`, `papers` and `showtime` |
 | `utils` | Command-line tools, as parts: `neovim`, `gcc`, `xclip`, `unrar`, `fuse` (FUSE 2 for AppImages), `gh`, `glab`, `uv`, `wev`, and `tailscale` with its tray icon |
 | `assistant` | The AI Assistant: Super + A, its bar icon and its Settings section need it. With it, the [Herdr app and herdr-core](../features/ai-assistant.md#with-herdr-any-coding-agent), the assistant console for any coding agent: their release archives (pinned version and sha256, x86_64 or aarch64) unpacked as you into `~/.local`, where herdr's own installer puts them, with the `hc` link and the launcher entry. Once there they update themselves (the app, and `hc update`), so the installer never installs them again |
@@ -56,7 +56,7 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 **Parts.** A part is picked on its own, as `profile.part` (`apps.zen`, `hardware.camera`), and brings its profile with it. A profile picked alone comes with its default parts:
 
 - `hardware` checks a part where it finds the hardware: `intel` and `audio` on an Intel CPU, `camera` with a V4L2 device or an Intel IPU, `fingerprint` with the USB reader of a known vendor (Synaptics, Goodix, Validity, Egis, FPC, FocalTech, Elan). `firmware` is always checked.
-- `apps` checks Zen and the three viewers, `utils` checks Neovim, gcc, xclip, unrar and FUSE, and `gaming` checks all three.
+- `plugins` checks all three plugins, `apps` checks Zen and the three viewers, `utils` checks Neovim, gcc, xclip, unrar and FUSE, and `gaming` checks all three.
 
 Removing a profile removes its parts too. Removing one part removes only what nothing that stays needs.
 

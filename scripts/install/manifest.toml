@@ -222,17 +222,30 @@ intel_ishtp_hid
 hid_sensor_hub
 '''
 
-# Building the Hyprland plugins. hyprland-devel stays installed: the login check reads its version.
+# Building the Hyprland plugins: the tools and Hyprland's headers here, and each plugin as a part with what it needs
+# beyond them (scripts/hyprpm: Hyprspace and hyprglass are make, HyprCapture is CMake and Qt; Hyprgrass, which tablet
+# brings, is meson). hyprland-devel stays installed: the login check reads its version.
 [fedora.plugins]
-repos = ['rpmfusion-free']
 packages = [
-    'hyprland-devel', 'git', 'gcc-c++', 'make', 'cmake', 'pkgconf-pkg-config', 'meson', 'ninja-build', 'patch', 'cpio',
-    'glm-devel', 'lua-devel', 'pango-devel', 'libXcursor-devel', 'json-devel', 'libjpeg-turbo-devel',
-    'qt6-qtsvg-devel', 'qt6-qtwayland-devel', 'layer-shell-qt-devel', 'opencv-devel', 'pipewire-devel',
-    'pulseaudio-libs-devel', 'fftw-devel', 'ffmpeg', 'ffmpeg-devel', 'x265-devel', 'libde265-devel',
+    'hyprland-devel', 'git', 'gcc-c++', 'make', 'pkgconf-pkg-config', 'meson', 'ninja-build', 'patch', 'cpio',
+    'glm-devel', 'lua-devel', 'pango-devel', 'libXcursor-devel', 'json-devel',
 ]
-# ffmpeg-devel needs the RPM Fusion ffmpeg, which conflicts with the ffmpeg-free that Workstation ships.
-swaps = [['ffmpeg-free', 'ffmpeg']]
+
+# The overview (Super + Tab's workspaces, the corner of the bar, four fingers up).
+[fedora.plugins.parts.hyprspace]
+default = true
+
+# Liquid glass on the shell and the windows.
+[fedora.plugins.parts.hyprglass]
+default = true
+
+# Screenshots with an editor (Super + Shift + S, Print). ffmpeg-devel needs the RPM Fusion ffmpeg, which core swaps in.
+[fedora.plugins.parts.hyprcapture]
+default = true
+packages = [
+    'cmake', 'libjpeg-turbo-devel', 'qt6-qtsvg-devel', 'qt6-qtwayland-devel', 'layer-shell-qt-devel', 'opencv-devel',
+    'pipewire-devel', 'pulseaudio-libs-devel', 'fftw-devel', 'ffmpeg-devel', 'x265-devel', 'libde265-devel',
+]
 
 # Everything below is opt-in: add the profile to --profiles.
 
@@ -524,12 +537,22 @@ intel_ishtp_hid
 hid_sensor_hub
 '''
 
-# Building the Hyprland plugins: the hyprland package has the headers, and Arch splits no -devel packages.
+# Building the Hyprland plugins, in parts as on Fedora: the hyprland package has the headers, and Arch splits no -devel
+# packages.
 [arch.plugins]
+packages = ['git', 'gcc', 'make', 'pkgconf', 'meson', 'ninja', 'patch', 'cpio', 'glm', 'lua', 'pango', 'libxcursor', 'nlohmann-json']
+
+[arch.plugins.parts.hyprspace]
+default = true
+
+[arch.plugins.parts.hyprglass]
+default = true
+
+[arch.plugins.parts.hyprcapture]
+default = true
 packages = [
-    'git', 'gcc', 'make', 'cmake', 'pkgconf', 'meson', 'ninja', 'patch', 'cpio',
-    'glm', 'lua', 'pango', 'libxcursor', 'nlohmann-json', 'libjpeg-turbo',
-    'qt6-svg', 'qt6-wayland', 'layer-shell-qt', 'opencv', 'pipewire', 'libpulse', 'fftw', 'ffmpeg', 'x265', 'libde265',
+    'cmake', 'libjpeg-turbo', 'qt6-svg', 'qt6-wayland', 'layer-shell-qt', 'opencv', 'pipewire', 'libpulse', 'fftw', 'ffmpeg',
+    'x265', 'libde265',
 ]
 
 # Everything below is opt-in: add the profile to --profiles.

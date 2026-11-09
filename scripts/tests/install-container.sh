@@ -118,8 +118,15 @@ grep -rs allow_vendor_change /usr/share/dnf5/libdnf.conf.d/ /etc/dnf/ || echo 'n
 rpm -q ffmpeg ffmpeg-libs wf-recorder
 
 section 'check.sh on this release'
-dnf -y -q install desktop-file-utils python3-cmarkgfm qt6-qtdeclarative-devel
+# What check.sh needs, installed by hand: gone again after it, so the uninstall below finds the system as a user
+# would leave it, not with packages installed by hand that hold on to the desktop's.
+check_tools=()
+for package in desktop-file-utils python3-cmarkgfm qt6-qtdeclarative-devel; do
+    rpm -q "$package" >/dev/null 2>&1 || check_tools+=("$package")
+done
+[[ ${#check_tools[@]} == 0 ]] || dnf -y -q install "${check_tools[@]}"
 as_user ./scripts/check.sh
+[[ ${#check_tools[@]} == 0 ]] || dnf -y -q remove "${check_tools[@]}"
 
 if [[ ${COMPILE:-} == 1 ]]; then
     # build.py compiles whatever Hyprland is installed: the guard of verified builds is in bundle.py.

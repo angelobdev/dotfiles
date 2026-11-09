@@ -66,9 +66,10 @@ PanelWindow {
         z: 1
         width: 8
         height: 8
+        // The overview, only with its plugin's part installed.
         HoverHandler {
             id: cornerHover
-            enabled: !Tablet.active
+            enabled: !Tablet.active && Installed.has("plugins", "hyprspace")
         }
     }
     Timer {
