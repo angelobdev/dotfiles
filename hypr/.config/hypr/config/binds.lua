@@ -71,9 +71,12 @@ end, "Switch windows backwards")
 -- Applications
 bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminal")
 bind("XF86Calculator", hl.dsp.exec_cmd("gnome-calculator"), "Calculator")
-bind("SUPER + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-ai"'), "AI assistant")
--- console.lua: into the drop-down console without showing it, or back out of it.
-bind("SUPER + SHIFT + A", function() desktop_console_move() end, "AI assistant · move window in or out")
+-- The AI assistant, only with its profile installed.
+if installed("assistant") then
+    bind("SUPER + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-ai"'), "AI assistant")
+    -- console.lua: into the drop-down console without showing it, or back out of it.
+    bind("SUPER + SHIFT + A", function() desktop_console_move() end, "AI assistant · move window in or out")
+end
 
 -- System (Hyprland)
 bind("SUPER + Q", hl.dsp.window.close(), "Close window")
@@ -102,7 +105,9 @@ bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Battery 
 bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendar")
 bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Keyboard shortcuts")
 bind("SUPER + SHIFT + T", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-area" text'), "Text from screen area")
-bind("SUPER + CTRL + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-area" ask'), "Ask the assistant about a screen area")
+if installed("assistant") then
+    bind("SUPER + CTRL + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-area" ask'), "Ask the assistant about a screen area")
+end
 bind("SUPER + ALT + plus", hl.dsp.exec_cmd(shell .. " zoom in"), "Zoom in", { repeating = true })
 bind("SUPER + ALT + minus", hl.dsp.exec_cmd(shell .. " zoom out"), "Zoom out", { repeating = true })
 bind("SUPER + ALT + 0", hl.dsp.exec_cmd(shell .. " zoom reset"), "Reset zoom")
@@ -124,7 +129,9 @@ end
 -- System (Extensions)
 bind("SUPER + CTRL + C", hl.dsp.exec_cmd(shell .. " toggle clipboard"), "Clipboard · History")
 bind("SUPER + CTRL + R", hl.dsp.exec_cmd(shell .. " toggle recording"), "Screen recording")
-bind("SUPER + M", hl.dsp.exec_cmd(shell .. " toggle radio"), "Radio & music")
+if installed("radio") then
+    bind("SUPER + M", hl.dsp.exec_cmd(shell .. " toggle radio"), "Radio & music")
+end
 
 -- Directional Binds
 for _, direction in ipairs({ "left", "right", "up", "down" }) do

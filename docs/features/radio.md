@@ -2,7 +2,7 @@
 
 `Super + M`, the antenna button in the Control Center's media tile, **Radio & Music** in the launcher, and `desktop-radio` all open the Radio panel. It plays web radio stations and DJ sets, and it finds YouTube mixes and playlists. Sound plays in one mpv of its own, with no window, and video shows in the panel itself.
 
-The `radio` profile installs what it needs: `mpv`, `mpv-mpris`, `yt-dlp` and Qt Multimedia (`qt6-qtmultimedia`; on Arch `qt6-multimedia` with its FFmpeg backend), plus `ytfzf` on Arch. `mpv-mpris` puts that mpv on MPRIS, so the bar, the Control Center, the lock screen and the media keys show and control it like any other player. On Fedora `ytfzf` is not packaged, and search uses `yt-dlp` alone.
+Without the installer's `radio` profile, the shell hides the antenna button and the launcher entry, and Hyprland does not bind `Super + M` (the installed units in `~/.local/state/dotfiles/units`; an install made before that file shows everything). The `radio` profile installs what it needs: `mpv`, `mpv-mpris`, `yt-dlp` and Qt Multimedia (`qt6-qtmultimedia`; on Arch `qt6-multimedia` with its FFmpeg backend), plus `ytfzf` on Arch. `mpv-mpris` puts that mpv on MPRIS, so the bar, the Control Center, the lock screen and the media keys show and control it like any other player. On Fedora `ytfzf` is not packaged, and search uses `yt-dlp` alone.
 
 ## The panel
 

@@ -70,7 +70,9 @@ Overlay {
             name: "assistant",
             icon: "assistant",
             label: I18n.tr("settings.sections.assistant"),
-            group: "personalization"
+            group: "personalization",
+            // Only with the AI Assistant profile installed (services/Installed.qml).
+            unit: "assistant"
         },
         {
             name: "keyboard",
@@ -114,6 +116,8 @@ Overlay {
     readonly property var sidebarRows: {
         const rows = [];
         for (const entry of sections) {
+            if (entry.unit && !Installed.has(entry.unit))
+                continue;
             if (rows.length === 0 || rows[rows.length - 1].group !== entry.group)
                 rows.push({
                     heading: true,
