@@ -35,3 +35,4 @@ Backoff 1.0 Backoff.qml
 singleton HyprSettings 1.0 HyprSettings.qml
 singleton Plugins 1.0 Plugins.qml
 Job 1.0 Job.qml
+singleton Radio 1.0 Radio.qml

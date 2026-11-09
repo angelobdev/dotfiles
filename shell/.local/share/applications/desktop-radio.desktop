@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Radio & Music
+Comment=Web radio, vinyl DJ sets, and YouTube playlist search
+Exec=desktop-radio
+TryExec=desktop-radio
+Icon=multimedia-player
+Terminal=false
+Type=Application
+Categories=AudioVideo;Audio;Player;
+Keywords=radio;music;youtube;ytfzf;mpv;lofi;jazz;dreamwave;rnb;vinyl;playlist;

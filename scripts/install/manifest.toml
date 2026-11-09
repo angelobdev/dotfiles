@@ -276,9 +276,11 @@ user_services = ['tailscale-systray.service']
 groups = ['docker']
 notes = ['Connect Tailscale: sudo tailscale up']
 
-# GNOME viewers for images, PDFs and videos.
+# GNOME viewers for images, PDFs and videos, and the Radio panel's player: mpv, on MPRIS through mpv-mpris, with
+# yt-dlp for YouTube, and Qt Multimedia for the video in the panel. ytfzf, which searches faster, is not packaged for
+# Fedora: radio.py falls back to yt-dlp.
 [fedora.media]
-packages = ['loupe', 'papers', 'showtime']
+packages = ['loupe', 'papers', 'showtime', 'mpv', 'mpv-mpris', 'yt-dlp', 'qt6-qtmultimedia']
 
 # Steam, gamescope, and what 32-bit Intel games need. gcc caches the optional renderer scaling workaround.
 [fedora.gaming]
@@ -501,9 +503,10 @@ services = ['docker.service', 'tailscaled.service']
 groups = ['docker']
 notes = ['Connect Tailscale: sudo tailscale up']
 
-# GNOME viewers for images, PDFs and videos.
+# GNOME viewers for images, PDFs and videos, and the Radio panel's player: mpv, on MPRIS through mpv-mpris, with
+# ytfzf and yt-dlp for YouTube, and Qt Multimedia (its FFmpeg backend) for the video in the panel.
 [arch.media]
-packages = ['loupe', 'papers', 'showtime']
+packages = ['loupe', 'papers', 'showtime', 'mpv', 'mpv-mpris', 'yt-dlp', 'ytfzf', 'qt6-multimedia', 'qt6-multimedia-ffmpeg']
 
 # Steam, gamescope, and the 32-bit drivers games need, from multilib. gcc caches the optional renderer scaling workaround.
 [arch.gaming]

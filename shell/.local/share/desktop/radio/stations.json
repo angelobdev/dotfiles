@@ -1,0 +1,243 @@
+{
+  "categories": [
+    "jazz",
+    "dreamwave",
+    "lofi",
+    "rnb"
+  ],
+  "stations": [
+    {
+      "id": "linn-jazz",
+      "aliases": [
+        "linn",
+        "linnjazz"
+      ],
+      "title": "Linn Jazz",
+      "subtitle": "Audiophile Web Radio · 320 kbps",
+      "category": "jazz",
+      "kind": "radio",
+      "url": "http://radio.linn.co.uk:8000/autodj"
+    },
+    {
+      "id": "swiss-jazz",
+      "aliases": [
+        "swiss",
+        "swissjazz",
+        "rsj"
+      ],
+      "title": "Radio Swiss Jazz",
+      "subtitle": "Live Web Radio · 24/7",
+      "category": "jazz",
+      "kind": "radio",
+      "url": "http://stream.srg-ssr.ch/m/rsj/mp3_128"
+    },
+    {
+      "id": "rmc-jazz",
+      "aliases": [
+        "rmcjazz"
+      ],
+      "title": "Radio Monte Carlo Jazz",
+      "subtitle": "Live Web Radio · RMC Jazz",
+      "category": "jazz",
+      "kind": "radio",
+      "url": "https://icy.unitedradio.it/rmcweb019"
+    },
+    {
+      "id": "bluenote",
+      "aliases": [
+        "bop",
+        "hardbop"
+      ],
+      "title": "Blue Note Hours — Hard Bop Classics",
+      "subtitle": "Vinyl Set · Hard Bop Classics",
+      "category": "jazz",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=_nZyKKJEMUI"
+    },
+    {
+      "id": "coulou",
+      "aliases": [
+        "vinylcafe"
+      ],
+      "title": "Coulou's Vinyl Cafe — Jazz Selections",
+      "subtitle": "Vinyl DJ Set · Jazz Selections",
+      "category": "jazz",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=ziOus5-1kXw"
+    },
+    {
+      "id": "plaza",
+      "aliases": [
+        "nightwave",
+        "vaporwave"
+      ],
+      "title": "Nightwave Plaza",
+      "subtitle": "Live Web Radio · Vaporwave & Ethereal",
+      "category": "dreamwave",
+      "kind": "radio",
+      "url": "https://radio.plaza.one/mp3"
+    },
+    {
+      "id": "nightride",
+      "aliases": [
+        "chillsynth"
+      ],
+      "title": "Nightride FM Chillsynth",
+      "subtitle": "Live Web Radio · 24/7 Chillsynth",
+      "category": "dreamwave",
+      "kind": "radio",
+      "url": "https://stream.nightride.fm/chillsynth.mp3"
+    },
+    {
+      "id": "prettychill",
+      "aliases": [
+        "vinylchill"
+      ],
+      "title": "Pretty Chill — All-Vinyl Chillsynth Set",
+      "subtitle": "Vinyl DJ Set · Big Baby Profit",
+      "category": "dreamwave",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=5oTUjK6mnzA"
+    },
+    {
+      "id": "bliss",
+      "aliases": [
+        "chillwave"
+      ],
+      "title": "Bliss — Vinyl Chillsynth & Chillwave",
+      "subtitle": "Vinyl DJ Set · Big Baby Profit",
+      "category": "dreamwave",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=UjKQ0cwcr2k"
+    },
+    {
+      "id": "ambient-dreamcore",
+      "aliases": [
+        "dreamcore",
+        "oneheart"
+      ],
+      "title": "Ambient Dreamcore Mix",
+      "subtitle": "øneheart, antent, reidenshi, tilekid",
+      "category": "dreamwave",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=NaZeslUINF4"
+    },
+    {
+      "id": "laut-lofi",
+      "aliases": [
+        "lofi",
+        "radio-lofi"
+      ],
+      "title": "Lo-Fi Web Radio (Laut.fm)",
+      "subtitle": "Live Web Radio · Laut.fm",
+      "category": "lofi",
+      "kind": "radio",
+      "url": "https://stream.laut.fm/lofi"
+    },
+    {
+      "id": "nujabes",
+      "aliases": [
+        "ytmix"
+      ],
+      "title": "The Nujabes Compilation",
+      "subtitle": "Jazzhop & Chillhop Classics",
+      "category": "lofi",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=zKGrm4l62Wc"
+    },
+    {
+      "id": "jdilla",
+      "aliases": [
+        "dilla"
+      ],
+      "title": "J Dilla Instrumentals Mix (Vol. 1 & 2)",
+      "subtitle": "Boom Bap · Jedi1200",
+      "category": "lofi",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=B8FmQFpruSE"
+    },
+    {
+      "id": "mfdoom",
+      "aliases": [
+        "doom"
+      ],
+      "title": "Full Vinyl MF DOOM Tribute Set",
+      "subtitle": "Live Vinyl DJ Set",
+      "category": "lofi",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=Sxw4cltvJkE"
+    },
+    {
+      "id": "boombap",
+      "aliases": [
+        "madlib"
+      ],
+      "title": "Boom Bap Vinyl Mix",
+      "subtitle": "J Dilla, MF DOOM, Madlib, 9th Wonder",
+      "category": "lofi",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=FnvMmP-UCJc"
+    },
+    {
+      "id": "rmc-rnb",
+      "aliases": [
+        "rmcrnb",
+        "radio-rnb"
+      ],
+      "title": "Radio Monte Carlo R&B",
+      "subtitle": "Live Web Radio · 24/7",
+      "category": "rnb",
+      "kind": "radio",
+      "url": "https://icy.unitedradio.it/rmcweb003"
+    },
+    {
+      "id": "capital-funk",
+      "aliases": [
+        "funk",
+        "funkytown",
+        "capital"
+      ],
+      "title": "Radio Capital Funky Town",
+      "subtitle": "Live Web Radio · Funk, Soul & R&B",
+      "category": "rnb",
+      "kind": "radio",
+      "url": "https://4c4b867c89244861ac216426883d1ad0.msvdn.net/radiocapitalfunkytown/radiocapitalfunkytown/play1.m3u8"
+    },
+    {
+      "id": "rnb-slowjam",
+      "aliases": [
+        "slowjam",
+        "rnb2000"
+      ],
+      "title": "2000s R&B Slow Jam Mix",
+      "subtitle": "Live Mix · DJ SUMAIRU",
+      "category": "rnb",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=Pe_zj-WZotg"
+    },
+    {
+      "id": "neosoul-djni",
+      "aliases": [
+        "neosoul",
+        "badu",
+        "dangelo"
+      ],
+      "title": "Neo-Soul Classics DJ Set",
+      "subtitle": "DJ Ni · Erykah Badu, D'Angelo, Maxwell",
+      "category": "rnb",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=K6en74gqBSM"
+    },
+    {
+      "id": "soulection",
+      "aliases": [
+        "soul"
+      ],
+      "title": "Soulection Soul & Edits Takeover",
+      "subtitle": "Soul, Classics, Edits & Samples",
+      "category": "rnb",
+      "kind": "youtube",
+      "url": "https://www.youtube.com/watch?v=LcN8QINjvWM"
+    }
+  ]
+}

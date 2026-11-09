@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+helper="$HOME/.local/libexec/desktop/radio.py"
+
+case "${1:-panel}" in
+    panel|open)
+        exec desktop-shell toggle radio
+        ;;
+    video)
+        # The panel, with the picture of what plays (a YouTube item or a file).
+        exec qs ipc -p "$HOME/.config/quickshell/desktop" call desktop radioVideo
+        ;;
+    -h|--help|help)
+        cat <<'EOF'
+Usage:
+  desktop-radio                        Toggle the Quickshell Radio & Music panel
+  desktop-radio <station-id|alias>     Play a station or DJ set
+  desktop-radio play <id|url>          Play a station, a stream, a YouTube link or a file
+  desktop-radio toggle                 Play / pause the radio's own mpv
+  desktop-radio stop                   Stop playback
+  desktop-radio next | previous        Skip a playlist item
+  desktop-radio video                  Open the panel with the picture of what plays
+  desktop-radio search <query> [all|playlist|video]
+  desktop-radio list | status
+EOF
+        exit 0
+        ;;
+    *)
+        exec python3 "$helper" "$@"
+        ;;
+esac

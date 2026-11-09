@@ -963,3 +963,32 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - A second run of all four copied from the cache in about 50 ms per plugin, with no fetch or compile.
 - Unit tests (`test_plugins.py`, 36 tests): moving one pin changes only its key, the patch counts only for hyprgrass, another Hyprland or other build steps change every key, pruning keeps the current entry and the other plugins, and a cached build is copied without running anything. `check.sh` passes.
 - Not tried: a real login with the new bundle. It needs the merge; hyprpm then copies all four from this cache.
+
+## Radio panel review (#48), 2026-11-09
+
+- Found in review:
+  - `stop` and `play` sent `quit` to every `mpv-*.sock` in the runtime folder, which the global mpv script gave to every mpv, so a station closed any other mpv;
+  - `mpv_ipc` sent each command to every socket, because it only returned on an error;
+  - a URL from a result or the panel reached mpv without `--` or a scheme check.
+- Reworked:
+  - one socket, with replies matched by `request_id`;
+  - streams, YouTube links and files only, after `--`;
+  - the MPRIS bridge and `shell/.config/mpv/scripts/desktop-mpris.lua` replaced by the `mpv-mpris` package (Fedora `fedora`, Arch `extra`), and `mpv`, `mpv-mpris`, `yt-dlp` (and `ytfzf` on Arch) added to the media profile;
+  - the stations moved to `shell/.local/share/desktop/radio/stations.json`, with the user's own in `~/.config/desktop/radio.json`;
+  - English-only `.desktop` entry, errors and kind labels through i18n.
+- `test_radio.py` (22 tests): the parsing tests of the PR, plus:
+  - a stand-in mpv on a real socket: toggle, next and stop reach only the radio's socket, and another mpv socket gets nothing;
+  - the live title, pause and video;
+  - options and other schemes refused, and `--` before the URL;
+  - the user's stations replace or add, and saving keeps them.
+- Not tried on screen: mpv is not installed here (the media profile adds it).
+- Asked by the user after trying it (2026-11-09):
+  - **Video in the panel**, via Qt Multimedia (`panels/radio/RadioVideo.qml`, loaded only with video on).
+    - The first version paused mpv and played one stream with sound and picture. It failed: YouTube no longer serves such a stream (`yt-dlp -F` on a DJ set lists audio-only and video-only formats only).
+    - Now the panel plays the picture alone (`radio.py video`: H.264 up to 720p) muted, and follows mpv's position and pause, which keeps the sound.
+    - Checked offscreen: the 720p video-only stream loads in Qt Multimedia, seeks to 10 minutes and buffers. `radio.py video` on the playing DJ set gave the stream and the position, with mpv still playing.
+    - mpv now always plays sound only. The earlier mpv video window never showed a picture: started with `--no-video`, mpv's yt-dlp hook fetched the audio alone.
+  - **Layout:** header (title, video, close), content (list or video), controls always at the bottom, footer.
+  - Tests: `test_radio.py`, 28 tests.
+    - On screen (2026-11-09, by Claude at the user's request): Blue Note Hours, then `desktop-radio video` (new: `radioVideo` over IPC). The 720p picture showed in the panel with the controls below, and the bar showed the track through mpv-mpris. Over two seconds the frames stayed identical with mpv paused (`desktop-radio toggle`) and changed while it played. A first `desktop-radio video` came before the `Radio` singleton had read the state: `requestVideo()` now waits up to 5 s for it.
+
