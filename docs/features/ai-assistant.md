@@ -4,6 +4,8 @@
 
 A coding agent (Claude Code, Codex, Antigravity CLI or one you declare) stays a real terminal app, and the desktop wraps it: a drop-down console, a state icon in the bar, notifications and, for Claude Code, its voice, permission prompts and usage meters. You choose which agents to install and the primary one in **Settings → Assistant** ([below](#coding-agents)). With herdr installed, the console is the Herdr app and the desktop follows any coding agent ([below](#with-herdr-any-coding-agent)).
 
+All of it comes with the installer's `assistant` profile, the AI Assistant. Without it, the shell hides the bar icon, the Assistant section of Settings, the Assistant and "Ask about a screen area" actions of the assist button, and the launcher entry, and Hyprland does not bind `Super + A`, `Super + Shift + A` or `Super + Ctrl + A` (the installed units in `~/.local/state/dotfiles/units`, see [plugins](../guide/plugins.md#installation)). An install made before that file has none, and shows everything.
+
 ## Using it
 
 `Super + A` drops the Claude Code console down from the bar (details below); a click or tap outside, a workspace change or `Super + A` again hides it, and Claude keeps running. `Super + Shift + A` moves the active window into the console or back out. It is not in the dock: the Claude icon in the bar opens a panel with what Claude is doing, the 5-hour and 7-day usage of the subscription with their reset times, and Open / Hide console. Its dot shows Claude working (pulsing), waiting for a permission (red) or finished while the console was hidden; in those cases a notification with **Open console** arrives too.

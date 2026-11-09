@@ -349,7 +349,7 @@ PanelWindow {
         // The assistant: a dot while its agent works (accent), asks (danger) or finished unseen; the panel on click.
         BarButton {
             id: agentButton
-            visible: Agent.available
+            visible: Agent.available && Installed.has("assistant")
             iconName: "assistant"
             tooltip: Agent.title
             Accessible.name: Agent.title

@@ -211,6 +211,7 @@ Settings → System → Profiles (`desktop-shell toggle settings system/profiles
 - **Install** previews `install-desktop.py dry-run --profiles` with that profile, and its default parts, on top of the recorded ones.
 - **Remove**, for a profile the installer recorded, previews `dry-run --remove NAME`; see [its removal](#removing-profiles).
 
+- **What is there without a record** (Herdr from its own installer, say) is kept on: an install from here records it, so nothing that needs it is hidden afterwards.
 - **Parts**: the arrow beside a profile with parts shows them, one switch each. **Apply changes** previews what the switches changed: the parts switched on are added, those switched off removed (`profiles.py run`, the installer for one, then the other).
 
 Nothing changes before **Apply**. Apply runs the same command with `apply` in the background (`jobs.py`), behind one password or fingerprint prompt through the [root broker](../development/architecture.md#root-for-operations-from-settings). The tab shows the progress, the result and, while it runs or when it failed, the end of the log. A notification gives the result, and the list is read again. Removing `plugins` waits for a session without Hyprland, as the installer requires, and the tab says so before any prompt. `core` has neither button: it is the desktop itself. **Open the guided installer** opens its menu in a terminal, for the rest: the first install, removing the desktop, firmware.

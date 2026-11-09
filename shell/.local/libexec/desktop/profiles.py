@@ -74,13 +74,24 @@ def checked(installer, text):
     return names
 
 
+def present_units(tui):
+    # Units all there on this system without a record of them (Herdr from its own installer, say): an install from
+    # here keeps them, as the TUI starts them on, so the units file never leaves out what is installed.
+    installer = tui.installer
+    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+        plan = installer.load_plan(('core',))
+        plan.distro.remember_answers()
+        statuses = {name: tui.profile_status(plan, name) for name in installer.units(plan.table)}
+    return {name for name in statuses if name != 'core' and tui.unit_installed(statuses, name)}
+
+
 def install_arguments(tui, names):
     installer = tui.installer
     with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
         recorded = tui.recorded_profiles()
     # A profile added here comes with its default parts.
     added = {part for name in names if name not in recorded for part in installer.default_parts(name)}
-    return ['--profiles', ','.join(installer.normalized(set(recorded) | {'core'} | set(names) | added))]
+    return ['--profiles', ','.join(installer.normalized(set(recorded) | present_units(tui) | {'core'} | set(names) | added))]
 
 
 def plan(action, first, second=''):

@@ -13,7 +13,12 @@ Overlay {
     // Entry whose pin menu is open; null when closed.
     property var menuEntry: null
     property point menuOrigin: Qt.point(0, 0)
-    readonly property var appResults: DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (e.name + " " + e.genericName + " " + e.keywords.join(" ")).toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name))
+    // Entries of the desktop that need a profile: shown only with it installed (services/Installed.qml).
+    readonly property var appUnits: ({
+            "desktop-ai": "assistant",
+            "desktop-radio": "radio"
+        })
+    readonly property var appResults: DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (!appUnits[e.id] || Installed.has(appUnits[e.id])) && (e.name + " " + e.genericName + " " + e.keywords.join(" ")).toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name))
     // A calculation first (Enter copies it), then apps, then files (Enter opens one).
     // Each row has a key, so results that arrive later (files, a calculation) are inserted around the selected
     // row instead of rebuilding the list, which moved the selection to the first row.

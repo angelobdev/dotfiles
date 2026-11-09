@@ -25,7 +25,8 @@ Singleton {
             },
             assistant: {
                 icon: "assistant",
-                label: I18n.tr("assist.actions.assistant")
+                label: I18n.tr("assist.actions.assistant"),
+                available: Installed.has("assistant")
             },
             window: {
                 icon: "window",
@@ -151,6 +152,7 @@ Singleton {
             areaAsk: {
                 icon: "assistant",
                 label: I18n.tr("assist.actions.areaAsk"),
+                available: Installed.has("assistant"),
                 exec: [Quickshell.env("HOME") + "/.local/bin/desktop-area", "ask"]
             },
             emoji: {

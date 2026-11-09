@@ -1030,3 +1030,12 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
   - `check.sh` passes.
 - Not tried on screen: this machine has no units file until the installer next saves its record.
 
+## The AI Assistant and the radio hidden without their profiles (#49, step 3), 2026-11-10
+
+- Units:
+  - `assistant`: Super + A, Super + Shift + A and Super + Ctrl + A (`binds.lua`), the bar icon, the Assistant section of the Settings sidebar (the page stays, for links to it), the Assistant and "Ask about a screen area" actions of the assist button, and the `desktop-ai` launcher entry.
+  - `radio`: Super + M, the Control Center button and the `desktop-radio` launcher entry.
+- Settings installs keep the units that are there without a record (`present_units`, as the TUI's preselection does). Herdr installed by hand on this machine therefore gets recorded, and the units file never drops the AI block.
+- Tests: `test_profiles` (what is present is kept). `check.sh` passes, including `--verify-config` with the guarded binds.
+- Not tried on screen: with no units file here, everything shows.
+

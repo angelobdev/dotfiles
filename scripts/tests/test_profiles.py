@@ -39,6 +39,10 @@ class ProfilesTests(unittest.TestCase):
         patcher = mock.patch('profiles.tr', side_effect=lambda key, arguments=None: key + (':' + ','.join(arguments) if arguments else ''))
         patcher.start()
         self.addCleanup(patcher.stop)
+        # Nothing of this system's own: each test says what is there.
+        self.present = mock.patch.object(profiles, 'present_units', return_value=set())
+        self.present.start()
+        self.addCleanup(self.present.stop)
 
     def listing(self, statuses, **kwargs):
         tui, patches = screens(statuses, **kwargs)
@@ -94,6 +98,11 @@ class ProfilesTests(unittest.TestCase):
         self.assertEqual(value['blocked'], '')
         # A part alone: with its profile, and nothing else of it.
         self.assertEqual(self.plan('install', 'apps.vscode')['apply'][-1], 'core,apps,apps.vscode,gaming')
+
+    def test_an_install_keeps_what_is_there_without_a_record(self):
+        # Herdr from its own installer: an install from here records it, so the units file keeps the assistant.
+        with mock.patch.object(profiles, 'present_units', return_value={'assistant'}):
+            self.assertEqual(self.plan('install', 'radio', recorded=('core',))['apply'][-1], 'core,assistant,radio')
 
     def test_remove_undoes_a_profile_or_a_part(self):
         value = self.plan('remove', 'gaming.steam-hidpi')
