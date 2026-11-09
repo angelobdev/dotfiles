@@ -1,8 +1,6 @@
 [Desktop Entry]
 Name=Radio & Music
-Name[it]=Radio e musica
 Comment=Web radio, vinyl DJ sets, and YouTube playlist search
-Comment[it]=Web radio, set in vinile e ricerca playlist YouTube
 Exec=desktop-radio
 TryExec=desktop-radio
 Icon=multimedia-player

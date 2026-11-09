@@ -4,8 +4,12 @@ import Quickshell
 import Quickshell.Io
 import ".."
 
+// Radio & music (radio.py): the stations and categories, the saved items, YouTube search, and the radio's own mpv.
+// The state file follows play and stop; while something plays (or the panel is open), status reads the title,
+// pause and video from mpv itself. mpv-mpris puts that mpv on MPRIS for the bar, the lock screen and the media keys.
 Singleton {
     id: root
+    property var categories: []
     property var stations: []
     property var saved: []
     property var results: []
@@ -171,6 +175,8 @@ Singleton {
                 return;
             try {
                 const parsed = JSON.parse(listOut.text);
+                if (Array.isArray(parsed.categories))
+                    root.categories = parsed.categories.filter(name => typeof name === "string");
                 if (Array.isArray(parsed.stations))
                     root.stations = parsed.stations;
                 if (Array.isArray(parsed.saved))
@@ -232,10 +238,19 @@ Singleton {
         }
     }
 
+    // The title of a stream changes with each track: read it from mpv while it plays.
+    Process {
+        id: statusProc
+        command: ["python3", root.helper, "status"]
+        stdout: StdioCollector {
+            onStreamFinished: root.applyStateText(text)
+        }
+    }
     Timer {
-        interval: 2000
-        running: ShellState.panel === "radio" || root.active
+        interval: 3000
+        running: root.active && ShellState.panel === "radio"
         repeat: true
-        onTriggered: stateFile.reload()
+        onTriggered: if (!statusProc.running)
+            statusProc.running = true
     }
 }

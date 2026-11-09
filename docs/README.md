@@ -16,6 +16,7 @@
 - [Tablet and touch](features/tablet-and-touch.md)
 - [On-screen keyboard](features/on-screen-keyboard.md)
 - [Notifications](features/notifications.md)
+- [Radio and music](features/radio.md)
 - [Theming](features/theming.md)
 - [AI assistant](features/ai-assistant.md)
 - [Terminal shell](features/shell.md)

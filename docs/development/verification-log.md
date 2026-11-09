@@ -963,3 +963,22 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - A second run of all four copied from the cache in about 50 ms per plugin, with no fetch or compile.
 - Unit tests (`test_plugins.py`, 36 tests): moving one pin changes only its key, the patch counts only for hyprgrass, another Hyprland or other build steps change every key, pruning keeps the current entry and the other plugins, and a cached build is copied without running anything. `check.sh` passes.
 - Not tried: a real login with the new bundle. It needs the merge; hyprpm then copies all four from this cache.
+
+## Radio panel review (#48), 2026-11-09
+
+- Found in review:
+  - `stop` and `play` sent `quit` to every `mpv-*.sock` in the runtime folder, which the global mpv script gave to every mpv, so a station closed any other mpv;
+  - `mpv_ipc` sent each command to every socket, because it only returned on an error;
+  - a URL from a result or the panel reached mpv without `--` or a scheme check.
+- Reworked:
+  - one socket, with replies matched by `request_id`;
+  - streams, YouTube links and files only, after `--`;
+  - the MPRIS bridge and `shell/.config/mpv/scripts/desktop-mpris.lua` replaced by the `mpv-mpris` package (Fedora `fedora`, Arch `extra`), and `mpv`, `mpv-mpris`, `yt-dlp` (and `ytfzf` on Arch) added to the media profile;
+  - the stations moved to `shell/.local/share/desktop/radio/stations.json`, with the user's own in `~/.config/desktop/radio.json`;
+  - English-only `.desktop` entry, errors and kind labels through i18n.
+- `test_radio.py` (22 tests): the parsing tests of the PR, plus:
+  - a stand-in mpv on a real socket: toggle, next and stop reach only the radio's socket, and another mpv socket gets nothing;
+  - the live title, pause and video;
+  - options and other schemes refused, and `--` before the URL;
+  - the user's stations replace or add, and saving keeps them.
+- Not tried on screen: mpv is not installed here (the media profile adds it).

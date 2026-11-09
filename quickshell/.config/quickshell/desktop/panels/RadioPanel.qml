@@ -6,11 +6,32 @@ import ".."
 import "../components"
 import "../services"
 
+// Radio & music (Super + M): the stations by category (from the stations file, services/Radio.qml), the saved items,
+// YouTube search, and what plays now, with its controls.
 Overlay {
     id: root
     panelName: "radio"
     dialog: true
     property string category: "all"
+    // The shipped categories have their words; one of your own shows its name.
+    readonly property var categoryKeys: ({
+            jazz: "radio.categories.jazz",
+            dreamwave: "radio.categories.dreamwave",
+            lofi: "radio.categories.lofi",
+            rnb: "radio.categories.rnb"
+        })
+    function categoryLabel(name) {
+        return categoryKeys[name] ? I18n.tr(categoryKeys[name]) : name.charAt(0).toUpperCase() + name.slice(1);
+    }
+    readonly property var kindKeys: ({
+            radio: "radio.kinds.radio",
+            youtube: "radio.kinds.youtube",
+            playlist: "radio.kinds.playlist",
+            file: "radio.kinds.file"
+        })
+    function detail(item) {
+        return item.subtitle || (kindKeys[item.kind] ? I18n.tr(kindKeys[item.kind]) : "");
+    }
 
     readonly property var combinedStations: {
         const list = Radio.stations.slice();
@@ -187,15 +208,27 @@ Overlay {
                 Layout.fillWidth: true
                 current: root.category
                 options: [
-                    { name: "all", label: I18n.tr("radio.categories.all") },
-                    { name: "radio", label: I18n.tr("radio.categories.webRadio") },
-                    { name: "jazz", label: I18n.tr("radio.categories.jazz") },
-                    { name: "dreamwave", label: I18n.tr("radio.categories.dreamwave") },
-                    { name: "lofi", label: I18n.tr("radio.categories.lofi") },
-                    { name: "rnb", label: I18n.tr("radio.categories.rnb") },
-                    { name: "saved", label: I18n.tr("radio.categories.saved") },
-                    { name: "youtube", label: I18n.tr("radio.categories.youtube") }
-                ]
+                    {
+                        name: "all",
+                        label: I18n.tr("radio.categories.all")
+                    },
+                    {
+                        name: "radio",
+                        label: I18n.tr("radio.categories.webRadio")
+                    }
+                ].concat(Radio.categories.map(name => ({
+                            name: name,
+                            label: root.categoryLabel(name)
+                        })), [
+                    {
+                        name: "saved",
+                        label: I18n.tr("radio.categories.saved")
+                    },
+                    {
+                        name: "youtube",
+                        label: I18n.tr("radio.categories.youtube")
+                    }
+                ])
                 onChosen: name => {
                     root.category = name;
                     stationsList.currentIndex = 0;
@@ -212,9 +245,18 @@ Overlay {
                     Layout.fillWidth: true
                     current: Radio.searchType
                     options: [
-                        { name: "all", label: I18n.tr("radio.searchModes.all") },
-                        { name: "playlist", label: I18n.tr("radio.searchModes.playlists") },
-                        { name: "video", label: I18n.tr("radio.searchModes.videos") }
+                        {
+                            name: "all",
+                            label: I18n.tr("radio.searchModes.all")
+                        },
+                        {
+                            name: "playlist",
+                            label: I18n.tr("radio.searchModes.playlists")
+                        },
+                        {
+                            name: "video",
+                            label: I18n.tr("radio.searchModes.videos")
+                        }
                     ]
                     onChosen: name => {
                         Radio.searchType = name;
@@ -251,8 +293,8 @@ Overlay {
                         implicitHeight: 48
                         alignLeft: true
                         highlighted: stationsList.currentIndex === index || delegateRow.isCurrent
-                        iconName: delegateRow.isCurrent ? (Radio.playing ? "volume-high" : "pause") : modelData.kind === "radio" ? "wifi" : modelData.kind === "playlist" ? "folder" : "play"
-                        text: modelData.subtitle ? modelData.title + "  —  " + modelData.subtitle : modelData.title
+                        iconName: delegateRow.isCurrent ? (Radio.playing ? "volume-high" : "pause") : modelData.kind === "radio" ? "hotspot" : modelData.kind === "playlist" ? "folder" : "play"
+                        text: root.detail(modelData) ? modelData.title + "  —  " + root.detail(modelData) : modelData.title
                         onClicked: root.activateItem(modelData)
                     }
                     PanelIconButton {

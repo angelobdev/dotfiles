@@ -66,7 +66,7 @@ ControlTile {
                 }
             }
             CompactIconButton {
-                iconName: "wifi"
+                iconName: "hotspot"
                 tooltip: I18n.tr("radio.title")
                 onClicked: ShellState.toggle("radio")
             }

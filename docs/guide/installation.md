@@ -49,7 +49,7 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 | `apps` | Zen Browser, 1Password, VS Code, Neovim, `gh`, `glab`, `uv`, `gcc` and a few command-line tools |
 | `herdr` | The [Herdr app and herdr-core](../features/ai-assistant.md#with-herdr-any-coding-agent), the assistant console for any coding agent: their release archives (pinned version and sha256, x86_64 or aarch64) unpacked as you into `~/.local`, where herdr's own installer puts them, with the `hc` link and the launcher entry. Once there they update themselves (the app, and `hc update`), so the installer never installs them again |
 | `containers` | Docker (`moby-engine`, `docker-compose`, the `docker` group) and Tailscale, with its tray icon |
-| `media` | Loupe, Papers and Showtime for images, PDFs and videos |
+| `media` | Loupe, Papers and Showtime for images, PDFs and videos; mpv (on MPRIS through mpv-mpris) and yt-dlp for the [Radio panel](../features/radio.md), and ytfzf on Arch |
 | `gaming` | Steam, gamescope and the 32-bit drivers games need; see [Gaming](#gaming) |
 | `steam-hidpi` | The Steam launcher that scales the client for the monitor it opens on (the optional `steam-hidpi` Stow package) |
 | `codecs` | The RPM Fusion codecs: `ffmpeg` and `intel-media-driver` replace `ffmpeg-free` and `libva-intel-media-driver`, plus the GStreamer freeworld plugins, libav, OpenH264, HEIF and aptX |
