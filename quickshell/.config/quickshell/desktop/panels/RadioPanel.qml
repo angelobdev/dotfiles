@@ -1,0 +1,292 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Quickshell
+import ".."
+import "../components"
+import "../services"
+
+Overlay {
+    id: root
+    panelName: "radio"
+    dialog: true
+    property string category: "all"
+
+    readonly property var combinedStations: {
+        const list = Radio.stations.slice();
+        for (const item of Radio.saved) {
+            const itemUrl = (item.url || "").replace(/\/+$/, "");
+            if (!list.some(s => (s.url || "").replace(/\/+$/, "") === itemUrl))
+                list.push(item);
+        }
+        return list;
+    }
+
+    readonly property var shown: {
+        if (category === "youtube")
+            return Radio.results;
+        const q = search.text.trim().toLowerCase();
+        const base = category === "saved" ? Radio.saved : category === "all" ? combinedStations : category === "radio" ? combinedStations.filter(s => s.kind === "radio") : Radio.stations.filter(s => s.category === category);
+        if (!q)
+            return base;
+        return base.filter(s => (s.title || "").toLowerCase().includes(q) || (s.subtitle || "").toLowerCase().includes(q) || (s.category || "").toLowerCase().includes(q));
+    }
+
+    onOpened: {
+        Radio.refresh();
+        if (!Tablet.active)
+            search.forceActiveFocus();
+    }
+
+    function activateItem(item) {
+        if (!item)
+            return;
+        const normRadio = (Radio.url || "").replace(/\/+$/, "");
+        const normItem = (item.url || "").replace(/\/+$/, "");
+        if (Radio.active && ((normRadio !== "" && normRadio === normItem) || (item.id && Radio.stationId === item.id)))
+            Radio.togglePlaying();
+        else
+            Radio.play(item);
+    }
+
+    function runYoutubeSearch() {
+        const q = search.text.trim();
+        if (!q)
+            return;
+        category = "youtube";
+        Radio.search(q, Radio.searchType);
+    }
+
+    Card {
+        anchors.centerIn: parent
+        width: Math.min(680, parent.width - 32)
+        height: Math.min(620, parent.height - Theme.panelClearance)
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: Theme.dialogPadding
+            spacing: 12
+
+            PanelHeader {
+                title: I18n.tr("radio.title")
+                Layout.fillWidth: true
+                PanelIconButton {
+                    iconName: "monitor"
+                    highlighted: Radio.video
+                    tooltip: Radio.video ? I18n.tr("radio.videoOff") : I18n.tr("radio.videoOn")
+                    onClicked: Radio.toggleVideo()
+                }
+                PanelIconButton {
+                    visible: Radio.active
+                    iconName: Radio.playing ? "pause" : "play"
+                    tooltip: Radio.playing ? I18n.tr("media.pause") : I18n.tr("media.play")
+                    onClicked: Radio.togglePlaying()
+                }
+                PanelIconButton {
+                    visible: Radio.active
+                    iconName: "stop"
+                    tooltip: I18n.tr("media.stop")
+                    onClicked: Radio.stop()
+                }
+            }
+
+            Rectangle {
+                visible: Radio.active
+                Layout.fillWidth: true
+                implicitHeight: nowPlayingRow.implicitHeight + 16
+                radius: Theme.corner(12)
+                color: Theme.tile
+                RowLayout {
+                    id: nowPlayingRow
+                    anchors.fill: parent
+                    anchors.margins: 10
+                    spacing: 10
+                    Icon {
+                        name: "volume-high"
+                        color: Theme.accent
+                    }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 2
+                        Text {
+                            Layout.fillWidth: true
+                            text: Radio.title || I18n.tr("radio.title")
+                            color: Theme.text
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(13)
+                            font.weight: Font.DemiBold
+                            elide: Text.ElideRight
+                            textFormat: Text.PlainText
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            visible: text !== ""
+                            text: Radio.stationTitle && Radio.stationTitle !== Radio.title ? Radio.stationTitle + (Radio.subtitle ? " · " + Radio.subtitle : "") : Radio.subtitle
+                            color: Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(11)
+                            elide: Text.ElideRight
+                            textFormat: Text.PlainText
+                        }
+                    }
+                    PanelIconButton {
+                        iconName: "previous"
+                        tooltip: I18n.tr("media.previous")
+                        onClicked: Radio.previous()
+                    }
+                    PanelIconButton {
+                        iconName: Radio.playing ? "pause" : "play"
+                        tooltip: Radio.playing ? I18n.tr("media.pause") : I18n.tr("media.play")
+                        onClicked: Radio.togglePlaying()
+                    }
+                    PanelIconButton {
+                        iconName: "next"
+                        tooltip: I18n.tr("media.next")
+                        onClicked: Radio.next()
+                    }
+                    PanelIconButton {
+                        iconName: "stop"
+                        tooltip: I18n.tr("media.stop")
+                        onClicked: Radio.stop()
+                    }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                InputField {
+                    id: search
+                    Layout.fillWidth: true
+                    placeholderText: I18n.tr("radio.searchPlaceholder")
+                    onTextChanged: stationsList.currentIndex = 0
+                    Keys.onDownPressed: stationsList.currentIndex = Math.min(stationsList.count - 1, stationsList.currentIndex + 1)
+                    Keys.onUpPressed: stationsList.currentIndex = Math.max(0, stationsList.currentIndex - 1)
+                    onAccepted: {
+                        const q = search.text.trim();
+                        const current = root.shown[stationsList.currentIndex] || (root.shown.length > 0 ? root.shown[0] : null);
+                        if (root.shown.length === 0 && q !== "") {
+                            root.runYoutubeSearch();
+                        } else if (root.category === "youtube" && q !== "" && q !== Radio.lastQuery) {
+                            root.runYoutubeSearch();
+                        } else if (current) {
+                            root.activateItem(current);
+                        } else if (q !== "") {
+                            root.runYoutubeSearch();
+                        }
+                    }
+                }
+                ActionButton {
+                    iconName: "zoom"
+                    text: I18n.tr("radio.searchYoutube")
+                    enabled: !Radio.searching && search.text.trim().length > 0
+                    onClicked: root.runYoutubeSearch()
+                }
+            }
+
+            ChoiceChips {
+                Layout.fillWidth: true
+                current: root.category
+                options: [
+                    { name: "all", label: I18n.tr("radio.categories.all") },
+                    { name: "radio", label: I18n.tr("radio.categories.webRadio") },
+                    { name: "jazz", label: I18n.tr("radio.categories.jazz") },
+                    { name: "dreamwave", label: I18n.tr("radio.categories.dreamwave") },
+                    { name: "lofi", label: I18n.tr("radio.categories.lofi") },
+                    { name: "rnb", label: I18n.tr("radio.categories.rnb") },
+                    { name: "saved", label: I18n.tr("radio.categories.saved") },
+                    { name: "youtube", label: I18n.tr("radio.categories.youtube") }
+                ]
+                onChosen: name => {
+                    root.category = name;
+                    stationsList.currentIndex = 0;
+                    if (name === "youtube" && Radio.results.length === 0 && search.text.trim() !== "")
+                        root.runYoutubeSearch();
+                }
+            }
+
+            RowLayout {
+                visible: root.category === "youtube"
+                Layout.fillWidth: true
+                spacing: 8
+                ChoiceChips {
+                    Layout.fillWidth: true
+                    current: Radio.searchType
+                    options: [
+                        { name: "all", label: I18n.tr("radio.searchModes.all") },
+                        { name: "playlist", label: I18n.tr("radio.searchModes.playlists") },
+                        { name: "video", label: I18n.tr("radio.searchModes.videos") }
+                    ]
+                    onChosen: name => {
+                        Radio.searchType = name;
+                        const q = search.text.trim() || Radio.lastQuery;
+                        if (q)
+                            Radio.search(q, name);
+                    }
+                }
+            }
+
+            ListView {
+                id: stationsList
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                clip: true
+                spacing: 4
+                model: ScriptModel {
+                    values: root.shown
+                    objectProp: "url"
+                }
+                delegate: RowLayout {
+                    id: delegateRow
+                    required property var modelData
+                    required property int index
+                    width: stationsList.width
+                    spacing: 6
+                    readonly property string normRadioUrl: (Radio.url || "").replace(/\/+$/, "")
+                    readonly property string normItemUrl: (modelData.url || "").replace(/\/+$/, "")
+                    readonly property bool isCurrent: Radio.active && ((normRadioUrl !== "" && normRadioUrl === normItemUrl) || (modelData.id && Radio.stationId === modelData.id))
+                    readonly property bool savedEntry: Boolean(modelData.saved) || Radio.isSaved(modelData.url)
+                    ActionButton {
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 0
+                        implicitHeight: 48
+                        alignLeft: true
+                        highlighted: stationsList.currentIndex === index || delegateRow.isCurrent
+                        iconName: delegateRow.isCurrent ? (Radio.playing ? "volume-high" : "pause") : modelData.kind === "radio" ? "wifi" : modelData.kind === "playlist" ? "folder" : "play"
+                        text: modelData.subtitle ? modelData.title + "  —  " + modelData.subtitle : modelData.title
+                        onClicked: root.activateItem(modelData)
+                    }
+                    PanelIconButton {
+                        visible: root.category === "youtube" || root.category === "saved" || delegateRow.savedEntry
+                        iconName: delegateRow.savedEntry ? "trash" : "pin"
+                        tooltip: delegateRow.savedEntry ? I18n.tr("radio.removeSaved") : I18n.tr("radio.saveItem")
+                        onClicked: {
+                            if (delegateRow.savedEntry)
+                                Radio.removeItem(modelData.url);
+                            else
+                                Radio.saveItem(modelData);
+                        }
+                    }
+                }
+                ScrollBar.vertical: ScrollBar {}
+                Text {
+                    anchors.centerIn: parent
+                    visible: stationsList.count === 0
+                    text: Radio.searching ? I18n.tr("radio.searching") : root.category === "youtube" ? I18n.tr("radio.youtubeEmpty") : root.category === "saved" ? I18n.tr("radio.savedEmpty") : I18n.tr("radio.empty")
+                    color: Theme.muted
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(13)
+                }
+            }
+
+            Text {
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+                text: Radio.error || (Radio.searching ? I18n.tr("radio.searching") : I18n.tr("radio.hint"))
+                color: Radio.error ? Theme.danger : Theme.muted
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(12)
+                textFormat: Text.PlainText
+            }
+        }
+    }
+}

@@ -365,6 +365,10 @@ ShellRoot {
             DisplayPanel {}
         }
         LazyPanel {
+            name: "radio"
+            RadioPanel {}
+        }
+        LazyPanel {
             name: "notifications"
             NotificationCenter {}
         }

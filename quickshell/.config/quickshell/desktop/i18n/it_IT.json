@@ -1329,5 +1329,34 @@
       "unavailable": "Impossibile raggiungere lo store.",
       "usage": "Uso: store.py search TIPO [RICERCA] [PAGINA] | install TIPO ID FILE | remove CARTELLA... | installed"
     }
+  },
+  "radio": {
+    "title": "Radio e musica",
+    "searchPlaceholder": "Filtra le stazioni o cerca mix e playlist su YouTube…",
+    "searchYoutube": "YouTube",
+    "searching": "Ricerca su YouTube con ytfzf…",
+    "empty": "Nessuna stazione trovata",
+    "savedEmpty": "Nessuna stazione o playlist salvata. Fissa un risultato YouTube per salvarlo qui.",
+    "youtubeEmpty": "Scrivi una ricerca e premi Invio o clicca YouTube per cercare mix e playlist.",
+    "hint": "Su / Giù per selezionare · Invio per riprodurre o cercare su YouTube · Super + M",
+    "videoOn": "Mostra finestra video",
+    "videoOff": "Solo audio (nascondi video)",
+    "saveItem": "Salva nella libreria",
+    "removeSaved": "Rimuovi dai salvati",
+    "categories": {
+      "all": "Tutte",
+      "webRadio": "Web radio",
+      "jazz": "Jazz e vinili",
+      "dreamwave": "Dreamwave",
+      "lofi": "Lo-Fi e Boom Bap",
+      "rnb": "R&B e Funk",
+      "saved": "Salvate",
+      "youtube": "YouTube"
+    },
+    "searchModes": {
+      "all": "Tutti i risultati",
+      "playlists": "Playlist",
+      "videos": "Mix e video"
+    }
   }
 }

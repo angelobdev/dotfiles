@@ -33,3 +33,4 @@ singleton Store 1.0 Store.qml
 CoalescedProcess 1.0 CoalescedProcess.qml
 Backoff 1.0 Backoff.qml
 singleton HyprSettings 1.0 HyprSettings.qml
+singleton Radio 1.0 Radio.qml

@@ -47,6 +47,7 @@ var bindKeys = {
     "Color picker": "colorPicker.title",
     "Emoji": "emoji.title",
     "Displays": "displays.title",
+    "Radio & music": "radio.title",
     "Zoom in": "zoom.in",
     "Zoom out": "zoom.out",
     "Reset zoom": "zoom.reset",

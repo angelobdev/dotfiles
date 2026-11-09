@@ -120,6 +120,7 @@ end
 -- System (Extensions)
 bind("SUPER + CTRL + C", hl.dsp.exec_cmd(shell .. " toggle clipboard"), "Clipboard · History")
 bind("SUPER + CTRL + R", hl.dsp.exec_cmd(shell .. " toggle recording"), "Screen recording")
+bind("SUPER + M", hl.dsp.exec_cmd(shell .. " toggle radio"), "Radio & music")
 
 -- Directional Binds
 for _, direction in ipairs({ "left", "right", "up", "down" }) do

@@ -37,7 +37,7 @@ Singleton {
     }
     // Every panel: shell.qml has a LazyPanel for each and desktop-shell toggle accepts the same names
     // (scripts/tests/test_panels.py keeps the three in step).
-    readonly property var panels: ["launcher", "controls", "network", "bluetooth", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "settings", "clipboard", "recording", "power", "agent", "updates", "emoji", "displays"]
+    readonly property var panels: ["launcher", "controls", "network", "bluetooth", "audio", "battery", "notifications", "calendar", "hints", "wallpaper", "settings", "clipboard", "recording", "power", "agent", "updates", "emoji", "displays", "radio"]
     // Former panels that are now a section of another: their names keep working (shortcuts, desktop-shell
     // toggle, assist actions) and open that section.
     readonly property var aliases: ({

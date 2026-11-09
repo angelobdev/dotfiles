@@ -58,6 +58,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Ctrl + F` | Focus session on/off (Do Not Disturb for 25 minutes) |
 | `Super + Ctrl + C` | Clipboard / history |
 | `Super + Ctrl + R` | Screen recording |
+| `Super + M` | Radio & music: curated web radio stations (Jazz, Dreamwave, Lo-Fi, R&B & Funk), vinyl DJ sets, and YouTube mix/playlist search via `ytfzf` (`desktop-radio`) |
 | `Super + D` | Show the dock with keyboard navigation / hide it |
 | `Super + Alt + 1`…`9` | Open or focus the Nth dock item |
 | `Super + L` / `XF86Sleep` | Lock / suspend with lock (the desktop holds logind's Sleep-key inhibitor, so the key suspends once) |

@@ -66,6 +66,11 @@ ControlTile {
                 }
             }
             CompactIconButton {
+                iconName: "wifi"
+                tooltip: I18n.tr("radio.title")
+                onClicked: ShellState.toggle("radio")
+            }
+            CompactIconButton {
                 visible: Media.players.length > 1
                 iconName: root.expanded ? "chevron-up" : "chevron-down"
                 tooltip: I18n.tr("media.choosePlayer")
