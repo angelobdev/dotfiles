@@ -8,7 +8,7 @@ The `media` profile installs what it needs: `mpv`, `mpv-mpris` and `yt-dlp`, plu
 
 - **Categories:** **All**, **Web radio** (streams only), one chip per category of the stations, **Saved** and **YouTube**. The text field filters the stations as you type.
 - **Playing:** Enter or a click plays the highlighted item. On the item that is playing, it pauses or resumes. The box at the top shows the title (the stream's track title, read from mpv while the panel is open), the station, and previous, play/pause, next and stop.
-- **Video:** the monitor button in the header turns mpv's video window on or off for what plays now and what comes next.
+- **Video:** the monitor button in the header turns mpv's video window on or off, for what plays now and what comes next. Without video, mpv fetches only the audio of a YouTube item. Turning video on then starts that item again with its picture: a video resumes where it was, and a playlist at the same item, from its beginning. A web radio has no video, so the button is off while one plays.
 - **YouTube:** **YouTube**, or Enter when no station matches, searches YouTube with `ytfzf`, or with `yt-dlp` when `ytfzf` finds nothing or is missing. The chips under it pick all results, playlists only, or mixes and videos.
 - **Saved:** the pin on a result saves it; the trash icon removes a saved item.
 

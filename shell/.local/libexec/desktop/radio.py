@@ -299,6 +299,27 @@ def live_state():
     return state
 
 
+def has_video_track():
+    tracks = mpv_property('track-list')
+    return isinstance(tracks, list) and any(isinstance(track, dict) and track.get('type') == 'video' and not track.get('albumart')
+                                            for track in tracks)
+
+
+def restart_with_video(state):
+    # A web radio has no video at all: nothing to restart for.
+    if state.get('kind') not in ('youtube', 'playlist', 'file'):
+        return state
+    position = mpv_property('time-pos')
+    index = mpv_property('playlist-pos')
+    item = {'id': state.get('stationId', ''), 'title': state.get('stationTitle') or state.get('title'),
+            'subtitle': state.get('subtitle', ''), 'category': state.get('category', ''), 'kind': state.get('kind'),
+            'url': state.get('url')}
+    # --start applies to every file mpv plays: a playlist starts again at the same item, from its beginning.
+    playlist = state.get('kind') == 'playlist'
+    return play_target(item, video=True, start=position if isinstance(position, (int, float)) and not playlist else 0,
+                       playlist_start=index if isinstance(index, int) and playlist else 0)
+
+
 def stop_playback():
     state = load_state()
     sock = state.get('socket') or str(radio_socket_path())
@@ -351,7 +372,7 @@ def resolve_play_item(target):
     return item
 
 
-def play_target(target, video=False):
+def play_target(target, video=False, start=0, playlist_start=0):
     item = resolve_play_item(target)
     url = item['url']
     title = item.get('title') or url
@@ -364,6 +385,11 @@ def play_target(target, video=False):
         command.append('--no-video')
     if kind == 'playlist':
         command.append('--ytdl-raw-options=yes-playlist=')
+    # Where a restart picks up again (video turned on): the time, and the item of a playlist.
+    if start > 0:
+        command.append(f'--start={int(start)}')
+    if playlist_start > 0:
+        command.append(f'--playlist-start={int(playlist_start)}')
     command += ['--', url]
     try:
         child = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
@@ -532,6 +558,12 @@ def main(argv=None):
             mode = args[1] if len(args) > 1 else 'toggle'
             state = live_state()
             enable = not state['video'] if mode == 'toggle' else mode in ('on', 'true', '1', 'auto')
+            if enable and state['active'] and not has_video_track():
+                # Started without video, mpv's yt-dlp hook fetched the audio alone: there is no picture to turn on.
+                # Start again with video, from where it was.
+                restarted = restart_with_video(state)
+                print(json.dumps(restarted, ensure_ascii=False))
+                return 0
             mpv_ipc(['set_property', 'vid', 'auto' if enable else 'no'])
             if state['active']:
                 state['video'] = enable

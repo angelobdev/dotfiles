@@ -90,8 +90,10 @@ Overlay {
             PanelHeader {
                 title: I18n.tr("radio.title")
                 Layout.fillWidth: true
+                // A web radio has no video; for YouTube, turning it on restarts the stream with its picture.
                 PanelIconButton {
                     iconName: "monitor"
+                    enabled: !(Radio.active && Radio.kind === "radio")
                     highlighted: Radio.video
                     tooltip: Radio.video ? I18n.tr("radio.videoOff") : I18n.tr("radio.videoOn")
                     onClicked: Radio.toggleVideo()
