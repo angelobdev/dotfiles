@@ -1,21 +1,44 @@
 #!/usr/bin/env python3
-"""Tests for radio.py station catalog, ytfzf JSON parsing, saved playlists, and state persistence."""
+"""radio.py: the station catalog, ytfzf and yt-dlp results, saved items, state, and the radio's own mpv only."""
 import json
 from pathlib import Path
+import socket
 import sys
 import tempfile
+import threading
 import unittest
+from unittest import mock
 
 REPO = Path(__file__).resolve().parents[2]
+sys.dont_write_bytecode = True
 sys.path.insert(0, str(REPO / 'shell/.local/libexec/desktop'))
 import radio  # noqa: E402
 
+STATIONS = REPO / 'shell/.local/share/desktop/radio/stations.json'
 
-class RadioTests(unittest.TestCase):
+
+class Sandbox(unittest.TestCase):
+    """The shipped stations from this repository; the user's config and the runtime folder in a temporary one."""
+
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.root = Path(folder.name)
+        self.runtime = self.root / 'run'
+        self.runtime.mkdir()
+        for patcher in (mock.patch.object(radio, 'SHIPPED', STATIONS),
+                        mock.patch.object(radio, 'config_path', return_value=self.root / 'radio.json'),
+                        mock.patch.object(radio, 'runtime_dir', return_value=self.runtime),
+                        mock.patch.object(radio, 'tr', side_effect=lambda key, args=(): ' '.join([key, *map(str, args)]))):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+
+class RadioTests(Sandbox):
     def test_station_catalog_and_aliases(self):
-        self.assertGreaterEqual(len(radio.STATIONS), 20)
-        categories = {s['category'] for s in radio.STATIONS}
-        self.assertEqual(categories, {'jazz', 'dreamwave', 'lofi', 'rnb'})
+        categories, stations = radio.catalog()
+        self.assertGreaterEqual(len(stations), 20)
+        self.assertEqual(categories, ['jazz', 'dreamwave', 'lofi', 'rnb'])
         for key in ('linn-jazz', 'swiss', 'plaza', 'nightride', 'bluenote', 'nujabes', 'jdilla', 'mfdoom', 'funk', 'neosoul'):
             matched = radio.match_station(key, saved_items=[])
             self.assertIsNotNone(matched, f'Expected station match for {key}')
@@ -84,7 +107,8 @@ class RadioTests(unittest.TestCase):
         self.assertEqual(parsed[0]['title'], "Tom & Jerry 'Special' Mix")
         self.assertEqual(parsed[0]['channel'], "Jazz & Soul Club")
         self.assertEqual(parsed[0]['duration'], "45:10")
-        self.assertEqual(parsed[0]['url'], "https://youtube.com/watch?v=abc12345&feature=share")
+        # youtube.com becomes www.youtube.com, as for every other result.
+        self.assertEqual(parsed[0]['url'], "https://www.youtube.com/watch?v=abc12345&feature=share")
         self.assertEqual(parsed[0]['subtitle'], "Jazz & Soul Club · 45:10")
 
     def test_parse_ytfzf_malformed_input(self):
@@ -214,8 +238,127 @@ class RadioTests(unittest.TestCase):
             radio.resolve_play_item('nonexistent_station_or_random_text')
 
     def test_main_value_error_handling(self):
-        code = radio.main(['play', 'nonexistent_station_xyz'])
-        self.assertEqual(code, 1)
+        import contextlib
+        import io
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(radio.main(['play', 'nonexistent_station_xyz']), 1)
+            self.assertEqual(radio.main(['nonexistent_command']), 2)
+
+
+class CatalogTests(Sandbox):
+    def test_own_stations_replace_and_add(self):
+        own = {'stations': [
+            {'id': 'plaza', 'title': 'My Plaza', 'category': 'dreamwave', 'url': 'https://example.com/plaza.mp3'},
+            {'id': 'mine', 'title': 'Mine', 'category': 'talk', 'url': 'https://example.com/talk.mp3'},
+            {'id': 'bad', 'title': 'An option, not a URL', 'url': '--script=/tmp/x.lua'},
+            {'title': 'No id', 'url': 'https://example.com/x'},
+        ]}
+        (self.root / 'radio.json').write_text(json.dumps(own))
+        categories, stations = radio.catalog()
+        by_id = {item['id']: item for item in stations}
+        self.assertEqual(by_id['plaza']['title'], 'My Plaza')
+        self.assertEqual(by_id['mine']['kind'], 'radio')
+        self.assertNotIn('bad', by_id)
+        self.assertEqual(categories[-1], 'talk')
+
+    def test_saving_keeps_the_own_stations(self):
+        (self.root / 'radio.json').write_text(json.dumps({'stations': [{'id': 'mine', 'url': 'https://example.com/a'}]}))
+        radio.add_saved_item({'title': 'Set', 'url': 'https://www.youtube.com/watch?v=Pe_zj-WZotg'})
+        data = json.loads((self.root / 'radio.json').read_text())
+        self.assertEqual(data['stations'][0]['id'], 'mine')
+        self.assertEqual(len(data['saved']), 1)
+
+
+class PlayTests(Sandbox):
+    def test_only_streams_links_and_files_reach_mpv(self):
+        for item in ({'url': '--script=/tmp/x.lua'}, '{"url": "--script=/tmp/x.lua"}', {'url': 'javascript:alert(1)'}):
+            with self.assertRaises(ValueError):
+                radio.resolve_play_item(item)
+        song = self.root / 'song.ogg'
+        song.write_bytes(b'')
+        self.assertEqual(radio.resolve_play_item(str(song))['url'], str(song))
+
+    def test_the_url_comes_after_the_options(self):
+        with mock.patch.object(radio, 'stop_playback'), mock.patch('subprocess.Popen') as popen:
+            popen.return_value.pid = 4242
+            state = radio.play_target({'id': 'x', 'title': 'Station', 'url': 'https://example.com/s.mp3'})
+        command = popen.call_args.args[0]
+        self.assertEqual(command[-2:], ['--', 'https://example.com/s.mp3'])
+        self.assertIn(f'--input-ipc-server={self.runtime / "radio-mpv.sock"}', command)
+        self.assertFalse(any(part.startswith('--force-media-title') for part in command))
+        self.assertEqual((state['pid'], state['active']), (4242, True))
+
+    def test_without_mpv(self):
+        with mock.patch.object(radio, 'stop_playback'), mock.patch('subprocess.Popen', side_effect=FileNotFoundError):
+            with self.assertRaisesRegex(ValueError, 'radio.errors.noMpv'):
+                radio.play_target({'url': 'https://example.com/s.mp3'})
+
+
+class OwnMpvTests(Sandbox):
+    """The radio talks to its own mpv only: another mpv, with a socket of its own, is never touched."""
+
+    def serve(self, path, replies):
+        # A stand-in mpv: answers each request with an event first, then the reply carrying its request_id.
+        server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        server.bind(str(path))
+        server.listen(4)
+        received = []
+
+        def loop():
+            while True:
+                try:
+                    connection, _ = server.accept()
+                except OSError:
+                    return
+                with connection:
+                    request = json.loads(connection.recv(4096).decode().splitlines()[0])
+                    received.append(request['command'])
+                    reply = replies.get(request['command'][-1], {'error': 'success'})
+                    connection.sendall(b'{"event":"property-change","name":"pause"}\n'
+                                       + json.dumps({**reply, 'request_id': request['request_id']}).encode() + b'\n')
+
+        threading.Thread(target=loop, daemon=True).start()
+        self.addCleanup(server.close)
+        return received
+
+    def test_commands_go_to_the_radio_socket_only(self):
+        own = self.serve(self.runtime / 'radio-mpv.sock', {})
+        other = self.serve(self.runtime / 'mpv-1234.sock', {})
+        import contextlib
+        import io
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(radio.main(['toggle']), 0)
+            self.assertEqual(radio.main(['next']), 0)
+        self.assertIn(['cycle', 'pause'], own)
+        self.assertIn(['playlist-next', 'weak'], own)
+        self.assertEqual(other, [])
+
+    def test_stop_quits_only_its_own_mpv(self):
+        own = self.serve(self.runtime / 'radio-mpv.sock', {})
+        other = self.serve(self.runtime / 'mpv-1234.sock', {})
+        import subprocess
+        player = subprocess.Popen(['sleep', '30'])
+        self.addCleanup(player.kill)
+        radio.write_state({'active': True, 'pid': player.pid, 'socket': str(self.runtime / 'radio-mpv.sock')})
+        radio.stop_playback()
+        self.assertIsNotNone(player.wait(timeout=5))
+        self.assertEqual(own, [['quit']])
+        self.assertEqual(other, [])
+        self.assertFalse(radio.load_state()['active'])
+
+    def test_live_title_pause_and_video(self):
+        self.serve(self.runtime / 'radio-mpv.sock', {
+            'media-title': {'error': 'success', 'data': 'Artist &amp; Track'},
+            'pause': {'error': 'success', 'data': True},
+            'vid': {'error': 'success', 'data': False},
+        })
+        import os
+        radio.write_state({'active': True, 'pid': os.getpid(), 'title': 'Station', 'socket': str(self.runtime / 'radio-mpv.sock')})
+        state = radio.live_state()
+        self.assertEqual((state['title'], state['paused'], state['playing'], state['video']), ('Artist & Track', True, False, False))
+
+    def test_no_mpv_no_reply(self):
+        self.assertIsNone(radio.mpv_ipc(['get_property', 'pause']))
 
 
 if __name__ == '__main__':

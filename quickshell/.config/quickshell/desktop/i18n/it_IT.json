@@ -874,7 +874,7 @@
         "apps": "Zen Browser, 1Password, VS Code, Neovim, gh, glab, uv, gcc e qualche strumento da riga di comando.",
         "herdr": "L’app Herdr e herdr-core in ~/.local: la console dell’assistente per qualsiasi agente; si aggiornano da sole.",
         "containers": "Docker (moby-engine, docker-compose, il gruppo docker) e Tailscale.",
-        "media": "Loupe, Papers e Showtime per immagini, PDF e video.",
+        "media": "Loupe, Papers e Showtime per immagini, PDF e video; mpv con mpv-mpris e yt-dlp per il pannello Radio.",
         "gaming": "Steam, gamescope e i driver a 32 bit che servono ai giochi.",
         "steamHidpi": "L’avvio di Steam che scala il client per il monitor su cui si apre.",
         "codecs": "I codec di RPM Fusion al posto delle versioni libere: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX."
@@ -1430,6 +1430,18 @@
       "all": "Tutti i risultati",
       "playlists": "Playlist",
       "videos": "Mix e video"
+    },
+    "errors": {
+      "missingUrl": "Non è uno stream, un link di YouTube o un file.",
+      "unknown": "Stazione sconosciuta, oppure non è uno stream, un link di YouTube o un file: %1",
+      "noMpv": "mpv non è installato: lo installa il profilo media (Impostazioni → Sistema → Profili).",
+      "usage": "Comando della radio sconosciuto: %1"
+    },
+    "kinds": {
+      "radio": "Web radio",
+      "youtube": "YouTube",
+      "playlist": "Playlist di YouTube",
+      "file": "File"
     }
   }
 }
