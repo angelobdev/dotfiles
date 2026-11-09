@@ -60,26 +60,14 @@ Overlay {
         if (!Tablet.active && !Radio.videoOpen)
             search.forceActiveFocus();
     }
-    // Closed with the picture on: mpv goes on with the sound from where the picture was.
+    // The picture goes with the panel; the sound, in mpv, goes on.
     onOpenChanged: if (!open)
-        root.closeVideo()
-    function closeVideo() {
-        Radio.closeVideo(videoLoader.item ? videoLoader.item.seconds : Radio.videoStart);
-    }
+        Radio.dropVideo()
     function toggleVideo() {
         if (Radio.videoOpen)
-            closeVideo();
+            Radio.dropVideo();
         else
             Radio.openVideo();
-    }
-    // Play and pause act on the picture while it plays, else on mpv.
-    readonly property bool videoPlaying: videoLoader.item ? videoLoader.item.playing : false
-    readonly property bool playing: Radio.videoOpen && videoLoader.item ? videoPlaying : Radio.playing
-    function togglePlaying() {
-        if (Radio.videoOpen && videoLoader.item)
-            videoLoader.item.toggle();
-        else
-            Radio.togglePlaying();
     }
 
     function activateItem(item) {
@@ -139,13 +127,19 @@ Overlay {
                     }
                     Connections {
                         target: videoLoader.item
-                        // The end of a playlist item: mpv moves to the next, and the picture follows.
-                        function onEnded() {
-                            Radio.next();
-                        }
                         function onFailed(message) {
                             Radio.error = message;
-                            root.closeVideo();
+                            Radio.dropVideo();
+                        }
+                    }
+                    // In step with mpv, which keeps the sound: each status moves the picture along.
+                    Connections {
+                        target: Radio
+                        function onPositionChanged() {
+                            videoLoader.item?.follow(Radio.position, Radio.paused);
+                        }
+                        function onPausedChanged() {
+                            videoLoader.item?.follow(Radio.position, Radio.paused);
                         }
                     }
                 }
@@ -363,10 +357,10 @@ Overlay {
                         onClicked: Radio.previous()
                     }
                     PanelIconButton {
-                        iconName: root.playing ? "pause" : "play"
+                        iconName: Radio.playing ? "pause" : "play"
                         enabled: Radio.active
-                        tooltip: root.playing ? I18n.tr("media.pause") : I18n.tr("media.play")
-                        onClicked: root.togglePlaying()
+                        tooltip: Radio.playing ? I18n.tr("media.pause") : I18n.tr("media.play")
+                        onClicked: Radio.togglePlaying()
                     }
                     PanelIconButton {
                         iconName: "next"

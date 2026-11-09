@@ -983,7 +983,11 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
   - the user's stations replace or add, and saving keeps them.
 - Not tried on screen: mpv is not installed here (the media profile adds it).
 - Asked by the user after trying it (2026-11-09):
-  - **Video in the panel.** It plays through Qt Multimedia (`panels/radio/RadioVideo.qml`, loaded only with video on), with `radio.py handoff` and `resume` passing the position between mpv and the panel. mpv now always plays sound only. The earlier mpv video window never showed a picture: started with `--no-video`, mpv's yt-dlp hook fetched the audio alone.
+  - **Video in the panel**, via Qt Multimedia (`panels/radio/RadioVideo.qml`, loaded only with video on).
+    - The first version paused mpv and played one stream with sound and picture. It failed: YouTube no longer serves such a stream (`yt-dlp -F` on a DJ set lists audio-only and video-only formats only).
+    - Now the panel plays the picture alone (`radio.py video`: H.264 up to 720p) muted, and follows mpv's position and pause, which keeps the sound.
+    - Checked offscreen: the 720p video-only stream loads in Qt Multimedia, seeks to 10 minutes and buffers. `radio.py video` on the playing DJ set gave the stream and the position, with mpv still playing.
+    - mpv now always plays sound only. The earlier mpv video window never showed a picture: started with `--no-video`, mpv's yt-dlp hook fetched the audio alone.
   - **Layout:** header (title, video, close), content (list or video), controls always at the bottom, footer.
   - Tests: `test_radio.py`, 28 tests.
 

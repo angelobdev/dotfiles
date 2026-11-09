@@ -7,8 +7,9 @@ import ".."
 // Radio & music (radio.py): the stations and categories, the saved items, YouTube search, and the own mpv of the radio,
 // which plays sound only. The state file follows play and stop; while the panel is open, status reads the title and
 // pause from mpv itself. mpv-mpris puts that mpv on MPRIS for the bar, the lock screen and the media keys.
-// The picture plays in the Radio panel (RadioVideo.qml): openVideo() pauses mpv and gets one stream with sound and
-// picture from where it was (radio.py handoff); closeVideo(seconds) gives the sound back to mpv from there.
+// The picture plays in the Radio panel (RadioVideo.qml), muted: openVideo() gets the video-only stream of what mpv
+// plays (radio.py video), and while it is open, status is read every second so the picture follows the position,
+// the pause and the item of mpv, which keeps the sound.
 Singleton {
     id: root
     property var categories: []
@@ -29,14 +30,16 @@ Singleton {
     property string searchType: "all"
     readonly property bool searching: searchProc.running
     readonly property bool busy: actionProc.running
-    // The picture in the panel: open, the stream it plays and where it starts. While it is open, mpv is paused.
+    // Where mpv is, and the item it plays (of a playlist too), from status.
+    property real position: 0
+    property string item: ""
+    // The picture in the panel: open, the stream it plays, where it starts and the item it shows.
     property bool videoOpen: false
     property string videoStream: ""
     property real videoStart: 0
-    readonly property bool videoLoading: handoffProc.running
+    property string videoItem: ""
+    readonly property bool videoLoading: videoProc.running
     readonly property bool hasVideo: active && ["youtube", "playlist", "file"].includes(kind)
-    // A skip while the picture is open: the picture of the next item, once mpv has moved to it.
-    property bool reopenVideo: false
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/radio.py"
     readonly property string statePath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/desktop-shell/radio.json"
 
@@ -56,6 +59,13 @@ Singleton {
         subtitle = s.subtitle || "";
         url = s.url || "";
         kind = s.kind || "";
+        position = Number(s.position) || 0;
+        item = s.item || s.url || "";
+        // mpv moved to another item (a playlist, a skip): the picture follows.
+        if (videoOpen && videoItem !== "" && item !== "" && item !== videoItem && !videoProc.running)
+            openVideo();
+        if (videoOpen && !active)
+            dropVideo();
     }
 
     function applyStateText(raw) {
@@ -80,6 +90,8 @@ Singleton {
         subtitle = "";
         url = "";
         kind = "";
+        position = 0;
+        item = "";
     }
 
     function refresh() {
@@ -115,44 +127,30 @@ Singleton {
     }
 
     function next() {
-        skip("next");
+        runAction(["python3", helper, "next"]);
     }
 
     function previous() {
-        skip("previous");
-    }
-
-    function skip(direction) {
-        // mpv is paused under the picture: it moves on, and the picture follows.
-        reopenVideo = videoOpen;
-        dropVideo();
-        runAction(["python3", helper, direction]);
+        runAction(["python3", helper, "previous"]);
     }
 
     function openVideo() {
-        if (!hasVideo || handoffProc.running)
+        if (!hasVideo || videoProc.running)
             return;
         error = "";
         videoOpen = true;
         videoStream = "";
-        handoffProc.running = true;
+        videoProc.running = true;
     }
 
-    // seconds: where the picture of the panel was; mpv goes on with the sound from there.
-    function closeVideo(seconds) {
-        if (!videoOpen)
-            return;
-        dropVideo();
-        runAction(["python3", helper, "resume", String(Math.max(0, Math.floor(seconds || 0)))]);
-    }
-
-    // The picture goes away without giving the sound back (a new item, stop, a skip).
+    // The picture goes away; mpv never stopped playing the sound.
     function dropVideo() {
         videoOpen = false;
         videoStream = "";
         videoStart = 0;
-        if (handoffProc.running)
-            handoffProc.running = false;
+        videoItem = "";
+        if (videoProc.running)
+            videoProc.running = false;
     }
 
     function saveItem(item) {
@@ -235,10 +233,6 @@ Singleton {
                 return;
             }
             root.error = "";
-            if (root.reopenVideo) {
-                root.reopenVideo = false;
-                root.openVideo();
-            }
             const out = actionOut.text.trim();
             if (out) {
                 try {
@@ -277,26 +271,27 @@ Singleton {
     }
 
     Process {
-        id: handoffProc
-        command: ["python3", root.helper, "handoff"]
+        id: videoProc
+        command: ["python3", root.helper, "video"]
         stdout: StdioCollector {
-            id: handoffOut
+            id: videoOut
         }
         stderr: StdioCollector {
-            id: handoffErr
+            id: videoErr
         }
         onExited: code => {
             if (!root.videoOpen)
                 return;
             try {
-                const value = JSON.parse(handoffOut.text);
+                const value = JSON.parse(videoOut.text);
                 if (code === 0 && typeof value.stream === "string" && value.stream !== "") {
                     root.videoStart = Number(value.position) || 0;
+                    root.videoItem = value.item || "";
                     root.videoStream = value.stream;
                     return;
                 }
             } catch (e) {}
-            root.error = handoffErr.text.trim();
+            root.error = videoErr.text.trim();
             root.videoOpen = false;
         }
     }
@@ -308,8 +303,9 @@ Singleton {
             onStreamFinished: root.applyStateText(text)
         }
     }
+    // Every second with the picture open, which follows the position of mpv; every three with the panel open.
     Timer {
-        interval: 3000
+        interval: root.videoOpen ? 1000 : 3000
         running: root.active && ShellState.panel === "radio"
         repeat: true
         onTriggered: if (!statusProc.running)

@@ -20,9 +20,14 @@ The list:
 - **YouTube:** **YouTube**, or Enter when no station matches, searches YouTube with `ytfzf`, or with `yt-dlp` when `ytfzf` finds nothing or is missing. The chips under it pick all results, playlists only, or mixes and videos.
 - **Saved:** the pin on a result saves it; the trash icon removes a saved item.
 
-**Video.** The monitor button is on for a YouTube item or a file, never for a web radio, which has no picture. It puts the video in place of the list, and search is off meanwhile. mpv pauses where it is (`radio.py handoff`), and the panel plays one stream with sound and picture from there, through Qt Multimedia. On YouTube, such a stream is at most 360p: higher qualities come as separate video and audio streams. Turning video off or closing the panel gives the sound back to mpv from where the picture was (`radio.py resume`). At the end of a playlist item, mpv moves to the next one and the picture follows.
+**Video.** The monitor button is on for a YouTube item or a file, never for a web radio, which has no picture. It puts the video in place of the list, and search is off meanwhile.
 
-While the picture plays, mpv is paused, so the bar and the media keys show it paused. Play and pause in the panel act on the picture. Without Qt Multimedia, the video area says that the media profile installs it, and the rest of the panel works.
+- **The picture:** `radio.py video` asks yt-dlp for the picture alone, the best H.264 stream up to 720p, and the panel plays it muted through Qt Multimedia. YouTube no longer serves a stream with both sound and picture.
+- **The sound:** mpv keeps playing it, so the bar, the lock screen and the media keys go on showing and controlling it.
+- **Keeping in step:** with the video open, the panel reads mpv's position every second. The picture follows mpv's pause, and jumps when it drifts more than 0.6 s from the sound. When mpv moves to another item of a playlist, the picture of that item loads.
+- **Closing:** turning video off or closing the panel only removes the picture.
+
+Without Qt Multimedia, the video area says that the media profile installs it, and the rest of the panel works.
 
 ## Stations
 

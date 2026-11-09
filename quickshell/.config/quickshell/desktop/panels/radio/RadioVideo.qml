@@ -2,24 +2,29 @@ import QtQuick
 import QtMultimedia
 import "../.."
 
-// The picture of the Radio panel: one stream with sound and picture (Radio.videoStream, from radio.py handoff), played
-// by Qt Multimedia from where mpv paused. The only file of the shell that needs QtMultimedia: RadioPanel loads it, and
-// says so when the module is missing (the media profile installs it).
+// The picture of the Radio panel: the video-only stream of what mpv plays (Radio.videoStream, from radio.py video),
+// muted, since mpv keeps the sound. follow() keeps it in step with mpv: its pause, and its position when they drift
+// apart. The only file of the shell that needs QtMultimedia: RadioPanel loads it, and says so when the module is
+// missing (the media profile installs it).
 Item {
     id: root
     property string source: ""
     property real start: 0
-    readonly property bool playing: player.playbackState === MediaPlayer.PlayingState
     readonly property bool loading: player.mediaStatus === MediaPlayer.LoadingMedia || player.mediaStatus === MediaPlayer.BufferingMedia || player.mediaStatus === MediaPlayer.StalledMedia
-    readonly property real seconds: player.position / 1000
     property bool started: false
-    signal ended
+    // How far apart the picture and the sound may get before the picture jumps, and what status lags behind mpv.
+    readonly property real tolerance: 0.6
+    readonly property real lag: 0.15
     signal failed(string message)
-    function toggle() {
-        if (playing)
+    function follow(seconds, paused) {
+        if (!started)
+            return;
+        if (paused && player.playbackState === MediaPlayer.PlayingState)
             player.pause();
-        else
+        else if (!paused && player.playbackState !== MediaPlayer.PlayingState)
             player.play();
+        if (player.seekable && Math.abs(player.position / 1000 - seconds) > tolerance)
+            player.setPosition((seconds + (paused ? 0 : lag)) * 1000);
     }
     Rectangle {
         anchors.fill: parent
@@ -30,17 +35,14 @@ Item {
         id: player
         source: root.source
         videoOutput: output
-        audioOutput: AudioOutput {}
         onMediaStatusChanged: {
-            // Seek once the stream is known, then play: where mpv was.
+            // Where mpv was, once the stream is known; from then on follow() keeps it there.
             if (!root.started && (mediaStatus === MediaPlayer.LoadedMedia || mediaStatus === MediaPlayer.BufferedMedia)) {
                 root.started = true;
                 if (root.start > 1 && seekable)
                     setPosition(root.start * 1000);
                 play();
             }
-            if (mediaStatus === MediaPlayer.EndOfMedia)
-                root.ended();
         }
         onErrorOccurred: (error, message) => root.failed(message)
     }
