@@ -1,4 +1,0 @@
-#!/bin/sh
-# pam_exec expose_authtok check of /etc/pam.d/polkit-1 (scripts/privileged/polkit-1.*): succeeds when the answer to
-# the password prompt was empty, which the shell's polkit prompt sends for "Use fingerprint". Reads at most two bytes.
-[ -z "$(head -c 2 | tr -d '\000')" ]

@@ -1,0 +1,27 @@
+#!/bin/sh
+# pam_exec step of /etc/pam.d/polkit-1 (scripts/privileged/polkit-1.*): the fingerprint of PAM_USER, which succeeds on
+# a match. It gives up after three scans that do not match, after 30 seconds, or as soon as the shell's polkit prompt
+# asks for the password ("Use password" creates the file below); the stack then goes on to the password. Runs as root.
+uid=$(id -u -- "$PAM_USER" 2>/dev/null) || exit 1
+skip="/run/user/$uid/desktop-shell/polkit-password"
+[ -e "$skip" ] && exit 1
+command -v fprintd-verify >/dev/null 2>&1 || exit 1
+deadline=$(( $(date +%s) + 30 ))
+tries=0
+while [ "$tries" -lt 3 ]; do
+    fprintd-verify -- "$PAM_USER" >/dev/null 2>&1 &
+    verify=$!
+    while kill -0 "$verify" 2>/dev/null; do
+        if [ -e "$skip" ] || [ "$(date +%s)" -ge "$deadline" ]; then
+            kill "$verify" 2>/dev/null
+            wait "$verify"
+            exit 1
+        fi
+        sleep 0.2
+    done
+    wait "$verify" && exit 0
+    tries=$((tries + 1))
+    # No reader or no finger enrolled ends at once: no point in asking twice more.
+    [ "$(date +%s)" -ge "$deadline" ] && exit 1
+done
+exit 1

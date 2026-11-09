@@ -36,25 +36,33 @@ Scope {
         agent.flow.submit(response.text);
         response.clear();
     }
-    // /etc/pam.d/polkit-1 as the installer writes it (scripts/privileged/polkit-1.*) asks for the password at once and
-    // takes an empty answer as "the fingerprint": offered when that stack is in place and the account has a finger enrolled.
-    // Not in tablet mode, where the stack skips the reader the screen covers.
+    // /etc/pam.d/polkit-1 as the installer writes it (scripts/privileged/polkit-1.*) tries the fingerprint first
+    // (desktop-fingerprint, which prints nothing) and asks for the password after it. While the reader waits, the prompt
+    // says so and offers Use password: that creates the file desktop-fingerprint looks for, which stops the reader for
+    // the rest of this request (a wrong password then asks again at once). Only for the account of this session, whose
+    // runtime folder holds that file, and not in tablet mode, where the stack skips the reader the screen covers.
     property bool fingerprint: false
+    property bool passwordChosen: false
     readonly property string identityUser: agent.flow?.selectedIdentity && !agent.flow.selectedIdentity.isGroup ? agent.flow.selectedIdentity.string : ""
+    readonly property string skipFile: Quickshell.env("XDG_RUNTIME_DIR") + "/desktop-shell/polkit-password"
+    readonly property bool readerWaiting: agent.isActive && fingerprint && !passwordChosen && !Tablet.active && !(agent.flow?.isResponseRequired ?? false)
     // The command is set here, not bound: a binding on identityUser may not have caught up yet when this handler runs,
     // and the check then asked fprintd-list about an empty name.
     onIdentityUserChanged: {
         fingerprint = false;
-        if (identityUser === "")
+        if (identityUser === "" || identityUser !== Quickshell.env("USER"))
             return;
-        prints.command = ["sh", "-c", "grep -qs desktop-fingerprint-wanted /etc/pam.d/polkit-1 && fprintd-list \"$1\" 2>/dev/null", "sh", identityUser];
+        prints.command = ["sh", "-c", "grep -Eqs 'desktop-fingerprint($|[[:space:]])' /etc/pam.d/polkit-1 && fprintd-list \"$1\" 2>/dev/null", "sh", identityUser];
         prints.running = true;
     }
-    function useFingerprint() {
-        if (!response.enabled)
-            return;
-        agent.flow.submit("");
-        response.clear();
+    function usePassword() {
+        passwordChosen = true;
+        Quickshell.execDetached(["sh", "-c", "mkdir -p \"${1%/*}\" && : > \"$1\"", "sh", skipFile]);
+    }
+    // A new request starts with the reader again.
+    function forgetPassword() {
+        passwordChosen = false;
+        Quickshell.execDetached(["rm", "-f", "--", skipFile]);
     }
     Process {
         id: prints
@@ -65,9 +73,12 @@ Scope {
     PolkitAgent {
         id: agent
         onAuthenticationRequestStarted: {
+            root.forgetPassword();
             root.promptScreen = ShellState.screenNamed(Hyprland.focusedMonitor?.name);
             ShellState.close();
         }
+        onIsActiveChanged: if (!isActive && root.passwordChosen)
+            root.forgetPassword()
     }
     PanelWindow {
         id: prompt
@@ -160,6 +171,13 @@ Scope {
                     }
                 }
                 Text {
+                    Layout.fillWidth: true
+                    visible: root.readerWaiting
+                    text: I18n.tr("authentication.touchReader")
+                    color: Theme.text
+                    wrapMode: Text.Wrap
+                }
+                Text {
                     text: agent.flow?.inputPrompt ?? ""
                     color: Theme.text
                     textFormat: Text.PlainText
@@ -189,10 +207,9 @@ Scope {
                         onClicked: root.submit()
                     }
                     ActionButton {
-                        visible: root.fingerprint && !Tablet.active
-                        text: I18n.tr("authentication.useFingerprint")
-                        enabled: response.enabled
-                        onClicked: root.useFingerprint()
+                        visible: root.readerWaiting
+                        text: I18n.tr("authentication.usePassword")
+                        onClicked: root.usePassword()
                     }
                     ActionButton {
                         text: I18n.tr("common.cancel")

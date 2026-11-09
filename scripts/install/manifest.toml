@@ -160,14 +160,14 @@ disable = ['sshd.service']
 firewall_zone = 'FedoraWorkstation'
 notes = ['Enroll your fingerprint: fprintd-enroll']
 
-# The polkit prompt: password at once, fingerprint on an empty answer (scripts/privileged/polkit-1.fedora).
+# The polkit prompt: the fingerprint first, the password after it or on "Use password" (scripts/privileged/polkit-1.fedora).
 [[fedora.hardware.files]]
 path = '/etc/pam.d/polkit-1'
 source = 'scripts/privileged/polkit-1.fedora'
 
 [[fedora.hardware.files]]
-path = '/usr/local/libexec/desktop-fingerprint-wanted'
-source = 'scripts/privileged/desktop-fingerprint-wanted'
+path = '/usr/local/libexec/desktop-fingerprint'
+source = 'scripts/privileged/desktop-fingerprint'
 mode = '0755'
 
 # A 2-in-1 (this laptop: an HP OmniBook Ultra Flip): the accelerometer behind screen rotation, the stylus, the
@@ -381,14 +381,14 @@ packages = [
 services = ['thermald.service', 'intel_lpmd.service']
 notes = ['Enroll your fingerprint: fprintd-enroll. On Arch it signs in at GDM, unlocks the lock screen and answers the polkit prompt; sudo still asks for the password.']
 
-# The polkit prompt: password at once, fingerprint on an empty answer (scripts/privileged/polkit-1.arch).
+# The polkit prompt: the fingerprint first, the password after it or on "Use password" (scripts/privileged/polkit-1.arch).
 [[arch.hardware.files]]
 path = '/etc/pam.d/polkit-1'
 source = 'scripts/privileged/polkit-1.arch'
 
 [[arch.hardware.files]]
-path = '/usr/local/libexec/desktop-fingerprint-wanted'
-source = 'scripts/privileged/desktop-fingerprint-wanted'
+path = '/usr/local/libexec/desktop-fingerprint'
+source = 'scripts/privileged/desktop-fingerprint'
 mode = '0755'
 
 # A 2-in-1: rotation, the stylus and the Hyprgrass gestures. The tablet sign-in is not ported yet.
