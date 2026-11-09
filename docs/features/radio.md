@@ -60,6 +60,7 @@ Only `http://`, `https://` and `ytdl://` URLs and files on disk are played, what
 | `desktop-radio ID` (or an alias) | Plays a station |
 | `desktop-radio play ID\|URL` | Plays a station, a stream, a YouTube link or a file |
 | `desktop-radio toggle`, `stop`, `next`, `previous` | Controls playback |
+| `desktop-radio video` | Opens the panel with the picture of what plays |
 | `desktop-radio search QUERY [all\|playlist\|video]` | Searches YouTube |
 | `desktop-radio list`, `status` | Prints the stations and the state as JSON |
 

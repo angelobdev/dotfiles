@@ -44,6 +44,11 @@ ShellRoot {
         function media(action: string): bool {
             return Media.control(action);
         }
+        // desktop-radio video: the Radio panel, with the picture of what plays.
+        function radioVideo(): void {
+            ShellState.show("radio");
+            Radio.requestVideo();
+        }
         function dock(action: string): bool {
             return Dock.request(action);
         }

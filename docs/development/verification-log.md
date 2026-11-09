@@ -990,4 +990,5 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
     - mpv now always plays sound only. The earlier mpv video window never showed a picture: started with `--no-video`, mpv's yt-dlp hook fetched the audio alone.
   - **Layout:** header (title, video, close), content (list or video), controls always at the bottom, footer.
   - Tests: `test_radio.py`, 28 tests.
+    - On screen (2026-11-09, by Claude at the user's request): Blue Note Hours, then `desktop-radio video` (new: `radioVideo` over IPC). The 720p picture showed in the panel with the controls below, and the bar showed the track through mpv-mpris. Over two seconds the frames stayed identical with mpv paused (`desktop-radio toggle`) and changed while it played. A first `desktop-radio video` came before the `Radio` singleton had read the state: `requestVideo()` now waits up to 5 s for it.
 

@@ -143,6 +143,27 @@ Singleton {
         videoProc.running = true;
     }
 
+    // The picture as soon as there is one: desktop-radio video may come before this has read the state.
+    property bool videoWanted: false
+    function requestVideo() {
+        if (hasVideo) {
+            openVideo();
+            return;
+        }
+        videoWanted = true;
+        wantedTimer.restart();
+        refresh();
+    }
+    onHasVideoChanged: if (hasVideo && videoWanted) {
+        videoWanted = false;
+        openVideo();
+    }
+    Timer {
+        id: wantedTimer
+        interval: 5000
+        onTriggered: root.videoWanted = false
+    }
+
     // The picture goes away; mpv never stopped playing the sound.
     function dropVideo() {
         videoOpen = false;
