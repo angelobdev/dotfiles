@@ -5,6 +5,9 @@
 # versions lists the VERSION_ID values verified; a rolling release, which has none, is 'rolling' (its BUILD_ID).
 #
 # Profile keys: repos, packages, swaps, services, user_services, disable, files, groups, stow, flatpaks, firewall_zone, auth, notes.
+# parts: [<distro>.<profile>.parts.<name>] tables with the same keys, each picked on its own as <profile>.<name>; the
+#   profile's own keys come with any of them. default: whether a part starts checked: true, false, or a detection of
+#   install-desktop.py (DETECT: intel, camera, fingerprint), true where it finds the hardware.
 # swaps: [old, new] pairs; new replaces old where old is installed, and old is never installed alongside it.
 # stow: optional Stow packages (scripts/stow.py --with).
 # exclude: packages kept out of every install, such as the weak dependencies of GNOME Shell that GDM brings.
@@ -80,7 +83,7 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 
 # The desktop: everything the session, the shell and its panels call.
 [fedora.core]
-repos = ['hyprland']
+repos = ['hyprland', 'rpmfusion-free', 'rpmfusion-nonfree']
 packages = [
     # Session. hyprland-uwsm is only a weak dependency of hyprland, and GDM needs its session entry.
     'gdm', 'accountsservice', 'hyprland', 'hyprland-uwsm', 'hyprland-guiutils', 'quickshell', 'stow',
@@ -115,7 +118,11 @@ packages = [
     'nautilus', 'gnome-calculator',
     # The login shell and its plugins; Powerlevel10k and zsh-autocomplete come from clones below.
     'zsh', 'zsh-autosuggestions', 'zsh-syntax-highlighting', 'git-core', 'fzf', 'zoxide', 'eza', 'bat',
+    # Codecs: the patent-encumbered ones from RPM Fusion, in place of the free builds Fedora ships.
+    'gstreamer1-plugins-bad-freeworld', 'gstreamer1-plugins-ugly', 'gstreamer1-plugin-libav', 'gstreamer1-plugin-openh264',
+    'libheif-freeworld', 'pipewire-codec-aptx',
 ]
+swaps = [['ffmpeg-free', 'ffmpeg'], ['libva-intel-media-driver', 'intel-media-driver']]
 login_shell = '/usr/bin/zsh'
 services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service']
 # Has no D-Bus activation: passwords are stored nowhere until it runs, and pam_oo7 waits for it at login.
@@ -145,30 +152,52 @@ path = '/usr/local/libexec/dotfiles-desktop/root-broker'
 source = 'scripts/privileged/root-broker'
 mode = '0755'
 
-# A recent Intel laptop: firmware, video decoding, cameras, power and the fingerprint reader. The 2-in-1 parts
-# are the tablet profile.
+# A laptop, in parts: each checked by default where the installer finds it (default = a detection, install-desktop.py
+# DETECT), or always. The 2-in-1 parts are the tablet profile.
 [fedora.hardware]
-packages = [
-    'iwlwifi-mvm-firmware', 'iwlbluetooth-firmware', 'intel-gpu-firmware', 'intel-vsc-firmware', 'intel-npu-firmware',
-    'intel-audio-firmware', 'cirrus-audio-firmware', 'alsa-sof-firmware', 'alsa-ucm', 'alsa-utils',
-    'intel-vpl-gpu-rt', 'libvpl', 'libva-utils', 'libva-intel-media-driver',
-    'libcamera', 'libcamera-ipa', 'pipewire-plugin-libcamera',
-    'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'fprintd', 'fprintd-pam',
-]
-services = ['thermald.service', 'intel_lpmd.service']
 disable = ['sshd.service']
 firewall_zone = 'FedoraWorkstation'
+
+# Intel: Wi-Fi and Bluetooth firmware, the GPU and its video decoding (the RPM Fusion driver, as core swaps it), the
+# NPU, and the power daemons.
+[fedora.hardware.parts.intel]
+default = 'intel'
+packages = [
+    'iwlwifi-mvm-firmware', 'iwlbluetooth-firmware', 'intel-gpu-firmware', 'intel-npu-firmware',
+    'intel-vpl-gpu-rt', 'libvpl', 'libva-utils', 'intel-media-driver', 'thermald', 'intel-lpmd',
+]
+services = ['thermald.service', 'intel_lpmd.service']
+
+# Sound: the SOF firmware of Intel's audio DSP, Cirrus amplifiers, and the ALSA use-case profiles.
+[fedora.hardware.parts.audio]
+default = 'intel'
+packages = ['intel-audio-firmware', 'cirrus-audio-firmware', 'alsa-sof-firmware', 'alsa-ucm', 'alsa-utils']
+
+# The camera: libcamera for MIPI cameras (Intel IPU), with the firmware of its vision sensing controller.
+[fedora.hardware.parts.camera]
+default = 'camera'
+packages = ['libcamera', 'libcamera-ipa', 'pipewire-plugin-libcamera', 'intel-vsc-firmware']
+
+# The fingerprint reader, and the polkit prompt that tries it first, then the password, or the password on
+# "Use password" (scripts/privileged/polkit-1.fedora).
+[fedora.hardware.parts.fingerprint]
+default = 'fingerprint'
+packages = ['fprintd', 'fprintd-pam']
 notes = ['Enroll your fingerprint: fprintd-enroll']
 
-# The polkit prompt: the fingerprint first, the password after it or on "Use password" (scripts/privileged/polkit-1.fedora).
-[[fedora.hardware.files]]
+[[fedora.hardware.parts.fingerprint.files]]
 path = '/etc/pam.d/polkit-1'
 source = 'scripts/privileged/polkit-1.fedora'
 
-[[fedora.hardware.files]]
+[[fedora.hardware.parts.fingerprint.files]]
 path = '/usr/local/libexec/desktop-fingerprint'
 source = 'scripts/privileged/desktop-fingerprint'
 mode = '0755'
+
+# Firmware updates (fwupd) and Thunderbolt devices (bolt).
+[fedora.hardware.parts.firmware]
+default = true
+packages = ['bolt', 'fwupd']
 
 # A 2-in-1 (this laptop: an HP OmniBook Ultra Flip): the accelerometer behind screen rotation, the stylus, the
 # sign-in that skips the fingerprint reader while folded, and the Hyprgrass touchscreen gestures (built only with
@@ -207,34 +236,104 @@ swaps = [['ffmpeg-free', 'ffmpeg']]
 
 # Everything below is opt-in: add the profile to --profiles.
 
-# Personal apps.
+# Desktop apps, one part each. Checked by default: the browser and the viewers.
 [fedora.apps]
-repos = ['zen', 'rpmfusion-free', 'rpmfusion-nonfree', '1password', 'vscode']
-packages = [
-    'zen-browser', '1password', 'code', 'neovim', 'gh', 'glab', 'uv', 'gcc',
-    'xclip', 'wev', 'unrar', 'fuse-libs',
-]
-notes = [
-    'Sign in to GitHub: gh auth login',
-    'Install a coding agent (Claude Code, Codex, Antigravity CLI) in Settings → Assistant',
-]
 
-[[fedora.apps.files]]
+[fedora.apps.parts.zen]
+default = true
+repos = ['zen']
+packages = ['zen-browser']
+
+[fedora.apps.parts.onepassword]
+default = false
+repos = ['1password']
+packages = ['1password']
+
+[[fedora.apps.parts.onepassword.files]]
 path = '/etc/1password/custom_allowed_browsers'
 content = '''
 zen-bin
 '''
 
-# herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, the assistant console for any coding agent
+[fedora.apps.parts.vscode]
+default = false
+repos = ['vscode']
+packages = ['code']
+
+# GNOME viewers for images, PDFs and videos.
+[fedora.apps.parts.loupe]
+default = true
+packages = ['loupe']
+
+[fedora.apps.parts.papers]
+default = true
+packages = ['papers']
+
+[fedora.apps.parts.showtime]
+default = true
+packages = ['showtime']
+
+# Command-line tools, one part each. Checked by default: the basics.
+[fedora.utils]
+
+[fedora.utils.parts.neovim]
+default = true
+packages = ['neovim']
+
+[fedora.utils.parts.gcc]
+default = true
+packages = ['gcc']
+
+[fedora.utils.parts.xclip]
+default = true
+packages = ['xclip']
+
+[fedora.utils.parts.unrar]
+default = true
+packages = ['unrar']
+
+# FUSE 2, which AppImages need.
+[fedora.utils.parts.fuse]
+default = true
+packages = ['fuse-libs']
+
+[fedora.utils.parts.gh]
+default = false
+packages = ['gh']
+notes = ['Sign in to GitHub: gh auth login']
+
+[fedora.utils.parts.glab]
+default = false
+packages = ['glab']
+
+[fedora.utils.parts.uv]
+default = false
+packages = ['uv']
+
+[fedora.utils.parts.wev]
+default = false
+packages = ['wev']
+
+# Tailscale, with the tray icon of its client for every user session.
+[fedora.utils.parts.tailscale]
+default = false
+packages = ['tailscale']
+services = ['tailscaled.service']
+user_services = ['tailscale-systray.service']
+notes = ['Connect Tailscale: sudo tailscale up']
+
+# The AI Assistant: the Settings section, Super + A and the bar icon need it (the shell hides them without it). Its
+# console is herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, for any coding agent
 # (docs/features/ai-assistant.md). Put where their own installers put them (releases.herdr.dev/app/install.sh), from
 # the same release archives, checked against these sha256; after that the app updates itself and hc update the core.
-[fedora.herdr]
+[fedora.assistant]
 notes = [
+    'Install a coding agent (Claude Code, Codex, Antigravity CLI) in Settings → Assistant',
     'Herdr: Super + A opens it as the assistant console; pick the agent it starts in Settings → Assistant',
     'Herdr sends anonymous usage counts once a day: "telemetry": false in ~/.config/herdr-app/settings.json stops it',
 ]
 
-[[fedora.herdr.archives]]
+[[fedora.assistant.archives]]
 name = 'herdr-core'
 version = '0.1.18'
 url = 'https://releases.herdr.dev/core/{version}/herdr-core-linux-{arch}.tar.gz'
@@ -244,7 +343,7 @@ changes = 'https://github.com/herdrdev/herdr-core/releases'
 unpack = { 'herdr-core' = '.local/bin/herdr-core' }
 links = { '.local/bin/hc' = '.local/bin/herdr-core' }
 
-[[fedora.herdr.archives]]
+[[fedora.assistant.archives]]
 name = 'herdr-app'
 version = '0.1.13'
 url = 'https://releases.herdr.dev/app/{version}/herdr-app-linux-{arch}.tar.gz'
@@ -254,7 +353,7 @@ changes = 'https://github.com/herdrdev/herdr-app/releases'
 unpack = { 'herdr-app' = '.local/share/herdr-app' }
 links = { '.local/bin/herdr-app' = '.local/share/herdr-app/herdr-app', '.local/share/icons/hicolor/scalable/apps/herdr-app.svg' = '.local/share/herdr-app/herdr-app.svg' }
 
-[fedora.herdr.archives.entries]
+[fedora.assistant.archives.entries]
 '.local/share/applications/herdr-app.desktop' = '''
 [Desktop Entry]
 Type=Application
@@ -267,39 +366,35 @@ Categories=Development;
 StartupWMClass=herdr-app
 '''
 
-# Docker and Tailscale.
+# Docker.
 [fedora.containers]
-packages = ['moby-engine', 'docker-compose', 'tailscale']
-services = ['docker.service', 'tailscaled.service']
-# The tray icon of the Tailscale client, for every user session.
-user_services = ['tailscale-systray.service']
+packages = ['moby-engine', 'docker-compose']
+services = ['docker.service']
 groups = ['docker']
-notes = ['Connect Tailscale: sudo tailscale up']
 
-# GNOME viewers for images, PDFs and videos, and the Radio panel's player: mpv, on MPRIS through mpv-mpris, with
-# yt-dlp for YouTube, and Qt Multimedia for the video in the panel. ytfzf, which searches faster, is not packaged for
-# Fedora: radio.py falls back to yt-dlp.
-[fedora.media]
-packages = ['loupe', 'papers', 'showtime', 'mpv', 'mpv-mpris', 'yt-dlp', 'qt6-qtmultimedia']
+# The Radio panel's player: mpv, on MPRIS through mpv-mpris, with yt-dlp for YouTube, and Qt Multimedia for the video
+# in the panel. ytfzf, which searches faster, is not packaged for Fedora: radio.py falls back to yt-dlp.
+[fedora.radio]
+packages = ['mpv', 'mpv-mpris', 'yt-dlp', 'qt6-qtmultimedia']
 
-# Steam, gamescope, and what 32-bit Intel games need. gcc caches the optional renderer scaling workaround.
+# Games: gcc caches the optional renderer scaling workaround.
 [fedora.gaming]
 repos = ['rpmfusion-free', 'rpmfusion-nonfree']
-packages = ['steam', 'gamescope', 'gcc', 'mesa-dri-drivers(x86-32)', 'mesa-vulkan-drivers(x86-32)', 'vulkan-loader(x86-32)']
+packages = ['gcc']
+
+# Steam, with what 32-bit Intel games need.
+[fedora.gaming.parts.steam]
+default = true
+packages = ['steam', 'mesa-dri-drivers(x86-32)', 'mesa-vulkan-drivers(x86-32)', 'vulkan-loader(x86-32)']
 
 # A Steam launcher that scales the client for the monitor it opens on (desktop-steam).
-[fedora.steam-hidpi]
+[fedora.gaming.parts.steam-hidpi]
+default = true
 stow = ['steam-hidpi']
 
-# Patent-encumbered codecs from RPM Fusion in place of the free builds Fedora ships.
-[fedora.codecs]
-repos = ['rpmfusion-free', 'rpmfusion-nonfree']
-packages = [
-    'gstreamer1-plugins-bad-freeworld', 'gstreamer1-plugins-ugly', 'gstreamer1-plugin-libav', 'gstreamer1-plugin-openh264',
-    'libheif-freeworld', 'pipewire-codec-aptx',
-]
-swaps = [['ffmpeg-free', 'ffmpeg'], ['libva-intel-media-driver', 'intel-media-driver']]
-
+[fedora.gaming.parts.gamescope]
+default = true
+packages = ['gamescope']
 
 # Arch Linux: the official repositories (core, extra, and multilib for gaming), plus three apps from the AUR.
 # Package names checked with pacman -Si and pacman -F on 2026-11-05. Profiles as on Fedora, except: no repository
@@ -347,6 +442,9 @@ packages = [
     'nautilus', 'gnome-calculator',
     # The login shell and its plugins; Powerlevel10k and zsh-autocomplete come from clones below.
     'zsh', 'zsh-autosuggestions', 'zsh-syntax-highlighting', 'git', 'fzf', 'zoxide', 'eza', 'bat',
+    # Codecs: Arch's ffmpeg and media drivers have every one; these are the GStreamer plugins that use them (OpenH264
+    # is in bad).
+    'gst-plugins-bad', 'gst-plugins-ugly', 'gst-libav', 'libheif',
 ]
 login_shell = '/usr/bin/zsh'
 services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service']
@@ -371,27 +469,41 @@ path = '/usr/local/libexec/dotfiles-desktop/root-broker'
 source = 'scripts/privileged/root-broker'
 mode = '0755'
 
-# A recent Intel laptop. linux-firmware-intel holds the Wi-Fi, Bluetooth, GPU, VSC, NPU and ISH firmware that
-# Fedora splits in several packages. The 2-in-1 parts are the tablet profile.
+# A laptop, in parts, checked as on Fedora. linux-firmware-intel holds the Wi-Fi, Bluetooth, GPU, VSC, NPU and ISH
+# firmware that Fedora splits in several packages. The 2-in-1 parts are the tablet profile.
 [arch.hardware]
-packages = [
-    'linux-firmware-intel', 'linux-firmware-cirrus', 'sof-firmware', 'alsa-ucm-conf', 'alsa-utils',
-    'vpl-gpu-rt', 'libvpl', 'libva-utils', 'intel-media-driver',
-    'libcamera', 'libcamera-ipa', 'pipewire-libcamera',
-    'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'fprintd',
-]
+
+[arch.hardware.parts.intel]
+default = 'intel'
+packages = ['linux-firmware-intel', 'vpl-gpu-rt', 'libvpl', 'libva-utils', 'intel-media-driver', 'thermald', 'intel-lpmd']
 services = ['thermald.service', 'intel_lpmd.service']
+
+[arch.hardware.parts.audio]
+default = 'intel'
+packages = ['linux-firmware-cirrus', 'sof-firmware', 'alsa-ucm-conf', 'alsa-utils']
+
+[arch.hardware.parts.camera]
+default = 'camera'
+packages = ['libcamera', 'libcamera-ipa', 'pipewire-libcamera']
+
+# The fingerprint reader, and the polkit prompt that tries it first (scripts/privileged/polkit-1.arch).
+[arch.hardware.parts.fingerprint]
+default = 'fingerprint'
+packages = ['fprintd']
 notes = ['Enroll your fingerprint: fprintd-enroll. On Arch it signs in at GDM, unlocks the lock screen and answers the polkit prompt; sudo still asks for the password.']
 
-# The polkit prompt: the fingerprint first, the password after it or on "Use password" (scripts/privileged/polkit-1.arch).
-[[arch.hardware.files]]
+[[arch.hardware.parts.fingerprint.files]]
 path = '/etc/pam.d/polkit-1'
 source = 'scripts/privileged/polkit-1.arch'
 
-[[arch.hardware.files]]
+[[arch.hardware.parts.fingerprint.files]]
 path = '/usr/local/libexec/desktop-fingerprint'
 source = 'scripts/privileged/desktop-fingerprint'
 mode = '0755'
+
+[arch.hardware.parts.firmware]
+default = true
+packages = ['bolt', 'fwupd']
 
 # A 2-in-1: rotation, the stylus and the Hyprgrass gestures. The tablet sign-in is not ported yet.
 [arch.tablet]
@@ -422,48 +534,117 @@ packages = [
 
 # Everything below is opt-in: add the profile to --profiles.
 
-# Personal apps. base-devel is what makepkg needs to build the AUR packages.
+# Desktop apps, one part each, as on Fedora. Zen, 1Password and VS Code are not in the Arch repositories: AUR
+# PKGBUILDs at a pinned commit, which makepkg (base-devel) builds. Updating one: install-desktop.py pins (review the
+# PKGBUILD changes it links), install-desktop.py pins --update, then install-desktop.py apply; or Updates in
+# install-tui.py.
 [arch.apps]
-packages = ['base-devel', 'neovim', 'github-cli', 'glab', 'uv', 'gcc', 'xclip', 'wev', 'unrar', 'fuse2']
-notes = [
-    'Sign in to GitHub: gh auth login',
-    'Install a coding agent (Claude Code, Codex, Antigravity CLI) in Settings → Assistant',
-]
 
-# Not in the Arch repositories. Updating one: install-desktop.py pins (review the PKGBUILD changes it links),
-# install-desktop.py pins --update, then install-desktop.py apply; or Updates in install-tui.py.
-[[arch.apps.aur]]
+[arch.apps.parts.zen]
+default = true
+packages = ['base-devel']
+
+[[arch.apps.parts.zen.aur]]
 package = 'zen-browser-bin'
 commit = '12bff888a8299aedcef68cca18378cfac24474d8'
 version = '1.24b-1'
 
-[[arch.apps.aur]]
+[arch.apps.parts.onepassword]
+default = false
+packages = ['base-devel']
+
+[[arch.apps.parts.onepassword.aur]]
 package = '1password'
 commit = 'a01e3b048ebbe341d6e6b500304a315a342a7d84'
 version = '8.12.44-33'
 key = 'https://downloads.1password.com/linux/keys/1password.asc'
 
-[[arch.apps.aur]]
-package = 'visual-studio-code-bin'
-commit = 'a2c863ea6e8fcfb1395e1f7f61d9e7e85d0466aa'
-version = '1.145.0-1'
-
-[[arch.apps.files]]
+[[arch.apps.parts.onepassword.files]]
 path = '/etc/1password/custom_allowed_browsers'
 content = '''
 zen-bin
 '''
 
-# herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, the assistant console for any coding agent
+[arch.apps.parts.vscode]
+default = false
+packages = ['base-devel']
+
+[[arch.apps.parts.vscode.aur]]
+package = 'visual-studio-code-bin'
+commit = 'a2c863ea6e8fcfb1395e1f7f61d9e7e85d0466aa'
+version = '1.145.0-1'
+
+[arch.apps.parts.loupe]
+default = true
+packages = ['loupe']
+
+[arch.apps.parts.papers]
+default = true
+packages = ['papers']
+
+[arch.apps.parts.showtime]
+default = true
+packages = ['showtime']
+
+# Command-line tools, one part each, as on Fedora.
+[arch.utils]
+
+[arch.utils.parts.neovim]
+default = true
+packages = ['neovim']
+
+[arch.utils.parts.gcc]
+default = true
+packages = ['gcc']
+
+[arch.utils.parts.xclip]
+default = true
+packages = ['xclip']
+
+[arch.utils.parts.unrar]
+default = true
+packages = ['unrar']
+
+[arch.utils.parts.fuse]
+default = true
+packages = ['fuse2']
+
+[arch.utils.parts.gh]
+default = false
+packages = ['github-cli']
+notes = ['Sign in to GitHub: gh auth login']
+
+[arch.utils.parts.glab]
+default = false
+packages = ['glab']
+
+[arch.utils.parts.uv]
+default = false
+packages = ['uv']
+
+[arch.utils.parts.wev]
+default = false
+packages = ['wev']
+
+# Arch's tailscale has no tray unit: the tray icon is not set up.
+[arch.utils.parts.tailscale]
+default = false
+packages = ['tailscale']
+services = ['tailscaled.service']
+notes = ['Connect Tailscale: sudo tailscale up']
+
+# The AI Assistant: the Settings section, Super + A and the bar icon need it (the shell hides them without it). Its
+# console is herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, for any coding agent
 # (docs/features/ai-assistant.md). Put where their own installers put them (releases.herdr.dev/app/install.sh), from
 # the same release archives, checked against these sha256; after that the app updates itself and hc update the core.
-[arch.herdr]
+[arch.assistant]
 notes = [
+    'Install a coding agent (Claude Code, Codex, Antigravity CLI) in Settings → Assistant',
     'Herdr: Super + A opens it as the assistant console; pick the agent it starts in Settings → Assistant',
     'Herdr sends anonymous usage counts once a day: "telemetry": false in ~/.config/herdr-app/settings.json stops it',
 ]
 
-[[arch.herdr.archives]]
+[[arch.assistant.archives]]
 name = 'herdr-core'
 version = '0.1.18'
 url = 'https://releases.herdr.dev/core/{version}/herdr-core-linux-{arch}.tar.gz'
@@ -473,7 +654,7 @@ changes = 'https://github.com/herdrdev/herdr-core/releases'
 unpack = { 'herdr-core' = '.local/bin/herdr-core' }
 links = { '.local/bin/hc' = '.local/bin/herdr-core' }
 
-[[arch.herdr.archives]]
+[[arch.assistant.archives]]
 name = 'herdr-app'
 version = '0.1.13'
 url = 'https://releases.herdr.dev/app/{version}/herdr-app-linux-{arch}.tar.gz'
@@ -483,7 +664,7 @@ changes = 'https://github.com/herdrdev/herdr-app/releases'
 unpack = { 'herdr-app' = '.local/share/herdr-app' }
 links = { '.local/bin/herdr-app' = '.local/share/herdr-app/herdr-app', '.local/share/icons/hicolor/scalable/apps/herdr-app.svg' = '.local/share/herdr-app/herdr-app.svg' }
 
-[arch.herdr.archives.entries]
+[arch.assistant.archives.entries]
 '.local/share/applications/herdr-app.desktop' = '''
 [Desktop Entry]
 Type=Application
@@ -496,27 +677,32 @@ Categories=Development;
 StartupWMClass=herdr-app
 '''
 
-# Docker and Tailscale. Arch's tailscale has no tray unit: the tray icon is not set up.
+# Docker.
 [arch.containers]
-packages = ['docker', 'docker-compose', 'tailscale']
-services = ['docker.service', 'tailscaled.service']
+packages = ['docker', 'docker-compose']
+services = ['docker.service']
 groups = ['docker']
-notes = ['Connect Tailscale: sudo tailscale up']
 
-# GNOME viewers for images, PDFs and videos, and the Radio panel's player: mpv, on MPRIS through mpv-mpris, with
-# ytfzf and yt-dlp for YouTube, and Qt Multimedia (its FFmpeg backend) for the video in the panel.
-[arch.media]
-packages = ['loupe', 'papers', 'showtime', 'mpv', 'mpv-mpris', 'yt-dlp', 'ytfzf', 'qt6-multimedia', 'qt6-multimedia-ffmpeg']
+# The Radio panel's player: mpv, on MPRIS through mpv-mpris, with ytfzf and yt-dlp for YouTube, and Qt Multimedia
+# (its FFmpeg backend) for the video in the panel.
+[arch.radio]
+packages = ['mpv', 'mpv-mpris', 'yt-dlp', 'ytfzf', 'qt6-multimedia', 'qt6-multimedia-ffmpeg']
 
-# Steam, gamescope, and the 32-bit drivers games need, from multilib. gcc caches the optional renderer scaling workaround.
+# Games, from multilib: gcc caches the optional renderer scaling workaround.
 [arch.gaming]
 repos = ['multilib']
-packages = ['steam', 'gamescope', 'gcc', 'lib32-mesa', 'lib32-vulkan-intel', 'lib32-vulkan-radeon']
+packages = ['gcc']
+
+# Steam, with the 32-bit drivers games need.
+[arch.gaming.parts.steam]
+default = true
+packages = ['steam', 'lib32-mesa', 'lib32-vulkan-intel', 'lib32-vulkan-radeon']
 
 # A Steam launcher that scales the client for the monitor it opens on (desktop-steam).
-[arch.steam-hidpi]
+[arch.gaming.parts.steam-hidpi]
+default = true
 stow = ['steam-hidpi']
 
-# Arch's ffmpeg and media drivers already have every codec: the GStreamer plugins that use them (OpenH264 is in bad).
-[arch.codecs]
-packages = ['gst-plugins-bad', 'gst-plugins-ugly', 'gst-libav', 'libheif']
+[arch.gaming.parts.gamescope]
+default = true
+packages = ['gamescope']

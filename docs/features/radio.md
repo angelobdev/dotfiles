@@ -2,7 +2,7 @@
 
 `Super + M`, the antenna button in the Control Center's media tile, **Radio & Music** in the launcher, and `desktop-radio` all open the Radio panel. It plays web radio stations and DJ sets, and it finds YouTube mixes and playlists. Sound plays in one mpv of its own, with no window, and video shows in the panel itself.
 
-The `media` profile installs what it needs: `mpv`, `mpv-mpris`, `yt-dlp` and Qt Multimedia (`qt6-qtmultimedia`; on Arch `qt6-multimedia` with its FFmpeg backend), plus `ytfzf` on Arch. `mpv-mpris` puts that mpv on MPRIS, so the bar, the Control Center, the lock screen and the media keys show and control it like any other player. On Fedora `ytfzf` is not packaged, and search uses `yt-dlp` alone.
+The `radio` profile installs what it needs: `mpv`, `mpv-mpris`, `yt-dlp` and Qt Multimedia (`qt6-qtmultimedia`; on Arch `qt6-multimedia` with its FFmpeg backend), plus `ytfzf` on Arch. `mpv-mpris` puts that mpv on MPRIS, so the bar, the Control Center, the lock screen and the media keys show and control it like any other player. On Fedora `ytfzf` is not packaged, and search uses `yt-dlp` alone.
 
 ## The panel
 
@@ -27,7 +27,7 @@ The list:
 - **Keeping in step:** with the video open, the panel reads mpv's position every second. The picture follows mpv's pause, and jumps when it drifts more than 0.6 s from the sound. When mpv moves to another item of a playlist, the picture of that item loads.
 - **Closing:** turning video off or closing the panel only removes the picture.
 
-Without Qt Multimedia, the video area says that the media profile installs it, and the rest of the panel works.
+Without Qt Multimedia, the video area says that the radio profile installs it, and the rest of the panel works.
 
 ## Stations
 

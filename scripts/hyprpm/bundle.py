@@ -25,8 +25,21 @@ STAMP = Path.home() / '.local/state/dotfiles/hypr-plugins.json'
 RECORD = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'dotfiles/install.json'
 # Plugins built only with a profile: the touchscreen gestures are for a 2-in-1.
 PROFILE_OF = {'hyprgrass': 'tablet'}
-# Records written since the tablet profile left hardware say so; before, hardware held what tablet holds now.
-PROFILES_VERSION = 2
+# Records say which profiles they name. 2: tablet left hardware. 3: profiles have parts (profile.part), herdr became
+# assistant, media radio, codecs went into core, steam-hidpi into gaming, and apps split into apps and utils.
+PROFILES_VERSION = 3
+# A version 2 profile as the units of version 3 that hold what it installed.
+UNITS_OF_V2 = {
+    'hardware': ['hardware', 'hardware.intel', 'hardware.audio', 'hardware.camera', 'hardware.fingerprint', 'hardware.firmware'],
+    'apps': ['apps', 'apps.zen', 'apps.onepassword', 'apps.vscode', 'utils', 'utils.neovim', 'utils.gcc', 'utils.xclip',
+             'utils.unrar', 'utils.fuse', 'utils.gh', 'utils.glab', 'utils.uv', 'utils.wev'],
+    'herdr': ['assistant'],
+    'containers': ['containers', 'utils', 'utils.tailscale'],
+    'media': ['radio', 'apps', 'apps.loupe', 'apps.papers', 'apps.showtime'],
+    'gaming': ['gaming', 'gaming.steam', 'gaming.gamescope'],
+    'steam-hidpi': ['gaming', 'gaming.steam-hidpi'],
+    'codecs': ['core'],
+}
 
 # status(): what the plugins need, from the least to the most work.
 CURRENT = 'current'          # built from this bundle for the installed Hyprland
@@ -62,11 +75,19 @@ def verify():
 
 
 def migrate(record):
-    # A record from before the tablet profile: its hardware profile was hardware and tablet together.
+    """A record of an older version, in the names of this one. Only names change: nothing is installed or removed."""
     profiles = record.get('profiles')
-    if isinstance(profiles, list) and record.get('profiles_version') != PROFILES_VERSION and 'hardware' in profiles \
-            and 'tablet' not in profiles:
+    version = record.get('profiles_version')
+    if not isinstance(profiles, list) or version == PROFILES_VERSION:
+        return record
+    # Version 1: its hardware profile was hardware and tablet together.
+    if version is None and 'hardware' in profiles and 'tablet' not in profiles:
         profiles.insert(profiles.index('hardware') + 1, 'tablet')
+    units = []
+    for name in profiles:
+        units += [unit for unit in UNITS_OF_V2.get(name, [name]) if unit not in units]
+    record['profiles'] = units
+    record['profiles_version'] = PROFILES_VERSION
     return record
 
 

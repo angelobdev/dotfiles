@@ -27,19 +27,42 @@ _spec.loader.exec_module(installer)
 sys.path.insert(0, str(REPO / 'scripts/hyprpm'))
 import bundle  # noqa: E402
 
-# One line each; docs/guide/installation.md has the long version.
+# One line each, for every profile and part; docs/guide/installation.md has the long version.
 DESCRIPTIONS = {
-    'core': 'Hyprland, Quickshell, GDM with the hyprland-uwsm session, portals, audio, network, fonts and zsh: the desktop itself.',
-    'hardware': 'Firmware, video decoding, cameras and power of a recent Intel laptop, fingerprint reader, firewall zone, sshd off.',
+    'core': 'Hyprland, Quickshell, GDM with the hyprland-uwsm session, portals, audio, network, fonts, zsh and the codecs (from RPM Fusion on Fedora): the desktop itself.',
+    'hardware': 'A laptop, in parts checked where the installer finds the hardware; firewall zone and sshd off on Fedora.',
+    'hardware.intel': 'Intel: Wi-Fi and Bluetooth firmware, GPU and video decoding, NPU, thermald and intel-lpmd.',
+    'hardware.audio': 'Sound: SOF firmware of the Intel audio DSP, Cirrus amplifiers, ALSA use-case profiles.',
+    'hardware.camera': 'The camera: libcamera for MIPI cameras (Intel IPU), with its sensing controller firmware.',
+    'hardware.fingerprint': 'The fingerprint reader (fprintd), and the polkit prompt that tries it first.',
+    'hardware.firmware': 'Firmware updates (fwupd) and Thunderbolt devices (bolt).',
     'tablet': 'A 2-in-1: screen rotation, stylus, sign-in without the fingerprint reader while folded, touchscreen gestures (Hyprgrass).',
     'plugins': 'What building the Hyprland plugins needs, from RPM Fusion too; the RPM Fusion ffmpeg replaces ffmpeg-free.',
-    'apps': 'Zen Browser, 1Password, VS Code, Neovim, gh, glab, uv, gcc and a few command-line tools.',
-    'herdr': 'The Herdr app and herdr-core in ~/.local: the assistant console for any coding agent; they update themselves.',
-    'containers': 'Docker (moby-engine, docker-compose, the docker group) and Tailscale.',
-    'media': 'Loupe, Papers and Showtime for images, PDFs and videos.',
-    'gaming': 'Steam, gamescope and the 32-bit drivers games need.',
-    'steam-hidpi': 'The Steam launcher that scales the client for the monitor it opens on.',
-    'codecs': 'The RPM Fusion codecs in place of the free builds: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX.',
+    'apps': 'Desktop apps, one by one.',
+    'apps.zen': 'Zen Browser.',
+    'apps.onepassword': '1Password, allowed to fill in Zen.',
+    'apps.vscode': 'Visual Studio Code.',
+    'apps.loupe': 'Loupe, for images.',
+    'apps.papers': 'Papers, for PDFs.',
+    'apps.showtime': 'Showtime, for videos.',
+    'utils': 'Command-line tools, one by one.',
+    'utils.neovim': 'Neovim.',
+    'utils.gcc': 'gcc, the C compiler.',
+    'utils.xclip': 'xclip, the clipboard of X11 apps from a terminal.',
+    'utils.unrar': 'unrar, for RAR archives.',
+    'utils.fuse': 'FUSE 2, which AppImages need.',
+    'utils.gh': 'gh, the GitHub command line.',
+    'utils.glab': 'glab, the GitLab command line.',
+    'utils.uv': 'uv, the Python package and project manager.',
+    'utils.wev': 'wev, which shows Wayland input events.',
+    'utils.tailscale': 'Tailscale, with its tray icon on Fedora.',
+    'assistant': 'The AI Assistant: Super + A, its bar icon and Settings section, and the Herdr app and herdr-core in ~/.local.',
+    'containers': 'Docker (moby-engine, docker-compose, the docker group).',
+    'radio': 'The Radio panel (Super + M): mpv on MPRIS, yt-dlp, Qt Multimedia for its video (and ytfzf on Arch).',
+    'gaming': 'Games: Steam, its HiDPI launcher and gamescope, one by one.',
+    'gaming.steam': 'Steam and the 32-bit drivers games need.',
+    'gaming.steam-hidpi': 'The Steam launcher that scales the client for the monitor it opens on.',
+    'gaming.gamescope': 'gamescope.',
 }
 PLUGIN_STATES = {
     bundle.CURRENT: 'built for this Hyprland and up to date',
@@ -56,6 +79,9 @@ UP = (curses.KEY_UP, 'k')
 DOWN = (curses.KEY_DOWN, 'j')
 ENTER = ('\n', '\r', curses.KEY_ENTER)
 BACK = ('\x1b', 'b', curses.KEY_LEFT)
+# In the accordion of profiles and parts: Right opens a profile, Left closes it (Esc and b still go back there).
+RIGHT = (curses.KEY_RIGHT, 'l')
+LEFT = (curses.KEY_LEFT, 'h')
 ERASE = (curses.KEY_BACKSPACE, '\x7f', '\b')
 SUDO_REFRESH = 60
 
@@ -92,6 +118,28 @@ def installed(status):
     return bool(status.total) and not status.missing
 
 
+def children(name):
+    # The parts of a profile, in manifest order.
+    return tuple(unit for unit in installer.manifest_units() if unit != name and installer.parent(unit) == name)
+
+
+def unit_installed(statuses, name):
+    # A profile with parts is there when its own setup is (or it has none) and one of its parts is.
+    parts = children(name)
+    if not parts:
+        return installed(statuses[name])
+    status = statuses[name]
+    return (installed(status) or not status.total) and any(installed(statuses[part]) for part in parts)
+
+
+def unit_label(statuses, name):
+    parts = children(name)
+    if not parts:
+        return status_label(statuses[name])
+    done = sum(installed(statuses[part]) for part in parts)
+    return f'{done}/{len(parts)} parts' if done else ''
+
+
 def status_label(status):
     if installed(status):
         return 'installed'
@@ -104,7 +152,7 @@ def preselected(statuses):
     # On a desktop already set up, what it has; on a fresh system, the defaults.
     if not installed(statuses['core']):
         return tuple(installer.default_profiles().split(','))
-    return tuple(name for name in installer.PROFILES if name == 'core' or installed(statuses[name]))
+    return tuple(name for name in installer.manifest_units() if name == 'core' or unit_installed(statuses, name))
 
 
 def status_text(status):
@@ -116,12 +164,19 @@ def status_text(status):
     return 'Not installed.'
 
 
-def toggled(profiles, name):
-    # core is the desktop itself and never goes. The order stays the one of PROFILES, which the manifest merges in.
+def toggled(profiles, name, table=None):
+    # core is the desktop itself and never goes. A profile comes with its default parts and goes with all of them; a
+    # part comes with its profile. The order stays the manifest's, which merges in it.
     if name == 'core':
         return tuple(profiles)
-    chosen = set(profiles) ^ {name}
-    return tuple(profile for profile in installer.PROFILES if profile in chosen)
+    chosen = set(profiles)
+    if name in chosen:
+        chosen -= {name, *children(name)}
+    else:
+        chosen |= {name, installer.parent(name)}
+        if installer.parent(name) == name:
+            chosen |= set(installer.default_parts(name, table))
+    return installer.normalized(chosen)
 
 
 def summary(table, name):
@@ -368,18 +423,49 @@ def menu(ui):
 
 def detect(ui, plan):
     statuses = {}
-    for index, name in enumerate(installer.PROFILES):
+    names = installer.manifest_units()
+    for index, name in enumerate(names):
         row = ui.frame('Profiles', 'Ctrl+C quits')
         if row is not None:
-            ui.wrap(row, f'Looking for the profiles already on this system ({index + 1}/{len(installer.PROFILES)}): {name}')
+            ui.wrap(row, f'Looking for the profiles already on this system ({index + 1}/{len(names)}): {name}')
             ui.window.refresh()
         statuses[name] = profile_status(plan, name)
     return statuses
 
 
+def visible_units(names, expanded):
+    # The rows of the accordion: every profile, and the parts of the open ones under it.
+    return [name for name in names if installer.parent(name) == name or installer.parent(name) in expanded]
+
+
+def unit_row(name, checked, expanded):
+    # A profile with parts shows whether it is open; a part is indented under its profile.
+    if installer.parent(name) != name:
+        return f'    {checked} {name.split(".", 1)[1]}'
+    return f'{("v" if name in expanded else ">") if children(name) else " "} {checked} {name}'
+
+
+def move_in_accordion(key, names, cursor, expanded):
+    """Up/Down, Right to open a profile, Left to close it (from one of its parts too): the new cursor and open set."""
+    rows = visible_units(names, expanded)
+    name = rows[cursor]
+    if key in UP:
+        return (cursor - 1) % len(rows), expanded
+    if key in DOWN:
+        return (cursor + 1) % len(rows), expanded
+    if key in RIGHT and children(name):
+        return cursor, expanded | {name}
+    if key in LEFT:
+        profile = installer.parent(name)
+        expanded = expanded - {profile}
+        return visible_units(names, expanded).index(profile), expanded
+    return cursor, expanded
+
+
 def choose_profiles(ui, plan, mode, statuses, preset=False):
     profiles = tuple(plan.profiles)
-    cursor = 0
+    names = installer.manifest_units()
+    cursor, expanded = 0, set()
     found = installed(statuses['core'])
     if mode == 'post':
         intro = 'Choose the profiles you installed: plugins builds the Hyprland plugins.'
@@ -389,34 +475,37 @@ def choose_profiles(ui, plan, mode, statuses, preset=False):
         intro = 'The profiles found on this system start on. core is the desktop itself and always stays on.'
     else:
         intro = 'Choose what to install. core is the desktop itself and always stays on.'
-    defaults = tuple(installer.default_profiles().split(','))
-    keys = 'Up/Down move   Space toggle   d defaults   ' + ('i installed   ' if found else '') + 'Enter continue   Esc back   q quit'
+    defaults = tuple(installer.default_profiles(plan.table).split(','))
+    keys = 'Up/Down move   Right/Left parts   Space toggle   d defaults   ' + ('i installed   ' if found else '') + 'Enter continue   Esc back   q quit'
     while True:
         row = ui.frame('Profiles', keys)
         if row is None:
             ui.key()
             continue
         row = ui.wrap(row, intro) + 1
-        for index, name in enumerate(installer.PROFILES):
+        rows = visible_units(names, expanded)
+        height = ui.size()[0]
+        # Room for the details of the highlighted row at the bottom.
+        shown = max(height - 1 - row - 6, 1)
+        top = min(max(0, cursor - shown + 1), cursor)
+        for index, name in enumerate(rows[top:top + shown], start=top):
             selected = index == cursor
             box = '[*]' if name == 'core' else '[x]' if name in profiles else '[ ]'
-            ui.put(row, 2, ('> ' if selected else '  ') + f'{box} {name}', curses.A_REVERSE if selected else 0)
-            ui.put(row, 21, status_label(statuses[name]), ui.style('ok' if installed(statuses[name]) else 'warn'))
-            ui.put(row, 33, clip(DESCRIPTIONS[name], ui.size()[1] - 35), ui.style('dim'))
+            ui.put(row, 2, ('> ' if selected else '  ') + unit_row(name, box, expanded), curses.A_REVERSE if selected else 0)
+            ui.put(row, 28, unit_label(statuses, name), ui.style('ok' if unit_installed(statuses, name) else 'warn'))
+            ui.put(row, 40, clip(DESCRIPTIONS.get(name, ''), ui.size()[1] - 42), ui.style('dim'))
             row += 1
-        name = installer.PROFILES[cursor]
+        name = rows[cursor]
         row += 1
         ui.put(row, 2, name + ('  (default)' if name in defaults else '  (opt-in)'), ui.style('accent') | curses.A_BOLD)
-        row = ui.wrap(row + 1, DESCRIPTIONS[name])
+        row = ui.wrap(row + 1, DESCRIPTIONS.get(name, ''))
         row = ui.wrap(row, summary(plan.table, name), ui.style('dim'))
         ui.wrap(row, status_text(statuses[name]), ui.style('ok' if installed(statuses[name]) else 'dim'))
         key = ui.key()
-        if key in UP:
-            cursor = (cursor - 1) % len(installer.PROFILES)
-        elif key in DOWN:
-            cursor = (cursor + 1) % len(installer.PROFILES)
+        if key in UP + DOWN + RIGHT + LEFT:
+            cursor, expanded = move_in_accordion(key, names, cursor, expanded)
         elif key == ' ':
-            profiles = toggled(profiles, name)
+            profiles = toggled(profiles, name, plan.table)
         elif key == 'd':
             profiles = defaults
         elif key == 'i' and found:
@@ -430,36 +519,41 @@ def choose_profiles(ui, plan, mode, statuses, preset=False):
 
 
 def choose_removal(ui, plan, statuses, chosen=()):
-    # Every profile but core, with what of it is on this system; nothing starts checked.
-    names = [name for name in installer.PROFILES if name != 'core']
-    chosen, cursor = set(chosen), 0
+    # Every profile and part but core, with what of it is on this system; nothing starts checked. A profile goes
+    # with all of its parts.
+    names = [name for name in installer.manifest_units() if name != 'core']
+    chosen, cursor, expanded = set(chosen), 0, set()
     while True:
-        row = ui.frame('Remove profiles', 'Up/Down move   Space toggle   Enter continue   Esc back   q quit')
+        row = ui.frame('Remove profiles', 'Up/Down move   Right/Left parts   Space toggle   Enter continue   Esc back   q quit')
         if row is None:
             ui.key()
             continue
-        row = ui.wrap(row, 'Check the profiles to remove. What another installed profile needs stays; the review shows the rest.') + 1
-        for index, name in enumerate(names):
+        row = ui.wrap(row, 'Check the profiles or parts to remove. What another installed one needs stays; the review shows the rest.') + 1
+        rows = visible_units(names, expanded)
+        shown = max(ui.size()[0] - 1 - row - 5, 1)
+        top = min(max(0, cursor - shown + 1), cursor)
+        for index, name in enumerate(rows[top:top + shown], start=top):
             selected = index == cursor
-            ui.put(row, 2, ('> ' if selected else '  ') + f'[{"x" if name in chosen else " "}] {name}', curses.A_REVERSE if selected else 0)
-            ui.put(row, 21, status_label(statuses[name]), ui.style('ok' if installed(statuses[name]) else 'warn'))
-            ui.put(row, 33, clip(DESCRIPTIONS[name], ui.size()[1] - 35), ui.style('dim'))
+            checked = name in chosen or installer.parent(name) in chosen
+            ui.put(row, 2, ('> ' if selected else '  ') + unit_row(name, '[x]' if checked else '[ ]', expanded), curses.A_REVERSE if selected else 0)
+            ui.put(row, 28, unit_label(statuses, name), ui.style('ok' if unit_installed(statuses, name) else 'warn'))
+            ui.put(row, 40, clip(DESCRIPTIONS.get(name, ''), ui.size()[1] - 42), ui.style('dim'))
             row += 1
         row += 1
-        name = names[cursor]
-        row = ui.wrap(row, DESCRIPTIONS[name])
+        name = rows[cursor]
+        row = ui.wrap(row, DESCRIPTIONS.get(name, ''))
         ui.wrap(row, summary(plan.table, name), ui.style('dim'))
         key = ui.key()
-        if key in UP:
-            cursor = (cursor - 1) % len(names)
-        elif key in DOWN:
-            cursor = (cursor + 1) % len(names)
+        if key in UP + DOWN + RIGHT + LEFT:
+            cursor, expanded = move_in_accordion(key, names, cursor, expanded)
         elif key == ' ':
             chosen ^= {name}
+            if installer.parent(name) == name:
+                chosen -= set(children(name))
         elif key in ENTER and chosen:
-            return 'next', tuple(profile for profile in names if profile in chosen)
+            return 'next', installer.with_parts(tuple(unit for unit in names if unit in chosen))
         elif key in ENTER:
-            ui.footer('Nothing is checked: Space checks a profile.', 'warn')
+            ui.footer('Nothing is checked: Space checks a profile or a part.', 'warn')
             ui.key()
         elif key in BACK:
             return 'back', ()
@@ -817,7 +911,7 @@ def recorded_profiles():
         record = installer.load_record()
     if record.get('uninstalled'):
         return ()
-    return tuple(name for name in installer.PROFILES if name in record.get('profiles', ()) or name == 'core' and record.get('profiles'))
+    return tuple(name for name in installer.manifest_units() if name in record.get('profiles', ()) or name == 'core' and record.get('profiles'))
 
 
 def default_choice(sources):
@@ -956,7 +1050,7 @@ def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
             if not profiles:
                 if statuses is None:
                     statuses = detect(ui, plan)
-                profiles = tuple(name for name in installer.PROFILES if name == 'core' or installed(statuses[name]))
+                profiles = tuple(name for name in installer.manifest_units() if name == 'core' or unit_installed(statuses, name))
             current = plan._replace(profiles=profiles)
             outcome, picked = updates_screen(ui, current)
             if outcome == 'quit':
@@ -989,7 +1083,7 @@ def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
                 statuses = detect(ui, plan)
                 if not preset:
                     found = preselected(statuses)
-                    plan = plan._replace(profiles=tuple(name for name in installer.PROFILES if name in found or name in adding))
+                    plan = plan._replace(profiles=installer.normalized(set(found) | set(adding)))
             outcome, profiles = choose_profiles(ui, plan, mode, statuses, preset)
             plan = plan._replace(profiles=profiles)
             if outcome == 'quit':
@@ -1196,13 +1290,18 @@ def main(argv=None):
     removal = tuple(args.remove.split(',')) if args.remove else ()
     if sum(bool(value) for value in (args.updates, adding, removal, args.profiles and (adding or removal))) > 1:
         parser.error('--updates, --add and --remove go one at a time, and --add or --remove without --profiles.')
-    if adding and set(adding) - set(installer.PROFILES):
-        parser.error(f'--add takes {", ".join(installer.PROFILES)}.')
+    units = installer.manifest_units()
+    if adding and set(adding) - set(units):
+        parser.error(f'--add takes {", ".join(units)}.')
     if removal and not installer.removable_profiles(removal):
-        parser.error(f'--remove takes {", ".join(installer.PROFILES[1:])}; Remove the desktop removes core.')
+        parser.error(f'--remove takes {", ".join(units[1:])}; Remove the desktop removes core.')
     profiles = tuple((args.profiles or installer.default_profiles()).split(','))
     if not installer.valid_profiles(profiles):
-        parser.error(f'--profiles needs core, and takes only {", ".join(installer.PROFILES)}.')
+        parser.error(f'--profiles needs core, and takes only {", ".join(units)}.')
+    profiles = installer.normalized(profiles)
+    # Adding a profile brings its default parts; removing one, all of its parts.
+    adding = installer.normalized(set(adding) | {part for name in adding for part in installer.default_parts(name)})
+    removal = installer.with_parts(removal) if removal else ()
     if os.geteuid() == 0:
         sys.exit('Run as the desktop user: the installer asks sudo for each system change.')
     if not (sys.stdin.isatty() and sys.stdout.isatty()):

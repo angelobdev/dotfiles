@@ -31,15 +31,44 @@ ColumnLayout {
         if (!reader.running && !job.running)
             reader.running = true;
     }
-    function plan(action, name) {
+    // name: the units (comma-separated); for a change, the units to add and to remove, "-" for none.
+    function plan(action, name, add, remove) {
         if (busy)
             return;
         review = null;
         error = "";
-        planner.command = ["python3", helper, "plan", action, name];
+        planner.command = action === "change" ? ["python3", helper, "plan", "change", add || "-", remove || "-"] : ["python3", helper, "plan", action, name];
         planner.action = action;
         planner.name = name;
         planner.running = true;
+    }
+    // Parts: which profiles show theirs, and what is switched on or off before Apply, by unit.
+    property var expanded: ({})
+    property var staged: ({})
+    function partOn(part) {
+        return staged[part.name] !== undefined ? staged[part.name] : part.recorded || part.installed;
+    }
+    function stage(part, on) {
+        const next = Object.assign({}, staged);
+        if (on === (part.recorded || part.installed))
+            delete next[part.name];
+        else
+            next[part.name] = on;
+        staged = next;
+    }
+    function changes(profile) {
+        const add = profile.parts.filter(part => staged[part.name] === true).map(part => part.name);
+        const remove = profile.parts.filter(part => staged[part.name] === false).map(part => part.name);
+        return {
+            add: add,
+            remove: remove
+        };
+    }
+    // The label of a part: settings.profiles.partNames.<profile>.<part>, a catalog key holding no dash.
+    function partName(part) {
+        const [profile, name] = part.name.split(".");
+        const key = "settings.profiles.partNames." + profile + "." + name.replace(/-(\w)/g, (match, letter) => letter.toUpperCase());
+        return I18n.tr(key);
     }
     function apply() {
         if (!review || review.blocked || job.running)
@@ -52,7 +81,7 @@ ColumnLayout {
         review = null;
     }
     function title(action, name) {
-        return I18n.tr(action === "install" ? "settings.profiles.installTitle" : "settings.profiles.removeTitle", [name]);
+        return I18n.tr(action === "install" ? "settings.profiles.installTitle" : action === "change" ? "settings.profiles.reviewChange" : "settings.profiles.removeTitle", [name]);
     }
     // A catalog key holds no dash: steam-hidpi is steamHidpi.
     function described(name) {
@@ -126,7 +155,10 @@ ColumnLayout {
     Job {
         id: job
         name: "profile"
-        onFinished: root.refresh()
+        onFinished: {
+            root.staged = ({});
+            root.refresh();
+        }
     }
     Text {
         Layout.fillWidth: true
@@ -170,54 +202,113 @@ ColumnLayout {
                 spacing: 12
                 Repeater {
                     model: root.listed
-                    RowLayout {
+                    ColumnLayout {
                         id: profileRow
                         required property var modelData
                         readonly property bool core: modelData.name === "core"
+                        readonly property var parts: Array.isArray(modelData.parts) ? modelData.parts : []
+                        readonly property bool open: root.expanded[modelData.name] === true
+                        readonly property var pending: root.changes({
+                            parts: parts
+                        })
                         Layout.fillWidth: true
-                        spacing: 12
-                        ColumnLayout {
+                        spacing: 8
+                        RowLayout {
                             Layout.fillWidth: true
-                            spacing: 2
-                            Text {
+                            spacing: 12
+                            ColumnLayout {
                                 Layout.fillWidth: true
-                                text: profileRow.modelData.name + (profileRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
-                                textFormat: Text.PlainText
-                                color: Theme.text
-                                font.family: Theme.font
-                                font.pixelSize: Theme.textSize(13)
-                                font.weight: Font.DemiBold
+                                spacing: 2
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: profileRow.modelData.name + (profileRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
+                                    textFormat: Text.PlainText
+                                    color: Theme.text
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.textSize(13)
+                                    font.weight: Font.DemiBold
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: root.described(profileRow.modelData.name)
+                                    wrapMode: Text.WordWrap
+                                    color: Theme.muted
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.textSize(11)
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: profileRow.core ? root.stateText(profileRow.modelData) + " · " + I18n.tr("settings.profiles.coreHint") : root.stateText(profileRow.modelData)
+                                    wrapMode: Text.WordWrap
+                                    color: profileRow.modelData.installed ? Theme.text : Theme.muted
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.textSize(11)
+                                }
                             }
-                            Text {
-                                Layout.fillWidth: true
-                                text: root.described(profileRow.modelData.name)
-                                wrapMode: Text.WordWrap
-                                color: Theme.muted
-                                font.family: Theme.font
-                                font.pixelSize: Theme.textSize(11)
+                            // Install while something of it is missing (Complete when part is there), Remove while the installer has a record of it.
+                            ActionButton {
+                                visible: !profileRow.modelData.installed
+                                enabled: !root.busy
+                                text: I18n.tr(profileRow.modelData.done > 0 ? "settings.profiles.complete" : "settings.profiles.install")
+                                onClicked: root.plan("install", profileRow.modelData.name)
                             }
-                            Text {
-                                Layout.fillWidth: true
-                                text: profileRow.core ? root.stateText(profileRow.modelData) + " · " + I18n.tr("settings.profiles.coreHint") : root.stateText(profileRow.modelData)
-                                wrapMode: Text.WordWrap
-                                color: profileRow.modelData.installed ? Theme.text : Theme.muted
-                                font.family: Theme.font
-                                font.pixelSize: Theme.textSize(11)
+                            ActionButton {
+                                visible: !profileRow.core && profileRow.modelData.recorded
+                                enabled: !root.busy
+                                destructive: true
+                                text: I18n.tr("settings.profiles.remove")
+                                onClicked: root.plan("remove", profileRow.modelData.name)
+                            }
+                            // Its parts, one switch each.
+                            CompactIconButton {
+                                visible: profileRow.parts.length > 0
+                                iconName: profileRow.open ? "chevron-up" : "chevron-down"
+                                tooltip: I18n.tr("settings.profiles.parts")
+                                onClicked: {
+                                    const next = Object.assign({}, root.expanded);
+                                    next[profileRow.modelData.name] = !profileRow.open;
+                                    root.expanded = next;
+                                }
                             }
                         }
-                        // Install while something of it is missing (Complete when part is there), Remove while the installer has a record of it.
-                        ActionButton {
-                            visible: !profileRow.modelData.installed
-                            enabled: !root.busy
-                            text: I18n.tr(profileRow.modelData.done > 0 ? "settings.profiles.complete" : "settings.profiles.install")
-                            onClicked: root.plan("install", profileRow.modelData.name)
+                        Repeater {
+                            model: profileRow.open ? profileRow.parts : []
+                            RowLayout {
+                                id: partRow
+                                required property var modelData
+                                Layout.fillWidth: true
+                                Layout.leftMargin: 16
+                                spacing: 10
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: root.partName(partRow.modelData) + (partRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
+                                    textFormat: Text.PlainText
+                                    elide: Text.ElideRight
+                                    color: Theme.text
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.textSize(12)
+                                }
+                                Text {
+                                    text: root.stateText(partRow.modelData)
+                                    color: partRow.modelData.installed ? Theme.text : Theme.muted
+                                    font.family: Theme.font
+                                    font.pixelSize: Theme.textSize(11)
+                                }
+                                ControlSwitch {
+                                    enabled: !root.busy
+                                    checked: root.partOn(partRow.modelData)
+                                    onToggled: root.stage(partRow.modelData, checked)
+                                }
+                            }
                         }
+                        // What the switches changed in this profile: shown in the plan first, like Install and Remove.
                         ActionButton {
-                            visible: !profileRow.core && profileRow.modelData.recorded
+                            visible: profileRow.open && (profileRow.pending.add.length > 0 || profileRow.pending.remove.length > 0)
+                            Layout.leftMargin: 16
                             enabled: !root.busy
-                            destructive: true
-                            text: I18n.tr("settings.profiles.remove")
-                            onClicked: root.plan("remove", profileRow.modelData.name)
+                            highlighted: true
+                            text: I18n.tr("settings.profiles.applyParts")
+                            onClicked: root.plan("change", profileRow.modelData.name, profileRow.pending.add.join(","), profileRow.pending.remove.join(","))
                         }
                     }
                 }
@@ -242,7 +333,7 @@ ColumnLayout {
             spacing: 8
             Text {
                 Layout.fillWidth: true
-                text: root.review ? I18n.tr(root.review.action === "install" ? "settings.profiles.reviewInstall" : "settings.profiles.reviewRemove", [root.review.name]) : I18n.tr("settings.profiles.reading")
+                text: root.review ? I18n.tr(root.review.action === "install" ? "settings.profiles.reviewInstall" : root.review.action === "change" ? "settings.profiles.reviewChange" : "settings.profiles.reviewRemove", [root.review.name]) : I18n.tr("settings.profiles.reading")
                 wrapMode: Text.WordWrap
                 color: Theme.text
                 font.family: Theme.font

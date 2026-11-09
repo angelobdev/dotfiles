@@ -148,7 +148,7 @@ Overlay {
                     width: parent.width - 32
                     horizontalAlignment: Text.AlignHCenter
                     visible: text !== ""
-                    // Without QtMultimedia the loader fails: the media profile installs it.
+                    // Without QtMultimedia the loader fails: the radio profile installs it.
                     text: videoLoader.status === Loader.Error ? I18n.tr("radio.videoMissing") : Radio.videoLoading || (videoLoader.item && videoLoader.item.loading) ? I18n.tr("radio.videoLoading") : ""
                     wrapMode: Text.Wrap
                     color: videoLoader.status === Loader.Error ? Theme.danger : Theme.muted

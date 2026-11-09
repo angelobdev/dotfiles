@@ -992,3 +992,22 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
   - Tests: `test_radio.py`, 28 tests.
     - On screen (2026-11-09, by Claude at the user's request): Blue Note Hours, then `desktop-radio video` (new: `radioVideo` over IPC). The 720p picture showed in the panel with the controls below, and the bar showed the track through mpv-mpris. Over two seconds the frames stayed identical with mpv paused (`desktop-radio toggle`) and changed while it played. A first `desktop-radio video` came before the `Radio` singleton had read the state: `requestVideo()` now waits up to 5 s for it.
 
+## Installer profiles in parts (#49, step 1), 2026-11-09
+
+- Manifest:
+  - Fedora and Arch have the same 34 units (`test_both_distributions_have_the_same_units`);
+  - every part says `default` (true, false, or `intel`, `camera`, `fingerprint`);
+  - every repository is used by some unit.
+- Detection on the OmniBook: Intel, camera (IPU) and fingerprint reader (Synaptics `06cb`) found, so the default is every `hardware` part with `tablet`. Tested against a fake `/sys`: an Elan touchscreen (`04f3:2513`) is not a reader, an Elan `0c..` is, and an Intel IPU is a camera.
+- Record version 3:
+  - this machine's record (version 2: `core,hardware,tablet,plugins,apps,containers,media,gaming,codecs,steam-hidpi`) is read as the units that hold them;
+  - `profiles.py list` on it shows every profile and part installed but `gaming.steam-hidpi` (its links point to the live clone, not the worktree) and `assistant` (Herdr installed by hand, not recorded).
+- Preview of every step but stow, verify and boot, against this system: nothing to do for the defaults, or for `core,apps.vscode,gaming,utils.wev`. `--remove gaming.steam` would only note it in the record, since Steam stays for nothing else here.
+- Tests:
+  - `test_install` (parts, units, detection, defaults, `load_plan`);
+  - `test_install_tui` (93: toggling with default parts, the accordion);
+  - `test_profiles` (listing with parts, `plan change`, `run`);
+  - `test_plugins` (migration of a version 2 record);
+  - `check.sh` passes.
+- Not tried: the TUI and the Settings tab on screen, and an install in a container (CI runs it).
+

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """install-desktop.py must preview without changing anything, repeat safely, and refuse what it does not know."""
 import atexit
+import copy
 import hashlib
 import importlib.util
 import io
@@ -30,7 +31,7 @@ installer.RECORD = installer.STATE / 'install.json'
 installer.INTERFACE = installer.STATE / 'interface-before-theme.ini'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
-PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'firmware', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes', 'archives'}
+PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'firmware', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes', 'archives', 'default'}
 TABLE = {
     'repos': {'one': {'kind': 'copr', 'name': 'a/b'}},
     'core': {'repos': ['one'], 'packages': ['a', 'b'], 'exclude': ['tour'], 'services': ['s.service'], 'user_services': ['u.service'],
@@ -69,7 +70,9 @@ def plan(distro, commands=(), profiles=('core', 'plugins')):
 class ManifestTests(unittest.TestCase):
     def setUp(self):
         self.fedora = MANIFEST['fedora']
-        self.profiles = [self.fedora[name] for name in installer.PROFILES]
+        # Every unit: each profile, and each part as a table of its own.
+        table = installer.flatten_parts(copy.deepcopy(self.fedora))
+        self.profiles = [table[name] for name in installer.units(table)]
 
     def test_every_profile_exists_and_uses_known_keys(self):
         for profile in self.profiles:
@@ -123,7 +126,7 @@ class ManifestTests(unittest.TestCase):
         self.assertIn('oo7-daemon.service', self.fedora['core']['user_services'])
 
     def test_personal_apps_are_opt_in(self):
-        for profile in ('apps', 'herdr', 'containers', 'media', 'gaming', 'steam-hidpi', 'codecs'):
+        for profile in ('apps', 'utils', 'assistant', 'containers', 'radio', 'gaming'):
             self.assertNotIn(profile, installer.DEFAULT_PROFILES.split(','))
 
     def test_no_flatpak_is_installed_for_you(self):
@@ -840,7 +843,7 @@ PROFILE_TABLE = {
              'aur': [{'package': 'zen', 'version': '1'}]},
     'gaming': {'repos': ['one'], 'packages': ['shared', 'game'], 'swaps': [['old', 'new']], 'disable': ['d.socket'],
                'firewall_zone': 'Zone'},
-    'steam-hidpi': {'stow': ['steam-hidpi']},
+    'gaming.steam-hidpi': {'stow': ['steam-hidpi']},
 }
 
 
@@ -852,7 +855,7 @@ class ProfileRemovalTests(unittest.TestCase):
         # The file apply wrote, as /etc/apps, in the temporary home.
         self.file = Path.home() / 'etc-apps'
         self.file.write_text('x\n')
-        record = {'profiles': ['core', 'apps', 'gaming', 'steam-hidpi'], 'packages': ['a', 'shared', 'apponly', 'game', 'zen', 'new'],
+        record = {'profiles': ['core', 'apps', 'gaming', 'gaming.steam-hidpi'], 'packages': ['a', 'shared', 'apponly', 'game', 'zen', 'new'],
                   'swaps': [['old', 'new']], 'repos': ['one', 'two'], 'files': {str(self.file): None},
                   'written': {str(self.file): installer.text_digest('x\n')},
                   'groups': ['g'], 'flatpaks': ['org.example.App'], 'firewall_zone': 'FedoraServer', 'login_shell': '/bin/bash',
@@ -895,8 +898,8 @@ class ProfileRemovalTests(unittest.TestCase):
         self.assertEqual((sorted(both['packages']), both['repos']), (['apponly', 'game', 'new', 'shared', 'zen'], ['one', 'two']))
 
     def test_without_a_record_of_profiles_every_other_one_stays(self):
-        self.assertEqual(installer.staying_profiles({}, ('apps',)), tuple(name for name in installer.PROFILES if name != 'apps'))
-        self.assertEqual(installer.staying_profiles({'profiles': ['core', 'apps', 'media']}, ('apps',)), ('core', 'media'))
+        self.assertEqual(installer.staying_profiles({}, ('apps',)), tuple(name for name in installer.manifest_units() if name != 'apps'))
+        self.assertEqual(installer.staying_profiles({'profiles': ['core', 'apps', 'radio']}, ('apps',)), ('core', 'radio'))
 
     def test_core_is_not_a_profile_to_remove(self):
         self.assertFalse(installer.removable_profiles(('core',)))
@@ -923,7 +926,7 @@ class ProfileRemovalTests(unittest.TestCase):
         current.distro.remove_repo.assert_called_once_with(PROFILE_TABLE['repos']['two'])
         current.distro.swap.assert_not_called()
         saved = json.loads(installer.RECORD.read_text())
-        self.assertEqual(saved['profiles'], ['core', 'gaming', 'steam-hidpi'])
+        self.assertEqual(saved['profiles'], ['core', 'gaming', 'gaming.steam-hidpi'])
         self.assertEqual(saved['packages'], ['a', 'shared', 'game', 'new'])
         self.assertEqual((saved['files'], saved['written'], saved['services']['enabled']), ({}, {}, []))
         self.assertEqual(saved['firewall_zone'], 'FedoraServer')
@@ -945,7 +948,7 @@ class ProfileRemovalTests(unittest.TestCase):
         for link, target in ((mine, source), (core, REPO / 'hypr/.config/hypr/hyprland.lua')):
             link.parent.mkdir(parents=True, exist_ok=True)
             link.symlink_to(target)
-        current = self.plan(self.recorded(), ('steam-hidpi',))
+        current = self.plan(self.recorded(), ('gaming.steam-hidpi',))
         with mock.patch.object(installer, 'backups', return_value=[]):
             self.assertEqual(installer.unprofile_stow_pending(current), [f'unlink {mine}'])
             installer.unprofile_stow_apply(current, [])
@@ -992,7 +995,7 @@ class ProfileRemovalTests(unittest.TestCase):
 
     def test_nothing_recorded_for_the_profile_is_nothing_to_do(self):
         self.recorded(profiles=['core', 'gaming'])
-        current = self.plan(installer.load_record(), ('media',))
+        current = self.plan(installer.load_record(), ('radio',))
         self.assertEqual(installer.unprofile_record_pending(current), [])
 
 
@@ -1320,10 +1323,10 @@ class ArchiveTests(unittest.TestCase):
         folder = tempfile.TemporaryDirectory()
         self.addCleanup(folder.cleanup)
         self.home = Path(folder.name)
-        self.items = [dict(item) for item in MANIFEST['fedora']['herdr']['archives']]
+        self.items = [dict(item) for item in MANIFEST['fedora']['assistant']['archives']]
         self.items[0]['sha256'] = {'x86_64': hashlib.sha256(self.CORE).hexdigest(), 'aarch64': '0' * 64}
         self.items[1]['sha256'] = {'x86_64': hashlib.sha256(self.APP).hexdigest(), 'aarch64': '0' * 64}
-        self.plan = installer.Plan(fake_distro(), '45', {'herdr': {'archives': self.items}}, [], ('herdr',), record={})
+        self.plan = installer.Plan(fake_distro(), '45', {'assistant': {'archives': self.items}}, [], ('assistant',), record={})
         self.fetched = []
         for patcher in (mock.patch.object(installer.Path, 'home', return_value=self.home),
                         mock.patch.object(installer.platform, 'machine', return_value='x86_64'),
@@ -1343,14 +1346,14 @@ class ArchiveTests(unittest.TestCase):
 
     def test_the_manifest_archives_are_complete(self):
         for distro in ('fedora', 'arch'):
-            for item in MANIFEST[distro]['herdr']['archives']:
+            for item in MANIFEST[distro]['assistant']['archives']:
                 self.assertEqual(sorted(item['sha256']), ['aarch64', 'x86_64'])
                 for digest in item['sha256'].values():
                     self.assertRegex(digest, '^[0-9a-f]{64}$')
                 self.assertTrue(item['url'].startswith('https://releases.herdr.dev/') and '{version}' in item['url'] and '{arch}' in item['url'])
                 for path in installer.archive_paths(item) + list(item.get('links', {}).values()):
                     self.assertFalse(path.startswith(('/', '~')) or '..' in path, path)
-        self.assertEqual(MANIFEST['fedora']['herdr'], MANIFEST['arch']['herdr'])
+        self.assertEqual(MANIFEST['fedora']['assistant'], MANIFEST['arch']['assistant'])
 
     def test_unpacked_where_the_herdr_installers_put_it(self):
         self.assertEqual(installer.archives_pending(self.plan), ['herdr-core 0.1.18', 'herdr-app 0.1.13'])
@@ -1406,7 +1409,7 @@ class ArchiveTests(unittest.TestCase):
         return io.BytesIO(json.dumps({'version': version, 'targets': targets}).encode())
 
     def test_a_newer_release_is_a_pin_with_its_hashes(self):
-        item = MANIFEST['fedora']['herdr']['archives'][1]
+        item = MANIFEST['fedora']['assistant']['archives'][1]
         with mock.patch.object(installer.urllib.request, 'urlopen', return_value=self.latest('0.2.0')):
             pin = installer.newer_pin('archives', item)
         self.assertEqual((pin.name, pin.old, pin.new, pin.label), ('herdr-app', '0.1.13', '0.2.0', '0.1.13 -> 0.2.0'))
@@ -1425,12 +1428,13 @@ class ArchiveTests(unittest.TestCase):
         pin = installer.Pin('archives', 'herdr-app', '0.1.13', '0.2.0', '', '', '', '', {'x86_64': 'e' * 64, 'aarch64': 'f' * 64})
         moved = tomllib.loads(installer.apply_pin(text, pin))
         for distro in ('fedora', 'arch'):
-            core, app = moved[distro]['herdr']['archives']
+            core, app = moved[distro]['assistant']['archives']
             self.assertEqual((app['version'], app['sha256']), ('0.2.0', {'x86_64': 'e' * 64, 'aarch64': 'f' * 64}))
-            self.assertEqual(app['entries'], MANIFEST[distro]['herdr']['archives'][1]['entries'])
-            self.assertEqual(core, MANIFEST[distro]['herdr']['archives'][0])
+            self.assertEqual(app['entries'], MANIFEST[distro]['assistant']['archives'][1]['entries'])
+            self.assertEqual(core, MANIFEST[distro]['assistant']['archives'][0])
         self.assertEqual(len(installer.pin_entries([table for table in MANIFEST.values() if isinstance(table, dict)])),
-                         len(installer.pin_entries([MANIFEST['fedora']])) + len(MANIFEST['arch']['apps']['aur']))
+                         len(installer.pin_entries([MANIFEST['fedora']]))
+                         + len([item for section in installer.flatten_parts(MANIFEST['arch']).values() if isinstance(section, dict) for item in section.get('aur', ())]))
 
 
 class AutostartTests(unittest.TestCase):
@@ -1618,6 +1622,77 @@ class TouchHardwareTests(unittest.TestCase):
 
     def test_no_file(self):
         self.assertFalse(installer.touch_hardware(Path('/nonexistent/devices')))
+
+
+class PartTests(unittest.TestCase):
+    """Profiles in parts: each [<distro>.<profile>.parts.<part>] is the unit profile.part."""
+
+    def test_both_distributions_have_the_same_units(self):
+        fedora = installer.units(installer.flatten_parts(copy.deepcopy(MANIFEST['fedora'])))
+        arch = installer.units(installer.flatten_parts(copy.deepcopy(MANIFEST['arch'])))
+        self.assertEqual(fedora, arch)
+        self.assertEqual(installer.manifest_units(), fedora)
+        self.assertEqual([name for name in fedora if '.' not in name], list(installer.PROFILES))
+
+    def test_every_part_says_whether_it_starts_checked(self):
+        for distro in ('fedora', 'arch'):
+            table = installer.flatten_parts(copy.deepcopy(MANIFEST[distro]))
+            for name in installer.units(table):
+                if '.' in name:
+                    self.assertIn(table[name].get('default'), (True, False, *installer.DETECT), f'{distro} {name}')
+                else:
+                    self.assertNotIn('default', table[name], name)
+
+    def test_a_part_brings_its_profile_and_a_profile_takes_its_parts(self):
+        self.assertEqual(installer.normalized(('apps.zen', 'core')), ('core', 'apps', 'apps.zen'))
+        self.assertEqual(installer.with_parts(('gaming',)), ('gaming', 'gaming.steam', 'gaming.steam-hidpi', 'gaming.gamescope'))
+        self.assertEqual(installer.with_parts(('gaming.steam',)), ('gaming.steam',))
+
+    def test_default_parts_by_detection(self):
+        table = installer.flatten_parts(copy.deepcopy(MANIFEST['fedora']))
+        for found in (True, False):
+            with mock.patch.dict(installer.DETECT, {name: (lambda found=found: found) for name in installer.DETECT}):
+                parts = installer.default_parts('hardware', table)
+            expected = ['hardware.intel', 'hardware.audio', 'hardware.camera', 'hardware.fingerprint', 'hardware.firmware'] if found else ['hardware.firmware']
+            self.assertEqual(list(parts), expected)
+        self.assertEqual(installer.default_parts('apps', table), ('apps.zen', 'apps.loupe', 'apps.papers', 'apps.showtime'))
+        self.assertEqual(installer.default_parts('utils', table), ('utils.neovim', 'utils.gcc', 'utils.xclip', 'utils.unrar', 'utils.fuse'))
+
+    def test_defaults_bring_the_parts_of_the_default_profiles(self):
+        table = installer.flatten_parts(copy.deepcopy(MANIFEST['fedora']))
+        with mock.patch.object(installer, 'touch_hardware', return_value=False), \
+                mock.patch.dict(installer.DETECT, {name: (lambda: False) for name in installer.DETECT}):
+            self.assertEqual(installer.default_profiles(table), 'core,hardware,hardware.firmware,plugins')
+
+    def test_detection(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            cpuinfo = root / 'cpuinfo'
+            cpuinfo.write_text('vendor_id\t: AuthenticAMD\n')
+            self.assertFalse(installer.detect_intel(cpuinfo))
+            cpuinfo.write_text('vendor_id\t: GenuineIntel\n')
+            self.assertTrue(installer.detect_intel(cpuinfo))
+            self.assertFalse(installer.detect_camera(root))
+            self.assertFalse(installer.detect_fingerprint(root))
+
+            def device(kind, name, **files):
+                path = root / kind / name
+                path.mkdir(parents=True)
+                for key, value in files.items():
+                    (path / key).write_text(value + '\n')
+            device('bus/usb/devices', '1-1', idVendor='04f3', idProduct='2513')
+            self.assertFalse(installer.detect_fingerprint(root))
+            device('bus/usb/devices', '1-2', idVendor='04f3', idProduct='0c4b')
+            self.assertTrue(installer.detect_fingerprint(root))
+            device('bus/pci/devices', '0000:00:05.0', vendor='0x8086', **{'class': '0x048000'})
+            self.assertTrue(installer.detect_camera(root))
+
+    def test_load_plan_makes_each_part_a_table(self):
+        current = installer.load_plan(('core', 'apps', 'apps.zen'), {'ID': 'fedora', 'VERSION_ID': '45'})
+        self.assertIn('apps.zen', current.table)
+        self.assertNotIn('parts', current.table['apps'])
+        self.assertIn('zen-browser', installer.wanted_packages(current))
+        self.assertNotIn('code', installer.wanted_packages(current))
 
 
 if __name__ == '__main__':
