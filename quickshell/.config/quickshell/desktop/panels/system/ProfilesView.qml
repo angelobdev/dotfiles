@@ -206,7 +206,8 @@ ColumnLayout {
                         id: profileRow
                         required property var modelData
                         readonly property bool core: modelData.name === "core"
-                        readonly property var parts: Array.isArray(modelData.parts) ? modelData.parts : []
+                        // A list inside modelData reaches the delegate as a Qt sequence, not a JS array: copied into one.
+                        readonly property var parts: modelData.parts ? Array.from(modelData.parts) : []
                         readonly property bool open: root.expanded[modelData.name] === true
                         readonly property var pending: root.changes({
                             parts: parts
