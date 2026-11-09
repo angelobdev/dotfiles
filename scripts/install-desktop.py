@@ -1213,11 +1213,11 @@ def unpackages_pending(plan):
     # installed by hand that still goes needs one of them in a way dnf did not tell: it is marked, for the review.
     names, kept, rows, theirs = removal_split(plan)
     marked = [row + ('  (installed by hand: it needs one of the others)' if row in theirs else '') for row in rows]
+    # A package kept because one that stays (or one installed by hand) needs it is no work of its own: it is listed
+    # only beside what goes, so an uninstall run again over what it had to keep has nothing to do.
     if plan.record.get('removing'):
-        # Removing profiles: a package kept because one that stays (or one installed by hand) needs it is no work of
-        # its own, and is listed only beside what goes.
         return marked + [f'keep {name}  (a package that stays needs it)' for name in kept] if rows else []
-    return marked + [f'keep {name}  (a package installed by hand needs it)' for name in kept]
+    return marked + [f'keep {name}  (a package installed by hand needs it)' for name in kept] if rows else []
 
 
 def unpackages_apply(plan, items):

@@ -684,6 +684,14 @@ class UninstallTests(unittest.TestCase):
         current.distro.removal.side_effect = lambda names: names + (['mine.x86_64'] if 'a.x86_64' in names else [])
         current.distro.requirements.side_effect = lambda names: {'a.x86_64', 'glibc.x86_64'}
         self.assertEqual(installer.unpackages_pending(current), ['b.x86_64', 'keep a.x86_64  (a package installed by hand needs it)'])
+
+    def test_only_packages_to_keep_is_no_work(self):
+        # An uninstall run again: what it kept for a package installed by hand is still there, and that is not work.
+        self.sandbox()
+        current = self.removal({'packages': ['a']})
+        current.distro.removal.side_effect = lambda names: names + (['mine.x86_64'] if 'a.x86_64' in names else [])
+        current.distro.requirements.side_effect = lambda names: {'a.x86_64', 'glibc.x86_64'}
+        self.assertEqual(installer.unpackages_pending(current), [])
         installer.unpackages_apply(current, [])
         current.distro.remove.assert_called_once_with(['b.x86_64'])
 
