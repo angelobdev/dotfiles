@@ -5,17 +5,22 @@ import Quickshell
 import Quickshell.Io
 import "../.."
 import "../../components"
+import "../../services"
 
-// Settings → System → Profiles: the installer's profiles (profiles.py list), each with what of it is on this
-// system. Install and Remove open the guided installer in a terminal (profiles.py install/remove), which shows the
-// plan and asks for the password; the list is read again once that window closes.
+// Settings → System → Profiles: the profiles of the installer (profiles.py list), each with what of it is on this
+// system. Install and Remove show the plan of the installer first (profiles.py plan, then its dry-run); Apply runs it in the
+// background with jobs.py, behind one pkexec prompt, with its progress and log here. The list is read again after it.
 ColumnLayout {
     id: root
     // On screen: the list is read again each time it shows.
     property bool shown: false
     property var listed: []
     property string error: ""
-    property string busy: ""
+    // The plan on screen: { action, name, apply, blocked, preview (its dry-run, once read) }, or null.
+    property var review: null
+    // The profile the last Apply was for, and its action, for the result line.
+    property var applied: null
+    readonly property bool busy: job.running || planner.running || previewer.running
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/profiles.py"
     spacing: 10
     onShownChanged: if (shown)
@@ -23,15 +28,31 @@ ColumnLayout {
     Component.onCompleted: if (shown)
         refresh()
     function refresh() {
-        if (!reader.running && !runner.running)
+        if (!reader.running && !job.running)
             reader.running = true;
     }
-    function run(action, name) {
-        if (runner.running)
+    function plan(action, name) {
+        if (busy)
             return;
-        busy = name;
-        runner.command = ["python3", helper, action, name];
-        runner.running = true;
+        review = null;
+        error = "";
+        planner.command = ["python3", helper, "plan", action, name];
+        planner.action = action;
+        planner.name = name;
+        planner.running = true;
+    }
+    function apply() {
+        if (!review || review.blocked || job.running)
+            return;
+        applied = {
+            action: review.action,
+            name: review.name
+        };
+        job.start(review.apply, true, title(review.action, review.name));
+        review = null;
+    }
+    function title(action, name) {
+        return I18n.tr(action === "install" ? "settings.profiles.installTitle" : "settings.profiles.removeTitle", [name]);
     }
     // A catalog key holds no dash: steam-hidpi is steamHidpi.
     function described(name) {
@@ -63,12 +84,49 @@ ColumnLayout {
             }
         }
     }
+    // The plan: profiles.py says which installer commands, then the dry-run shows what they do.
     Process {
-        id: runner
-        onRunningChanged: if (!running) {
-            root.busy = "";
-            root.refresh();
+        id: planner
+        property string action
+        property string name
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const value = JSON.parse(text);
+                    root.review = {
+                        action: planner.action,
+                        name: planner.name,
+                        apply: value.apply,
+                        blocked: value.blocked ?? "",
+                        preview: ""
+                    };
+                    previewer.command = value.preview;
+                    previewer.running = true;
+                } catch (failure) {}
+            }
         }
+        stderr: StdioCollector {
+            onStreamFinished: if (text.trim() !== "")
+                root.error = text.trim()
+        }
+    }
+    Process {
+        id: previewer
+        stdout: StdioCollector {
+            id: previewText
+        }
+        stderr: StdioCollector {
+            id: previewErrors
+        }
+        onExited: if (root.review)
+            root.review = Object.assign({}, root.review, {
+                preview: (previewText.text + previewErrors.text).trim()
+            })
+    }
+    Job {
+        id: job
+        name: "profile"
+        onFinished: root.refresh()
     }
     Text {
         Layout.fillWidth: true
@@ -150,20 +208,136 @@ ColumnLayout {
                         // Install while something of it is missing (Complete when part is there), Remove while the installer has a record of it.
                         ActionButton {
                             visible: !profileRow.modelData.installed
-                            enabled: !runner.running
-                            text: root.busy === profileRow.modelData.name ? I18n.tr("settings.profiles.busy") : I18n.tr(profileRow.modelData.done > 0 ? "settings.profiles.complete" : "settings.profiles.install")
-                            onClicked: root.run("install", profileRow.modelData.name)
+                            enabled: !root.busy
+                            text: I18n.tr(profileRow.modelData.done > 0 ? "settings.profiles.complete" : "settings.profiles.install")
+                            onClicked: root.plan("install", profileRow.modelData.name)
                         }
                         ActionButton {
                             visible: !profileRow.core && profileRow.modelData.recorded
-                            enabled: !runner.running
+                            enabled: !root.busy
                             destructive: true
-                            text: root.busy === profileRow.modelData.name ? I18n.tr("settings.profiles.busy") : I18n.tr("settings.profiles.remove")
-                            onClicked: root.run("remove", profileRow.modelData.name)
+                            text: I18n.tr("settings.profiles.remove")
+                            onClicked: root.plan("remove", profileRow.modelData.name)
                         }
                     }
                 }
             }
+        }
+    }
+    // The plan before Apply: the installer's dry-run, as its preview prints it.
+    Rectangle {
+        Layout.fillWidth: true
+        visible: root.review !== null || planner.running
+        implicitHeight: reviewRows.implicitHeight + 24
+        radius: Theme.corner(12)
+        color: Theme.tile
+        ColumnLayout {
+            id: reviewRows
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                margins: 12
+            }
+            spacing: 8
+            Text {
+                Layout.fillWidth: true
+                text: root.review ? I18n.tr(root.review.action === "install" ? "settings.profiles.reviewInstall" : "settings.profiles.reviewRemove", [root.review.name]) : I18n.tr("settings.profiles.reading")
+                wrapMode: Text.WordWrap
+                color: Theme.text
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(13)
+                font.weight: Font.DemiBold
+            }
+            ScrollView {
+                Layout.fillWidth: true
+                Layout.preferredHeight: Math.min(previewLines.implicitHeight, 220)
+                visible: (root.review?.preview ?? "") !== ""
+                clip: true
+                contentWidth: availableWidth
+                Text {
+                    id: previewLines
+                    width: parent.width
+                    text: root.review?.preview ?? ""
+                    textFormat: Text.PlainText
+                    wrapMode: Text.WrapAnywhere
+                    color: Theme.text
+                    font.family: "monospace"
+                    font.pixelSize: Theme.textSize(11)
+                }
+            }
+            Text {
+                Layout.fillWidth: true
+                visible: previewer.running
+                text: I18n.tr("settings.profiles.reading")
+                color: Theme.muted
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(11)
+            }
+            Text {
+                Layout.fillWidth: true
+                visible: (root.review?.blocked ?? "") !== ""
+                text: root.review?.blocked ?? ""
+                textFormat: Text.PlainText
+                wrapMode: Text.WordWrap
+                color: Theme.danger
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(12)
+            }
+            RowLayout {
+                spacing: 8
+                ActionButton {
+                    highlighted: true
+                    destructive: root.review?.action === "remove"
+                    text: I18n.tr("settings.profiles.apply")
+                    enabled: root.review !== null && !previewer.running && root.review.blocked === "" && !job.running
+                    onClicked: root.apply()
+                }
+                ActionButton {
+                    text: I18n.tr("common.cancel")
+                    enabled: !planner.running
+                    onClicked: root.review = null
+                }
+            }
+        }
+    }
+    // The last Apply: its progress, its result and, while it runs or when it failed, the end of its log.
+    Text {
+        Layout.fillWidth: true
+        visible: root.applied !== null || job.running
+        text: {
+            const name = root.applied ? root.title(root.applied.action, root.applied.name) : I18n.tr("settings.profiles.busy");
+            if (job.running)
+                return I18n.tr("settings.profiles.running", [name]);
+            if (job.record.status === 0)
+                return I18n.tr("settings.profiles.done", [name]);
+            return I18n.tr("settings.profiles.failed", [name, job.record.status ?? -1]);
+        }
+        wrapMode: Text.WordWrap
+        color: job.running || job.record.status === 0 ? Theme.text : Theme.danger
+        font.family: Theme.font
+        font.pixelSize: Theme.textSize(12)
+    }
+    Rectangle {
+        Layout.fillWidth: true
+        visible: job.log.length > 0 && (job.running || job.failed)
+        implicitHeight: jobLog.implicitHeight + 16
+        radius: Theme.corner(10)
+        color: Theme.tile
+        Text {
+            id: jobLog
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                margins: 8
+            }
+            text: job.log.slice(-10).join("\n")
+            textFormat: Text.PlainText
+            wrapMode: Text.WrapAnywhere
+            color: Theme.text
+            font.family: "monospace"
+            font.pixelSize: Theme.textSize(10)
         }
     }
     RowLayout {
@@ -171,12 +345,12 @@ ColumnLayout {
         spacing: 8
         ActionButton {
             text: reader.running ? I18n.tr("settings.profiles.checking") : I18n.tr("settings.profiles.checkAgain")
-            enabled: !reader.running && !runner.running
+            enabled: !reader.running && !job.running
             onClicked: root.refresh()
         }
         ActionButton {
             text: I18n.tr("settings.profiles.openManager")
-            enabled: !runner.running
+            enabled: !root.busy
             onClicked: Quickshell.execDetached(["kitty", "--class", "desktop-updates", "--title", I18n.tr("settings.profiles.managerTitle"), Quickshell.env("HOME") + "/.local/bin/desktop-manager"])
         }
     }

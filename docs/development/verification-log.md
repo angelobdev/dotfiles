@@ -948,3 +948,18 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - The fix through a temporary IPC call of `Tablet.remapIfTurned()` (removed afterwards) with the Control Center open: 0 → 90 upright, 90 → 180 upside down, 180 → 270 and → 0 upright. A panel opened fresh at 180 is upside down too, at 270 upright: 180 stays a Hyprglass bug.
 - The user, in tablet mode with the accelerometer: a panel open during a rotation follows the screen.
 - Not tried: the dock and the on-screen keyboard after the fix, keyboard focus of a remapped panel. `check.sh` passes.
+
+## Hyprgrass on upstream hold_touches, 2026-11-08
+
+- Pin `578e984` (main after hyprgrass #433 and #437), `hyprgrass-touch-as-pointer.patch` = `git diff 578e984 b6e42ad -- src`, the head of the closed #435 merged with that main. The commit after it, `6a03d08`, stops warping the pointer on touch, which the click of `touch_as_pointer` relies on, so the pin stays before it.
+- Built against Hyprland 0.57.1 (`0.57.1-1.fc45.x86_64`) both from a plain checkout and through `build.py hyprgrass` in a scratch directory: compiles cleanly, and `plugin:hyprgrass:hold_touches` and `plugin:hyprgrass:touch_as_pointer` are registered by the library. The build is now in `~/.cache/dotfiles/hyprpm-build/`, so the rebuild at the next login reuses it.
+- Not tried in a session: the running one keeps the old build until the next login, and the nested touch test harness went with the Fedora 45 reset. Not loaded, not tried by touch. `check.sh` passes.
+- After the rebuild at the next login, the user tried the new build by touch and confirmed it works.
+
+## One build cache key per plugin, 2026-11-08
+
+- Before: one key for all four plugins, made from the Hyprland build and the whole text of `build.py` and the patch. After #34 moved only the hyprgrass pin, Hyprspace, hyprglass and HyprCapture compiled again at login (22:43–22:44), and four old key directories held 4.4 GB.
+- `build.py <plugin>` for all four from the branch, in a scratch directory, against Hyprland `0.57.1-1.fc45`: compiled in 25 s (Hyprspace), 15 s (hyprgrass), 40 s (hyprglass) and 156 s (HyprCapture). The cache became `<plugin>/<key>` with one entry each, and the old layout was removed: 1.1 GB left.
+- A second run of all four copied from the cache in about 50 ms per plugin, with no fetch or compile.
+- Unit tests (`test_plugins.py`, 36 tests): moving one pin changes only its key, the patch counts only for hyprgrass, another Hyprland or other build steps change every key, pruning keeps the current entry and the other plugins, and a cached build is copied without running anything. `check.sh` passes.
+- Not tried: a real login with the new bundle. It needs the merge; hyprpm then copies all four from this cache.

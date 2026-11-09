@@ -15,7 +15,7 @@ from build import PLUGINS, release_id
 
 PACKAGING = Path(__file__).resolve().parent
 # What hyprpm builds from: a change to any of these is a new bundle, rebuilt at the next login.
-FILES = ('build.py', 'hyprpm.toml', 'hyprgrass-hold-touches.patch')
+FILES = ('build.py', 'hyprpm.toml', 'hyprgrass-touch-as-pointer.patch')
 REPOSITORY = 'dotfiles-desktop'
 # Builds of Hyprland and its headers the pins in build.py were verified against: Fedora's RPM, Arch's package.
 VERIFIED = ('0.57.1-1.fc45.x86_64', '0.57.1-1')

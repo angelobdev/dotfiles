@@ -67,8 +67,7 @@
     "install": {
       "running": "Installo %1…",
       "done": "%1 è installato.",
-      "failed": "Installazione di %1 non riuscita: vedi i messaggi sopra.",
-      "close": "Premi Invio per chiudere questa finestra.",
+      "failed": "L’installazione di %1 non è finita (stato %2): guarda il log qui sotto.",
       "title": "Installa %1"
     },
     "agentsGroup": "Agenti",
@@ -116,7 +115,11 @@
   },
   "authentication": {
     "authenticate": "Autentica",
-    "title": "Autenticazione richiesta"
+    "title": "Autenticazione richiesta",
+    "identity": "Account: %1",
+    "failed": "Autenticazione non riuscita: riprova.",
+    "usePassword": "Usa password",
+    "touchReader": "Tocca il lettore d’impronta, oppure usa la password."
   },
   "bar": {
     "dateFormat": "ddd d MMM",
@@ -607,14 +610,19 @@
     "errors": {
       "rebuildRequired": "Questa build di Hyprland non è ancora verificata per i plugin: restano spenti finché i pin non vengono controllati (docs/guide/plugins.md).",
       "unverifiedBuild": "Build diversa da quella verificata: autoload sospeso.",
-      "headersMismatch": "hyprland e hyprland-devel hanno versioni diverse: completa l'aggiornamento (sudo dnf upgrade), poi accedi di nuovo."
+      "headersMismatch": "hyprland e hyprland-devel hanno versioni diverse: completa l'aggiornamento (sudo dnf upgrade), poi accedi di nuovo.",
+      "running": "Una ricompilazione dei plugin è già in corso."
     },
     "notificationTitle": "Plugin Hyprland non caricati",
     "rebuildTitle": "Ricompilazione dei plugin Hyprland",
     "rebuild": {
-      "incomplete": "L'ultima ricompilazione non è finita: riparte nel terminale appena aperto e si caricano quando finisce.",
-      "packaging": "Il loro pacchetto è cambiato: vengono ricompilati nel terminale appena aperto e si caricano quando finisce.",
-      "compositor": "Hyprland è stato aggiornato: vengono ricompilati nel terminale appena aperto e si caricano quando finisce."
+      "incomplete": "L’ultima ricompilazione non è finita: riparte in background appena la shell è pronta. Autenticati quando richiesto; si caricano quando finisce.",
+      "packaging": "Il loro pacchetto è cambiato: vengono ricompilati in background appena la shell è pronta. Autenticati quando richiesto; si caricano quando finisce.",
+      "compositor": "Hyprland è stato aggiornato: vengono ricompilati in background appena la shell è pronta. Autenticati quando richiesto; si caricano quando finisce."
+    },
+    "background": {
+      "done": "I plugin sono stati ricompilati e caricati.",
+      "failed": "La ricompilazione non è finita: %1 Dettagli in Impostazioni → Sistema → Plugin."
     }
   },
   "recording": {
@@ -832,12 +840,13 @@
       "resetHint": "Ogni opzione mostrata in queste impostazioni torna al predefinito. Le liste scritte a mano in shell.json (dock, moduli del Centro di controllo…) restano.",
       "resetTitle": "Opzioni della shell",
       "threads": "%1 · %2 thread",
-      "updates": "Aggiornamenti"
+      "updates": "Aggiornamenti",
+      "plugins": "Plugin"
     },
     "title": "Impostazioni",
     "unreadable": "%1 non è JSON valido: qui non si può cambiare nulla finché non lo correggi o lo rimuovi.",
     "profiles": {
-      "intro": "Le parti di questo desktop che l’installer configura. Installa e Rimuovi aprono l’installer guidato in un terminale: lì mostra il piano e chiede la password.",
+      "intro": "Le parti di questo desktop che l’installer configura. Installa e Rimuovi mostrano qui prima il piano dell’installer; Applica lo esegue in background, con una sola richiesta di password o impronta.",
       "installed": "Installato",
       "partial": "Installato in parte: %1 su %2",
       "notInstalled": "Non installato",
@@ -846,12 +855,11 @@
       "install": "Installa",
       "complete": "Completa",
       "remove": "Rimuovi",
-      "busy": "Nel terminale…",
+      "busy": "In corso…",
       "coreHint": "core è il desktop stesso: lo toglie Rimuovi il desktop, nell’installer guidato.",
       "openManager": "Apri l’installer guidato",
       "checkAgain": "Controlla di nuovo",
       "checking": "Controllo in corso…",
-      "close": "Premi Invio per chiudere.",
       "installTitle": "Installa %1",
       "removeTitle": "Rimuovi %1",
       "error": "Impossibile leggere i profili: %1",
@@ -871,7 +879,45 @@
         "steamHidpi": "L’avvio di Steam che scala il client per il monitor su cui si apre.",
         "codecs": "I codec di RPM Fusion al posto delle versioni libere: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX."
       },
-      "managerTitle": "Installer del desktop"
+      "managerTitle": "Installer del desktop",
+      "reviewInstall": "Installa %1: cosa farà l’installer",
+      "reviewRemove": "Rimuovi %1: cosa farà l’installer",
+      "reading": "Lettura del piano…",
+      "apply": "Applica",
+      "pluginsInSession": "Rimuovere plugins toglie i plugin di Hyprland, che la sessione in corso ha caricato: esci, accedi da una console (Ctrl+Alt+F3) ed esegui lì install-desktop.py apply --remove plugins.",
+      "running": "%1: in corso…",
+      "done": "%1: fatto.",
+      "failed": "%1: non è finito (stato %2). Il log è qui sotto."
+    },
+    "plugins": {
+      "intro": "Plugin di Hyprland compilati da hyprpm da sorgenti fissate, per l’Hyprland installato. Una ricompilazione sostituisce solo plugin non caricati: dopo un aggiornamento parte da sola al login successivo, con una sola richiesta di password.",
+      "state": {
+        "current": "Compilati da questo pacchetto per questo Hyprland.",
+        "missing": "Non ancora compilati: lo fa l’installer al primo login dopo l’installazione.",
+        "incomplete": "L’ultima ricompilazione non è finita.",
+        "packaging": "Il pacchetto è cambiato da quando sono stati compilati.",
+        "compositor": "Hyprland è stato aggiornato da quando sono stati compilati.",
+        "unverified": "Questa build di Hyprland non è verificata per i pin: i plugin restano spenti.",
+        "mismatched": "hyprland e i suoi header vengono da aggiornamenti diversi: completa prima l’aggiornamento."
+      },
+      "atLogin": "I plugin in uso vengono da un’altra build: esci e rientra per ricompilarli.",
+      "hyprland": "Hyprland %1 · verificato: %2",
+      "profile": "profilo %1",
+      "loaded": "Caricato",
+      "built": "Compilato, non caricato",
+      "notBuilt": "Non compilato",
+      "notSelected": "Non compilato: il profilo %1 non è installato",
+      "rebuild": "Ricompila",
+      "rebuilding": "Ricompilazione…",
+      "lastDone": "Ultima ricompilazione: riuscita, %1.",
+      "lastFailed": "Ultima ricompilazione: non riuscita, %1 (stato %2).",
+      "lastStopped": "L’ultima ricompilazione si è fermata prima di finire.",
+      "log": "Log della ricompilazione",
+      "cache": "Cache di compilazione",
+      "cacheHint": "Build finite, una per plugin: una ricompilazione compila solo i plugin cambiati e copia gli altri. %1 in uso, %2 che nessun plugin riuserebbe.",
+      "clearOld": "Rimuovi le build vecchie",
+      "clearAll": "Rimuovi tutto…",
+      "clearAllConfirm": "Rimuovi tutto: la prossima ricompilazione compila ogni plugin"
     }
   },
   "sharing": {
@@ -1174,7 +1220,18 @@
       "pacman": "pacman non è riuscito a cercare aggiornamenti: %1",
       "flatpak": "Flatpak non è riuscito a cercare aggiornamenti: %1",
       "git": "git non è riuscito a controllare il repository: %1",
-      "usage": "Uso: updates.py check [repository]|status"
+      "usage": "Uso: updates.py check [repository]|status|apply CHIAVI|apply-status"
+    },
+    "apply": {
+      "applying": "Aggiornamento…",
+      "running": "Un aggiornamento è già in corso.",
+      "done": "Gli aggiornamenti sono installati.",
+      "doneCompositor": "Gli aggiornamenti sono installati. Tra questi c’era Hyprland: esci e rientra, e i plugin vengono ricompilati a quel login.",
+      "failed": "L’aggiornamento non è finito: %1 Il log è nel pannello degli aggiornamenti.",
+      "lastDone": "Aggiornato alle %1.",
+      "lastDoneCompositor": "Aggiornato alle %1. Tra gli aggiornamenti c’era Hyprland: esci e rientra, e i plugin vengono ricompilati a quel login.",
+      "lastFailed": "L’ultimo aggiornamento non è finito (stato %1): guarda il log qui sotto, poi premi di nuovo Aggiorna.",
+      "stopped": "L’ultimo aggiornamento si è fermato prima di finire: premi di nuovo Aggiorna."
     }
   },
   "gaming": {
@@ -1328,6 +1385,22 @@
       "notFromStore": "%1 non è stato installato dallo store.",
       "unavailable": "Impossibile raggiungere lo store.",
       "usage": "Uso: store.py search TIPO [RICERCA] [PAGINA] | install TIPO ID FILE | remove CARTELLA... | installed"
+    }
+  },
+  "privileged": {
+    "errors": {
+      "missing": "L’assistente per i permessi di amministratore non è installato (%1): esegui una volta l’installer da un terminale per aggiungerlo.",
+      "cancelled": "Autenticazione annullata: non è stato cambiato nulla.",
+      "denied": "Questo utente non può agire come amministratore.",
+      "failed": "L’assistente per i permessi di amministratore non si è avviato (stato %1)."
+    }
+  },
+  "jobs": {
+    "done": "Fatto.",
+    "failed": "Non è finito: %1",
+    "errors": {
+      "name": "Non è il nome di un’operazione: %1",
+      "running": "È già in corso."
     }
   },
   "radio": {

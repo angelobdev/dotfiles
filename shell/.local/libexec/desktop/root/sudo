@@ -1,0 +1,69 @@
+#!/usr/bin/python3 -I
+"""sudo for operations started from Settings: the command runs in the root broker the operation authenticated once.
+
+privileged.py puts this directory first in PATH and names the broker's socket in DESKTOP_ROOT_SOCKET. The installer
+and hyprpm call sudo as they do in a terminal; here each call goes to the broker with this process's standard
+streams, and this exits with the command's status. Without DESKTOP_ROOT_SOCKET this is the system's sudo.
+"""
+import json
+import os
+import socket
+import sys
+
+SUDO = '/usr/bin/sudo'
+# Options that change nothing here: the broker already holds root, with a clean environment, for this operation.
+QUIET = {'-n', '--non-interactive', '-E', '--preserve-env', '-H', '--set-home', '-S', '--stdin', '-A', '--askpass',
+         '-b', '--background'}
+# Options that only touch sudo's timestamp: there is none, the broker is the timestamp.
+TIMESTAMP = {'-v', '--validate', '-k', '--reset-timestamp', '-K', '--remove-timestamp'}
+
+
+def command(arguments):
+    # sudo [options] [--] COMMAND...: the command, or None for a timestamp call. Anything else is refused, not guessed.
+    for index, argument in enumerate(arguments):
+        if argument == '--':
+            return arguments[index + 1:] or None
+        if argument in TIMESTAMP:
+            if len(arguments) == 1 or all(other in QUIET | TIMESTAMP for other in arguments):
+                return None
+            continue
+        if argument in QUIET or argument.startswith('--preserve-env='):
+            continue
+        if argument.startswith('-'):
+            sys.exit(f'sudo (Settings): {argument} is not supported here.')
+        return arguments[index:]
+    return None
+
+
+def main():
+    path = os.environ.get('DESKTOP_ROOT_SOCKET')
+    if not path:
+        os.execv(SUDO, [SUDO, *sys.argv[1:]])
+    argv = command(sys.argv[1:])
+    if argv is None:
+        return 0
+    request = {'argv': argv, 'cwd': os.getcwd(), 'env': dict(os.environ)}
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+        try:
+            connection.connect(path)
+        except OSError as error:
+            sys.exit(f'sudo (Settings): the root broker is not there ({error.strerror}).')
+        socket.send_fds(connection, [json.dumps(request).encode()], [0, 1, 2])
+        reply = b''
+        while chunk := connection.recv(4096):
+            reply += chunk
+    try:
+        answer = json.loads(reply)
+    except ValueError:
+        sys.exit('sudo (Settings): the root broker stopped before the command finished.')
+    if answer.get('error'):
+        print(f'sudo (Settings): {answer["error"]}', file=sys.stderr)
+    status = answer.get('status')
+    if not isinstance(status, int):
+        return 1
+    # Killed by a signal (Popen's -N): the shell's 128 + N.
+    return status if status >= 0 else 128 - status
+
+
+if __name__ == '__main__':
+    sys.exit(main())

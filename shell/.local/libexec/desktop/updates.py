@@ -6,6 +6,10 @@ watches (run by desktop-updates.timer 5 minutes after login and every 6 hours, 3
 and from the panel).
 check repository: only the repository, the other lists as they were (after a pull from the updates screen).
 status: print that file.
+apply KEYS: apply system, flatpak and/or repository (comma-separated) in the background, as Settings does: the updates
+screen's apply without the screen (install-tui.py --apply-updates), behind one pkexec prompt when root is needed
+(privileged.py). Its state is in updates-apply.json, its output in updates-apply.log, and a notification gives the result.
+apply-status: that state as JSON, with the end of the log.
 """
 from common import release_id, write_atomic
 from i18n import tr
@@ -26,6 +30,14 @@ COMPOSITOR = ('hyprland', 'hyprland-devel', 'hyprland-libs')
 REPO = Path(__file__).resolve().parents[4]
 # The new commits the panel lists; behind counts them all.
 COMMITS = 50
+APPLY = STATE.with_name('updates-apply.json')
+APPLY_LOG = STATE.with_name('updates-apply.log')
+APPLY_LOCK = STATE.with_name('.updates-apply.lock')
+APPLY_KEYS = ('system', 'flatpak', 'repository')
+# Keys whose apply needs root: the repository is a pull, as the desktop user.
+ROOT_KEYS = ('system', 'flatpak')
+LOG_LINES = 60
+HERE = Path(__file__).resolve().parent
 
 
 def dnf_updates(output):
@@ -181,8 +193,85 @@ def retry_later():
         pass
 
 
+def read_apply():
+    try:
+        value = json.loads(APPLY.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def apply_running():
+    # An apply holds the lock for as long as it runs.
+    APPLY_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    with APPLY_LOCK.open('a') as handle:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return True
+        fcntl.flock(handle, fcntl.LOCK_UN)
+    return False
+
+
+def log_tail(count=LOG_LINES):
+    try:
+        lines = APPLY_LOG.read_text(encoding='utf-8', errors='replace').splitlines()
+    except OSError:
+        return []
+    return [line for line in lines if line.strip()][-count:]
+
+
+def apply(keys):
+    keys = [key for key in APPLY_KEYS if key in keys]
+    if not keys:
+        print(tr('updates.errors.usage'), file=sys.stderr)
+        return 2
+    APPLY.parent.mkdir(parents=True, exist_ok=True)
+    with APPLY_LOCK.open('a') as handle:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            print(tr('updates.apply.running'), file=sys.stderr)
+            return 1
+        # Hyprland among the packages: the plugins rebuild at the next login, which the result says.
+        compositor = 'system' in keys and previous().get('compositor') is True
+        started = int(time.time())
+        write_atomic(APPLY, json.dumps({'running': True, 'keys': keys, 'started': started}) + '\n')
+        command = [sys.executable, str(REPO / 'scripts/install-tui.py'), '--apply-updates', ','.join(keys)]
+        if set(keys) & set(ROOT_KEYS):
+            command = [sys.executable, str(HERE / 'privileged.py'), 'run', *command]
+        with APPLY_LOG.open('w', encoding='utf-8') as log:
+            status = subprocess.run(command, stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT).returncode
+        write_atomic(APPLY, json.dumps({'running': False, 'keys': keys, 'started': started, 'finished': int(time.time()),
+                                        'status': status, 'compositor': compositor and status == 0}) + '\n')
+    if status == 0:
+        body = tr('updates.apply.doneCompositor' if compositor else 'updates.apply.done')
+        subprocess.run(['notify-send', '--app-name=' + tr('updates.title'), '--app-icon=system-software-update', tr('updates.title'), body],
+                       check=False)
+    else:
+        lines = log_tail(5)
+        subprocess.run(['notify-send', '--app-name=' + tr('updates.title'), '--app-icon=dialog-error', tr('updates.title'),
+                        tr('updates.apply.failed', [lines[-1] if lines else str(status)])], check=False)
+    return status
+
+
+def apply_status():
+    state = read_apply()
+    if state.get('running') and not apply_running():
+        state = {**state, 'running': False, 'status': -1}  # Stopped without writing its result.
+    return {**state, 'log': log_tail()}
+
+
 def main():
-    arguments = sys.argv[1:]
+    return main_with(sys.argv[1:])
+
+
+def main_with(arguments):
+    if len(arguments) == 2 and arguments[0] == 'apply':
+        return apply(arguments[1].split(','))
+    if arguments == ['apply-status']:
+        print(json.dumps(apply_status(), ensure_ascii=False))
+        return 0
     if arguments in (['check'], ['check', 'repository']):
         STATE.parent.mkdir(parents=True, exist_ok=True)
         # The timer and the panel can start a check at the same time: one runs, the other waits for it.

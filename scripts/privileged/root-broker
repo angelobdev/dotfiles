@@ -1,0 +1,161 @@
+#!/usr/bin/python3 -I
+"""Root for one operation started from Settings, behind a single pkexec prompt.
+
+The installer copies this file to /usr/local/libexec/dotfiles-desktop/root-broker, owned by root: pkexec must never
+run a file the desktop user can change. shell/.local/libexec/desktop/privileged.py starts it as
+`pkexec root-broker SOCKET` and keeps its standard input open for as long as the operation runs. The sudo shim
+(shell/.local/libexec/desktop/root/sudo) connects to SOCKET, sends a command with its standard input, output and
+error, and gets the exit status back.
+
+The broker serves only the user pkexec names (PKEXEC_UID), checked on every connection, and only inside a private
+directory of that user's runtime directory. It exits, stopping whatever it still runs, when its standard input
+closes: the operation ended, or the process that started it died.
+"""
+import json
+import os
+from pathlib import Path
+import select
+import signal
+import socket
+import stat
+import struct
+import subprocess
+import sys
+
+# One request: JSON, at most this many bytes, with the caller's three standard streams as file descriptors.
+LIMIT = 1 << 20
+# sudo's env_reset: a clean environment. The locale stays, so messages keep the user's language.
+KEPT = ('LANG', 'LANGUAGE', 'TERM') + tuple(f'LC_{name}' for name in (
+    'ALL', 'CTYPE', 'MESSAGES', 'NUMERIC', 'TIME', 'COLLATE', 'MONETARY', 'PAPER', 'NAME', 'ADDRESS', 'TELEPHONE',
+    'MEASUREMENT', 'IDENTIFICATION'))
+PATH = '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin'
+RUNTIME = Path('/run/user')
+
+
+def fail(message):
+    print(message, file=sys.stderr, flush=True)
+    sys.exit(1)
+
+
+def caller():
+    # pkexec sets PKEXEC_UID to the user it authenticated; without it, this was not started through pkexec.
+    if os.geteuid() != 0:
+        fail('root-broker runs as root, through pkexec.')
+    try:
+        return int(os.environ['PKEXEC_UID'])
+    except (KeyError, ValueError):
+        fail('root-broker is started by pkexec, which names the user in PKEXEC_UID.')
+
+
+def checked_directory(path, uid):
+    # The socket's directory: the user's own, private, directly in their runtime directory, and no symlink.
+    directory = path.parent
+    if directory.parent != RUNTIME / str(uid):
+        fail(f'The socket must be in a directory of {RUNTIME / str(uid)}.')
+    info = os.lstat(directory)
+    if not stat.S_ISDIR(info.st_mode) or info.st_uid != uid or stat.S_IMODE(info.st_mode) != 0o700:
+        fail(f'{directory} must be a directory of uid {uid} with mode 0700.')
+    return directory
+
+
+def listen(path, uid):
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    server.bind(str(path))
+    os.chown(path, uid, -1, follow_symlinks=False)
+    os.chmod(path, 0o600, follow_symlinks=False)
+    server.listen(4)
+    return server
+
+
+def peer_uid(connection):
+    credentials = connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize('3i'))
+    return struct.unpack('3i', credentials)[1]
+
+
+def receive(connection):
+    data, fds, _flags, _address = socket.recv_fds(connection, LIMIT, 3)
+    if len(fds) != 3:
+        for fd in fds:
+            os.close(fd)
+        raise ValueError('a request carries standard input, output and error')
+    try:
+        request = json.loads(data)
+        argv = request['argv']
+        if not argv or not all(isinstance(arg, str) for arg in argv):
+            raise ValueError('argv is a list of strings')
+        cwd = request.get('cwd') or '/'
+        env = {key: value for key, value in request.get('env', {}).items() if key in KEPT and isinstance(value, str)}
+    except (ValueError, KeyError, TypeError):
+        for fd in fds:
+            os.close(fd)
+        raise
+    return argv, cwd, env, fds
+
+
+def run(argv, cwd, env, fds):
+    env = {**env, 'PATH': PATH, 'HOME': '/root', 'USER': 'root', 'LOGNAME': 'root', 'SUDO_UID': os.environ['PKEXEC_UID']}
+    try:
+        child = subprocess.Popen(argv, stdin=fds[0], stdout=fds[1], stderr=fds[2], cwd=cwd if os.path.isdir(cwd) else '/',
+                                 env=env, start_new_session=True)
+    except OSError as error:
+        os.write(fds[2], f'sudo: {argv[0]}: {error.strerror}\n'.encode())
+        return None, 127
+    finally:
+        for fd in fds:
+            os.close(fd)
+    return child, None
+
+
+def serve(server, uid):
+    # One command at a time, as sudo runs them for one caller. Standard input closing ends everything.
+    while True:
+        ready, _, _ = select.select([sys.stdin, server], [], [])
+        if sys.stdin in ready and not os.read(sys.stdin.fileno(), 4096):
+            return
+        if server not in ready:
+            continue
+        connection, _ = server.accept()
+        with connection:
+            if peer_uid(connection) != uid:
+                continue
+            try:
+                argv, cwd, env, fds = receive(connection)
+            except (ValueError, KeyError, TypeError, OSError) as error:
+                connection.sendall(json.dumps({'status': 2, 'error': str(error)}).encode())
+                continue
+            child, status = run(argv, cwd, env, fds)
+            while child is not None and status is None:
+                # The operation ending (stdin) or the caller going away (its connection) stops the command.
+                ready, _, _ = select.select([sys.stdin, connection], [], [], 0.5)
+                if sys.stdin in ready and not os.read(sys.stdin.fileno(), 4096):
+                    os.killpg(child.pid, signal.SIGTERM)
+                    child.wait()
+                    return
+                if connection in ready and not connection.recv(1, socket.MSG_PEEK):
+                    os.killpg(child.pid, signal.SIGTERM)
+                    status = child.wait()
+                    break
+                status = child.poll()
+            try:
+                connection.sendall(json.dumps({'status': status}).encode())
+            except OSError:
+                pass
+
+
+def main():
+    uid = caller()
+    if len(sys.argv) != 2:
+        fail('Usage: pkexec root-broker SOCKET')
+    path = Path(sys.argv[1])
+    checked_directory(path, uid)
+    server = listen(path, uid)
+    try:
+        print('ready', flush=True)
+        serve(server, uid)
+    finally:
+        server.close()
+        path.unlink(missing_ok=True)
+
+
+if __name__ == '__main__':
+    main()

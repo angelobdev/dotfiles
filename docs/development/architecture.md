@@ -46,9 +46,29 @@ Services spawn `python3 ~/.local/libexec/desktop/<helper>.py …` through Quicks
 
 Crashed watchers restart through a `Timer` whose `running` is `<enabled> && !process.running`. Long-lived commands start through `setpriv --pdeathsig TERM --`, so the kernel ends them with the shell even when the shell is killed or crashes (otherwise every restart left them running). Watchers wait on events where the kernel offers them: `brightness.py watch` polls `actual_brightness` for sysfs notifications, `privacy.py watch` uses inotify on `/dev/video*`. Treat argv and stdout formats as a byte-exact contract between QML and Python.
 
+## Root for operations from Settings
+
+Settings runs system work without a terminal ([#37](https://github.com/angelobdev/dotfiles/issues/37)). `privileged.py run COMMAND…` asks for root once per operation:
+
+1. It starts `pkexec /usr/local/libexec/dotfiles-desktop/root-broker SOCKET`. The polkit action is pkexec's own (`auth_admin`, no keep), and the prompt is the shell's polkit agent (`session/Authentication.qml`).
+2. The broker is a root-owned copy of `scripts/privileged/root-broker`, written by the installer's `files` step (core profile). It is never a link, because pkexec must not run a file the desktop user can change. It binds `SOCKET` in a private `0700` directory of `/run/user/<uid>` and serves only the uid pkexec names (`PKEXEC_UID`, checked with `SO_PEERCRED`).
+3. `COMMAND` runs as the desktop user with `shell/.local/libexec/desktop/root/` first in `PATH`. That directory holds a `sudo` shim: each `sudo …` of the installer, makepkg or hyprpm (which picks the first `sudo`, `doas` or `run0` in `PATH`) sends its argv, cwd and standard streams (as file descriptors) to the broker. The broker runs the command as root with sudo's clean environment and returns the status. `sudo -v`, `-n -v` and `-k` do nothing; `-u` is refused. Without `DESKTOP_ROOT_SOCKET`, the shim is the system's sudo.
+4. When `COMMAND` ends, `privileged.py` closes the broker's standard input. The broker then stops what it still runs, removes the socket and exits. The broker also stops a command whose caller goes away.
+
+The window is the operation: while it runs, another process of the same user could also connect, as with sudo's timestamp.
+
+Operations Settings starts run detached, so a closed panel or a shell restart does not stop them. The plugin rebuild (`plugins.py rebuild`) and updates (`updates.py apply`) have their own runners. Profiles and agent installs go through `jobs.py run NAME [--root] [--title TEXT] -- COMMAND…`, which:
+
+- keeps one run at a time per name (a lock);
+- writes `~/.local/state/desktop-shell/jobs/NAME.json` and `NAME.log`;
+- wraps the command in `privileged.py` with `--root`;
+- ends with a notification titled TEXT.
+
+`services/Job.qml` starts one and follows it, reading `jobs.py status NAME` when the file changes and every 2 s while it runs.
+
 ## Compositor plugins
 
-Hyprspace, Hyprgrass, Hyprglass and HyprCapture are built by hyprpm from the pinned packaging in `scripts/hyprpm/`, which patches Hyprgrass so gesture touches never reach windows. `config/plugins.lua` guards every block (`local plugins = hl.plugin or {}`; `if plugins.X then … end`) so `--verify-config` and plugin-less startup work. Actions that need a plugin (screenshots) check `hl.plugin` at press time because plugins load after `hyprland.start`. `desktop-plugins reload` loads them only when they were built from the current packaging (`scripts/hyprpm/bundle.py` digest) for the installed Hyprland; otherwise, at startup with nothing loaded, it opens a terminal running `install-hypr-plugins.py`, or after an unverified compositor update it leaves them off.
+Hyprspace, Hyprgrass, Hyprglass and HyprCapture are built by hyprpm from the pinned packaging in `scripts/hyprpm/`, which patches Hyprgrass so one finger works as the pointer on apps that ignore touch (`touch_as_pointer`; holding gesture touches back is upstream). `config/plugins.lua` guards every block (`local plugins = hl.plugin or {}`; `if plugins.X then … end`) so `--verify-config` and plugin-less startup work. Actions that need a plugin (screenshots) check `hl.plugin` at press time because plugins load after `hyprland.start`. `desktop-plugins reload` loads them only when they were built from the current packaging (`scripts/hyprpm/bundle.py` digest) for the installed Hyprland; otherwise, at startup with nothing loaded, it writes `{"wanted": …}` to `~/.local/state/dotfiles/plugin-rebuild.json`, or after an unverified compositor update it leaves them off. `services/Plugins.qml` watches that file: once the polkit agent is registered, it starts `plugins.py rebuild` detached. The rebuild holds a lock, runs `install-hypr-plugins.py` through `privileged.py`, writes its log next to the state, and records the result in the same file. It skips the prompt when nothing needs doing. Settings → System → Plugins (`panels/system/PluginsView.qml`) reads `plugins.py status` and cleans the build cache with `plugins.py clear-cache old|all`.
 
 Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha over Hyprland IPC (every 2 s at rest, every 100 ms while a bar is hidden and for 4 s after a `wake` line on stdin, which the hot corner, the assist button and `desktop-shell overview` send before opening the overview); `BarVisibility.hidden(screen)` drops the bar's exclusive zone and input mask while keeping the surface mapped (it carries the idle inhibitor).
 

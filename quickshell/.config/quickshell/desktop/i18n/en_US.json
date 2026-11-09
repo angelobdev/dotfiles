@@ -67,8 +67,7 @@
     "install": {
       "running": "Installing %1…",
       "done": "%1 is installed.",
-      "failed": "The install of %1 failed: see the messages above.",
-      "close": "Press Enter to close this window.",
+      "failed": "The install of %1 did not finish (status %2): see its log below.",
       "title": "Install %1"
     },
     "agentsGroup": "Coding agents",
@@ -116,7 +115,11 @@
   },
   "authentication": {
     "authenticate": "Authenticate",
-    "title": "Authentication required"
+    "title": "Authentication required",
+    "identity": "Account: %1",
+    "failed": "Authentication failed: try again.",
+    "usePassword": "Use password",
+    "touchReader": "Touch the fingerprint reader, or use your password."
   },
   "bar": {
     "dateFormat": "ddd MMM d",
@@ -607,14 +610,19 @@
     "errors": {
       "rebuildRequired": "This Hyprland build is not verified for the plugins yet: they stay off until the pins are checked (docs/guide/plugins.md).",
       "unverifiedBuild": "Build differs from the verified version: autoload suspended.",
-      "headersMismatch": "hyprland and hyprland-devel have different versions: finish the update (sudo dnf upgrade), then log in again."
+      "headersMismatch": "hyprland and hyprland-devel have different versions: finish the update (sudo dnf upgrade), then log in again.",
+      "running": "A plugin rebuild is already running."
     },
     "notificationTitle": "Hyprland plugins not loaded",
     "rebuildTitle": "Rebuilding the Hyprland plugins",
     "rebuild": {
-      "incomplete": "The last rebuild did not finish: it runs again in the terminal that just opened, and they load when it finishes.",
-      "packaging": "Their packaging changed: they are rebuilt in the terminal that just opened, and load when it finishes.",
-      "compositor": "Hyprland was updated: they are rebuilt in the terminal that just opened, and load when it finishes."
+      "incomplete": "The last rebuild did not finish: it runs again in the background once the shell is up. Authenticate when asked; they load when it finishes.",
+      "packaging": "Their packaging changed: they are rebuilt in the background once the shell is up. Authenticate when asked; they load when it finishes.",
+      "compositor": "Hyprland was updated: they are rebuilt in the background once the shell is up. Authenticate when asked; they load when it finishes."
+    },
+    "background": {
+      "done": "The plugins are rebuilt and loaded.",
+      "failed": "The rebuild did not finish: %1 Details in Settings → System → Plugins."
     }
   },
   "recording": {
@@ -832,12 +840,13 @@
       "resetHint": "Every option shown in these settings back to its default. Lists set by hand in shell.json (dock pins, Control Center modules…) stay.",
       "resetTitle": "Shell options",
       "threads": "%1 · %2 threads",
-      "updates": "Updates"
+      "updates": "Updates",
+      "plugins": "Plugins"
     },
     "title": "Settings",
     "unreadable": "%1 is not valid JSON, so nothing can be changed here until it is fixed or removed.",
     "profiles": {
-      "intro": "The parts of this desktop the installer sets up. Install and Remove open the guided installer in a terminal: it shows the plan, and asks for your password there.",
+      "intro": "The parts of this desktop the installer sets up. Install and Remove show the installer’s plan here first; Apply runs it in the background, behind one password or fingerprint prompt.",
       "installed": "Installed",
       "partial": "Partly installed: %1 of %2",
       "notInstalled": "Not installed",
@@ -846,12 +855,11 @@
       "install": "Install",
       "complete": "Complete",
       "remove": "Remove",
-      "busy": "In the terminal…",
+      "busy": "Running…",
       "coreHint": "core is the desktop itself: Remove the desktop, in the guided installer, takes it away.",
       "openManager": "Open the guided installer",
       "checkAgain": "Check again",
       "checking": "Checking…",
-      "close": "Press Enter to close.",
       "installTitle": "Install %1",
       "removeTitle": "Remove %1",
       "error": "The profiles cannot be read: %1",
@@ -871,7 +879,45 @@
         "steamHidpi": "The Steam launcher that scales the client for the monitor it opens on.",
         "codecs": "The RPM Fusion codecs in place of the free builds: ffmpeg, intel-media-driver, GStreamer freeworld, OpenH264, HEIF, aptX."
       },
-      "managerTitle": "Desktop installer"
+      "managerTitle": "Desktop installer",
+      "reviewInstall": "Install %1: what the installer will do",
+      "reviewRemove": "Remove %1: what the installer will do",
+      "reading": "Reading the plan…",
+      "apply": "Apply",
+      "pluginsInSession": "Removing plugins takes away the Hyprland plugins, which the running session has loaded: log out, sign in on a console (Ctrl+Alt+F3) and run install-desktop.py apply --remove plugins there.",
+      "running": "%1: running…",
+      "done": "%1: done.",
+      "failed": "%1: it did not finish (status %2). The log is below."
+    },
+    "plugins": {
+      "intro": "Hyprland plugins built by hyprpm from pinned sources, for the installed Hyprland. A rebuild replaces only plugins that are not loaded: after an update it runs by itself at the next login, behind one password prompt.",
+      "state": {
+        "current": "Built from this packaging for this Hyprland.",
+        "missing": "Not built yet: the installer builds them at the first login after it.",
+        "incomplete": "The last rebuild did not finish.",
+        "packaging": "The packaging changed since they were built.",
+        "compositor": "Hyprland was updated since they were built.",
+        "unverified": "This Hyprland build is not verified for the pins: the plugins stay off.",
+        "mismatched": "hyprland and its headers come from different updates: finish the update first."
+      },
+      "atLogin": "The plugins in use come from another build: log out and back in to rebuild them.",
+      "hyprland": "Hyprland %1 · verified: %2",
+      "profile": "profile %1",
+      "loaded": "Loaded",
+      "built": "Built, not loaded",
+      "notBuilt": "Not built",
+      "notSelected": "Not built: the %1 profile is not installed",
+      "rebuild": "Rebuild",
+      "rebuilding": "Rebuilding…",
+      "lastDone": "Last rebuild: done, %1.",
+      "lastFailed": "Last rebuild: failed, %1 (status %2).",
+      "lastStopped": "The last rebuild stopped before it finished.",
+      "log": "Rebuild log",
+      "cache": "Build cache",
+      "cacheHint": "Finished builds, one per plugin: a rebuild compiles only the plugins that changed and copies the others. %1 in use, %2 no plugin would reuse.",
+      "clearOld": "Remove old builds",
+      "clearAll": "Remove all…",
+      "clearAllConfirm": "Remove all: the next rebuild compiles every plugin"
     }
   },
   "sharing": {
@@ -1174,7 +1220,18 @@
       "pacman": "pacman could not check for updates: %1",
       "flatpak": "Flatpak could not check for updates: %1",
       "git": "git could not check the repository: %1",
-      "usage": "Usage: updates.py check [repository]|status"
+      "usage": "Usage: updates.py check [repository]|status|apply KEYS|apply-status"
+    },
+    "apply": {
+      "applying": "Updating…",
+      "running": "An update is already running.",
+      "done": "The updates are installed.",
+      "doneCompositor": "The updates are installed. Hyprland was among them: log out and back in, and the plugins are rebuilt at that login.",
+      "failed": "The update did not finish: %1 The log is in the updates panel.",
+      "lastDone": "Updated at %1.",
+      "lastDoneCompositor": "Updated at %1. Hyprland was among them: log out and back in, and the plugins are rebuilt at that login.",
+      "lastFailed": "The last update did not finish (status %1): see its log below, then Update again.",
+      "stopped": "The last update stopped before it finished: Update again."
     }
   },
   "gaming": {
@@ -1328,6 +1385,22 @@
       "notFromStore": "%1 was not installed from the store.",
       "unavailable": "The store could not be reached.",
       "usage": "Usage: store.py search KIND [QUERY] [PAGE] | install KIND ID FILE | remove FOLDER... | installed"
+    }
+  },
+  "privileged": {
+    "errors": {
+      "missing": "The helper for administrator rights is not installed (%1): run the installer once, from a terminal, to add it.",
+      "cancelled": "Authentication was cancelled: nothing was changed.",
+      "denied": "This user may not act as administrator.",
+      "failed": "The helper for administrator rights did not start (status %1)."
+    }
+  },
+  "jobs": {
+    "done": "Done.",
+    "failed": "It did not finish: %1",
+    "errors": {
+      "name": "Not a job name: %1",
+      "running": "This is already running."
     }
   },
   "radio": {

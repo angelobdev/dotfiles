@@ -29,19 +29,23 @@ Singleton {
     property bool herdr: false
     readonly property bool available: primaryAgent !== null || herdr
     readonly property string title: herdr ? I18n.tr("assistant.agents") : primaryAgent?.name ?? I18n.tr("assistant.title")
-    property bool installing: false
+    // An agent installed from Settings: its installer in the background (jobs.py), its output there, then the
+    // list read again.
+    readonly property bool installing: installJob.running || installer.running
+    readonly property alias installJob: installJob
+    property string installName: ""
     function refreshCatalog() {
         if (!catalogReader.running)
             catalogReader.running = true;
     }
-    // An agent installed from Settings: its installer in a terminal, then the list read again.
     function install(id) {
-        if (installer.running)
+        if (installing)
             return;
+        installError = "";
         installer.command = ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/agents.py", "install", id];
-        installing = true;
         installer.running = true;
     }
+    property string installError: ""
     readonly property bool windowOpen: Hyprland.toplevels.values.some(t => (t.wayland?.appId || t.lastIpcObject?.class) === (herdr ? "herdr-app" : "desktop-ai"))
     readonly property bool running: herdr ? windowOpen || agents.length > 0 : windowOpen
     // herdr: every terminal running a known agent, as { address, app, name, state (ready, working, permission,
@@ -265,12 +269,26 @@ Singleton {
             }
         }
     }
+    // agents.py install says how; the job runs it.
     Process {
         id: installer
-        onExited: {
-            root.installing = false;
-            root.refreshCatalog();
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const value = JSON.parse(text);
+                    root.installName = value.name;
+                    installJob.start(value.argv, false, I18n.tr("assistant.install.title", [value.name]));
+                } catch (failure) {}
+            }
         }
+        stderr: StdioCollector {
+            onStreamFinished: root.installError = text.trim()
+        }
+    }
+    Job {
+        id: installJob
+        name: "agent-install"
+        onFinished: root.refreshCatalog()
     }
     // The primary agent chosen in Settings: read again so the title and the console follow.
     Connections {

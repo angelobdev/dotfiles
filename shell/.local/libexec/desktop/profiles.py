@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
-"""The installer's profiles for Settings → System → Profiles: what of each is on this system, and the guided
-installer to add or remove one.
+"""The installer's profiles for Settings → System → Profiles: what of each is on this system, and how to add or
+remove one without a terminal.
 
 list: every profile as JSON: installed (all of it there), done of total (what it sets up that can be seen without
 sudo: packages, swaps, AUR packages, release archives, Stow links), recorded (in the installer's record), default.
-install NAME: the guided installer on the profiles, NAME checked on top of the installed ones (desktop-manager --add).
-remove NAME: the guided installer on the review of removing NAME (desktop-manager --remove).
-Both run in a Kitty window, where the plan is reviewed and sudo asks, and wait until it closes.
+plan install NAME / plan remove NAME: JSON with the installer's commands for it: preview (its dry-run, as the
+desktop user) and apply (run by jobs.py behind one pkexec prompt), and blocked, a reason it cannot run now.
+Install keeps the recorded profiles and adds NAME; remove undoes what only NAME set up.
 """
 from contextlib import redirect_stderr, redirect_stdout
 import importlib.util
 import io
 import json
-import os
 from pathlib import Path
-import shlex
 import subprocess
 import sys
 
@@ -22,7 +20,6 @@ from i18n import tr
 
 # This file is a Stow link into the repository: shell/.local/libexec/desktop/profiles.py.
 REPO = Path(__file__).resolve().parents[4]
-MANAGER = Path.home() / '.local/bin/desktop-manager'
 
 
 def installer_screens():
@@ -55,25 +52,41 @@ def listing():
     return {'profiles': rows, 'error': ''}
 
 
-def run_manager(name, flag, title):
+def checked(name):
     names = [profile for profile in name.split(',') if profile]
     if not names or not all(profile.replace('-', '').isalnum() for profile in names):
         raise ValueError(tr('settings.profiles.errors.name', [name]))
-    # The window stays until Enter, with the installer's last words.
-    script = (f'{shlex.quote(str(MANAGER))} {flag} {shlex.quote(",".join(names))}\n'
-              f'printf "\\n%s" {shlex.quote(tr("settings.profiles.close"))}\n'
-              'read -r _\n')
-    # desktop-updates: the window rule that floats a terminal in the middle (hypr/config/rules.lua).
-    subprocess.run(['kitty', '--class', 'desktop-updates', '--title', tr(title, [', '.join(names)]), 'sh', '-c', script], check=False)
+    return names
+
+
+def plan(action, name):
+    names = checked(name)
+    tui = installer_screens()
+    installer = tui.installer
+    script = [sys.executable, str(REPO / 'scripts/install-desktop.py')]
+    blocked = ''
+    if action == 'install':
+        if set(names) - set(installer.PROFILES):
+            raise ValueError(tr('settings.profiles.errors.name', [name]))
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            recorded = tui.recorded_profiles()
+        wanted = [profile for profile in installer.PROFILES if profile == 'core' or profile in recorded or profile in names]
+        arguments = ['--profiles', ','.join(wanted)]
+    else:
+        if not installer.removable_profiles(tuple(names)):
+            raise ValueError(tr('settings.profiles.errors.name', [name]))
+        arguments = ['--remove', ','.join(names)]
+        # The running Hyprland has the plugins loaded: the installer refuses, and so does this, before the prompt.
+        if 'plugins' in names and installer.hyprland_running():
+            blocked = tr('settings.profiles.pluginsInSession')
+    return {'preview': script + ['dry-run', *arguments], 'apply': script + ['apply', *arguments], 'blocked': blocked}
 
 
 def main(arguments):
     if arguments == ['list']:
         print(json.dumps(listing(), ensure_ascii=False))
-    elif len(arguments) == 2 and arguments[0] == 'install':
-        run_manager(arguments[1], '--add', 'settings.profiles.installTitle')
-    elif len(arguments) == 2 and arguments[0] == 'remove':
-        run_manager(arguments[1], '--remove', 'settings.profiles.removeTitle')
+    elif len(arguments) == 3 and arguments[0] == 'plan' and arguments[1] in ('install', 'remove'):
+        print(json.dumps(plan(arguments[1], arguments[2])))
     else:
         raise ValueError(__doc__)
 

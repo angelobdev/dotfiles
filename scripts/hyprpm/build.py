@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Pinned upstream builds, shared between preparation and hyprpm's build sandbox."""
 import hashlib
+import inspect
 from pathlib import Path
 import shutil
 import subprocess
@@ -8,13 +9,15 @@ import sys
 
 PLUGINS = {
     'Hyprspace': ('KZDKM/Hyprspace', '258b7b8bcea177e99da74946cf5cddd1dfe0e1ab', 'Hyprspace.so'),
-    'hyprgrass': ('horriblename/hyprgrass', '8ca1af717d5b4ea1215a781df52bcef02d7b15e6', 'build/src/libhyprgrass.so'),
+    'hyprgrass': ('horriblename/hyprgrass', '578e9849278eb4ac7445d68f10a0266f740c58a9', 'build/src/libhyprgrass.so'),
     'hyprglass': ('hyprnux/hyprglass', '28b38df92176baf3d42fe58bf6c3b663d230c6c9', 'hyprglass.so'),
     'HyprCapture': ('gfhdhytghd/HyprCapture', 'fd465d85d953592862e30b296dd69ad746bc79af', 'build/libhyprcapture.so'),
 }
-# Keeps the fingers of a gesture from reaching the window under them.
-HYPRGRASS_PATCH = Path(__file__).resolve().with_name('hyprgrass-hold-touches.patch')
+# One finger works as the pointer on clients without touch (hold_touches is upstream since the pin above).
+HYPRGRASS_PATCH = Path(__file__).resolve().with_name('hyprgrass-touch-as-pointer.patch')
 # The Hyprland builds these pins were verified against are in bundle.py, outside the bundle and its digest.
+# Finished builds, one directory per plugin and key: hyprpm rebuilds the whole bundle, unchanged plugins come from here.
+CACHE = Path.home() / '.cache/dotfiles/hyprpm-build'
 
 
 def run(*args, **kwargs):
@@ -44,15 +47,32 @@ def package_version(package):
     return subprocess.run(command, capture_output=True, text=True, check=True).stdout
 
 
-def cache_key():
-    # Sources built for another Hyprland, or by another build.py or patch, are never reused.
-    version = package_version('hyprland')
-    return hashlib.sha256((version + Path(__file__).read_text() + HYPRGRASS_PATCH.read_text()).encode()).hexdigest()[:20]
+def cache_key(name):
+    # A build is reused until its Hyprland, its pin, its patch or the build steps change: the other pins do not count.
+    repo, revision, artifact = PLUGINS[name]
+    parts = [package_version('hyprland'), repo, revision, artifact, inspect.getsource(build)]
+    if name == 'hyprgrass':
+        parts.append(HYPRGRASS_PATCH.read_text())
+    return hashlib.sha256('\0'.join(parts).encode()).hexdigest()[:20]
+
+
+def prune(name, key):
+    # The builds of this plugin that this one replaces, and the layout from before one key per plugin (<key>/<plugin>).
+    for entry in CACHE.iterdir():
+        if not entry.is_dir():
+            continue
+        if entry.name == name:
+            for old in entry.iterdir():
+                if old.name != key:
+                    shutil.rmtree(old, ignore_errors=True)
+        elif entry.name not in PLUGINS:
+            shutil.rmtree(entry, ignore_errors=True)
 
 
 def build(name):
     repo, revision, artifact = PLUGINS[name]
-    cache = Path.home() / '.cache/dotfiles/hyprpm-build' / cache_key() / name
+    key = cache_key(name)
+    cache = CACHE / name / key
     cache.parent.mkdir(parents=True, exist_ok=True)
     stamp = cache / '.dotfiles-built'
     if not stamp.exists() or not (cache / artifact).is_file():
@@ -79,6 +99,7 @@ def build(name):
         if not (cache / artifact).is_file():
             raise RuntimeError('Build produced no artifact: ' + name)
         stamp.write_text(revision + '\n')
+    prune(name, key)
     Path('out').mkdir(exist_ok=True)
     shutil.copy2(cache / artifact, Path('out') / (name + '.so'))
     if name == 'HyprCapture':

@@ -1,0 +1,14 @@
+#%PAM-1.0
+# Written by the desktop installer (hardware profile); sudo, GDM and hyprlock keep system-auth.
+# The polkit prompt tries the fingerprint first, and the password after it: when the reader gives up (three scans, 30
+# seconds) or "Use password" in the shell's prompt stops it. Tablet mode goes straight to the password, since the
+# screen covers the reader (scripts/tablet-auth.sh).
+auth       required                     pam_env.so
+auth       required                     pam_faildelay.so delay=2000000
+auth       [success=1 default=ignore]   pam_exec.so quiet /usr/local/libexec/desktop-tablet-mode
+auth       sufficient                   pam_exec.so quiet /usr/local/libexec/desktop-fingerprint
+auth       sufficient                   pam_unix.so nullok
+auth       required                     pam_deny.so
+account    include      system-auth
+password   include      system-auth
+session    include      system-auth

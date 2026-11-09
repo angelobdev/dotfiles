@@ -138,6 +138,13 @@ commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
 path = '.local/share/zsh/plugins/zsh-autocomplete'
 track = 'tags'
 
+# Root for one operation started from Settings, behind one pkexec prompt (shell/.local/libexec/desktop/privileged.py).
+# A copy owned by root, never a link: pkexec must not run a file the desktop user can change.
+[[fedora.core.files]]
+path = '/usr/local/libexec/dotfiles-desktop/root-broker'
+source = 'scripts/privileged/root-broker'
+mode = '0755'
+
 # A recent Intel laptop: firmware, video decoding, cameras, power and the fingerprint reader. The 2-in-1 parts
 # are the tablet profile.
 [fedora.hardware]
@@ -152,6 +159,16 @@ services = ['thermald.service', 'intel_lpmd.service']
 disable = ['sshd.service']
 firewall_zone = 'FedoraWorkstation'
 notes = ['Enroll your fingerprint: fprintd-enroll']
+
+# The polkit prompt: the fingerprint first, the password after it or on "Use password" (scripts/privileged/polkit-1.fedora).
+[[fedora.hardware.files]]
+path = '/etc/pam.d/polkit-1'
+source = 'scripts/privileged/polkit-1.fedora'
+
+[[fedora.hardware.files]]
+path = '/usr/local/libexec/desktop-fingerprint'
+source = 'scripts/privileged/desktop-fingerprint'
+mode = '0755'
 
 # A 2-in-1 (this laptop: an HP OmniBook Ultra Flip): the accelerometer behind screen rotation, the stylus, the
 # sign-in that skips the fingerprint reader while folded, and the Hyprgrass touchscreen gestures (built only with
@@ -345,6 +362,13 @@ commit = '52ce8176d280d58a4a2af6a829d2266fffae568c'  # 26.08.04
 path = '.local/share/zsh/plugins/zsh-autocomplete'
 track = 'tags'
 
+# Root for one operation started from Settings, behind one pkexec prompt (shell/.local/libexec/desktop/privileged.py).
+# A copy owned by root, never a link: pkexec must not run a file the desktop user can change.
+[[arch.core.files]]
+path = '/usr/local/libexec/dotfiles-desktop/root-broker'
+source = 'scripts/privileged/root-broker'
+mode = '0755'
+
 # A recent Intel laptop. linux-firmware-intel holds the Wi-Fi, Bluetooth, GPU, VSC, NPU and ISH firmware that
 # Fedora splits in several packages. The 2-in-1 parts are the tablet profile.
 [arch.hardware]
@@ -355,7 +379,17 @@ packages = [
     'thermald', 'intel-lpmd', 'bolt', 'fwupd', 'fprintd',
 ]
 services = ['thermald.service', 'intel_lpmd.service']
-notes = ['Enroll your fingerprint: fprintd-enroll. On Arch it signs in at GDM and unlocks the lock screen; sudo and polkit still ask for the password.']
+notes = ['Enroll your fingerprint: fprintd-enroll. On Arch it signs in at GDM, unlocks the lock screen and answers the polkit prompt; sudo still asks for the password.']
+
+# The polkit prompt: the fingerprint first, the password after it or on "Use password" (scripts/privileged/polkit-1.arch).
+[[arch.hardware.files]]
+path = '/etc/pam.d/polkit-1'
+source = 'scripts/privileged/polkit-1.arch'
+
+[[arch.hardware.files]]
+path = '/usr/local/libexec/desktop-fingerprint'
+source = 'scripts/privileged/desktop-fingerprint'
+mode = '0755'
 
 # A 2-in-1: rotation, the stylus and the Hyprgrass gestures. The tablet sign-in is not ported yet.
 [arch.tablet]

@@ -456,7 +456,20 @@ class StepTests(unittest.TestCase):
     def test_files_lose_the_leading_newline_of_the_manifest(self):
         distro = fake_distro()
         installer.files_apply(plan(distro), ['/etc/x'])
-        distro.write_file.assert_called_once_with('/etc/x', 'x\n')
+        distro.write_file.assert_called_once_with('/etc/x', 'x\n', '0644')
+
+    def test_a_file_from_the_repository_keeps_its_mode(self):
+        table = {'core': {'files': [{'path': '/usr/local/libexec/x', 'source': 'scripts/privileged/root-broker', 'mode': '0755'}]}}
+        installer.resolve_files(table)
+        item = table['core']['files'][0]
+        self.assertEqual(item['content'], (installer.REPO / 'scripts/privileged/root-broker').read_text())
+        distro = fake_distro()
+        installer.files_apply(installer.Plan(distro, '45', table, [], ('core',)), ['/usr/local/libexec/x'])
+        distro.write_file.assert_called_once_with('/usr/local/libexec/x', item['content'], '0755')
+
+    def test_a_mode_is_four_octal_digits(self):
+        with self.assertRaises(SystemExit):
+            installer.resolve_files({'core': {'files': [{'path': '/x', 'content': 'x', 'mode': '755'}]}})
 
     def test_verify_stops_before_the_boot_step(self):
         self.system(True)

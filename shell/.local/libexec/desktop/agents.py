@@ -3,7 +3,7 @@
 
 Each agent is a file in ~/.local/share/desktop/agents/<id>.json (shipped) or ~/.config/desktop/agents/<id>.json
 (the user's own, which wins for the same id): its name, the program that tells it is installed (binary), the
-command the console runs, how it installs (a shell command, run in a terminal the user sees), what it needs for
+command the console runs, how it installs (a shell command, run in the background from Settings), what it needs for
 that (needs), how an image path is passed at its prompt (image, with {path}), the name herdr gives it (herdr)
 and, for Claude Code, the hooks desktop-ai adds (hooks: "claude").
 
@@ -15,15 +15,13 @@ primary: the primary agent's id ("" when none is installed).
 argv ID: its command as JSON, the program resolved to a path.
 image ID PATH: the text to type at its prompt for an image.
 hooks ID: the hooks desktop-ai adds for it ("claude", or nothing).
-install ID: runs its install command in a Kitty window and waits until the window closes.
+install ID: JSON with its name and the argv that installs it, for jobs.py (Settings shows its output).
 """
 import json
 import os
 from pathlib import Path
 import re
-import shlex
 import shutil
-import subprocess
 import sys
 
 from i18n import tr
@@ -143,27 +141,15 @@ def command_image(name, path):
 
 
 def command_install(name):
+    # The installer's command for jobs.py: Settings runs it in the background, as the desktop user, and shows its
+    # output (a login link, say) there. Its PATH has the folders the agents install into.
     agent = find(name)
     if not agent['install']:
         raise ValueError(tr('assistant.errors.noInstall', [agent['name']]))
     missing = [need for need in agent['needs'] if not where(need)]
     if missing:
         raise ValueError(tr('assistant.errors.installNeeds', [agent['name'], ', '.join(missing)]))
-    # The installer runs where the user sees it (it may print a login link or ask something); the window stays
-    # until Enter, with the result.
-    script = (
-        f'printf "%s\\n\\n" {shlex.quote(tr("assistant.install.running", [agent["name"]]))}\n'
-        f'{agent["install"]}\n'
-        'status=$?\n'
-        f'if [ $status -eq 0 ]; then printf "\\n%s\\n" {shlex.quote(tr("assistant.install.done", [agent["name"]]))}; '
-        f'else printf "\\n%s\\n" {shlex.quote(tr("assistant.install.failed", [agent["name"]]))}; fi\n'
-        f'printf "%s" {shlex.quote(tr("assistant.install.close"))}\n'
-        'read -r _\n'
-    )
-    environment = dict(os.environ, PATH=search_path())
-    # desktop-updates: the window rule that floats a terminal in the middle (hypr/config/rules.lua).
-    subprocess.run(['kitty', '--class', 'desktop-updates', '--title', tr('assistant.install.title', [agent['name']]),
-                    'sh', '-c', script], env=environment, check=False)
+    print(json.dumps({'name': agent['name'], 'argv': ['env', 'PATH=' + search_path(), 'sh', '-c', agent['install']]}))
 
 
 def main(arguments):
