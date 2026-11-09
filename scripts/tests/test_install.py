@@ -28,6 +28,7 @@ SANDBOX = tempfile.TemporaryDirectory()
 atexit.register(SANDBOX.cleanup)
 installer.STATE = Path(SANDBOX.name)
 installer.RECORD = installer.STATE / 'install.json'
+installer.UNITS = installer.STATE / 'units'
 installer.INTERFACE = installer.STATE / 'interface-before-theme.ini'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
@@ -1662,7 +1663,7 @@ class PartTests(unittest.TestCase):
         table = installer.flatten_parts(copy.deepcopy(MANIFEST['fedora']))
         with mock.patch.object(installer, 'touch_hardware', return_value=False), \
                 mock.patch.dict(installer.DETECT, {name: (lambda: False) for name in installer.DETECT}):
-            self.assertEqual(installer.default_profiles(table), 'core,hardware,hardware.firmware,plugins')
+            self.assertEqual(installer.default_profiles(table), 'core,hardware,hardware.firmware,plugins,plugins.hyprspace,plugins.hyprglass,plugins.hyprcapture')
 
     def test_detection(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -1693,6 +1694,19 @@ class PartTests(unittest.TestCase):
         self.assertNotIn('parts', current.table['apps'])
         self.assertIn('zen-browser', installer.wanted_packages(current))
         self.assertNotIn('code', installer.wanted_packages(current))
+
+
+class UnitsFileTests(unittest.TestCase):
+    """The installed units for Hyprland and the shell, written with the record."""
+
+    def test_written_with_the_record_and_gone_with_the_desktop(self):
+        installer.save_record({'profiles': ['core', 'plugins', 'plugins.hyprspace']})
+        self.assertEqual(installer.UNITS.read_text(), 'core\nplugins\nplugins.hyprspace\n')
+        installer.save_record({'profiles': ['core'], 'uninstalled': True})
+        self.assertFalse(installer.UNITS.exists())
+        # A record without profiles yet: no file, so everything counts.
+        installer.save_record({'packages': ['a']})
+        self.assertFalse(installer.UNITS.exists())
 
 
 if __name__ == '__main__':

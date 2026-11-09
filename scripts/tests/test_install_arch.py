@@ -27,6 +27,7 @@ SANDBOX = tempfile.TemporaryDirectory()
 atexit.register(SANDBOX.cleanup)
 installer.STATE = Path(SANDBOX.name)
 installer.RECORD = installer.STATE / 'install.json'
+installer.UNITS = installer.STATE / 'units'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
 PROFILE_KEYS = {'repos', 'packages', 'services', 'user_services', 'disable', 'files', 'groups', 'stow', 'flatpaks',

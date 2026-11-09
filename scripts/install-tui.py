@@ -37,7 +37,10 @@ DESCRIPTIONS = {
     'hardware.fingerprint': 'The fingerprint reader (fprintd), and the polkit prompt that tries it first.',
     'hardware.firmware': 'Firmware updates (fwupd) and Thunderbolt devices (bolt).',
     'tablet': 'A 2-in-1: screen rotation, stylus, sign-in without the fingerprint reader while folded, touchscreen gestures (Hyprgrass).',
-    'plugins': 'What building the Hyprland plugins needs, from RPM Fusion too; the RPM Fusion ffmpeg replaces ffmpeg-free.',
+    'plugins': 'The Hyprland plugins, one by one, and the tools and headers building them needs.',
+    'plugins.hyprspace': 'Hyprspace: the overview (the corner of the bar, four fingers up).',
+    'plugins.hyprglass': 'Hyprglass: liquid glass on the shell and the windows.',
+    'plugins.hyprcapture': 'HyprCapture: screenshots with an editor (Super + Shift + S, Print), and what building it needs.',
     'apps': 'Desktop apps, one by one.',
     'apps.zen': 'Zen Browser.',
     'apps.onepassword': '1Password, allowed to fill in Zen.',
@@ -110,8 +113,12 @@ def profile_status(plan, name):
     missing += [item.split()[0] for item in installer.archives_pending(one)]
     links = [(package, path) for package in plan.table[name].get('stow', ()) for path in stow_files(package)]
     missing += [str(path.relative_to(REPO)) for package, path in links if not linked(package, path)]
+    # A part of plugins is its plugin too, built by hyprpm: Hyprspace and hyprglass need nothing else of their own.
+    plugins = [plugin for plugin, unit in bundle.PROFILE_OF.items() if unit == name and unit.startswith('plugins.')]
+    state = bundle.repository_state() if plugins else {}
+    missing += [plugin for plugin in plugins if state.get(plugin, {}).get('failed', True)]
     return Status(missing, len(wanted) + len(installer.swaps(one)) + len(installer.merged(one, 'aur')) + len(installer.merged(one, 'archives'))
-                  + len(links))
+                  + len(links) + len(plugins))
 
 
 def installed(status):

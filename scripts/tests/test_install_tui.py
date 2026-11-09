@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 from unittest import mock
 
@@ -20,6 +21,7 @@ SANDBOX = tempfile.TemporaryDirectory()
 atexit.register(SANDBOX.cleanup)
 installer.STATE = Path(SANDBOX.name)
 installer.RECORD = installer.STATE / 'install.json'
+installer.UNITS = installer.STATE / 'units'
 
 TABLE = {
     'core': {'packages': ['a', 'b'], 'repos': ['one'], 'services': ['s.service']},
@@ -75,7 +77,7 @@ class ChoiceTests(unittest.TestCase):
         self.assertEqual(tui.command(plan(firmware='~/HP pack')), "./scripts/install-desktop.py apply --profiles core,plugins --firmware '~/HP pack'")
 
     def test_every_plugin_state_is_described(self):
-        states = {value for name, value in vars(tui.bundle).items() if name.isupper() and name not in ('FILES', 'REPOSITORY', 'VERIFIED', 'CACHE', 'STAMP', 'PACKAGING', 'PLUGINS', 'RECORD', 'PROFILE_OF', 'PROFILES_VERSION', 'UNITS_OF_V2')}
+        states = {value for name, value in vars(tui.bundle).items() if name.isupper() and name not in ('FILES', 'REPOSITORY', 'VERIFIED', 'CACHE', 'STAMP', 'PACKAGING', 'PLUGINS', 'RECORD', 'PROFILE_OF', 'PROFILES_VERSION', 'UNITS_OF_V2', 'PLUGIN_PARTS')}
         self.assertEqual(set(tui.PLUGIN_STATES), states)
 
     def test_finish_only_while_the_first_login_has_not(self):
@@ -218,9 +220,9 @@ class StatusTests(unittest.TestCase):
         # Without the hardware the parts detect, hardware brings only its firmware updates.
         with mock.patch.dict(installer.DETECT, {name: (lambda: False) for name in installer.DETECT}):
             with mock.patch.object(installer, 'touch_hardware', return_value=False):
-                self.assertEqual(tui.preselected({**FRESH, 'apps': tui.Status([], 2)}), ('core', 'hardware', 'hardware.firmware', 'plugins'))
+                self.assertEqual(tui.preselected({**FRESH, 'apps': tui.Status([], 2)}), ('core', 'hardware', 'hardware.firmware', 'plugins', 'plugins.hyprspace', 'plugins.hyprglass', 'plugins.hyprcapture'))
             with mock.patch.object(installer, 'touch_hardware', return_value=True):
-                self.assertEqual(tui.preselected(FRESH), ('core', 'hardware', 'hardware.firmware', 'tablet', 'plugins'))
+                self.assertEqual(tui.preselected(FRESH), ('core', 'hardware', 'hardware.firmware', 'tablet', 'plugins', 'plugins.hyprspace', 'plugins.hyprglass', 'plugins.hyprcapture'))
 
     def test_a_partial_profile_names_what_is_missing(self):
         self.assertEqual(tui.status_text(tui.Status(['a', 'b'], 5)), 'Partly installed (3/5); missing: a, b.')
@@ -764,6 +766,17 @@ class HeadlessTests(unittest.TestCase):
     def test_only_known_keys(self):
         with self.assertRaises(SystemExit):
             tui.apply_headless(('aur',))
+
+
+class PluginPartTests(unittest.TestCase):
+    def test_a_plugin_part_is_there_when_its_plugin_is_built(self):
+        table = installer.flatten_parts(tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text())['fedora'])
+        current = installer.Plan(mock.Mock(), '45', table, [], ('core',))
+        current.distro.installed_names.return_value = []
+        with mock.patch.object(installer, 'packages_pending', return_value=[]), \
+                mock.patch.object(tui.bundle, 'repository_state', return_value={'Hyprspace': {'failed': False}, 'hyprglass': {'failed': True}}):
+            self.assertEqual(tui.profile_status(current, 'plugins.hyprspace'), tui.Status([], 1))
+            self.assertEqual(tui.profile_status(current, 'plugins.hyprglass'), tui.Status(['hyprglass'], 1))
 
 
 if __name__ == '__main__':

@@ -37,7 +37,8 @@ Overlay {
         },
         {
             keys: I18n.tr("hints.gestures.fourUp"),
-            name: I18n.tr("hints.gestures.overview")
+            name: I18n.tr("hints.gestures.overview"),
+            unit: ["plugins", "hyprspace"]
         },
         {
             keys: I18n.tr("hints.gestures.fourDown"),
@@ -207,7 +208,7 @@ Overlay {
                 Layout.fillHeight: true
                 clip: true
                 spacing: 3
-                model: (Tablet.active ? root.gestures.concat(root.bindings) : Tablet.touchscreen ? root.bindings.concat(root.gestures) : root.bindings).filter(b => (b.keys + " " + b.name + " " + b.submap + " " + b.category).toLowerCase().includes(search.text.toLowerCase()))
+                model: (Tablet.active ? root.gestures.concat(root.bindings) : Tablet.touchscreen ? root.bindings.concat(root.gestures) : root.bindings).filter(b => (!b.unit || Installed.has(b.unit[0], b.unit[1])) && (b.keys + " " + b.name + " " + b.submap + " " + b.category).toLowerCase().includes(search.text.toLowerCase()))
                 section.property: "category"
                 section.criteria: ViewSection.FullString
                 section.delegate: Item {

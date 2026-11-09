@@ -1011,3 +1011,22 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
   - `check.sh` passes.
 - Not tried: the TUI and the Settings tab on screen, and an install in a container (CI runs it).
 
+## Plugins as parts (#49, step 2), 2026-11-10
+
+- Build dependencies, from the plugins' own build files in the cache:
+  - Hyprspace and hyprglass build with make against Hyprland's headers (plus pangocairo and lua);
+  - hyprgrass builds with meson;
+  - HyprCapture alone is CMake, and needs Qt (svg, wayland, layer-shell), OpenCV, PipeWire, PulseAudio, FFTW, FFmpeg, x265 and libde265.
+- The packages split that way: the plugins profile keeps the tools and the headers, and `plugins.hyprcapture` gets the rest.
+- Record version 4: a version 3 record with `plugins` gets every plugin part, and version 2 maps `plugins` the same way. `bundle.selected()` builds the plugins of the recorded parts, plus Hyprgrass with `tablet`. The full set keeps its digest, so no rebuild.
+- `install-desktop.py` writes `~/.local/state/dotfiles/units` with the record, and removes it with an uninstall.
+  - `config/installed.lua` reads it (`test_installed.lua`), and `binds.lua` sets the screenshot keys only with `plugins.hyprcapture`.
+  - `services/Installed.qml` reads it: the bar corner, the Overview and screenshot actions of the assist button, the overview gesture of the hints, and the glass settings button follow it.
+  - Without the file, everything shows, as before.
+- Tests:
+  - `test_plugins` (each plugin with its part, version 3 records);
+  - `test_install` (the units file);
+  - `test_install_tui` (a plugin part is installed once its plugin is built);
+  - `check.sh` passes.
+- Not tried on screen: this machine has no units file until the installer next saves its record.
+

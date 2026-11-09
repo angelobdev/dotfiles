@@ -870,7 +870,7 @@
         "core": "Hyprland, Quickshell, GDM with the hyprland-uwsm session, portals, audio, network, fonts, zsh and the codecs (from RPM Fusion on Fedora): the desktop itself.",
         "hardware": "A laptop, in parts checked where the hardware is found: Intel, sound, camera, fingerprint reader, firmware updates.",
         "tablet": "A 2-in-1: screen rotation, stylus, sign-in without the fingerprint reader while folded, touchscreen gestures (Hyprgrass).",
-        "plugins": "What building the Hyprland plugins needs, from RPM Fusion too; the RPM Fusion ffmpeg replaces ffmpeg-free.",
+        "plugins": "The Hyprland plugins, one by one: Hyprspace (overview), Hyprglass (liquid glass), HyprCapture (screenshots), with the tools and headers building them needs.",
         "apps": "Desktop apps, one by one: Zen Browser, 1Password, VS Code, and Loupe, Papers and Showtime for images, PDFs and videos.",
         "utils": "Command-line tools, one by one: Neovim, gcc, xclip, unrar, FUSE, gh, glab, uv, wev and Tailscale.",
         "assistant": "The AI Assistant: Super + A, its bar icon and its section here, with the Herdr app and herdr-core in ~/.local, which update themselves.",
@@ -919,6 +919,11 @@
           "steam": "Steam",
           "steamHidpi": "Steam HiDPI launcher",
           "gamescope": "gamescope"
+        },
+        "plugins": {
+          "hyprspace": "Hyprspace (overview)",
+          "hyprglass": "Hyprglass (liquid glass)",
+          "hyprcapture": "HyprCapture (screenshots)"
         }
       },
       "parts": "Parts",

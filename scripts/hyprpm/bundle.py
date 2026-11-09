@@ -23,11 +23,14 @@ CACHE = Path('/var/cache/hyprpm') / getpass.getuser()
 STAMP = Path.home() / '.local/state/dotfiles/hypr-plugins.json'
 # The installer's record (install-desktop.py RECORD): its profiles say which plugins to build.
 RECORD = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') / 'dotfiles/install.json'
-# Plugins built only with a profile: the touchscreen gestures are for a 2-in-1.
-PROFILE_OF = {'hyprgrass': 'tablet'}
+# The unit of the installer each plugin comes with: a part of plugins, and the touchscreen gestures with tablet.
+PROFILE_OF = {'Hyprspace': 'plugins.hyprspace', 'hyprgrass': 'tablet', 'hyprglass': 'plugins.hyprglass',
+              'HyprCapture': 'plugins.hyprcapture'}
 # Records say which profiles they name. 2: tablet left hardware. 3: profiles have parts (profile.part), herdr became
-# assistant, media radio, codecs went into core, steam-hidpi into gaming, and apps split into apps and utils.
-PROFILES_VERSION = 3
+# assistant, media radio, codecs went into core, steam-hidpi into gaming, and apps split into apps and utils. 4: the
+# plugins are parts of plugins.
+PROFILES_VERSION = 4
+PLUGIN_PARTS = ['plugins.hyprspace', 'plugins.hyprglass', 'plugins.hyprcapture']
 # A version 2 profile as the units of version 3 that hold what it installed.
 UNITS_OF_V2 = {
     'hardware': ['hardware', 'hardware.intel', 'hardware.audio', 'hardware.camera', 'hardware.fingerprint', 'hardware.firmware'],
@@ -39,6 +42,7 @@ UNITS_OF_V2 = {
     'gaming': ['gaming', 'gaming.steam', 'gaming.gamescope'],
     'steam-hidpi': ['gaming', 'gaming.steam-hidpi'],
     'codecs': ['core'],
+    'plugins': ['plugins', *PLUGIN_PARTS],
 }
 
 # status(): what the plugins need, from the least to the most work.
@@ -85,7 +89,10 @@ def migrate(record):
         profiles.insert(profiles.index('hardware') + 1, 'tablet')
     units = []
     for name in profiles:
-        units += [unit for unit in UNITS_OF_V2.get(name, [name]) if unit not in units]
+        units += [unit for unit in (UNITS_OF_V2.get(name, [name]) if version in (None, 1, 2) else [name]) if unit not in units]
+    # Version 3: plugins built every plugin.
+    if version == 3 and 'plugins' in units and not any(unit in units for unit in PLUGIN_PARTS):
+        units[units.index('plugins') + 1:units.index('plugins') + 1] = PLUGIN_PARTS
     record['profiles'] = units
     record['profiles_version'] = PROFILES_VERSION
     return record
@@ -103,9 +110,9 @@ def recorded_profiles():
 
 
 def selected(profiles=False):
-    # The plugins to build, in PLUGINS order: those of a profile only when it is installed.
+    # The plugins to build, in PLUGINS order: those whose unit is installed, or all of them without a record.
     profiles = recorded_profiles() if profiles is False else profiles
-    return tuple(name for name in PLUGINS if profiles is None or PROFILE_OF.get(name, 'core') == 'core' or PROFILE_OF[name] in profiles)
+    return tuple(name for name in PLUGINS if profiles is None or PROFILE_OF[name] in profiles)
 
 
 def manifest(names):

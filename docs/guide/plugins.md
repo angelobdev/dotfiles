@@ -6,7 +6,14 @@ Configuration: [`plugins.lua`](../../hypr/.config/hypr/config/plugins.lua). Scre
 
 ## Installation
 
-Verified builds: **Hyprland and hyprland-devel 0.57.1-1.fc45.x86_64**, from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora, and on Arch **hyprland 0.57.1-1** from `extra`, which also holds the headers (compiled in a container; not yet loaded in an Arch session). The `plugins` profile of the [installer](installation.md#automated-installation) lists the build dependencies, some from RPM Fusion on Fedora, and runs this step at the first login. `hyprland-devel` has to stay installed on Fedora: the check at every login reads its version.
+Verified builds: **Hyprland and hyprland-devel 0.57.1-1.fc45.x86_64**, from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora, and on Arch **hyprland 0.57.1-1** from `extra`, which also holds the headers (compiled in a container; not yet loaded in an Arch session). The `plugins` profile of the [installer](installation.md#automated-installation) has the build tools and Hyprland's headers, and one part per plugin: `plugins.hyprspace`, `plugins.hyprglass` and `plugins.hyprcapture`. The last brings the CMake, Qt, OpenCV, PipeWire and FFmpeg headers only HyprCapture needs, with FFmpeg from RPM Fusion on Fedora. Hyprgrass comes with `tablet`. Only the plugins of the installed parts are built (`bundle.selected()`), and the installer runs this step at the first login.
+
+Without its part, what a plugin drives is not shown either. The installer writes its units to `~/.local/state/dotfiles/units`, which Hyprland (`config/installed.lua`) and the shell (`services/Installed.qml`) read:
+- without `plugins.hyprspace`, no overview corner on the bar, no Overview in the assist button, and no four-finger gesture in the hints;
+- without `plugins.hyprcapture`, no screenshot keys (Super + Shift + S, Print) and no screenshot actions in the assist button;
+- without `plugins.hyprglass`, no glass settings on the theme cards.
+
+An install from before that file has none, and shows everything. A part installed whose plugin is not loaded (a rebuild pending) keeps its keys, which say so when pressed. `hyprland-devel` has to stay installed on Fedora: the check at every login reads its version.
 
 From a terminal in the Hyprland session, as a regular user:
 

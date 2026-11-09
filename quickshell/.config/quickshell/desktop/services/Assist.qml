@@ -49,7 +49,8 @@ Singleton {
             },
             overview: {
                 icon: "overview",
-                label: I18n.tr("assist.actions.overview")
+                label: I18n.tr("assist.actions.overview"),
+                available: Installed.has("plugins", "hyprspace")
             },
             workspacePrevious: {
                 icon: "chevron-left",
@@ -113,11 +114,13 @@ Singleton {
             screenshotArea: {
                 icon: "screenshot",
                 label: I18n.tr("assist.actions.screenshotArea"),
+                available: Installed.has("plugins", "hyprcapture"),
                 lua: "local capture = (hl.plugin or {}).hyprcapture if capture then capture.open_editor(\"region\") end"
             },
             screenshotDisplay: {
                 icon: "monitor",
                 label: I18n.tr("assist.actions.screenshotDisplay"),
+                available: Installed.has("plugins", "hyprcapture"),
                 lua: "local capture = (hl.plugin or {}).hyprcapture if capture then capture.open_editor(\"fullscreen\") end"
             },
             recording: {

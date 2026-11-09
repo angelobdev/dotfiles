@@ -48,6 +48,7 @@ if command -v lua >/dev/null; then
     state=$(mktemp -d)
     XDG_STATE_HOME="$state" lua "$repo/scripts/tests/test_displays.lua"
     lua "$repo/scripts/tests/test_console.lua"
+    lua "$repo/scripts/tests/test_installed.lua"
     rm -rf "$state"
 fi
 XDG_CONFIG_HOME="$repo/hypr/.config" Hyprland --verify-config -c "$repo/hypr/.config/hypr/hyprland.lua"
