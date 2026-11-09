@@ -22,6 +22,8 @@ ColumnLayout {
     property var applied: null
     readonly property bool busy: job.running || planner.running || previewer.running
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/profiles.py"
+    // The room of the parts chevron left of each title, also where the parts and their Apply start.
+    readonly property real toggleWidth: Theme.hit(28)
     spacing: 10
     onShownChanged: if (shown)
         refresh()
@@ -217,12 +219,29 @@ ColumnLayout {
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 12
+                            // Its parts, one switch each, before the title; a profile without parts keeps the room empty, so every title lines up.
+                            Item {
+                                Layout.alignment: Qt.AlignTop
+                                implicitWidth: root.toggleWidth
+                                implicitHeight: toggle.implicitHeight
+                                CompactIconButton {
+                                    id: toggle
+                                    visible: profileRow.parts.length > 0
+                                    iconName: profileRow.open ? "chevron-up" : "chevron-down"
+                                    tooltip: I18n.tr("settings.profiles.parts")
+                                    onClicked: {
+                                        const next = Object.assign({}, root.expanded);
+                                        next[profileRow.modelData.name] = !profileRow.open;
+                                        root.expanded = next;
+                                    }
+                                }
+                            }
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 spacing: 2
                                 Text {
                                     Layout.fillWidth: true
-                                    text: profileRow.modelData.name + (profileRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
+                                    text: profileRow.modelData.name +(profileRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
                                     textFormat: Text.PlainText
                                     color: Theme.text
                                     font.family: Theme.font
@@ -260,17 +279,6 @@ ColumnLayout {
                                 text: I18n.tr("settings.profiles.remove")
                                 onClicked: root.plan("remove", profileRow.modelData.name)
                             }
-                            // Its parts, one switch each.
-                            CompactIconButton {
-                                visible: profileRow.parts.length > 0
-                                iconName: profileRow.open ? "chevron-up" : "chevron-down"
-                                tooltip: I18n.tr("settings.profiles.parts")
-                                onClicked: {
-                                    const next = Object.assign({}, root.expanded);
-                                    next[profileRow.modelData.name] = !profileRow.open;
-                                    root.expanded = next;
-                                }
-                            }
                         }
                         Repeater {
                             model: profileRow.open ? profileRow.parts : []
@@ -278,7 +286,7 @@ ColumnLayout {
                                 id: partRow
                                 required property var modelData
                                 Layout.fillWidth: true
-                                Layout.leftMargin: 16
+                                Layout.leftMargin: root.toggleWidth + 12
                                 spacing: 10
                                 Text {
                                     Layout.fillWidth: true
@@ -305,7 +313,7 @@ ColumnLayout {
                         // What the switches changed in this profile: shown in the plan first, like Install and Remove.
                         ActionButton {
                             visible: profileRow.open && (profileRow.pending.add.length > 0 || profileRow.pending.remove.length > 0)
-                            Layout.leftMargin: 16
+                            Layout.leftMargin: root.toggleWidth + 12
                             enabled: !root.busy
                             highlighted: true
                             text: I18n.tr("settings.profiles.applyParts")
