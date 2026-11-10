@@ -7,6 +7,28 @@ import ".."
 
 Singleton {
     id: root
+    // The network views on screen (the panel and Settings → Network can both be): Wi-Fi scans while there is one.
+    // One owner for scannerEnabled, which each view used to write, the last one winning.
+    property var watchers: []
+    readonly property bool scanning: watchers.length > 0 && Networking.wifiEnabled
+    function watch(view, on) {
+        const others = watchers.filter(entry => entry !== view);
+        if (on)
+            others.push(view);
+        if (others.length !== watchers.length)
+            watchers = others;
+    }
+    Variants {
+        model: Networking.devices.values.filter(device => device.type === DeviceType.Wifi)
+        delegate: QtObject {
+            required property var modelData
+            property var scanBinding: Binding {
+                target: modelData
+                property: "scannerEnabled"
+                value: root.scanning
+            }
+        }
+    }
     // Keyed by interface name: addresses, router, DNS, MAC and Wi-Fi band from network.py.
     property var details: ({})
     property var profile: null
