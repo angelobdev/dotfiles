@@ -1096,3 +1096,8 @@ Reported by the user after the merges of the day:
 - Against a throwaway target holding a regular `kitty.conf` and a GTK `settings.ini` linked elsewhere: dry-run exit 0 with both listed, nothing changed; `apply` moved both to the backup folder and linked them; a second dry-run had nothing to back up. The dry-run of the real home is unchanged.
 - `scripts/tests/test_stow.py` covers both runs with the real Stow (it fails without the fix); `stow` is now installed by `check.yml` on both distributions, so the test does not skip there. Both container installs now start with a `kitty.conf` of the user's own and check that apply backs it up and links it, and that the uninstall puts it back (run by `install.yml` on this PR).
 - `check.sh` passes.
+## Settings saves while rendering (#70), 2026-11-10
+
+- `HyprSettings.save()` wrote `shell.json` every time but started `hyprsettings.py render` on a plain `Process`, which ignores a new command while it runs: two quick edits left `settings.lua` on the first one. The renderer is now a `CoalescedProcess` (`request()`).
+- A throwaway Quickshell config (no windows) with two `CoalescedProcess`, one with an `onExited` of its own as the renderer has: a request made while the first run was going ran once more after it with the newer command, in both, and the instance handler ran next to the base one. Two requests in the same tick, before the process starts, make one run with the newer command.
+- The live shell reloaded with no errors. `check.sh` passes.

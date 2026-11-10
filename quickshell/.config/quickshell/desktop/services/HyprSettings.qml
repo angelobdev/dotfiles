@@ -63,7 +63,8 @@ Singleton {
         }
         error = "";
         renderer.command = ["python3", Quickshell.env("HOME") + "/.local/libexec/desktop/hyprsettings.py", "render", "--json", JSON.stringify(cleaned)];
-        renderer.running = true;
+        // A save while the last one still renders runs once more after it, with this command.
+        renderer.request();
     }
     function setKeyboard(layout, variant) {
         save(Object.assign({}, current, {
@@ -123,7 +124,7 @@ Singleton {
             }
         }
     }
-    Process {
+    CoalescedProcess {
         id: renderer
         stdout: StdioCollector {
             onStreamFinished: {
