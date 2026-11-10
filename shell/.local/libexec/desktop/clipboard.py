@@ -49,6 +49,6 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except (OSError, ValueError, subprocess.CalledProcessError):
+    except (OSError, ValueError, subprocess.SubprocessError):
         print(tr('clipboard.errors.operationFailed'), file=sys.stderr)
         sys.exit(1)

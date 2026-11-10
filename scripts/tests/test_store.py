@@ -171,5 +171,16 @@ class DownloadTests(unittest.TestCase):
                 store.download('https://example.com/x', Path(folder) / 'x', '')
 
 
+
+class ErrorTests(unittest.TestCase):
+    def test_a_page_that_is_not_the_stores_json_says_the_store_is_unavailable(self):
+        error = json.JSONDecodeError('Expecting value', '<html>', 0)
+        with mock.patch.object(store, 'search', side_effect=error), mock.patch.object(store.sys, 'argv', ['store.py', 'search', 'icons']), \
+                mock.patch.object(store, 'tr', side_effect=lambda key, values=(): key), \
+                mock.patch('sys.stdout', new_callable=io.StringIO) as out:
+            self.assertEqual(store.main(), 0)
+        self.assertEqual(json.loads(out.getvalue()), {'error': 'store.errors.unavailable'})
+
+
 if __name__ == '__main__':
     unittest.main()

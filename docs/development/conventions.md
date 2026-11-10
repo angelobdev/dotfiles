@@ -28,7 +28,7 @@ Match the surrounding code. Comments are sparse one-liners that explain *why* ("
 
 - `#!/usr/bin/env python3`, a one-line module docstring (reused as the argparse description), the helpers' own modules first (`from common import …`, `from i18n import tr`), then stdlib imports alphabetically by module (`from pathlib import Path` in its sorted position).
 - Single quotes, 4 spaces, two blank lines between top-level definitions, no type hints.
-- `main()` returns an exit code; `if __name__ == '__main__':` wraps it in `try: sys.exit(main()) except (OSError, ValueError, subprocess.CalledProcessError)` and prints a translated message to stderr.
+- `main()` returns an exit code; `if __name__ == '__main__':` wraps it in `try: sys.exit(main()) except (OSError, ValueError, subprocess.SubprocessError)` (SubprocessError also covers a timeout) and prints a translated message to stderr.
 - `subprocess` always with argument lists (never `shell=True`), with timeouts on interactive paths.
 - `common.py` holds what several helpers need: `write_atomic(path, text)` and `replacing(path)` (a temporary next to the file, moved over it on success; the mode of the replaced file, else 0644; through a link unless `follow=False`), `IMAGES` (accepted image types), `magick(...)` (ImageMagick with memory limits) and `hypr_json` / `focused_monitor`. Private data (clipboard, recordings) keeps `os.umask(0o077)` and its own writes; `ensure_ascii=False` and `encoding='utf-8'` for JSON.
 - Exceptions: `scripts/*` developer tools and `gaming.py` print plain English. `agent.py hook` prints nothing and always exits 0, because Claude Code reads hook output and exit codes.

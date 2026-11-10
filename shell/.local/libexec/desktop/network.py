@@ -480,6 +480,11 @@ def main():
 if __name__ == '__main__':
     try:
         sys.exit(main())
-    except (OSError, ValueError, subprocess.SubprocessError) as error:
+    except ValueError as error:
+        # Raised here on purpose, with a translated message.
         print(str(error), file=sys.stderr)
+        sys.exit(1)
+    except (OSError, subprocess.SubprocessError) as error:
+        # The panel shows this line: translated, with the system's own words as the detail.
+        print(tr('network.errors.commandFailed', (error,)), file=sys.stderr)
         sys.exit(1)

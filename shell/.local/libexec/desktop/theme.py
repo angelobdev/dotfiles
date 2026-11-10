@@ -1607,9 +1607,18 @@ def main():
         fcntl.flock(lock, fcntl.LOCK_EX)
     return COMMANDS[arguments.command](arguments) or 0
 
+# The line the panel shows for a failed command. A ValueError raised here on purpose is translated already;
+# anything else (a full disk, a file that is not JSON, a command that failed) is said in the catalog's words,
+# with the system's own as the detail.
+def failure_message(error):
+    if isinstance(error, ValueError) and not isinstance(error, (json.JSONDecodeError, UnicodeDecodeError)):
+        return str(error)
+    return tr('theme.errors.failed', [error])
+
+
 if __name__ == '__main__':
     try:
         sys.exit(main())
     except (OSError, ValueError, subprocess.SubprocessError) as error:
-        print(str(error), file=sys.stderr)
+        print(failure_message(error), file=sys.stderr)
         sys.exit(1)

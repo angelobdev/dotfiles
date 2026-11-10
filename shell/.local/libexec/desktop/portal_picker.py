@@ -54,6 +54,6 @@ def main():
 if __name__ == '__main__':
     try:
         sys.exit(main())
-    except (OSError, ValueError, subprocess.CalledProcessError) as error:
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
         print(tr('sharing.errors.selectionFailed', [error]), file=sys.stderr)
         sys.exit(1)

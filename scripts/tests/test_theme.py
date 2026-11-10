@@ -865,5 +865,14 @@ class WrapperTests(unittest.TestCase):
         self.assertEqual((home / '.local/libexec/desktop/applied').read_text(), 'apply')
 
 
+class MainErrorTests(unittest.TestCase):
+    def test_an_unexpected_failure_is_said_in_the_catalogs_words(self):
+        with mock.patch.object(theme, 'tr', side_effect=lambda key, values=(): f'{key} {values[0]}'):
+            self.assertEqual(theme.failure_message(OSError(28, 'No space left on device')),
+                             'theme.errors.failed [Errno 28] No space left on device')
+            self.assertTrue(theme.failure_message(json.JSONDecodeError('Expecting value', '', 0)).startswith('theme.errors.failed'))
+            self.assertEqual(theme.failure_message(ValueError('Unknown theme: x')), 'Unknown theme: x')
+
+
 if __name__ == '__main__':
     unittest.main()
