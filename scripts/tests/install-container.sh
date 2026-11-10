@@ -34,6 +34,8 @@ printf '%s ALL=(ALL) NOPASSWD: ALL\n' "$user" >/etc/sudoers.d/$user
 install -d -m 700 -o "$user" /tmp/runtime
 cp -a "$source/." "$repo"
 chown -R "$user:" "$repo"
+# A file of the user's own where the repository links: apply backs it up (#69), uninstall puts it back.
+as_user install -D -m 644 /dev/stdin "$home/.config/kitty/kitty.conf" <<<'# mine'
 authselect select local --force >/dev/null
 cd "$repo"
 packages() { rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort -u; }
@@ -51,6 +53,10 @@ as_user ./scripts/install-desktop.py dry-run --profiles "$profiles" | grep -E '^
 
 section "apply --profiles $profiles"
 as_user ./scripts/install-desktop.py apply --profiles "$profiles"
+
+section 'A file in the way is backed up and linked'
+[[ $(readlink -f "$home/.config/kitty/kitty.conf") == "$repo/kitty/.config/kitty/kitty.conf" ]] || { echo 'kitty.conf not linked' >&2; exit 1; }
+grep -qx '# mine' "$home"/.local/state/dotfiles/backups/*/.config/kitty/kitty.conf || { echo 'kitty.conf not backed up' >&2; exit 1; }
 
 section 'Packages that must stay out'
 for package in ffmpeg-free libavcodec-free power-profiles-daemon; do
@@ -150,6 +156,7 @@ fi
 section 'Uninstall: preview, then the system as it was'
 as_user ./scripts/install-desktop.py dry-run --uninstall | grep -E '^[a-z]+: '
 as_user ./scripts/install-desktop.py apply --uninstall | grep -vE '^  '
+[[ ! -L $home/.config/kitty/kitty.conf ]] && grep -qx '# mine' "$home/.config/kitty/kitty.conf" || { echo 'kitty.conf not put back' >&2; exit 1; }
 packages >/tmp/packages-after
 gone=$(comm -23 /tmp/packages-before /tmp/packages-after)
 [[ -z $gone ]] || { printf 'Removed with the desktop but there before it:\n%s\n' "$gone" >&2; exit 1; }

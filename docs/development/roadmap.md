@@ -275,6 +275,9 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [x] Timeouts on the one-shot calls of recording, portal picker, osk layout and clipboard; `check.sh` globs `scripts/tests/test_*.py`; fastfetch "threads"; the two animation literals follow `reduceMotion`.
 - [x] Checked: the bar double-tap does not fire from a bar button or the window title. Buttons and the title accept the press, so the handler underneath never sees it (qmltestrunner with touch on the same structure: button and title 0 toggles, empty bar 1); the user confirmed it with the mouse.
 
+- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
+  - [x] #69: a file already in `$HOME` stopped the install at the stow step, because the dry-run simulated Stow over the files `apply` would back up. The dry-run now leaves them out of the simulation (2026-11-10).
+
 ### Backlog (reported 2026-11-03)
 
 - [x] Light GTK dialogs with the dark theme (file chooser, keyring unlock): GTK 3 asked for `Adwaita-dark`, which Fedora 44 no longer ships (`gnome-themes-extra` is gone), and fell back to light Adwaita. Themes now name `adw-gtk3-dark`/`adw-gtk3` (`adw-gtk3-theme` in the manifest), which also takes the theme palette from `gtk.css`. The portal file chooser floats centered at 50%×60% of the monitor instead of tiling to full height (`portal-file-chooser` rule).

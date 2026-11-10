@@ -138,7 +138,7 @@ systemctl --user restart xdg-desktop-portal-hyprland xdg-desktop-portal-gtk xdg-
 ~/.local/bin/desktop-shell restart
 ```
 
-The repository is the source of the files; Stow creates symlinks without directory folding. `dry-run` writes nothing and reports conflicts as errors. `--with steam-hidpi` also links that optional package. `apply` backs up conflicting files to `~/.local/state/dotfiles/backups/<timestamp>/`, simulates the operation, then applies the links. It rejects symlinked parent directories. Run `apply` again after adding files. Do not use sudo with Stow.
+The repository is the source of the files; Stow creates symlinks without directory folding. `dry-run` writes nothing: it lists the files in the way as `Will back up on apply`, and simulates the links as they will be once those are moved aside. `--with steam-hidpi` also links that optional package. `apply` backs up conflicting files to `~/.local/state/dotfiles/backups/<timestamp>/`, simulates the operation, then applies the links. It rejects symlinked parent directories. Run `apply` again after adding files. Do not use sudo with Stow.
 
 Multilingual support uses the existing Qt and Python installations, with no additional dependencies. The shell language comes from the session locale, then `/etc/locale.conf`; see [Interface language](configuration.md#interface-language) for details and catalogs.
 

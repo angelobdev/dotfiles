@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -52,7 +53,10 @@ for package in selected:
 if args.action == 'dry-run':
     for path in conflicts:
         print(f'Will back up on apply: {path}', flush=True)
-    sys.exit(subprocess.call(command + ['--simulate', '--stow', *selected]))
+    # Apply moves these aside before Stow runs, so the simulation leaves them out: Stow would abort on them otherwise.
+    # Stow matches each --ignore against the path relative to the target, with \z appended: ^ makes it exact.
+    skipped = [f'--ignore=^{re.escape(str(path.relative_to(target)))}' for path in conflicts]
+    sys.exit(subprocess.call(command + skipped + ['--simulate', '--stow', *selected]))
 
 backup = None
 moved = []
