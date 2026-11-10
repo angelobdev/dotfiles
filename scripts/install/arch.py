@@ -263,7 +263,7 @@ def auth_base():
     return ''
 
 
-def auth_pending():
+def auth_pending(wanted=()):
     return []
 
 

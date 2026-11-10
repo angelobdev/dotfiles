@@ -143,10 +143,12 @@ def auth_base():
     return fields[0] if fields else ''
 
 
-def auth_pending():
+def auth_pending(wanted=(AUTH_FEATURE, AUTH_PROFILE)):
+    # Of the wanted items (the feature, the tablet profile), those authselect does not have yet.
     fields = query('authselect', 'current', '--raw').stdout.split()
     pending = [] if AUTH_FEATURE in fields[1:] else [AUTH_FEATURE]
-    return pending + ([] if fields[:1] == [AUTH_PROFILE] else [AUTH_PROFILE])
+    pending += [] if fields[:1] == [AUTH_PROFILE] else [AUTH_PROFILE]
+    return [item for item in pending if item in wanted]
 
 
 def auth_apply(pending, tablet_auth):

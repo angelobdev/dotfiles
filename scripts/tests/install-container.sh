@@ -86,7 +86,10 @@ if [[ ,$profiles, == *,tablet,* && ,$profiles, == *,assistant,* && ,$profiles, =
     done
     links=$(find "$home" -type l -lname "*.dotfiles/steam-hidpi/*")
     [[ -z $links ]] || { printf 'steam-hidpi links left:\n%s\n' "$links" >&2; exit 1; }
-    [[ $(authselect current --raw) == "$before_auth" ]] || { echo "authselect not restored with tablet removed: $(authselect current --raw)" >&2; exit 1; }
+    # The tablet profile goes; with-fingerprint stays while hardware.fingerprint does: GDM and sudo keep the reader.
+    expected_auth=$before_auth
+    [[ ,$profiles, == *,hardware.fingerprint,* ]] && expected_auth="$before_auth with-fingerprint"
+    [[ $(authselect current --raw) == "$expected_auth" ]] || { echo "authselect with tablet removed: $(authselect current --raw), not $expected_auth" >&2; exit 1; }
     # What the profiles that stay need stays (fprintd: hardware wants it too).
     # iio-sensor-proxy and libwacom stay too: GDM and Hyprland (core) need them, and would go with them.
     rpm -q hyprland fprintd iio-sensor-proxy libwacom >/dev/null || { echo 'a package of a profile that stays, or one it needs, went' >&2; exit 1; }

@@ -556,7 +556,9 @@ def firewall_apply(plan, zones):
 
 
 def auth_pending(plan):
-    return plan.distro.auth_pending() if setting(plan, 'auth') else []
+    # The authselect items the units ask for: with-fingerprint (hardware.fingerprint, tablet), the tablet profile (tablet).
+    wanted = merged(plan, 'auth')
+    return plan.distro.auth_pending(wanted) if wanted else []
 
 
 def auth_apply(plan, items):
@@ -1093,7 +1095,7 @@ def unflatpak_apply(plan, apps):
 def unauth_pending(plan):
     # Before the packages: PAM would point at modules that are gone.
     recorded = plan.record.get('auth', [])
-    return [item for item in recorded if item not in plan.distro.auth_pending()] if recorded else []
+    return [item for item in recorded if item not in plan.distro.auth_pending(recorded)] if recorded else []
 
 
 def unauth_apply(plan, items):
@@ -1374,8 +1376,10 @@ def profile_record(plan, record, removed, keep=()):
     for key in ('firewall_zone', 'login_shell'):
         if key in record and setting(going, key) and not setting(staying, key):
             narrowed[key] = record[key]
-    if record.get('auth') and setting(going, 'auth') and not setting(staying, 'auth'):
-        narrowed['auth'] = record['auth']
+    # The authselect items only the removed units asked for: removing tablet keeps with-fingerprint for hardware.fingerprint.
+    leaving = [item for item in merged(going, 'auth') if item not in merged(staying, 'auth')]
+    if [item for item in record.get('auth', ()) if item in leaving]:
+        narrowed['auth'] = [item for item in record['auth'] if item in leaving]
     if record.get('reconstructed'):
         narrowed['reconstructed'] = True
     return narrowed
@@ -1480,8 +1484,11 @@ def unprofile_record_apply(plan, items):
             record['services'][kind] = [unit for unit in record['services'][kind] if unit not in units]
     if 'firewall_zone' in narrowed and not unfirewall_pending(plan):
         record.pop('firewall_zone', None)
-    if narrowed.get('auth') and not unauth_pending(plan):
-        record.pop('auth', None)
+    if narrowed.get('auth'):
+        still = unauth_pending(plan)
+        record['auth'] = [item for item in record.get('auth', ()) if item not in narrowed['auth'] or item in still]
+        if not record['auth']:
+            record.pop('auth')
     save_record(record)
 
 
@@ -1563,7 +1570,7 @@ def preflight_warnings(plan):
         source = query('findmnt', '-no', 'SOURCE', '/').stdout.strip()
         grow = f' Grow it with: sudo lvextend -r -l +100%FREE {source}' if source.startswith('/dev/mapper/') else ''
         warnings.append(f'Only {free // 2**30} GiB free on /.{grow}')
-    if setting(plan, 'auth') and plan.distro.auth_base() not in ('local', plan.distro.AUTH_PROFILE):
+    if merged(plan, 'auth') and plan.distro.auth_base() not in ('local', plan.distro.AUTH_PROFILE):
         warnings.append(f'The auth step expects the local authselect profile, found "{plan.distro.auth_base()}".')
     for item in firmware_needed(plan):
         if not firmware_source(plan, item):
