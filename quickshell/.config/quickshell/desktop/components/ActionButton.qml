@@ -40,9 +40,10 @@ Button {
         }
     }
     Accessible.name: text || tooltip
-    // Only buttons with a tooltip pay for a tooltip window.
+    // The tooltip window exists only while the pointer is on the button (it shows after its own delay): a list
+    // or a calendar month of buttons, rebuilt as it changes, does not create a window per button up front.
     Loader {
-        active: root.tooltip !== ""
+        active: root.tooltip !== "" && root.hovered
         sourceComponent: HintTooltip {
             target: root
             text: root.tooltip
