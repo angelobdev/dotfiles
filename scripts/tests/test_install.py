@@ -7,30 +7,45 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
+import platform
 import subprocess
 import sys
 import tarfile
 import tempfile
 import tomllib
 import unittest
+import urllib.request
 from unittest import mock
 
 REPO = Path(__file__).resolve().parents[2]
 sys.dont_write_bytecode = True
+# Never the real state, even for a test that forgets to redirect a path: the installer's modules read XDG_STATE_HOME
+# when they are imported, and the record, the units file and the backups live under it.
+SANDBOX = tempfile.TemporaryDirectory()
+atexit.register(SANDBOX.cleanup)
+os.environ['XDG_STATE_HOME'] = SANDBOX.name
 sys.path.insert(0, str(REPO / 'scripts/install'))
+import install_paths  # noqa: E402
+import install_plan  # noqa: E402
+import install_record  # noqa: E402
+import install_steps  # noqa: E402
+import install_pins  # noqa: E402
+import install_undo  # noqa: E402
+import install_removal  # noqa: E402
+import install_run  # noqa: E402
+import bundle  # noqa: E402
+import fedora  # noqa: E402
+# The command line, for the tests of main().
 spec = importlib.util.spec_from_file_location('install_desktop', REPO / 'scripts/install-desktop.py')
 installer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(installer)
-import fedora  # noqa: E402
 
-# Never the real state: apply writes its record there.
-SANDBOX = tempfile.TemporaryDirectory()
-atexit.register(SANDBOX.cleanup)
-installer.STATE = Path(SANDBOX.name)
-installer.RECORD = installer.STATE / 'install.json'
-installer.UNITS = installer.STATE / 'units'
-installer.INTERFACE = installer.STATE / 'interface-before-theme.ini'
+install_paths.STATE = Path(SANDBOX.name)
+install_paths.RECORD = install_paths.STATE / 'install.json'
+install_paths.UNITS = install_paths.STATE / 'units'
+install_paths.INTERFACE = install_paths.STATE / 'interface-before-theme.ini'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
 PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'firmware', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes', 'archives', 'default'}
@@ -66,15 +81,15 @@ def fake_distro(pending=True):
 
 
 def plan(distro, commands=(), profiles=('core', 'plugins')):
-    return installer.Plan(distro, '45', TABLE, list(commands), profiles)
+    return install_plan.Plan(distro, '45', TABLE, list(commands), profiles)
 
 
 class ManifestTests(unittest.TestCase):
     def setUp(self):
         self.fedora = MANIFEST['fedora']
         # Every unit: each profile, and each part as a table of its own.
-        table = installer.flatten_parts(copy.deepcopy(self.fedora))
-        self.profiles = [table[name] for name in installer.units(table)]
+        table = install_plan.flatten_parts(copy.deepcopy(self.fedora))
+        self.profiles = [table[name] for name in install_plan.units(table)]
 
     def test_every_profile_exists_and_uses_known_keys(self):
         for profile in self.profiles:
@@ -129,7 +144,7 @@ class ManifestTests(unittest.TestCase):
 
     def test_personal_apps_are_opt_in(self):
         for profile in ('apps', 'utils', 'assistant', 'containers', 'radio', 'gaming'):
-            self.assertNotIn(profile, installer.DEFAULT_PROFILES.split(','))
+            self.assertNotIn(profile, install_paths.DEFAULT_PROFILES.split(','))
 
     def test_no_flatpak_is_installed_for_you(self):
         self.assertFalse([profile for profile in self.profiles if profile.get('flatpaks')])
@@ -146,7 +161,7 @@ class ManifestTests(unittest.TestCase):
 class RefusalTests(unittest.TestCase):
     def assert_refused(self, release, words):
         with self.assertRaises(SystemExit) as caught:
-            installer.load_plan(('core',), release)
+            install_plan.load_plan(('core',), release)
         self.assertIn(words, str(caught.exception))
 
     def test_an_unknown_distribution(self):
@@ -159,7 +174,7 @@ class RefusalTests(unittest.TestCase):
         self.assert_refused({'ID': 'fedora', 'VERSION_ID': '44'}, 'fedora 44 is not verified')
 
     def test_a_verified_release_loads_its_module(self):
-        loaded = installer.load_plan(('core',), {'ID': 'fedora', 'VERSION_ID': '45'})
+        loaded = install_plan.load_plan(('core',), {'ID': 'fedora', 'VERSION_ID': '45'})
         self.assertIs(loaded.distro, fedora)
 
     def test_root(self):
@@ -168,7 +183,7 @@ class RefusalTests(unittest.TestCase):
         self.assertIn('desktop user', str(caught.exception))
 
     def assert_usage_error(self, profiles):
-        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(installer, 'load_plan') as load, \
+        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(install_plan, 'load_plan') as load, \
                 mock.patch('sys.stderr'), self.assertRaises(SystemExit) as caught:
             installer.main(['dry-run', '--profiles', profiles])
         self.assertEqual(caught.exception.code, 2)
@@ -181,13 +196,13 @@ class RefusalTests(unittest.TestCase):
         self.assert_usage_error('core,games')
 
     def test_a_user_outside_the_admin_group(self):
-        with mock.patch.object(installer, 'member', return_value=False), self.assertRaises(SystemExit) as caught:
-            installer.preflight(plan(fake_distro()))
+        with mock.patch.object(install_plan, 'member', return_value=False), self.assertRaises(SystemExit) as caught:
+            install_run.preflight(plan(fake_distro()))
         self.assertIn('wheel', str(caught.exception))
 
     def test_another_architecture(self):
         with mock.patch('platform.machine', return_value='aarch64'), self.assertRaises(SystemExit):
-            installer.preflight(plan(fake_distro()))
+            install_run.preflight(plan(fake_distro()))
 
 
 class WarningTests(unittest.TestCase):
@@ -195,10 +210,10 @@ class WarningTests(unittest.TestCase):
         distro = fake_distro()
         distro.auth_base.return_value = base
         usage = mock.Mock(free=free)
-        with mock.patch.object(installer, 'member', return_value=True), mock.patch('shutil.disk_usage', return_value=usage), \
-                mock.patch.object(installer, 'query', return_value=reply(source)), \
+        with mock.patch.object(install_plan, 'member', return_value=True), mock.patch('shutil.disk_usage', return_value=usage), \
+                mock.patch.object(install_plan, 'query', return_value=reply(source)), \
                 mock.patch.object(Path, 'home', return_value=Path(home)), mock.patch('builtins.print') as printed:
-            installer.preflight(plan(distro))
+            install_run.preflight(plan(distro))
         return ' '.join(call.args[0] for call in printed.call_args_list)
 
     def test_enough_room_says_nothing(self):
@@ -228,7 +243,7 @@ class StepTests(unittest.TestCase):
         self.stamp = base / 'stamp.json'
         self.record = base / 'state/install.json'
         for target, value in (('AUTOSTART', self.autostart), ('STAMP', self.stamp), ('RECORD', self.record), ('STATE', base / 'state')):
-            patcher = mock.patch.object(installer, target, value)
+            patcher = mock.patch.object(install_paths, target, value)
             patcher.start()
             self.addCleanup(patcher.stop)
         # Clones are created under the home: a temporary one, never the real home.
@@ -242,8 +257,8 @@ class StepTests(unittest.TestCase):
             patcher.start()
             self.addCleanup(patcher.stop)
         # No desktop from before: the real links in this home would make apply rebuild a record from the history.
-        for name in ('plugin_guard', 'linked_files'):
-            patcher = mock.patch.object(installer, name, return_value=[])
+        for module, name in ((install_steps, 'plugin_guard'), (install_undo, 'linked_files')):
+            patcher = mock.patch.object(module, name, return_value=[])
             patcher.start()
             self.addCleanup(patcher.stop)
 
@@ -270,28 +285,28 @@ class StepTests(unittest.TestCase):
                 return reply('' if pending else 'c' * 40, 128 if pending else 0)
             return reply('LINK: a => b\n' if pending else 'WARNING: in simulation mode\n')
         group = mock.Mock(gr_mem=[] if pending else ['angelo'])
-        patches = [mock.patch.object(installer, 'query', side_effect=query), mock.patch('grp.getgrnam', return_value=group),
-                   mock.patch.object(installer, 'login_shell', return_value='/bin/bash' if pending else '/usr/bin/zsh'),
-                   mock.patch.object(installer, 'booted', return_value=booted)]
+        patches = [mock.patch.object(install_plan, 'query', side_effect=query), mock.patch('grp.getgrnam', return_value=group),
+                   mock.patch.object(install_steps, 'login_shell', return_value='/bin/bash' if pending else '/usr/bin/zsh'),
+                   mock.patch.object(install_plan, 'booted', return_value=booted)]
         for patcher in patches:
             patcher.start()
             self.addCleanup(patcher.stop)
 
     def test_profiles_merge_in_order_without_repeats(self):
-        self.assertEqual(installer.merged(plan(fake_distro()), 'packages'), ['a', 'b', 'c', 'old'])
+        self.assertEqual(install_plan.merged(plan(fake_distro()), 'packages'), ['a', 'b', 'c', 'old'])
 
     def test_a_tool_that_is_not_installed_yet_is_an_empty_answer(self):
-        result = installer.query('this-command-does-not-exist-here')
+        result = install_plan.query('this-command-does-not-exist-here')
         self.assertEqual((result.returncode, result.stdout), (127, ''))
 
     def test_a_preview_changes_nothing(self):
         self.system(True)
         distro = fake_distro()
         with mock.patch('subprocess.run') as run:
-            done = installer.run_steps(plan(distro), True)
+            done = install_run.run_steps(plan(distro), True)
         # All but verify (its commands are found here), firmware (FirmwareTests covers it), aur (test_install_arch.py)
         # and archives (ArchiveTests).
-        self.assertEqual(done, len(installer.STEPS) - 4)
+        self.assertEqual(done, len(install_steps.STEPS) - 4)
         run.assert_not_called()
         for change in (distro.sudo, distro.add_repo, distro.upgrade, distro.install, distro.write_file, distro.auth_apply):
             change.assert_not_called()
@@ -299,83 +314,83 @@ class StepTests(unittest.TestCase):
 
     def test_a_preview_never_asks_for_sudo(self):
         self.system(True)
-        installer.run_steps(plan(fake_distro()), True)
+        install_run.run_steps(plan(fake_distro()), True)
         self.assertFalse([call for call in self.calls if 'sudo' in call])
 
     def test_a_second_run_does_nothing(self):
         self.system(False)
         distro = fake_distro(pending=False)
         self.stamp.write_text('{}')
-        installer.save_record({'packages': ['a']})  # The first run's.
+        install_record.save_record({'packages': ['a']})  # The first run's.
         with mock.patch('subprocess.run') as run:
-            self.assertEqual(installer.run_steps(plan(distro), False), 0)
+            self.assertEqual(install_run.run_steps(plan(distro), False), 0)
         run.assert_not_called()
         distro.sudo.assert_not_called()
 
     def test_stow_never_runs_under_sudo(self):
         distro = fake_distro()
         with mock.patch('subprocess.run') as run:
-            installer.stow_apply(plan(distro, profiles=('core',)), ['LINK: a'])
+            install_steps.stow_apply(plan(distro, profiles=('core',)), ['LINK: a'])
         self.assertEqual(run.call_args.args[0], (str(REPO / 'scripts/stow.py'), 'apply'))
         distro.sudo.assert_not_called()
 
     def test_stow_links_the_optional_packages_of_the_profiles(self):
         with mock.patch('subprocess.run') as run:
-            installer.stow_apply(plan(fake_distro(), profiles=('core', 'plugins')), ['LINK: a'])
+            install_steps.stow_apply(plan(fake_distro(), profiles=('core', 'plugins')), ['LINK: a'])
         self.assertEqual(run.call_args.args[0], (str(REPO / 'scripts/stow.py'), 'apply', '--with', 'extra'))
 
     def test_a_swapped_package_is_replaced_never_installed(self):
         current = plan(fake_distro())
-        self.assertEqual(installer.wanted_packages(current), ['a', 'b', 'c', 'new'])
-        self.assertEqual(installer.swaps_pending(current), ['old -> new'])
+        self.assertEqual(install_steps.wanted_packages(current), ['a', 'b', 'c', 'new'])
+        self.assertEqual(install_steps.swaps_pending(current), ['old -> new'])
 
     def test_a_swap_is_done_once_the_old_package_is_gone(self):
-        self.assertEqual(installer.swaps_pending(plan(fake_distro(pending=False))), [])
+        self.assertEqual(install_steps.swaps_pending(plan(fake_distro(pending=False))), [])
 
     def test_swaps_come_before_the_packages(self):
-        titles = [step.title for step in installer.STEPS]
+        titles = [step.title for step in install_steps.STEPS]
         self.assertLess(titles.index('swaps'), titles.index('packages'))
 
     def test_the_install_keeps_the_excluded_packages_out(self):
         distro = fake_distro()
-        installer.packages_apply(plan(distro), ['a'])
+        install_steps.packages_apply(plan(distro), ['a'])
         distro.install.assert_called_once_with(['a'], ['tour'])
 
     def test_swaps_apply_what_is_pending(self):
         distro = fake_distro()
-        installer.swaps_apply(plan(distro), ['old -> new'])
+        install_steps.swaps_apply(plan(distro), ['old -> new'])
         distro.swap.assert_called_once_with('old', 'new')
 
     def test_the_login_shell_is_set_with_usermod(self):
         distro = fake_distro()
-        current = installer.Plan(distro, '45', {'core': {'login_shell': '/usr/bin/zsh'}}, [], ('core',))
-        with mock.patch.object(installer, 'login_shell', return_value='/bin/bash'):
-            pending = installer.shell_pending(current)
+        current = install_plan.Plan(distro, '45', {'core': {'login_shell': '/usr/bin/zsh'}}, [], ('core',))
+        with mock.patch.object(install_steps, 'login_shell', return_value='/bin/bash'):
+            pending = install_steps.shell_pending(current)
         self.assertEqual(pending, ['/usr/bin/zsh'])
         with mock.patch('getpass.getuser', return_value='someone'):
-            installer.shell_apply(current, pending)
+            install_steps.shell_apply(current, pending)
         distro.sudo.assert_called_once_with('usermod', '--shell', '/usr/bin/zsh', 'someone')
 
     def test_the_login_shell_is_done_once_set(self):
-        current = installer.Plan(fake_distro(), '45', {'core': {'login_shell': '/usr/bin/zsh'}}, [], ('core',))
-        with mock.patch.object(installer, 'login_shell', return_value='/usr/bin/zsh'):
-            self.assertEqual(installer.shell_pending(current), [])
+        current = install_plan.Plan(fake_distro(), '45', {'core': {'login_shell': '/usr/bin/zsh'}}, [], ('core',))
+        with mock.patch.object(install_steps, 'login_shell', return_value='/usr/bin/zsh'):
+            self.assertEqual(install_steps.shell_pending(current), [])
 
     def clone_plan(self):
         clone = {'repo': 'https://example.com/p.git', 'commit': 'a' * 40, 'path': '.local/share/p'}
-        return installer.Plan(fake_distro(), '45', {'core': {'clones': [clone]}}, [], ('core',)), clone
+        return install_plan.Plan(fake_distro(), '45', {'core': {'clones': [clone]}}, [], ('core',)), clone
 
     def test_a_clone_is_pending_until_it_is_at_its_commit(self):
         current, clone = self.clone_plan()
         for head, expected in (('', ['.local/share/p']), ('b' * 40, ['.local/share/p']), ('a' * 40, [])):
-            with mock.patch.object(installer, 'clone_head', return_value=head):
-                self.assertEqual(installer.clones_pending(current), expected)
+            with mock.patch.object(install_steps, 'clone_head', return_value=head):
+                self.assertEqual(install_steps.clones_pending(current), expected)
 
     def test_a_clone_fetches_only_its_commit_as_the_user(self):
         current, clone = self.clone_plan()
         with tempfile.TemporaryDirectory() as home, mock.patch.object(Path, 'home', return_value=Path(home)), \
                 mock.patch('subprocess.run') as run:
-            installer.clones_apply(current, ['.local/share/p'])
+            install_steps.clones_apply(current, ['.local/share/p'])
         commands = [call.args[0] for call in run.call_args_list]
         self.assertEqual(commands[0][-2:], ('init', '-q'))
         self.assertIn(('fetch', '-q', '--depth', '1', clone['repo'], clone['commit']), [c[3:] for c in commands])
@@ -387,7 +402,7 @@ class StepTests(unittest.TestCase):
             if 'status' in command:
                 return reply('' if clean else ' M file', 0)
             return reply(head, 0 if head else 128)
-        return mock.patch.object(installer, 'query', side_effect=query)
+        return mock.patch.object(install_plan, 'query', side_effect=query)
 
     def test_a_folder_of_the_user_is_never_forced_to_the_clone(self):
         current, clone = self.clone_plan()
@@ -395,16 +410,16 @@ class StepTests(unittest.TestCase):
             (Path(home) / clone['path']).mkdir(parents=True)
             (Path(home) / clone['path'] / 'mine').write_text('mine')
             with self.git('', True):
-                self.assertEqual(installer.clones_pending(current), [])
-                self.assertEqual(installer.clones_kept(current), [clone['path']])
+                self.assertEqual(install_steps.clones_pending(current), [])
+                self.assertEqual(install_steps.clones_kept(current), [clone['path']])
             (Path(home) / clone['path'] / '.git').mkdir()
             with self.git('b' * 40, False):
-                self.assertEqual(installer.clones_pending(current), [])
+                self.assertEqual(install_steps.clones_pending(current), [])
             with self.git('b' * 40, True):
-                self.assertEqual(installer.clones_pending(current), [clone['path']])
+                self.assertEqual(install_steps.clones_pending(current), [clone['path']])
             # It was there before: apply does not note it, so uninstall never removes it.
             record = {}
-            installer.clones_remember(current, [clone['path']], record)
+            install_steps.clones_remember(current, [clone['path']], record)
             self.assertEqual(record['clones'], [])
 
     def test_only_an_unchanged_named_clone_is_undone(self):
@@ -414,96 +429,96 @@ class StepTests(unittest.TestCase):
             (Path(home) / 'other').mkdir()
             undo = current._replace(record={'clones': [clone['path'], '', 'other', '../x']})
             with self.git(clone['commit'], True):
-                self.assertEqual(installer.clones_undoable(undo), ([clone['path']], []))
+                self.assertEqual(install_undo.clones_undoable(undo), ([clone['path']], []))
             with self.git(clone['commit'], False):
-                self.assertEqual(installer.clones_undoable(undo), ([], [clone['path']]))
+                self.assertEqual(install_undo.clones_undoable(undo), ([], [clone['path']]))
             with self.git('b' * 40, True):
-                self.assertEqual(installer.unclones_pending(undo), [])
+                self.assertEqual(install_undo.unclones_pending(undo), [])
 
     def test_stow_is_pending_until_it_exists(self):
         with mock.patch('shutil.which', return_value=None):
-            self.assertIn('not installed', installer.stow_pending(plan(fake_distro()))[0])
+            self.assertIn('not installed', install_steps.stow_pending(plan(fake_distro()))[0])
 
     def test_files_stow_would_back_up_are_pending_not_an_error(self):
         output = 'Will back up on apply: /home/u/.config/kitty/kitty.conf\nLINK: .config/kitty/kitty.conf => x\n'
-        with mock.patch.object(installer, 'query', return_value=mock.Mock(returncode=0, stdout=output, stderr='')):
-            self.assertEqual(installer.stow_pending(plan(fake_distro())),
+        with mock.patch.object(install_plan, 'query', return_value=mock.Mock(returncode=0, stdout=output, stderr='')):
+            self.assertEqual(install_steps.stow_pending(plan(fake_distro())),
                              ['Will back up on apply: /home/u/.config/kitty/kitty.conf', 'LINK: .config/kitty/kitty.conf => x'])
 
     def test_a_stow_error_stops_the_run(self):
-        with mock.patch.object(installer, 'query', return_value=mock.Mock(returncode=2, stdout='', stderr='Parent must be a real directory')):
+        with mock.patch.object(install_plan, 'query', return_value=mock.Mock(returncode=2, stdout='', stderr='Parent must be a real directory')):
             with self.assertRaises(RuntimeError) as caught:
-                installer.stow_pending(plan(fake_distro()))
+                install_steps.stow_pending(plan(fake_distro()))
         self.assertIn('real directory', str(caught.exception))
 
     def test_services_are_never_stopped_or_started_here(self):
         self.system(True)
         distro = fake_distro()
-        installer.services_apply(plan(distro), installer.services_pending(plan(distro)))
+        install_steps.services_apply(plan(distro), install_steps.services_pending(plan(distro)))
         commands = [call.args for call in distro.sudo.call_args_list]
         self.assertEqual(commands, [('systemctl', 'enable', 's.service'), ('systemctl', 'disable', 'd.socket'),
                                     ('systemctl', 'enable', '--global', 'u.service')])
 
     def test_a_unit_that_is_not_there_needs_no_disabling(self):
-        with mock.patch.object(installer, 'unit_state', return_value=''), mock.patch.object(installer, 'query', return_value=reply('enabled')):
-            pending = installer.services_pending(plan(fake_distro()))
+        with mock.patch.object(install_plan, 'unit_state', return_value=''), mock.patch.object(install_plan, 'query', return_value=reply('enabled')):
+            pending = install_steps.services_pending(plan(fake_distro()))
         self.assertEqual(pending, ['enable s.service'])
 
     def test_a_static_unit_needs_no_enabling(self):
-        with mock.patch.object(installer, 'unit_state', return_value='static'), mock.patch.object(installer, 'query', return_value=reply('enabled')):
-            self.assertEqual(installer.services_pending(plan(fake_distro())), [])
+        with mock.patch.object(install_plan, 'unit_state', return_value='static'), mock.patch.object(install_plan, 'query', return_value=reply('enabled')):
+            self.assertEqual(install_steps.services_pending(plan(fake_distro())), [])
 
     def test_user_services_are_enabled_for_everyone(self):
-        with mock.patch.object(installer, 'unit_state', return_value='enabled'), mock.patch.object(installer, 'query', return_value=reply('disabled')):
-            self.assertEqual(installer.services_pending(plan(fake_distro())), ['disable d.socket', 'enable --global u.service'])
+        with mock.patch.object(install_plan, 'unit_state', return_value='enabled'), mock.patch.object(install_plan, 'query', return_value=reply('disabled')):
+            self.assertEqual(install_steps.services_pending(plan(fake_distro())), ['disable d.socket', 'enable --global u.service'])
 
     def test_a_container_skips_what_needs_a_running_system(self):
         self.system(True, booted=False)
         current = plan(fake_distro())
-        self.assertEqual(installer.firewall_pending(current), [])
-        self.assertEqual(installer.flatpak_pending(current), [])
-        self.assertNotIn(installer.BOOT_SESSION, installer.boot_pending(current))
+        self.assertEqual(install_steps.firewall_pending(current), [])
+        self.assertEqual(install_steps.flatpak_pending(current), [])
+        self.assertNotIn(install_paths.BOOT_SESSION, install_steps.boot_pending(current))
 
     def test_files_lose_the_leading_newline_of_the_manifest(self):
         distro = fake_distro()
-        installer.files_apply(plan(distro), ['/etc/x'])
+        install_steps.files_apply(plan(distro), ['/etc/x'])
         distro.write_file.assert_called_once_with('/etc/x', 'x\n', '0644')
 
     def test_a_file_from_the_repository_keeps_its_mode(self):
         table = {'core': {'files': [{'path': '/usr/local/libexec/x', 'source': 'scripts/privileged/root-broker', 'mode': '0755'}]}}
-        installer.resolve_files(table)
+        install_plan.resolve_files(table)
         item = table['core']['files'][0]
-        self.assertEqual(item['content'], (installer.REPO / 'scripts/privileged/root-broker').read_text())
+        self.assertEqual(item['content'], (install_paths.REPO / 'scripts/privileged/root-broker').read_text())
         distro = fake_distro()
-        installer.files_apply(installer.Plan(distro, '45', table, [], ('core',)), ['/usr/local/libexec/x'])
+        install_steps.files_apply(install_plan.Plan(distro, '45', table, [], ('core',)), ['/usr/local/libexec/x'])
         distro.write_file.assert_called_once_with('/usr/local/libexec/x', item['content'], '0755')
 
     def test_a_mode_is_four_octal_digits(self):
         with self.assertRaises(SystemExit):
-            installer.resolve_files({'core': {'files': [{'path': '/x', 'content': 'x', 'mode': '755'}]}})
+            install_plan.resolve_files({'core': {'files': [{'path': '/x', 'content': 'x', 'mode': '755'}]}})
 
     def test_verify_stops_before_the_boot_step(self):
         self.system(True)
         distro = fake_distro()
         with mock.patch('shutil.which', side_effect=lambda name: None if name == 'Hyprland' else '/usr/bin/' + name), \
                 mock.patch('subprocess.run'), self.assertRaises(RuntimeError):
-            installer.run_steps(plan(distro, ['Hyprland']), False)
+            install_run.run_steps(plan(distro, ['Hyprland']), False)
         self.assertNotIn(mock.call('systemctl', 'set-default', 'graphical.target'), distro.sudo.call_args_list)
         self.assertFalse(self.autostart.exists())
 
     def test_the_guard_is_checked_only_once_the_packages_exist(self):
         distro = fake_distro()
-        installer.verify_pending(plan(distro))
-        installer.plugin_guard.assert_not_called()
+        install_steps.verify_pending(plan(distro))
+        install_steps.plugin_guard.assert_not_called()
         distro.missing.side_effect = lambda packages: []
-        installer.verify_pending(plan(distro))
-        installer.plugin_guard.assert_called_once()
+        install_steps.verify_pending(plan(distro))
+        install_steps.plugin_guard.assert_called_once()
 
     def test_boot_is_the_last_step_and_verify_comes_before_it(self):
-        self.assertEqual([step.title for step in installer.STEPS][-2:], ['verify', 'boot'])
+        self.assertEqual([step.title for step in install_steps.STEPS][-2:], ['verify', 'boot'])
 
     def test_the_packages_come_before_what_needs_them(self):
-        titles = [step.title for step in installer.STEPS]
+        titles = [step.title for step in install_steps.STEPS]
         self.assertLess(titles.index('repos'), titles.index('packages'))
         for title in ('files', 'services', 'auth', 'stow'):
             self.assertLess(titles.index('packages'), titles.index(title))
@@ -512,7 +527,7 @@ class StepTests(unittest.TestCase):
         self.system(True)
         distro = fake_distro()
         current = plan(distro)
-        installer.boot_apply(current, installer.boot_pending(current))
+        install_steps.boot_apply(current, install_steps.boot_pending(current))
         commands = [call.args for call in distro.sudo.call_args_list]
         self.assertIn(('systemctl', 'enable', 'gdm.service'), commands)
         self.assertIn(('systemctl', 'set-default', 'graphical.target'), commands)
@@ -522,11 +537,11 @@ class StepTests(unittest.TestCase):
     def test_no_autostart_when_the_plugins_are_built(self):
         self.system(True)
         self.stamp.write_text('{}')
-        self.assertNotIn(installer.BOOT_AUTOSTART, installer.boot_pending(plan(fake_distro())))
+        self.assertNotIn(install_paths.BOOT_AUTOSTART, install_steps.boot_pending(plan(fake_distro())))
 
     def test_no_autostart_without_the_plugins_profile(self):
         self.system(True)
-        self.assertNotIn(installer.BOOT_AUTOSTART, installer.boot_pending(plan(fake_distro(), profiles=('core',))))
+        self.assertNotIn(install_paths.BOOT_AUTOSTART, install_steps.boot_pending(plan(fake_distro(), profiles=('core',))))
 
 
 class RecordTests(unittest.TestCase):
@@ -534,12 +549,12 @@ class RecordTests(unittest.TestCase):
     system = StepTests.system
 
     def saved(self):
-        return json.loads(installer.RECORD.read_text())
+        return json.loads(install_paths.RECORD.read_text())
 
     def test_apply_notes_what_it_changes_and_what_was_there(self):
         self.system(True)
         with mock.patch('subprocess.run'):
-            installer.run_steps(plan(fake_distro()), False)
+            install_run.run_steps(plan(fake_distro()), False)
         record = self.saved()
         self.assertEqual(record['packages'], ['dnf5-plugins', 'a', 'b', 'c', 'new'])
         self.assertEqual(record['swaps'], [['old', 'new']])
@@ -554,36 +569,36 @@ class RecordTests(unittest.TestCase):
 
     def test_what_was_there_first_wins(self):
         record = {'login_shell': '/bin/bash', 'files': {'/etc/x': None}}
-        with mock.patch.object(installer, 'login_shell', return_value='/usr/bin/zsh'):
-            installer.shell_remember(plan(fake_distro()), ['/usr/bin/zsh'], record)
-        installer.files_remember(plan(fake_distro()), ['/etc/x'], record)
+        with mock.patch.object(install_steps, 'login_shell', return_value='/usr/bin/zsh'):
+            install_steps.shell_remember(plan(fake_distro()), ['/usr/bin/zsh'], record)
+        install_steps.files_remember(plan(fake_distro()), ['/etc/x'], record)
         self.assertEqual({key: record[key] for key in ('login_shell', 'files')}, {'login_shell': '/bin/bash', 'files': {'/etc/x': None}})
         # What apply writes now, so a later manifest change does not make it look edited.
-        self.assertEqual(record['written'], {'/etc/x': installer.text_digest('x\n')})
+        self.assertEqual(record['written'], {'/etc/x': install_steps.text_digest('x\n')})
 
     def test_a_file_from_an_older_manifest_is_still_ours(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'x'
             path.write_text('old content\n')
             table = {**TABLE, 'core': {**TABLE['core'], 'files': [{'path': str(path), 'content': 'new content\n'}]}}
-            record = {'files': {str(path): None}, 'written': {str(path): installer.text_digest('old content\n')}}
-            current = installer.Plan(fake_distro(), '45', table, [], ('core',), None, record)
-            self.assertEqual(installer.changed_files(current), ([str(path)], []))
+            record = {'files': {str(path): None}, 'written': {str(path): install_steps.text_digest('old content\n')}}
+            current = install_plan.Plan(fake_distro(), '45', table, [], ('core',), None, record)
+            self.assertEqual(install_undo.changed_files(current), ([str(path)], []))
             path.write_text('edited by hand\n')
-            self.assertEqual(installer.changed_files(current), ([], [str(path)]))
+            self.assertEqual(install_undo.changed_files(current), ([], [str(path)]))
 
     def test_the_record_is_written_before_the_step_runs(self):
         self.system(True)
         seen = []
-        failing = installer.Step('packages', lambda current: ['a'], lambda current, items: seen.append(self.saved()['packages']),
-                                 installer.packages_remember)
-        installer.run_steps(plan(fake_distro()), False, (failing,))
+        failing = install_steps.Step('packages', lambda current: ['a'], lambda current, items: seen.append(self.saved()['packages']),
+                                 install_steps.packages_remember)
+        install_run.run_steps(plan(fake_distro()), False, (failing,))
         self.assertEqual(seen, [['a']])
 
     def test_a_preview_writes_no_record(self):
         self.system(True)
-        installer.run_steps(plan(fake_distro()), True)
-        self.assertFalse(installer.RECORD.exists())
+        install_run.run_steps(plan(fake_distro()), True)
+        self.assertFalse(install_paths.RECORD.exists())
 
 
 class UninstallTests(unittest.TestCase):
@@ -598,9 +613,9 @@ class UninstallTests(unittest.TestCase):
         self.plugin_files = [home / 'bundles', home / 'stamp.json']
         for path in self.plugin_files:
             path.write_text('')
-        patches = [mock.patch.object(Path, 'home', return_value=home), mock.patch.object(installer, 'plugin_paths', return_value=self.plugin_files),
-                   mock.patch.object(installer.bundle, 'CACHE', home / 'cache'), mock.patch.object(installer, 'linked_files', return_value=[]),
-                   mock.patch.object(installer, 'backups', return_value=[])]
+        patches = [mock.patch.object(Path, 'home', return_value=home), mock.patch.object(install_undo, 'plugin_paths', return_value=self.plugin_files),
+                   mock.patch.object(bundle, 'CACHE', home / 'cache'), mock.patch.object(install_undo, 'linked_files', return_value=[]),
+                   mock.patch.object(install_undo, 'backups', return_value=[])]
         for patcher in patches:
             patcher.start()
             self.addCleanup(patcher.stop)
@@ -617,7 +632,7 @@ class UninstallTests(unittest.TestCase):
         distro.installed.side_effect = lambda package: package == 'new'
         # The manifest writes the sandbox file, as it writes /etc/x.
         table = {**TABLE, 'core': {**TABLE['core'], 'files': [{'path': str(getattr(self, 'file', '/etc/x')), 'content': '\nx\n'}]}}
-        return installer.Plan(distro, '45', table, [], ('core',), None, record)
+        return install_plan.Plan(distro, '45', table, [], ('core',), None, record)
 
     def full_record(self):
         return {'packages': ['a', 'python3', 'new'], 'swaps': [['old', 'new']], 'repos': ['one'], 'files': {str(self.file): None},
@@ -629,8 +644,8 @@ class UninstallTests(unittest.TestCase):
         self.system(False)
         home = self.sandbox()
         current = self.removal(self.full_record())
-        with mock.patch('subprocess.run'), mock.patch.object(installer, 'login_shell', return_value='/usr/bin/zsh'):
-            installer.run_steps(current, False, installer.UNSTEPS)
+        with mock.patch('subprocess.run'), mock.patch.object(install_steps, 'login_shell', return_value='/usr/bin/zsh'):
+            install_run.run_steps(current, False, install_undo.UNSTEPS)
         distro = current.distro
         commands = [call.args for call in distro.sudo.call_args_list]
         self.assertEqual(commands[0][-3:], ('SetSession', 's', 'other'))
@@ -651,9 +666,9 @@ class UninstallTests(unittest.TestCase):
         self.system(False)
         self.sandbox()
         current = self.removal(self.full_record())
-        with mock.patch('subprocess.run') as run, mock.patch.object(installer, 'login_shell', return_value='/usr/bin/zsh'):
-            installer.run_steps(current, True, installer.UNSTEPS)
-            self.assertEqual(installer.unpackages_pending(current),
+        with mock.patch('subprocess.run') as run, mock.patch.object(install_steps, 'login_shell', return_value='/usr/bin/zsh'):
+            install_run.run_steps(current, True, install_undo.UNSTEPS)
+            self.assertEqual(install_undo.unpackages_pending(current),
                              ['a.x86_64', 'dependency.x86_64', 'mine.x86_64  (installed by hand: it needs one of the others)'])
         run.assert_not_called()
         current.distro.sudo.assert_not_called()
@@ -663,7 +678,7 @@ class UninstallTests(unittest.TestCase):
     def test_a_file_that_was_there_gets_its_content_back(self):
         self.sandbox()
         current = self.removal({'files': {str(self.file): 'before\n'}})
-        installer.unfiles_apply(current, installer.unfiles_pending(current))
+        install_undo.unfiles_apply(current, install_undo.unfiles_pending(current))
         current.distro.write_file.assert_called_once_with(str(self.file), 'before\n')
 
     def test_a_file_edited_since_the_install_stays(self):
@@ -671,17 +686,17 @@ class UninstallTests(unittest.TestCase):
         self.sandbox()
         self.file.write_text('x\nmy browser\n')
         current = self.removal({'files': {str(self.file): None}})
-        self.assertEqual(installer.unfiles_pending(current), [])
-        self.assertIn(f'{self.file} changed since the install: it stays as it is.', installer.record_notes(current))
+        self.assertEqual(install_undo.unfiles_pending(current), [])
+        self.assertIn(f'{self.file} changed since the install: it stays as it is.', install_run.record_notes(current))
 
     def test_choices_made_since_the_install_stay(self):
         self.system(False)
         self.sandbox()
         current = self.removal({'login_shell': '/bin/bash', 'firewall_zone': 'FedoraServer'})
-        with mock.patch.object(installer, 'login_shell', return_value='/usr/bin/fish'), \
-                mock.patch.object(installer, 'default_zone_now', return_value='home'):
-            self.assertEqual((installer.unshell_pending(current), installer.unfirewall_pending(current)), ([], []))
-            notes = installer.record_notes(current)
+        with mock.patch.object(install_steps, 'login_shell', return_value='/usr/bin/fish'), \
+                mock.patch.object(install_record, 'default_zone_now', return_value='home'):
+            self.assertEqual((install_undo.unshell_pending(current), install_undo.unfirewall_pending(current)), ([], []))
+            notes = install_run.record_notes(current)
         self.assertTrue(any('/usr/bin/fish' in note for note in notes))
         self.assertTrue(any('home' in note for note in notes))
 
@@ -690,8 +705,8 @@ class UninstallTests(unittest.TestCase):
         current = self.removal({'packages': ['a', 'b']})
         current.distro.removal.side_effect = lambda names: names + (['mine.x86_64'] if 'a.x86_64' in names else [])
         current.distro.requirements.side_effect = lambda names: {'a.x86_64', 'glibc.x86_64'}
-        self.assertEqual(installer.unpackages_pending(current), ['b.x86_64', 'keep a.x86_64  (a package installed by hand needs it)'])
-        installer.unpackages_apply(current, [])
+        self.assertEqual(install_undo.unpackages_pending(current), ['b.x86_64', 'keep a.x86_64  (a package installed by hand needs it)'])
+        install_undo.unpackages_apply(current, [])
         current.distro.remove.assert_called_once_with(['b.x86_64'])
 
     def test_only_packages_to_keep_is_no_work(self):
@@ -700,48 +715,54 @@ class UninstallTests(unittest.TestCase):
         current = self.removal({'packages': ['a']})
         current.distro.removal.side_effect = lambda names: names + (['mine.x86_64'] if 'a.x86_64' in names else [])
         current.distro.requirements.side_effect = lambda names: {'a.x86_64', 'glibc.x86_64'}
-        self.assertEqual(installer.unpackages_pending(current), [])
+        self.assertEqual(install_undo.unpackages_pending(current), [])
 
     def test_a_repository_packages_still_come_from_stays(self):
         self.sandbox()
         current = self.removal({'packages': ['a'], 'repos': ['one']})
         current.distro.repo_missing.return_value = False
         current.distro.packages_from.return_value = {'a.x86_64', 'akmod-nvidia.x86_64'}
-        self.assertEqual(installer.unrepos_pending(current), [])
-        self.assertIn('The one repository stays: it still provides akmod-nvidia.x86_64.', installer.record_notes(current))
+        self.assertEqual(install_undo.unrepos_pending(current), [])
+        self.assertIn('The one repository stays: it still provides akmod-nvidia.x86_64.', install_run.record_notes(current))
         current.distro.packages_from.return_value = {'a.x86_64'}
-        self.assertEqual(installer.unrepos_pending(current), ['one'])
+        self.assertEqual(install_undo.unrepos_pending(current), ['one'])
+
+    def test_the_recorded_profiles_are_a_list_or_nobody_can_tell(self):
+        self.assertEqual(install_removal.recorded_profiles({'profiles': ['core', 'radio']}), ['core', 'radio'])
+        for record in ({}, {'profiles': 'core'}, {'profiles': ['core'], 'uninstalled': True}):
+            with self.subTest(record=record):
+                self.assertIsNone(install_removal.recorded_profiles(record))
 
     def test_a_record_that_knows_only_the_profiles_is_rebuilt(self):
-        installer.save_record({'profiles': ['core']})
-        with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True}) as rebuilt:
-            current = installer.uninstall_plan(plan(fake_distro()))
+        install_record.save_record({'profiles': ['core']})
+        with mock.patch.object(install_undo, 'reconstruct', return_value={'reconstructed': True}) as rebuilt:
+            current = install_undo.uninstall_plan(plan(fake_distro()))
         rebuilt.assert_called_once()
         self.assertEqual(current.record, {'reconstructed': True})
 
     def test_an_unreadable_record_is_set_aside_and_rebuilt(self):
-        installer.RECORD.parent.mkdir(parents=True, exist_ok=True)
-        installer.RECORD.write_text('{"packages": [')
-        with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True}), mock.patch('sys.stderr'):
-            installer.uninstall_plan(plan(fake_distro()))
-            self.assertTrue(installer.RECORD.exists())
-            installer.uninstall_plan(plan(fake_distro()), preview=False)
-        self.assertFalse(installer.RECORD.exists())
-        self.assertEqual(installer.RECORD.with_name('install.json.unreadable').read_text(), '{"packages": [')
+        install_paths.RECORD.parent.mkdir(parents=True, exist_ok=True)
+        install_paths.RECORD.write_text('{"packages": [')
+        with mock.patch.object(install_undo, 'reconstruct', return_value={'reconstructed': True}), mock.patch('sys.stderr'):
+            install_undo.uninstall_plan(plan(fake_distro()))
+            self.assertTrue(install_paths.RECORD.exists())
+            install_undo.uninstall_plan(plan(fake_distro()), preview=False)
+        self.assertFalse(install_paths.RECORD.exists())
+        self.assertEqual(install_paths.RECORD.with_name('install.json.unreadable').read_text(), '{"packages": [')
 
     def test_some_install_steps_still_set_aside_and_rebuild_the_record(self):
         # The Updates screen of the guided installer runs only the steps of the pins it moves.
-        idle = installer.Step('clones', lambda current: [], None)
-        other = installer.Step('packages', lambda current: [], None)
-        installer.RECORD.parent.mkdir(parents=True, exist_ok=True)
-        installer.RECORD.write_text('{"packages": [')
-        with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True, 'packages': ['a.x86_64']}) as rebuilt, \
-                mock.patch.object(installer, 'desktop_present', return_value=True), \
-                mock.patch.object(installer, 'STEPS', (other, idle)), mock.patch('sys.stderr'):
-            installer.run_steps(plan(fake_distro()), False, (idle,))
+        idle = install_steps.Step('clones', lambda current: [], None)
+        other = install_steps.Step('packages', lambda current: [], None)
+        install_paths.RECORD.parent.mkdir(parents=True, exist_ok=True)
+        install_paths.RECORD.write_text('{"packages": [')
+        with mock.patch.object(install_undo, 'reconstruct', return_value={'reconstructed': True, 'packages': ['a.x86_64']}) as rebuilt, \
+                mock.patch.object(install_undo, 'desktop_present', return_value=True), \
+                mock.patch.object(install_steps, 'STEPS', (other, idle)), mock.patch('sys.stderr'):
+            install_run.run_steps(plan(fake_distro()), False, (idle,))
         rebuilt.assert_called_once()
-        self.assertEqual(installer.RECORD.with_name('install.json.unreadable').read_text(), '{"packages": [')
-        saved = json.loads(installer.RECORD.read_text())
+        self.assertEqual(install_paths.RECORD.with_name('install.json.unreadable').read_text(), '{"packages": [')
+        saved = json.loads(install_paths.RECORD.read_text())
         self.assertEqual(saved['packages'], ['a.x86_64'])
         self.assertNotIn('profiles', saved, 'only a whole install records its profiles')
 
@@ -750,8 +771,8 @@ class UninstallTests(unittest.TestCase):
         self.sandbox()
         current = self.removal({'login_shell': '/bin/bash', 'firewall_zone': 'FedoraServer', 'groups': ['g'],
                                 'boot': {'session': 'other', 'target': 'multi-user.target'}})
-        with mock.patch.object(installer, 'login_shell', return_value='/bin/bash'):
-            for step in (installer.unshell_pending, installer.unfirewall_pending, installer.ungroups_pending, installer.unboot_pending):
+        with mock.patch.object(install_steps, 'login_shell', return_value='/bin/bash'):
+            for step in (install_undo.unshell_pending, install_undo.unfirewall_pending, install_undo.ungroups_pending, install_undo.unboot_pending):
                 self.assertEqual(step(current), [], step.__name__)
 
     def test_the_preview_counts_backups_behind_our_links(self):
@@ -763,33 +784,33 @@ class UninstallTests(unittest.TestCase):
         (home / '.zshrc').symlink_to(home / 'etc-x')  # A Stow link, unlinked first.
         (home / '.bashrc').write_text('written since')  # A file of the user's: it stays.
         backups = [(folder, folder / name) for name in ('.zshrc', '.bashrc', '.profile')]
-        with mock.patch.object(installer, 'linked_files', return_value=[home / '.zshrc']), \
-                mock.patch.object(installer, 'backups', return_value=backups):
-            items = installer.unstow_pending(self.removal({}))
-        self.assertIn(f'put back 2 files Stow had moved to {installer.STATE / "backups"}', items)
+        with mock.patch.object(install_undo, 'linked_files', return_value=[home / '.zshrc']), \
+                mock.patch.object(install_undo, 'backups', return_value=backups):
+            items = install_undo.unstow_pending(self.removal({}))
+        self.assertIn(f'put back 2 files Stow had moved to {install_paths.STATE / "backups"}', items)
 
     def test_the_plugin_cache_goes_whole_only_when_it_holds_nothing_else(self):
         home = self.sandbox()
         cache = home / 'cache'
-        (cache / installer.bundle.REPOSITORY).mkdir(parents=True)
+        (cache / bundle.REPOSITORY).mkdir(parents=True)
         (cache / 'headersRoot').mkdir()
         current = self.removal({})
-        items = installer.unplugins_pending(current)
-        installer.unplugins_apply(current, items)
+        items = install_undo.unplugins_pending(current)
+        install_undo.unplugins_apply(current, items)
         current.distro.sudo.assert_called_once_with('rm', '-rf', '--', str(cache))
         self.assertFalse([path for path in self.plugin_files if path.exists()])
         # A repository someone added by hand keeps the cache: only ours goes.
         (cache / 'someone-else').mkdir()
         current.distro.sudo.reset_mock()
-        installer.unplugins_apply(current, [str(cache / installer.bundle.REPOSITORY)])
-        current.distro.sudo.assert_called_once_with('rm', '-rf', '--', str(cache / installer.bundle.REPOSITORY))
+        install_undo.unplugins_apply(current, [str(cache / bundle.REPOSITORY)])
+        current.distro.sudo.assert_called_once_with('rm', '-rf', '--', str(cache / bundle.REPOSITORY))
 
     def test_saved_gnome_settings_go_back_and_the_file_goes(self):
         home = self.sandbox()
         saved = home / 'interface.ini'
         saved.write_text("org.gnome.desktop.interface color-scheme 'default'\norg.gnome.desktop.interface cursor-size 24\n")
-        with mock.patch.object(installer, 'INTERFACE', saved), mock.patch('subprocess.run') as run:
-            installer.unsettings_apply(self.removal({}), [])
+        with mock.patch.object(install_paths, 'INTERFACE', saved), mock.patch('subprocess.run') as run:
+            install_undo.unsettings_apply(self.removal({}), [])
         self.assertEqual([call.args[0] for call in run.call_args_list],
                          [('gsettings', 'set', 'org.gnome.desktop.interface', 'color-scheme', "'default'"),
                           ('gsettings', 'set', 'org.gnome.desktop.interface', 'cursor-size', '24')])
@@ -797,44 +818,44 @@ class UninstallTests(unittest.TestCase):
 
     def test_the_record_stays_marked_as_undone(self):
         current = self.removal({})
-        installer.unstate_apply(current, installer.unstate_pending(current))
-        self.assertEqual(installer.load_record(), {'uninstalled': True, 'version': 1})
-        again = installer.uninstall_plan(installer.Plan(fake_distro(), '45', TABLE, [], ('core',)))
-        self.assertEqual(installer.unstate_pending(again), [])
+        install_undo.unstate_apply(current, install_undo.unstate_pending(current))
+        self.assertEqual(install_record.load_record(), {'uninstalled': True, 'version': 1})
+        again = install_undo.uninstall_plan(install_plan.Plan(fake_distro(), '45', TABLE, [], ('core',)))
+        self.assertEqual(install_undo.unstate_pending(again), [])
         current.distro.history.assert_not_called()
 
     def test_what_uninstall_left_stays_in_the_record_until_it_is_gone(self):
         current = self.removal({'packages': ['a', 'gone'], 'repos': ['one']})
         current.distro.installed.side_effect = lambda name: name == 'a'
         current.distro.repo_missing.return_value = False
-        installer.unstate_apply(current, installer.unstate_pending(current))
-        self.assertEqual(installer.load_record(), {'uninstalled': True, 'version': 1, 'packages': ['a'], 'repos': ['one']})
-        again = current._replace(record=installer.load_record())
-        self.assertEqual(installer.unstate_pending(again), [])  # Nothing changed: nothing to do.
+        install_undo.unstate_apply(current, install_undo.unstate_pending(current))
+        self.assertEqual(install_record.load_record(), {'uninstalled': True, 'version': 1, 'packages': ['a'], 'repos': ['one']})
+        again = current._replace(record=install_record.load_record())
+        self.assertEqual(install_undo.unstate_pending(again), [])  # Nothing changed: nothing to do.
         again.distro.installed.side_effect = lambda name: False  # Removed meanwhile by a second uninstall.
-        self.assertTrue(installer.unstate_pending(again))
-        installer.unstate_apply(again, [])
-        self.assertEqual(installer.load_record(), {'uninstalled': True, 'version': 1, 'repos': ['one']})
+        self.assertTrue(install_undo.unstate_pending(again))
+        install_undo.unstate_apply(again, [])
+        self.assertEqual(install_record.load_record(), {'uninstalled': True, 'version': 1, 'repos': ['one']})
 
     def test_an_apply_on_a_desktop_from_before_the_record_starts_from_the_history(self):
         self.system(False)
-        installer.save_record({'profiles': ['core']})
+        install_record.save_record({'profiles': ['core']})
         self.stamp.write_text('{}')
-        with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True, 'packages': ['a.x86_64']}), \
+        with mock.patch.object(install_undo, 'reconstruct', return_value={'reconstructed': True, 'packages': ['a.x86_64']}), \
                 mock.patch('subprocess.run'):
-            installer.run_steps(plan(fake_distro(pending=False)), False)
-        self.assertEqual(installer.load_record(), {'reconstructed': True, 'packages': ['a.x86_64'], 'profiles': ['core', 'plugins'],
-                                                   'profiles_version': installer.bundle.PROFILES_VERSION})
+            install_run.run_steps(plan(fake_distro(pending=False)), False)
+        self.assertEqual(install_record.load_record(), {'reconstructed': True, 'packages': ['a.x86_64'], 'profiles': ['core', 'plugins'],
+                                                   'profiles_version': bundle.PROFILES_VERSION})
 
     def test_a_new_install_after_an_uninstall_starts_a_new_record(self):
         self.system(True)
-        installer.save_record({'uninstalled': True})
+        install_record.save_record({'uninstalled': True})
         with mock.patch('subprocess.run'):
-            installer.run_steps(plan(fake_distro()), False)
-        self.assertNotIn('uninstalled', installer.load_record())
+            install_run.run_steps(plan(fake_distro()), False)
+        self.assertNotIn('uninstalled', install_record.load_record())
 
     def test_the_order_keeps_the_system_usable(self):
-        titles = [step.title for step in installer.UNSTEPS]
+        titles = [step.title for step in install_undo.UNSTEPS]
         # PAM and the login shell before the packages they point at; stow while it is installed.
         for title in ('auth', 'shell', 'stow', 'plugins', 'boot', 'services'):
             self.assertLess(titles.index(title), titles.index('packages'), title)
@@ -843,20 +864,20 @@ class UninstallTests(unittest.TestCase):
         self.assertEqual(titles[-1], 'record')
 
     def test_uninstall_waits_until_hyprland_is_gone(self):
-        with mock.patch.object(installer, 'query', return_value=reply('1234')), self.assertRaises(SystemExit) as caught:
-            installer.refuse_uninstall()
+        with mock.patch.object(install_plan, 'query', return_value=reply('1234')), self.assertRaises(SystemExit) as caught:
+            install_run.refuse_uninstall()
         self.assertIn('Ctrl+Alt+F3', str(caught.exception))
-        with mock.patch.object(installer, 'query', return_value=reply('', 1)):
-            installer.refuse_uninstall()
+        with mock.patch.object(install_plan, 'query', return_value=reply('', 1)):
+            install_run.refuse_uninstall()
 
     def test_the_preview_is_allowed_inside_hyprland(self):
-        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(installer, 'load_plan', return_value=plan(fake_distro())), \
-                mock.patch.object(installer, 'refuse'), mock.patch.object(installer, 'refuse_uninstall') as refused, \
-                mock.patch.object(installer, 'uninstall_plan', side_effect=lambda current, preview: current._replace(record={})), \
-                mock.patch.object(installer, 'run_steps', return_value=0) as steps, mock.patch('builtins.print'):
+        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(install_plan, 'load_plan', return_value=plan(fake_distro())), \
+                mock.patch.object(install_run, 'refuse'), mock.patch.object(install_run, 'refuse_uninstall') as refused, \
+                mock.patch.object(install_undo, 'uninstall_plan', side_effect=lambda current, preview: current._replace(record={})), \
+                mock.patch.object(install_run, 'run_steps', return_value=0) as steps, mock.patch('builtins.print'):
             installer.main(['dry-run', '--uninstall'])
             refused.assert_not_called()
-            self.assertIs(steps.call_args.args[2], installer.UNSTEPS)
+            self.assertIs(steps.call_args.args[2], install_undo.UNSTEPS)
             installer.main(['apply', '--uninstall'])
             refused.assert_called_once()
 
@@ -889,23 +910,23 @@ class FingerprintAuthTests(unittest.TestCase):
 
     def test_the_fingerprint_part_alone_asks_for_the_feature_only(self):
         distro = fake_distro()
-        installer.auth_pending(installer.Plan(distro, '45', self.TABLE, [], ('core', 'hardware', 'hardware.fingerprint')))
+        install_steps.auth_pending(install_plan.Plan(distro, '45', self.TABLE, [], ('core', 'hardware', 'hardware.fingerprint')))
         distro.auth_pending.assert_called_once_with(['with-fingerprint'])
         distro.auth_pending.reset_mock()
-        self.assertEqual(installer.auth_pending(installer.Plan(distro, '45', self.TABLE, [], ('core', 'hardware'))), [])
+        self.assertEqual(install_steps.auth_pending(install_plan.Plan(distro, '45', self.TABLE, [], ('core', 'hardware'))), [])
         distro.auth_pending.assert_not_called()
 
     def test_removing_tablet_keeps_the_fingerprint_for_the_part_that_stays(self):
         record = {'profiles': ['core', 'hardware', 'hardware.fingerprint', 'tablet'], 'auth': ['with-fingerprint', 'custom/desktop-tablet']}
-        installer.save_record(record)
-        current = installer.Plan(fake_distro(), '45', self.TABLE, [], ('core',))
-        self.assertEqual(installer.profile_record(current, record, ('tablet',))['auth'], ['custom/desktop-tablet'])
-        both = installer.profile_record(current, record, ('tablet', 'hardware.fingerprint'))
+        install_record.save_record(record)
+        current = install_plan.Plan(fake_distro(), '45', self.TABLE, [], ('core',))
+        self.assertEqual(install_removal.profile_record(current, record, ('tablet',))['auth'], ['custom/desktop-tablet'])
+        both = install_removal.profile_record(current, record, ('tablet', 'hardware.fingerprint'))
         self.assertEqual(both['auth'], ['with-fingerprint', 'custom/desktop-tablet'])
-        self.assertNotIn('auth', installer.profile_record(current, record, ('hardware.fingerprint',)))
+        self.assertNotIn('auth', install_removal.profile_record(current, record, ('hardware.fingerprint',)))
 
     def test_the_fedora_manifest_splits_them(self):
-        table = installer.flatten_parts(MANIFEST['fedora'])
+        table = install_plan.flatten_parts(MANIFEST['fedora'])
         self.assertEqual(table['hardware.fingerprint']['auth'], ['with-fingerprint'])
         self.assertEqual(table['tablet']['auth'], ['with-fingerprint', 'custom/desktop-tablet'])
 
@@ -914,33 +935,33 @@ class NextStepsTests(unittest.TestCase):
     """What to do after an apply: a first install reboots, a change inside the desktop only when its steps need it."""
 
     def said(self, applied, running, profiles=('core',)):
-        installer.APPLIED[:] = applied
+        install_run.APPLIED[:] = applied
         out = io.StringIO()
-        with mock.patch.object(installer, 'hyprland_running', return_value=running), contextlib.redirect_stdout(out):
-            installer.next_steps(installer.Plan(fake_distro(), '45', {}, [], profiles), len(applied))
+        with mock.patch.object(install_undo, 'hyprland_running', return_value=running), contextlib.redirect_stdout(out):
+            install_run.next_steps(install_plan.Plan(fake_distro(), '45', {}, [], profiles), len(applied))
         return out.getvalue().strip()
 
     def tearDown(self):
-        installer.APPLIED.clear()
+        install_run.APPLIED.clear()
 
     def test_inside_the_desktop_only_what_the_steps_need(self):
         self.assertEqual(self.said(['packages', 'stow'], True), 'Done.')
         self.assertIn('Reboot', self.said(['packages', 'firmware'], True))
         self.assertIn('Log out and back in', self.said(['groups'], True))
-        self.assertEqual(installer.restart_needed(), 'login')
+        self.assertEqual(install_run.restart_needed(), 'login')
 
     def test_a_first_install_reboots_to_the_login_screen(self):
         self.assertEqual(self.said(['packages', 'boot'], False), 'Done. Reboot to reach the login screen.')
         self.assertEqual(self.said([], True), 'Nothing to do.')
 
     def test_run_steps_remembers_what_it_applied(self):
-        steps = (installer.Step('one', lambda plan: ['x'], lambda plan, items: None), installer.Step('two', lambda plan: [], None))
-        current = installer.Plan(fake_distro(), '45', {}, [], ('core',))
+        steps = (install_steps.Step('one', lambda plan: ['x'], lambda plan, items: None), install_steps.Step('two', lambda plan: [], None))
+        current = install_plan.Plan(fake_distro(), '45', {}, [], ('core',))
         with mock.patch('builtins.print'):
-            installer.run_steps(current, False, steps)
-            self.assertEqual(installer.APPLIED, ['one'])
-            installer.run_steps(current, True, steps)
-        self.assertEqual(installer.APPLIED, [])
+            install_run.run_steps(current, False, steps)
+            self.assertEqual(install_run.APPLIED, ['one'])
+            install_run.run_steps(current, True, steps)
+        self.assertEqual(install_run.APPLIED, [])
 
 
 class ProfileRemovalTests(unittest.TestCase):
@@ -953,11 +974,11 @@ class ProfileRemovalTests(unittest.TestCase):
         self.file.write_text('x\n')
         record = {'profiles': ['core', 'apps', 'gaming', 'gaming.steam-hidpi'], 'packages': ['a', 'shared', 'apponly', 'game', 'zen', 'new'],
                   'swaps': [['old', 'new']], 'repos': ['one', 'two'], 'files': {str(self.file): None},
-                  'written': {str(self.file): installer.text_digest('x\n')},
+                  'written': {str(self.file): install_steps.text_digest('x\n')},
                   'groups': ['g'], 'flatpaks': ['org.example.App'], 'firewall_zone': 'FedoraServer', 'login_shell': '/bin/bash',
                   'services': {'enabled': ['s.service'], 'disabled': ['d.socket'], 'global': []}}
         record.update(changes)
-        installer.save_record(record)
+        install_record.save_record(record)
         return record
 
     def plan(self, record, removed):
@@ -970,8 +991,8 @@ class ProfileRemovalTests(unittest.TestCase):
         distro.missing.side_effect = lambda packages: [package for package in packages if package in removed_packages]
         distro.sudo.side_effect = lambda *command: Path(command[-1]).unlink() if command[0] == 'rm' else None
         table = {**PROFILE_TABLE, 'apps': {**PROFILE_TABLE['apps'], 'files': [{'path': str(self.file), 'content': '\nx\n'}]}}
-        current = installer.Plan(distro, '45', table, [], ('core',))
-        return current._replace(record=installer.profile_record(current, record, removed))
+        current = install_plan.Plan(distro, '45', table, [], ('core',))
+        return current._replace(record=install_removal.profile_record(current, record, removed))
 
     def test_only_what_no_profile_that_stays_names(self):
         narrowed = self.plan(self.recorded(), ('apps',)).record
@@ -994,14 +1015,14 @@ class ProfileRemovalTests(unittest.TestCase):
         self.assertEqual((sorted(both['packages']), both['repos']), (['apponly', 'game', 'new', 'shared', 'zen'], ['one', 'two']))
 
     def test_without_a_record_of_profiles_every_other_one_stays(self):
-        self.assertEqual(installer.staying_profiles({}, ('apps',)), tuple(name for name in installer.manifest_units() if name != 'apps'))
-        self.assertEqual(installer.staying_profiles({'profiles': ['core', 'apps', 'radio']}, ('apps',)), ('core', 'radio'))
+        self.assertEqual(install_removal.staying_profiles({}, ('apps',)), tuple(name for name in install_plan.manifest_units() if name != 'apps'))
+        self.assertEqual(install_removal.staying_profiles({'profiles': ['core', 'apps', 'radio']}, ('apps',)), ('core', 'radio'))
 
     def test_core_is_not_a_profile_to_remove(self):
-        self.assertFalse(installer.removable_profiles(('core',)))
-        self.assertFalse(installer.removable_profiles(('apps', 'nope')))
-        self.assertFalse(installer.removable_profiles(()))
-        self.assertTrue(installer.removable_profiles(('apps', 'gaming')))
+        self.assertFalse(install_removal.removable_profiles(('core',)))
+        self.assertFalse(install_removal.removable_profiles(('apps', 'nope')))
+        self.assertFalse(install_removal.removable_profiles(()))
+        self.assertTrue(install_removal.removable_profiles(('apps', 'gaming')))
         with mock.patch('sys.stderr'), self.assertRaises(SystemExit) as caught:
             installer.main(['dry-run', '--remove', 'core'])
         self.assertEqual(caught.exception.code, 2)
@@ -1010,7 +1031,7 @@ class ProfileRemovalTests(unittest.TestCase):
         self.system(False)
         current = self.plan(self.recorded(), ('apps',))
         with mock.patch('subprocess.run'):
-            installer.run_steps(current, False, installer.PROFILE_UNSTEPS)
+            install_run.run_steps(current, False, install_removal.PROFILE_UNSTEPS)
         commands = [call.args for call in current.distro.sudo.call_args_list]
         self.assertFalse(self.file.exists())
         for command in (('systemctl', 'disable', 's.service'), ('gpasswd', '-d', 'angelo', 'g'), ('rm', '-f', '--', str(self.file)),
@@ -1021,7 +1042,7 @@ class ProfileRemovalTests(unittest.TestCase):
         current.distro.remove.assert_called_once_with(['apponly.x86_64', 'zen.x86_64'])
         current.distro.remove_repo.assert_called_once_with(PROFILE_TABLE['repos']['two'])
         current.distro.swap.assert_not_called()
-        saved = json.loads(installer.RECORD.read_text())
+        saved = json.loads(install_paths.RECORD.read_text())
         self.assertEqual(saved['profiles'], ['core', 'gaming', 'gaming.steam-hidpi'])
         self.assertEqual(saved['packages'], ['a', 'shared', 'game', 'new'])
         self.assertEqual((saved['files'], saved['written'], saved['services']['enabled']), ({}, {}, []))
@@ -1032,7 +1053,7 @@ class ProfileRemovalTests(unittest.TestCase):
         # dnf would take shared with apponly, as a dependent: shared stays, and so does what it needs.
         current.distro.removal.side_effect = lambda names: list(names) + ['shared.x86_64']
         current.distro.requirements.side_effect = lambda names: {'apponly.x86_64'} if 'shared.x86_64' in names else set()
-        names, kept, _, _ = installer.removal_split(current)
+        names, kept, _, _ = install_undo.removal_split(current)
         self.assertEqual((names, kept), (['zen.x86_64'], ['apponly.x86_64']))
 
     def test_the_profile_s_own_links_go_and_the_rest_stays(self):
@@ -1045,28 +1066,28 @@ class ProfileRemovalTests(unittest.TestCase):
             link.parent.mkdir(parents=True, exist_ok=True)
             link.symlink_to(target)
         current = self.plan(self.recorded(), ('gaming.steam-hidpi',))
-        with mock.patch.object(installer, 'backups', return_value=[]):
-            self.assertEqual(installer.unprofile_stow_pending(current), [f'unlink {mine}'])
-            installer.unprofile_stow_apply(current, [])
+        with mock.patch.object(install_undo, 'backups', return_value=[]):
+            self.assertEqual(install_removal.unprofile_stow_pending(current), [f'unlink {mine}'])
+            install_removal.unprofile_stow_apply(current, [])
         self.assertFalse(mine.is_symlink())
         self.assertTrue(core.is_symlink())
 
     def test_the_plugin_builds_go_only_with_the_plugins_profile(self):
         current = self.plan(self.recorded(), ('apps',))
-        with mock.patch.object(installer, 'unplugins_pending', return_value=['builds']):
-            self.assertEqual(installer.unprofile_plugins_pending(current), [])
-            self.assertEqual(installer.unprofile_plugins_pending(current._replace(record={**current.record, 'undone': ['plugins']})),
+        with mock.patch.object(install_undo, 'unplugins_pending', return_value=['builds']):
+            self.assertEqual(install_removal.unprofile_plugins_pending(current), [])
+            self.assertEqual(install_removal.unprofile_plugins_pending(current._replace(record={**current.record, 'undone': ['plugins']})),
                              ['builds'])
 
     def test_the_plugins_profile_waits_until_hyprland_is_gone(self):
-        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(installer, 'load_plan', return_value=plan(fake_distro())), \
-                mock.patch.object(installer, 'refuse'), mock.patch.object(installer, 'refuse_uninstall') as refused, \
-                mock.patch.object(installer, 'removal_plan', side_effect=lambda current, removed, preview, keep: current._replace(record={})), \
-                mock.patch.object(installer, 'record_notes', return_value=[]), \
-                mock.patch.object(installer, 'run_steps', return_value=0) as steps, mock.patch('builtins.print'):
+        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(install_plan, 'load_plan', return_value=plan(fake_distro())), \
+                mock.patch.object(install_run, 'refuse'), mock.patch.object(install_run, 'refuse_uninstall') as refused, \
+                mock.patch.object(install_removal, 'removal_plan', side_effect=lambda current, removed, preview, keep: current._replace(record={})), \
+                mock.patch.object(install_run, 'record_notes', return_value=[]), \
+                mock.patch.object(install_run, 'run_steps', return_value=0) as steps, mock.patch('builtins.print'):
             installer.main(['apply', '--remove', 'apps'])
             refused.assert_not_called()
-            self.assertIs(steps.call_args.args[2], installer.PROFILE_UNSTEPS)
+            self.assertIs(steps.call_args.args[2], install_removal.PROFILE_UNSTEPS)
             installer.main(['dry-run', '--remove', 'plugins'])
             refused.assert_not_called()
             installer.main(['apply', '--remove', 'plugins'])
@@ -1084,38 +1105,38 @@ class ProfileRemovalTests(unittest.TestCase):
         # shared needs apponly (and, first, zen too): dnf would take it with them.
         current.distro.removal.side_effect = lambda names: list(names) + (['shared.x86_64'] if set(names) & {'apponly.x86_64', 'zen.x86_64'} else [])
         current.distro.requirements.side_effect = lambda names: {'apponly.x86_64', 'zen.x86_64'} if 'shared.x86_64' in names else set()
-        self.assertEqual(installer.unpackages_pending(current), [])
+        self.assertEqual(install_undo.unpackages_pending(current), [])
         current.distro.removal.side_effect = lambda names: list(names) + (['shared.x86_64'] if 'apponly.x86_64' in names else [])
         current.distro.requirements.side_effect = lambda names: {'apponly.x86_64'} if 'shared.x86_64' in names else set()
-        self.assertEqual(installer.unpackages_pending(current), ['zen.x86_64', 'keep apponly.x86_64  (a package that stays needs it)'])
+        self.assertEqual(install_undo.unpackages_pending(current), ['zen.x86_64', 'keep apponly.x86_64  (a package that stays needs it)'])
 
     def test_a_removal_records_what_is_there_without_a_record(self):
         # Herdr from its own installer: the record has no assistant, so the units file would hide the AI block.
         self.system(False)
         record = self.recorded()
         current = self.plan(record, ('apps',))
-        current = current._replace(record=installer.profile_record(current, record, ('apps',), keep=('assistant', 'apps', 'core')))
+        current = current._replace(record=install_removal.profile_record(current, record, ('apps',), keep=('assistant', 'apps', 'core')))
         self.assertEqual(current.record['keeping'], ['assistant'])
-        self.assertIn(f'note in {installer.RECORD} that assistant is installed, without a record so far',
-                      installer.unprofile_record_pending(current))
+        self.assertIn(f'note in {install_paths.RECORD} that assistant is installed, without a record so far',
+                      install_removal.unprofile_record_pending(current))
         with mock.patch('subprocess.run'):
-            installer.run_steps(current, False, installer.PROFILE_UNSTEPS)
-        self.assertEqual(json.loads(installer.RECORD.read_text())['profiles'], ['core', 'gaming', 'gaming.steam-hidpi', 'assistant'])
-        self.assertIn('assistant', installer.UNITS.read_text().split())
+            install_run.run_steps(current, False, install_removal.PROFILE_UNSTEPS)
+        self.assertEqual(json.loads(install_paths.RECORD.read_text())['profiles'], ['core', 'gaming', 'gaming.steam-hidpi', 'assistant'])
+        self.assertIn('assistant', install_paths.UNITS.read_text().split())
 
     def test_what_a_kept_unit_needs_stays(self):
         record = self.recorded()
         table = {**PROFILE_TABLE, 'assistant': {'packages': ['apponly']}}
-        current = installer.Plan(fake_distro(pending=False), '45', table, [], ('core',))
-        self.assertIn('apponly', installer.profile_record(current, record, ('apps',)).get('packages'))
-        self.assertNotIn('apponly', installer.profile_record(current, record, ('apps',), keep=('assistant',))['packages'])
+        current = install_plan.Plan(fake_distro(pending=False), '45', table, [], ('core',))
+        self.assertIn('apponly', install_removal.profile_record(current, record, ('apps',)).get('packages'))
+        self.assertNotIn('apponly', install_removal.profile_record(current, record, ('apps',), keep=('assistant',))['packages'])
 
     def test_an_install_says_which_units_the_record_names_from_now_on(self):
         self.recorded()
-        current = installer.Plan(fake_distro(pending=False), '45', PROFILE_TABLE, [], ('core', 'apps', 'gaming', 'gaming.steam-hidpi', 'radio'))
-        self.assertEqual(installer.recording_notes(current), [f'{installer.RECORD} names radio from now on.'])
-        installer.RECORD.unlink()
-        self.assertEqual(installer.recording_notes(current), [])  # A first install: everything is new, nothing to say.
+        current = install_plan.Plan(fake_distro(pending=False), '45', PROFILE_TABLE, [], ('core', 'apps', 'gaming', 'gaming.steam-hidpi', 'radio'))
+        self.assertEqual(install_run.recording_notes(current), [f'{install_paths.RECORD} names radio from now on.'])
+        install_paths.RECORD.unlink()
+        self.assertEqual(install_run.recording_notes(current), [])  # A first install: everything is new, nothing to say.
 
     def test_keep_goes_with_remove(self):
         for arguments in (['dry-run', '--keep', 'assistant'], ['dry-run', '--remove', 'apps', '--keep', 'nothing']):
@@ -1125,8 +1146,8 @@ class ProfileRemovalTests(unittest.TestCase):
 
     def test_nothing_recorded_for_the_profile_is_nothing_to_do(self):
         self.recorded(profiles=['core', 'gaming'])
-        current = self.plan(installer.load_record(), ('radio',))
-        self.assertEqual(installer.unprofile_record_pending(current), [])
+        current = self.plan(install_record.load_record(), ('radio',))
+        self.assertEqual(install_removal.unprofile_record_pending(current), [])
 
 
 class ReconstructTests(unittest.TestCase):
@@ -1140,15 +1161,15 @@ class ReconstructTests(unittest.TestCase):
         distro.owned.return_value = False
         distro.auth_reconstruct.return_value = []
         table = {**TABLE, 'core': {**TABLE['core'], 'packages': ['a', 'b', 'gdm']}}
-        current = installer.Plan(distro, '45', table, [], ('core',))
+        current = install_plan.Plan(distro, '45', table, [], ('core',))
 
         def query(*command):
             answers = {'firewall-cmd': zone, 'busctl': session, 'systemctl': target}
             return reply(answers.get(command[0], ''))
-        with mock.patch.object(installer, 'PROFILES', ('core', 'plugins')), mock.patch.object(installer, 'query', side_effect=query), \
-                mock.patch.object(installer, 'login_shell', return_value=shell), mock.patch.object(installer, 'booted', return_value=True), \
+        with mock.patch.object(install_paths, 'PROFILES', ('core', 'plugins')), mock.patch.object(install_plan, 'query', side_effect=query), \
+                mock.patch.object(install_steps, 'login_shell', return_value=shell), mock.patch.object(install_plan, 'booted', return_value=True), \
                 mock.patch('shutil.which', return_value='/usr/bin/firewall-cmd'), mock.patch('grp.getgrnam', return_value=mock.Mock(gr_mem=[])):
-            return installer.reconstruct(current)
+            return install_undo.reconstruct(current)
 
     def test_only_what_came_after_the_system_install(self):
         record = self.reconstruct(base={'b.x86_64'}, installed={'a', 'b', 'gdm', 'c'})
@@ -1171,7 +1192,7 @@ class ReconstructTests(unittest.TestCase):
     def test_without_the_system_install_in_the_history_no_package_goes(self):
         record = self.reconstruct(base=set(), installed={'a', 'gdm', 'new'})
         self.assertEqual((record['packages'], record['swaps'], record['base_unknown']), ([], [], True))
-        notes = installer.record_notes(plan(fake_distro())._replace(record={'base_unknown': True}))
+        notes = install_run.record_notes(plan(fake_distro())._replace(record={'base_unknown': True}))
         self.assertTrue(any('no package from before the record is removed' in note for note in notes))
 
     def test_a_display_manager_from_before_stays(self):
@@ -1195,54 +1216,54 @@ class FirmwareTests(unittest.TestCase):
         import hashlib
         self.item = {'product': 'Laptop 14', 'purpose': 'Screen rotation', 'source': 'vendor package',
                      'target': str(self.target), 'sha256': hashlib.sha256(self.blob).hexdigest(), 'size': len(self.blob)}
-        patcher = mock.patch.object(installer, 'dmi', return_value='Laptop 14')
+        patcher = mock.patch.object(install_steps, 'dmi', return_value='Laptop 14')
         self.dmi = patcher.start()
         self.addCleanup(patcher.stop)
 
     def plan(self, firmware=None):
-        return installer.Plan(fake_distro(), '45', {'hardware': {'firmware': [self.item]}}, [], ('hardware',), firmware)
+        return install_plan.Plan(fake_distro(), '45', {'hardware': {'firmware': [self.item]}}, [], ('hardware',), firmware)
 
     def test_only_the_blob_apply_put_there_is_removed(self):
         self.target.parent.mkdir(parents=True)
         self.target.write_bytes(self.blob)
         current = self.plan()._replace(record={'firmware': {str(self.target): False, str(self.base / 'gone.bin'): False}})
         current.distro.owned.return_value = False
-        self.assertEqual(installer.unfirmware_pending(current), [str(self.target)])
+        self.assertEqual(install_undo.unfirmware_pending(current), [str(self.target)])
         current.distro.owned.return_value = True  # A package ships it now.
-        self.assertEqual(installer.unfirmware_pending(current), [])
+        self.assertEqual(install_undo.unfirmware_pending(current), [])
         current.distro.owned.return_value = False
         self.target.write_bytes(b'replaced since')
-        self.assertEqual(installer.unfirmware_pending(current), [])
+        self.assertEqual(install_undo.unfirmware_pending(current), [])
 
     def test_the_vendor_file_is_found_by_hash_whatever_its_name(self):
-        self.assertEqual(installer.firmware_source(self.plan(str(self.base)), self.item), self.vendor)
+        self.assertEqual(install_steps.firmware_source(self.plan(str(self.base)), self.item), self.vendor)
 
     def test_without_a_directory_nothing_is_pending(self):
-        self.assertEqual(installer.firmware_pending(self.plan()), [])
+        self.assertEqual(install_steps.firmware_pending(self.plan()), [])
 
     def test_with_a_copy_it_is_pending_until_installed(self):
-        self.assertEqual(installer.firmware_pending(self.plan(str(self.base))), [str(self.target)])
+        self.assertEqual(install_steps.firmware_pending(self.plan(str(self.base))), [str(self.target)])
         self.target.parent.mkdir(parents=True)
         self.target.write_bytes(self.blob)
-        self.assertEqual(installer.firmware_pending(self.plan(str(self.base))), [])
+        self.assertEqual(install_steps.firmware_pending(self.plan(str(self.base))), [])
 
     def test_another_model_needs_nothing(self):
         self.dmi.return_value = 'Another laptop'
-        self.assertEqual(installer.firmware_needed(self.plan(str(self.base))), [])
+        self.assertEqual(install_steps.firmware_needed(self.plan(str(self.base))), [])
 
     def test_apply_installs_then_rebuilds_the_initramfs(self):
         current = self.plan(str(self.base))
         order = mock.Mock()
         current.distro.install_firmware = order.install
         current.distro.rebuild_initramfs = order.rebuild
-        installer.firmware_apply(current, [str(self.target)])
+        install_steps.firmware_apply(current, [str(self.target)])
         self.assertEqual(order.mock_calls, [mock.call.install(self.vendor, str(self.target)), mock.call.rebuild()])
 
     def warnings(self, firmware):
         current = self.plan(firmware)
-        with mock.patch.object(installer, 'member', return_value=True), \
+        with mock.patch.object(install_plan, 'member', return_value=True), \
                 mock.patch('shutil.disk_usage', return_value=mock.Mock(free=40 * 2**30)), mock.patch('builtins.print') as printed:
-            installer.preflight(current)
+            install_run.preflight(current)
         return ' '.join(call.args[0] for call in printed.call_args_list)
 
     def test_a_missing_blob_is_a_warning_that_names_the_option(self):
@@ -1254,7 +1275,7 @@ class FirmwareTests(unittest.TestCase):
         self.assertIn('has no copy of it', self.warnings(str(self.base / 'lib')))
 
     def test_the_firmware_comes_before_the_boot_step(self):
-        titles = [step.title for step in installer.STEPS]
+        titles = [step.title for step in install_steps.STEPS]
         self.assertLess(titles.index('packages'), titles.index('firmware'))
         self.assertLess(titles.index('firmware'), titles.index('boot'))
 
@@ -1265,7 +1286,7 @@ class PostTests(unittest.TestCase):
         self.addCleanup(folder.cleanup)
         self.autostart = Path(folder.name) / 'finish.desktop'
         self.autostart.write_text('entry')
-        patcher = mock.patch.object(installer, 'AUTOSTART', self.autostart)
+        patcher = mock.patch.object(install_paths, 'AUTOSTART', self.autostart)
         patcher.start()
         self.addCleanup(patcher.stop)
         patcher = mock.patch('builtins.print')
@@ -1276,7 +1297,7 @@ class PostTests(unittest.TestCase):
         environment = {'HYPRLAND_INSTANCE_SIGNATURE': session} if session else {}
         with mock.patch.dict('os.environ', environment, clear=True), mock.patch('sys.stdin.isatty', return_value=terminal), \
                 mock.patch('subprocess.run') as self.run, mock.patch('subprocess.check_output', return_value=errors):
-            installer.post(plan(fake_distro()))
+            install_run.post(plan(fake_distro()))
 
     def test_success_removes_the_autostart_and_lists_the_manual_steps(self):
         self.post()
@@ -1290,7 +1311,7 @@ class PostTests(unittest.TestCase):
         failure = subprocess.CalledProcessError(1, 'hyprpm')
         with mock.patch.dict('os.environ', {'HYPRLAND_INSTANCE_SIGNATURE': 'abc'}), mock.patch('sys.stdin.isatty', return_value=True), \
                 mock.patch('subprocess.run', side_effect=failure), self.assertRaises(subprocess.CalledProcessError):
-            installer.post(plan(fake_distro()))
+            install_run.post(plan(fake_distro()))
         self.assertTrue(self.autostart.exists())
 
     def test_config_errors_keep_the_autostart(self):
@@ -1314,7 +1335,7 @@ class ReleaseTests(unittest.TestCase):
         with tempfile.NamedTemporaryFile('w', suffix='release') as file:
             file.write('ID=fedora\nVERSION_ID=45\nPRETTY_NAME="Fedora Linux 45 (Server Edition)"\n\n# note\n')
             file.flush()
-            fields = installer.os_release(Path(file.name))
+            fields = install_plan.os_release(Path(file.name))
         self.assertEqual(fields['ID'], 'fedora')
         self.assertEqual(fields['VERSION_ID'], '45')
         self.assertEqual(fields['PRETTY_NAME'], 'Fedora Linux 45 (Server Edition)')
@@ -1394,55 +1415,55 @@ class ClonePinTests(unittest.TestCase):
             'track': 'tags'}
 
     def test_versions_sort_by_their_numbers(self):
-        self.assertEqual(max(['25.03.19', '26.9.30', '26.10.1'], key=installer.version_key), '26.10.1')
-        self.assertEqual(max(['v1.9.0', 'v1.20.0'], key=installer.version_key), 'v1.20.0')
+        self.assertEqual(max(['25.03.19', '26.9.30', '26.10.1'], key=install_pins.version_key), '26.10.1')
+        self.assertEqual(max(['v1.9.0', 'v1.20.0'], key=install_pins.version_key), 'v1.20.0')
 
     def test_an_annotated_tag_stands_for_its_commit(self):
-        with mock.patch.object(installer, 'query', return_value=reply(self.TAGS)):
-            self.assertEqual(installer.remote_tags('x'), {'25.03.19': '1' * 40, '26.9.30': '2' * 40, '26.10.1': '9' * 40})
+        with mock.patch.object(install_plan, 'query', return_value=reply(self.TAGS)):
+            self.assertEqual(install_pins.remote_tags('x'), {'25.03.19': '1' * 40, '26.9.30': '2' * 40, '26.10.1': '9' * 40})
 
     def test_a_clone_that_follows_tags_moves_to_the_latest_release(self):
-        with mock.patch.object(installer, 'query', return_value=reply(self.TAGS)):
-            pin = installer.newer_pin('clones', self.ITEM)
+        with mock.patch.object(install_plan, 'query', return_value=reply(self.TAGS)):
+            pin = install_pins.newer_pin('clones', self.ITEM)
         self.assertEqual((pin.name, pin.new, pin.label, pin.tag), ('zsh-autocomplete', '9' * 40, '26.9.30 -> 26.10.1', '26.10.1'))
         self.assertEqual(pin.url, f'https://github.com/marlonrichert/zsh-autocomplete/compare/{"2" * 40}...{"9" * 40}')
-        with mock.patch.object(installer, 'query', return_value=reply(self.TAGS)):
-            self.assertIsNone(installer.newer_pin('clones', {**self.ITEM, 'commit': '9' * 40}))
-        with mock.patch.object(installer, 'query', return_value=reply('', 128)):
-            self.assertIs(installer.newer_pin('clones', self.ITEM), False)
+        with mock.patch.object(install_plan, 'query', return_value=reply(self.TAGS)):
+            self.assertIsNone(install_pins.newer_pin('clones', {**self.ITEM, 'commit': '9' * 40}))
+        with mock.patch.object(install_plan, 'query', return_value=reply('', 128)):
+            self.assertIs(install_pins.newer_pin('clones', self.ITEM), False)
 
     def test_any_other_clone_follows_its_branch(self):
         item = {**self.ITEM, 'track': None, 'repo': 'https://github.com/romkatv/powerlevel10k', 'path': '.p/powerlevel10k'}
-        with mock.patch.object(installer, 'query', return_value=reply(f'{"7" * 40}\tHEAD\n')) as query:
-            pin = installer.newer_pin('clones', item)
-        query.assert_called_once_with('git', 'ls-remote', 'https://github.com/romkatv/powerlevel10k', 'HEAD', timeout=installer.REMOTE_TIMEOUT)
+        with mock.patch.object(install_plan, 'query', return_value=reply(f'{"7" * 40}\tHEAD\n')) as query:
+            pin = install_pins.newer_pin('clones', item)
+        query.assert_called_once_with('git', 'ls-remote', 'https://github.com/romkatv/powerlevel10k', 'HEAD', timeout=install_plan.REMOTE_TIMEOUT)
         self.assertEqual((pin.label, pin.tag), (f'{"2" * 12} -> {"7" * 12}', ''))
 
     def test_a_remote_that_does_not_answer_in_time_is_a_failure(self):
-        with mock.patch.object(installer.subprocess, 'run', side_effect=installer.subprocess.TimeoutExpired('git', 60)):
-            result = installer.query('git', 'ls-remote', 'x', 'HEAD', timeout=60)
+        with mock.patch.object(subprocess, 'run', side_effect=subprocess.TimeoutExpired('git', 60)):
+            result = install_plan.query('git', 'ls-remote', 'x', 'HEAD', timeout=60)
         self.assertEqual(result.returncode, 124)
 
     def test_one_failing_entry_does_not_end_the_pins_listing(self):
         entries = [('aur', {'package': 'one'}), ('clones', {**self.ITEM, 'path': '.p/two'})]
         answers = [OSError('HTTP Error 502'), None]
-        with mock.patch.object(installer, 'pin_entries', return_value=entries), \
-                mock.patch.object(installer, 'newer_pin', side_effect=answers) as newer, \
+        with mock.patch.object(install_pins, 'pin_entries', return_value=entries), \
+                mock.patch.object(install_pins, 'newer_pin', side_effect=answers) as newer, \
                 mock.patch('sys.stdout', new_callable=io.StringIO) as out:
-            self.assertEqual(installer.pins(False), 1)
+            self.assertEqual(install_pins.pins(False), 1)
         self.assertEqual(newer.call_count, 2)
         self.assertIn('one: HTTP Error 502', out.getvalue())
 
     def test_repin_rewrites_the_commit_and_the_release_it_is_at(self):
         text = f"[[fedora.core.clones]]\ncommit = '{'2' * 40}'  # 26.9.30\npath = 'p'\n\n[[arch.core.clones]]\ncommit = '{'2' * 40}'  # 26.9.30\n"
-        moved = installer.repin(text, '2' * 40, '9' * 40, tag='26.10.1')
+        moved = install_pins.repin(text, '2' * 40, '9' * 40, tag='26.10.1')
         self.assertEqual(moved, text.replace('2' * 40, '9' * 40).replace('# 26.9.30', '# 26.10.1'))
         # A clone that follows its branch loses a comment that no longer names its commit.
-        self.assertEqual(installer.repin(text, '2' * 40, '9' * 40).count('#'), 0)
+        self.assertEqual(install_pins.repin(text, '2' * 40, '9' * 40).count('#'), 0)
 
     def test_the_same_clone_on_two_distributions_is_one_pin(self):
         tables = [{'core': {'clones': [self.ITEM]}}, {'core': {'clones': [dict(self.ITEM)]}, 'apps': {'aur': [{'package': 'p', 'commit': 'c' * 40}]}}]
-        self.assertEqual([kind for kind, _ in installer.pin_entries(tables)], ['clones', 'aur'])
+        self.assertEqual([kind for kind, _ in install_pins.pin_entries(tables)], ['clones', 'aur'])
 
     def test_the_manifest_clones_say_what_they_follow(self):
         tracks = {clone['path'].rsplit('/', 1)[-1]: clone.get('track') for clone in MANIFEST['fedora']['core']['clones']}
@@ -1471,11 +1492,11 @@ class ArchiveTests(unittest.TestCase):
         self.items = [dict(item) for item in MANIFEST['fedora']['assistant']['archives']]
         self.items[0]['sha256'] = {'x86_64': hashlib.sha256(self.CORE).hexdigest(), 'aarch64': '0' * 64}
         self.items[1]['sha256'] = {'x86_64': hashlib.sha256(self.APP).hexdigest(), 'aarch64': '0' * 64}
-        self.plan = installer.Plan(fake_distro(), '45', {'assistant': {'archives': self.items}}, [], ('assistant',), record={})
+        self.plan = install_plan.Plan(fake_distro(), '45', {'assistant': {'archives': self.items}}, [], ('assistant',), record={})
         self.fetched = []
-        for patcher in (mock.patch.object(installer.Path, 'home', return_value=self.home),
-                        mock.patch.object(installer.platform, 'machine', return_value='x86_64'),
-                        mock.patch.object(installer.urllib.request, 'urlopen', side_effect=self.urlopen)):
+        for patcher in (mock.patch.object(Path, 'home', return_value=self.home),
+                        mock.patch.object(platform, 'machine', return_value='x86_64'),
+                        mock.patch.object(urllib.request, 'urlopen', side_effect=self.urlopen)):
             patcher.start()
             self.addCleanup(patcher.stop)
 
@@ -1485,9 +1506,9 @@ class ArchiveTests(unittest.TestCase):
         return io.BytesIO(self.CORE if '/core/' in request.full_url else self.APP)
 
     def apply(self):
-        items = installer.archives_pending(self.plan)
-        installer.archives_remember(self.plan, items, self.plan.record)
-        installer.archives_apply(self.plan, items)
+        items = install_steps.archives_pending(self.plan)
+        install_steps.archives_remember(self.plan, items, self.plan.record)
+        install_steps.archives_apply(self.plan, items)
 
     def test_the_manifest_archives_are_complete(self):
         for distro in ('fedora', 'arch'):
@@ -1496,12 +1517,12 @@ class ArchiveTests(unittest.TestCase):
                 for digest in item['sha256'].values():
                     self.assertRegex(digest, '^[0-9a-f]{64}$')
                 self.assertTrue(item['url'].startswith('https://releases.herdr.dev/') and '{version}' in item['url'] and '{arch}' in item['url'])
-                for path in installer.archive_paths(item) + list(item.get('links', {}).values()):
+                for path in install_steps.archive_paths(item) + list(item.get('links', {}).values()):
                     self.assertFalse(path.startswith(('/', '~')) or '..' in path, path)
         self.assertEqual(MANIFEST['fedora']['assistant'], MANIFEST['arch']['assistant'])
 
     def test_unpacked_where_the_herdr_installers_put_it(self):
-        self.assertEqual(installer.archives_pending(self.plan), ['herdr-core 0.1.18', 'herdr-app 0.1.13'])
+        self.assertEqual(install_steps.archives_pending(self.plan), ['herdr-core 0.1.18', 'herdr-app 0.1.13'])
         self.apply()
         self.assertEqual(self.fetched, ['https://releases.herdr.dev/core/0.1.18/herdr-core-linux-x86_64.tar.gz',
                                         'https://releases.herdr.dev/app/0.1.13/herdr-app-linux-x86_64.tar.gz'])
@@ -1514,13 +1535,13 @@ class ArchiveTests(unittest.TestCase):
         self.assertIn(f'Exec={self.home}/.local/bin/herdr-app\n', entry)
         self.assertFalse(list(self.home.rglob('*.new')))
         # Installed: what it updates by itself is never taken back.
-        self.assertEqual(installer.archives_pending(self.plan), [])
+        self.assertEqual(install_steps.archives_pending(self.plan), [])
 
     def test_what_is_there_stays(self):
         (self.home / '.local/bin').mkdir(parents=True)
         (self.home / '.local/bin/hc').write_text('another hc')
         (self.home / '.local/share/herdr-app').mkdir(parents=True)
-        self.assertEqual(installer.archives_pending(self.plan), ['herdr-core 0.1.18'])
+        self.assertEqual(install_steps.archives_pending(self.plan), ['herdr-core 0.1.18'])
         self.apply()
         self.assertEqual((self.home / '.local/bin/hc').read_text(), 'another hc')
         self.assertEqual(self.plan.record['archives'], ['.local/bin/herdr-core'])
@@ -1528,13 +1549,13 @@ class ArchiveTests(unittest.TestCase):
     def test_a_download_that_does_not_match_installs_nothing(self):
         self.items[0]['sha256']['x86_64'] = '1' * 64
         with self.assertRaises(SystemExit):
-            installer.archives_apply(self.plan, ['herdr-core 0.1.18'])
+            install_steps.archives_apply(self.plan, ['herdr-core 0.1.18'])
         self.assertFalse((self.home / '.local/bin').exists())
 
     def test_no_build_for_this_machine_is_a_warning(self):
-        with mock.patch.object(installer.platform, 'machine', return_value='riscv64'):
-            self.assertEqual(installer.archives_pending(self.plan), [])
-            self.assertEqual(installer.archives_unsupported(self.plan), ['herdr-core', 'herdr-app'])
+        with mock.patch.object(platform, 'machine', return_value='riscv64'):
+            self.assertEqual(install_steps.archives_pending(self.plan), [])
+            self.assertEqual(install_steps.archives_unsupported(self.plan), ['herdr-core', 'herdr-app'])
 
     def test_uninstall_removes_what_apply_made(self):
         (self.home / '.local/share/applications').mkdir(parents=True)
@@ -1542,11 +1563,11 @@ class ArchiveTests(unittest.TestCase):
         self.apply()
         made = self.plan.record['archives']
         self.assertNotIn('.local/share/applications/herdr-app.desktop', made)
-        self.assertEqual(installer.unarchives_pending(self.plan), made)
-        installer.unarchives_apply(self.plan, made)
+        self.assertEqual(install_undo.unarchives_pending(self.plan), made)
+        install_undo.unarchives_apply(self.plan, made)
         self.assertEqual(sorted(str(path.relative_to(self.home)) for path in self.home.rglob('*') if path.is_file()),
                          ['.local/share/applications/herdr-app.desktop'])
-        self.assertEqual(installer.unarchives_pending(self.plan), [])
+        self.assertEqual(install_undo.unarchives_pending(self.plan), [])
 
     def latest(self, version, arch_url=None):
         targets = {f'linux-{arch}': {'url': arch_url or f'https://releases.herdr.dev/app/{version}/herdr-app-linux-{arch}.tar.gz',
@@ -1555,43 +1576,43 @@ class ArchiveTests(unittest.TestCase):
 
     def test_a_newer_release_is_a_pin_with_its_hashes(self):
         item = MANIFEST['fedora']['assistant']['archives'][1]
-        with mock.patch.object(installer.urllib.request, 'urlopen', return_value=self.latest('0.2.0')):
-            pin = installer.newer_pin('archives', item)
+        with mock.patch.object(urllib.request, 'urlopen', return_value=self.latest('0.2.0')):
+            pin = install_pins.newer_pin('archives', item)
         self.assertEqual((pin.name, pin.old, pin.new, pin.label), ('herdr-app', '0.1.13', '0.2.0', '0.1.13 -> 0.2.0'))
         self.assertEqual(pin.hashes, {'x86_64': 'x' * 64, 'aarch64': 'a' * 64})
         self.assertEqual(pin.url, 'https://github.com/herdrdev/herdr-app/releases')
-        with mock.patch.object(installer.urllib.request, 'urlopen', return_value=self.latest('0.1.13')):
-            self.assertIsNone(installer.newer_pin('archives', item))
+        with mock.patch.object(urllib.request, 'urlopen', return_value=self.latest('0.1.13')):
+            self.assertIsNone(install_pins.newer_pin('archives', item))
         # A download moved elsewhere, or no answer: not a pin to write.
-        with mock.patch.object(installer.urllib.request, 'urlopen', return_value=self.latest('0.2.0', 'https://elsewhere/x.tar.gz')):
-            self.assertIs(installer.newer_pin('archives', item), False)
-        with mock.patch.object(installer.urllib.request, 'urlopen', side_effect=OSError('offline')):
-            self.assertIs(installer.newer_pin('archives', item), False)
+        with mock.patch.object(urllib.request, 'urlopen', return_value=self.latest('0.2.0', 'https://elsewhere/x.tar.gz')):
+            self.assertIs(install_pins.newer_pin('archives', item), False)
+        with mock.patch.object(urllib.request, 'urlopen', side_effect=OSError('offline')):
+            self.assertIs(install_pins.newer_pin('archives', item), False)
 
     def test_repin_moves_the_archive_on_both_distributions(self):
         text = (REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8')
-        pin = installer.Pin('archives', 'herdr-app', '0.1.13', '0.2.0', '', '', '', '', {'x86_64': 'e' * 64, 'aarch64': 'f' * 64})
-        moved = tomllib.loads(installer.apply_pin(text, pin))
+        pin = install_pins.Pin('archives', 'herdr-app', '0.1.13', '0.2.0', '', '', '', '', {'x86_64': 'e' * 64, 'aarch64': 'f' * 64})
+        moved = tomllib.loads(install_pins.apply_pin(text, pin))
         for distro in ('fedora', 'arch'):
             core, app = moved[distro]['assistant']['archives']
             self.assertEqual((app['version'], app['sha256']), ('0.2.0', {'x86_64': 'e' * 64, 'aarch64': 'f' * 64}))
             self.assertEqual(app['entries'], MANIFEST[distro]['assistant']['archives'][1]['entries'])
             self.assertEqual(core, MANIFEST[distro]['assistant']['archives'][0])
-        self.assertEqual(len(installer.pin_entries([table for table in MANIFEST.values() if isinstance(table, dict)])),
-                         len(installer.pin_entries([MANIFEST['fedora']]))
-                         + len([item for section in installer.flatten_parts(MANIFEST['arch']).values() if isinstance(section, dict) for item in section.get('aur', ())]))
+        self.assertEqual(len(install_pins.pin_entries([table for table in MANIFEST.values() if isinstance(table, dict)])),
+                         len(install_pins.pin_entries([MANIFEST['fedora']]))
+                         + len([item for section in install_plan.flatten_parts(MANIFEST['arch']).values() if isinstance(section, dict) for item in section.get('aur', ())]))
 
 
 class AutostartTests(unittest.TestCase):
     def test_exec_arguments_follow_the_desktop_entry_rules(self):
-        self.assertEqual(installer.exec_argument('/home/a/.dotfiles/scripts/x.py'), '/home/a/.dotfiles/scripts/x.py')
+        self.assertEqual(install_steps.exec_argument('/home/a/.dotfiles/scripts/x.py'), '/home/a/.dotfiles/scripts/x.py')
         # Quoting escapes " ` $ \\ with a backslash, the string escaping doubles every backslash, % is doubled.
-        self.assertEqual(installer.exec_argument('/my "dots" $x 100%\\'), '"/my \\\\"dots\\\\" \\\\$x 100%%\\\\\\\\"')
+        self.assertEqual(install_steps.exec_argument('/my "dots" $x 100%\\'), '"/my \\\\"dots\\\\" \\\\$x 100%%\\\\\\\\"')
 
     def test_the_entry_names_the_repository(self):
-        current = installer.Plan(fake_distro(), '45', TABLE, [], ('core', 'plugins'))
-        self.assertIn(f'Exec=kitty --hold {installer.REPO}/scripts/install-desktop.py post --profiles core,plugins\n',
-                      installer.autostart_entry(current))
+        current = install_plan.Plan(fake_distro(), '45', TABLE, [], ('core', 'plugins'))
+        self.assertIn(f'Exec=kitty --hold {install_paths.REPO}/scripts/install-desktop.py post --profiles core,plugins\n',
+                      install_steps.autostart_entry(current))
 
 
 class CompositorGuardTests(unittest.TestCase):
@@ -1600,11 +1621,11 @@ class CompositorGuardTests(unittest.TestCase):
         distro.repo_missing.return_value = repos_missing
         distro.candidates.return_value = candidates
         with mock.patch('builtins.print') as shown:
-            installer.compositor_guard(plan(distro, profiles=profiles), ['hyprland', 'hyprland-devel', 'kitty'])
+            install_steps.compositor_guard(plan(distro, profiles=profiles), ['hyprland', 'hyprland-devel', 'kitty'])
         return [call.args[0] for call in shown.call_args_list]
 
     def test_an_unverified_build_is_named_before_the_install(self):
-        verified = installer.bundle.VERIFIED[0]
+        verified = bundle.VERIFIED[0]
         self.assertEqual(self.warnings({'hyprland': verified, 'hyprland-devel': verified}), [])
         shown = self.warnings({'hyprland': '9.9.9-1.fc45.x86_64', 'hyprland-devel': verified})
         self.assertEqual(len(shown), 1)
@@ -1665,12 +1686,12 @@ class FedoraTests(unittest.TestCase):
 
     def test_what_a_repository_needs_is_a_step_of_its_own_and_recorded(self):
         # dnf5-plugins for a copr, only while a repository that needs it is still to add, and before it.
-        titles = [step.title for step in installer.STEPS]
+        titles = [step.title for step in install_steps.STEPS]
         self.assertEqual(titles.index('repo tools') + 1, titles.index('repos'))
-        self.assertEqual(installer.repo_tools_pending(plan(fake_distro())), ['dnf5-plugins'])
-        self.assertEqual(installer.repo_tools_pending(plan(fake_distro(pending=False))), [])
+        self.assertEqual(install_steps.repo_tools_pending(plan(fake_distro())), ['dnf5-plugins'])
+        self.assertEqual(install_steps.repo_tools_pending(plan(fake_distro(pending=False))), [])
         record = {}
-        installer.repo_tools_remember(plan(fake_distro()), ['dnf5-plugins'], record)
+        install_steps.repo_tools_remember(plan(fake_distro()), ['dnf5-plugins'], record)
         self.assertEqual(record, {'packages': ['dnf5-plugins']})
         for name, repo in MANIFEST['fedora']['repos'].items():
             if repo['kind'] == 'copr':
@@ -1699,8 +1720,8 @@ class FedoraTests(unittest.TestCase):
 
     def test_an_excluded_package_is_never_also_wanted(self):
         fedora_table = MANIFEST['fedora']
-        wanted = {package for name in installer.PROFILES for package in fedora_table[name].get('packages', ())}
-        excluded = {package for name in installer.PROFILES for package in fedora_table[name].get('exclude', ())}
+        wanted = {package for name in install_paths.PROFILES for package in fedora_table[name].get('packages', ())}
+        excluded = {package for name in install_paths.PROFILES for package in fedora_table[name].get('exclude', ())}
         self.assertFalse(wanted & excluded)
 
     def test_a_replaced_package_is_looked_up_by_name(self):
@@ -1772,7 +1793,7 @@ class TouchHardwareTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / 'devices'
             path.write_text(text)
-            return installer.touch_hardware(path)
+            return install_plan.touch_hardware(path)
 
     def test_a_tablet_mode_switch(self):
         self.assertTrue(self.found('N: Name="Intel HID switches"\nB: PROP=0\nB: EV=21\nB: SW=22\n'))
@@ -1786,59 +1807,59 @@ class TouchHardwareTests(unittest.TestCase):
         self.assertFalse(self.found(lid + '\n' + touchpad))
 
     def test_no_file(self):
-        self.assertFalse(installer.touch_hardware(Path('/nonexistent/devices')))
+        self.assertFalse(install_plan.touch_hardware(Path('/nonexistent/devices')))
 
 
 class PartTests(unittest.TestCase):
     """Profiles in parts: each [<distro>.<profile>.parts.<part>] is the unit profile.part."""
 
     def test_both_distributions_have_the_same_units(self):
-        fedora = installer.units(installer.flatten_parts(copy.deepcopy(MANIFEST['fedora'])))
-        arch = installer.units(installer.flatten_parts(copy.deepcopy(MANIFEST['arch'])))
+        fedora = install_plan.units(install_plan.flatten_parts(copy.deepcopy(MANIFEST['fedora'])))
+        arch = install_plan.units(install_plan.flatten_parts(copy.deepcopy(MANIFEST['arch'])))
         self.assertEqual(fedora, arch)
-        self.assertEqual(installer.manifest_units(), fedora)
-        self.assertEqual([name for name in fedora if '.' not in name], list(installer.PROFILES))
+        self.assertEqual(install_plan.manifest_units(), fedora)
+        self.assertEqual([name for name in fedora if '.' not in name], list(install_paths.PROFILES))
 
     def test_every_part_says_whether_it_starts_checked(self):
         for distro in ('fedora', 'arch'):
-            table = installer.flatten_parts(copy.deepcopy(MANIFEST[distro]))
-            for name in installer.units(table):
+            table = install_plan.flatten_parts(copy.deepcopy(MANIFEST[distro]))
+            for name in install_plan.units(table):
                 if '.' in name:
-                    self.assertIn(table[name].get('default'), (True, False, *installer.DETECT), f'{distro} {name}')
+                    self.assertIn(table[name].get('default'), (True, False, *install_plan.DETECT), f'{distro} {name}')
                 else:
                     self.assertNotIn('default', table[name], name)
 
     def test_a_part_brings_its_profile_and_a_profile_takes_its_parts(self):
-        self.assertEqual(installer.normalized(('apps.zen', 'core')), ('core', 'apps', 'apps.zen'))
-        self.assertEqual(installer.with_parts(('gaming',)), ('gaming', 'gaming.steam', 'gaming.steam-hidpi', 'gaming.gamescope'))
-        self.assertEqual(installer.with_parts(('gaming.steam',)), ('gaming.steam',))
+        self.assertEqual(install_plan.normalized(('apps.zen', 'core')), ('core', 'apps', 'apps.zen'))
+        self.assertEqual(install_plan.with_parts(('gaming',)), ('gaming', 'gaming.steam', 'gaming.steam-hidpi', 'gaming.gamescope'))
+        self.assertEqual(install_plan.with_parts(('gaming.steam',)), ('gaming.steam',))
 
     def test_default_parts_by_detection(self):
-        table = installer.flatten_parts(copy.deepcopy(MANIFEST['fedora']))
+        table = install_plan.flatten_parts(copy.deepcopy(MANIFEST['fedora']))
         for found in (True, False):
-            with mock.patch.dict(installer.DETECT, {name: (lambda found=found: found) for name in installer.DETECT}):
-                parts = installer.default_parts('hardware', table)
+            with mock.patch.dict(install_plan.DETECT, {name: (lambda found=found: found) for name in install_plan.DETECT}):
+                parts = install_plan.default_parts('hardware', table)
             expected = ['hardware.intel', 'hardware.audio', 'hardware.camera', 'hardware.fingerprint', 'hardware.firmware'] if found else ['hardware.firmware']
             self.assertEqual(list(parts), expected)
-        self.assertEqual(installer.default_parts('apps', table), ('apps.zen', 'apps.loupe', 'apps.papers', 'apps.showtime'))
-        self.assertEqual(installer.default_parts('utils', table), ('utils.neovim', 'utils.gcc', 'utils.xclip', 'utils.unrar', 'utils.fuse'))
+        self.assertEqual(install_plan.default_parts('apps', table), ('apps.zen', 'apps.loupe', 'apps.papers', 'apps.showtime'))
+        self.assertEqual(install_plan.default_parts('utils', table), ('utils.neovim', 'utils.gcc', 'utils.xclip', 'utils.unrar', 'utils.fuse'))
 
     def test_defaults_bring_the_parts_of_the_default_profiles(self):
-        table = installer.flatten_parts(copy.deepcopy(MANIFEST['fedora']))
-        with mock.patch.object(installer, 'touch_hardware', return_value=False), \
-                mock.patch.dict(installer.DETECT, {name: (lambda: False) for name in installer.DETECT}):
-            self.assertEqual(installer.default_profiles(table), 'core,hardware,hardware.firmware,plugins,plugins.hyprspace,plugins.hyprglass,plugins.hyprcapture')
+        table = install_plan.flatten_parts(copy.deepcopy(MANIFEST['fedora']))
+        with mock.patch.object(install_plan, 'touch_hardware', return_value=False), \
+                mock.patch.dict(install_plan.DETECT, {name: (lambda: False) for name in install_plan.DETECT}):
+            self.assertEqual(install_plan.default_profiles(table), 'core,hardware,hardware.firmware,plugins,plugins.hyprspace,plugins.hyprglass,plugins.hyprcapture')
 
     def test_detection(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             cpuinfo = root / 'cpuinfo'
             cpuinfo.write_text('vendor_id\t: AuthenticAMD\n')
-            self.assertFalse(installer.detect_intel(cpuinfo))
+            self.assertFalse(install_plan.detect_intel(cpuinfo))
             cpuinfo.write_text('vendor_id\t: GenuineIntel\n')
-            self.assertTrue(installer.detect_intel(cpuinfo))
-            self.assertFalse(installer.detect_camera(root))
-            self.assertFalse(installer.detect_fingerprint(root))
+            self.assertTrue(install_plan.detect_intel(cpuinfo))
+            self.assertFalse(install_plan.detect_camera(root))
+            self.assertFalse(install_plan.detect_fingerprint(root))
 
             def device(kind, name, **files):
                 path = root / kind / name
@@ -1846,31 +1867,31 @@ class PartTests(unittest.TestCase):
                 for key, value in files.items():
                     (path / key).write_text(value + '\n')
             device('bus/usb/devices', '1-1', idVendor='04f3', idProduct='2513')
-            self.assertFalse(installer.detect_fingerprint(root))
+            self.assertFalse(install_plan.detect_fingerprint(root))
             device('bus/usb/devices', '1-2', idVendor='04f3', idProduct='0c4b')
-            self.assertTrue(installer.detect_fingerprint(root))
+            self.assertTrue(install_plan.detect_fingerprint(root))
             device('bus/pci/devices', '0000:00:05.0', vendor='0x8086', **{'class': '0x048000'})
-            self.assertTrue(installer.detect_camera(root))
+            self.assertTrue(install_plan.detect_camera(root))
 
     def test_load_plan_makes_each_part_a_table(self):
-        current = installer.load_plan(('core', 'apps', 'apps.zen'), {'ID': 'fedora', 'VERSION_ID': '45'})
+        current = install_plan.load_plan(('core', 'apps', 'apps.zen'), {'ID': 'fedora', 'VERSION_ID': '45'})
         self.assertIn('apps.zen', current.table)
         self.assertNotIn('parts', current.table['apps'])
-        self.assertIn('zen-browser', installer.wanted_packages(current))
-        self.assertNotIn('code', installer.wanted_packages(current))
+        self.assertIn('zen-browser', install_steps.wanted_packages(current))
+        self.assertNotIn('code', install_steps.wanted_packages(current))
 
 
 class UnitsFileTests(unittest.TestCase):
     """The installed units for Hyprland and the shell, written with the record."""
 
     def test_written_with_the_record_and_gone_with_the_desktop(self):
-        installer.save_record({'profiles': ['core', 'plugins', 'plugins.hyprspace']})
-        self.assertEqual(installer.UNITS.read_text(), 'core\nplugins\nplugins.hyprspace\n')
-        installer.save_record({'profiles': ['core'], 'uninstalled': True})
-        self.assertFalse(installer.UNITS.exists())
+        install_record.save_record({'profiles': ['core', 'plugins', 'plugins.hyprspace']})
+        self.assertEqual(install_paths.UNITS.read_text(), 'core\nplugins\nplugins.hyprspace\n')
+        install_record.save_record({'profiles': ['core'], 'uninstalled': True})
+        self.assertFalse(install_paths.UNITS.exists())
         # A record without profiles yet: no file, so everything counts.
-        installer.save_record({'packages': ['a']})
-        self.assertFalse(installer.UNITS.exists())
+        install_record.save_record({'packages': ['a']})
+        self.assertFalse(install_paths.UNITS.exists())
 
 
 if __name__ == '__main__':

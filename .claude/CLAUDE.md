@@ -22,7 +22,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 | `shell/.local/libexec/desktop/*.py` | Python helpers spawned by QML services and wrappers; `i18n.py` shares the QML catalogs |
 | `hypridle/ hyprlock/ hyprpaper/ gtk/ kitty/ fastfetch/ portals/ udiskie/ electron/ zsh/` | Plain config packages; `steam-hidpi/` is optional (`stow.py --with`) |
 | `docs/` | User guides (`guide/`), one page per area (`features/`), developer docs (`development/`) |
-| `scripts/` | `install-desktop.py` (and its guided front end `install-tui.py`) with `install/manifest.toml` (the only package list) and `install/fedora.py` / `install/arch.py`, `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, `check-links.py`, hyprpm plugin packaging |
+| `scripts/` | `install-desktop.py` (the command line; the installer is `install/install_*.py`, see [architecture](../docs/development/architecture.md#installer)) and its guided front end `install-tui.py`, with `install/manifest.toml` (the only package list) and `install/fedora.py` / `install/arch.py`, `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, `check-links.py`, hyprpm plugin packaging |
 | `.github/workflows/` | CI: `check.yml` runs `check.sh` on Fedora 45 and Arch on pushes to `main` and pull requests; `install.yml` runs the installer in a fresh Fedora 45 and Arch when it changes |
 
 ## Commands

@@ -4,6 +4,7 @@ import atexit
 import importlib.util
 import io
 from pathlib import Path
+import os
 import subprocess
 import sys
 import tempfile
@@ -13,21 +14,32 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parents[2]
 sys.dont_write_bytecode = True
+# Never the real state, even for a test that forgets to redirect a path: the installer's modules read XDG_STATE_HOME
+# when they are imported, and the record, the units file and the backups live under it.
+SANDBOX = tempfile.TemporaryDirectory()
+atexit.register(SANDBOX.cleanup)
+os.environ['XDG_STATE_HOME'] = SANDBOX.name
 sys.path.insert(0, str(REPO / 'scripts/install'))
+import install_paths  # noqa: E402
+import install_plan  # noqa: E402
+import install_record  # noqa: E402
+import install_steps  # noqa: E402
+import install_pins  # noqa: E402
+import install_undo  # noqa: E402
+import install_removal  # noqa: E402
+import install_run  # noqa: E402
+import arch  # noqa: E402
+import build  # noqa: E402
+import bundle  # noqa: E402
+# The command line, for the tests of main().
 spec = importlib.util.spec_from_file_location('install_desktop', REPO / 'scripts/install-desktop.py')
 installer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(installer)
-import arch  # noqa: E402
-sys.path.insert(0, str(REPO / 'scripts/hyprpm'))
-import build  # noqa: E402
-import bundle  # noqa: E402
 
-# Never the real state: apply writes its record there.
-SANDBOX = tempfile.TemporaryDirectory()
-atexit.register(SANDBOX.cleanup)
-installer.STATE = Path(SANDBOX.name)
-installer.RECORD = installer.STATE / 'install.json'
-installer.UNITS = installer.STATE / 'units'
+install_paths.STATE = Path(SANDBOX.name)
+install_paths.RECORD = install_paths.STATE / 'install.json'
+install_paths.UNITS = install_paths.STATE / 'units'
+install_paths.INTERFACE = install_paths.STATE / 'interface-before-theme.ini'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
 PROFILE_KEYS = {'repos', 'packages', 'services', 'user_services', 'disable', 'files', 'groups', 'stow', 'flatpaks',
@@ -120,8 +132,8 @@ class ManifestTests(unittest.TestCase):
     def setUp(self):
         self.arch = MANIFEST['arch']
         # Every unit: each profile, and each part as a table of its own.
-        table = installer.flatten_parts(self.arch)
-        self.profiles = {name: table[name] for name in installer.units(table)}
+        table = install_plan.flatten_parts(self.arch)
+        self.profiles = {name: table[name] for name in install_plan.units(table)}
         self.packages = {package for profile in self.profiles.values() for package in profile.get('packages', ())}
 
     def test_every_profile_exists_and_uses_known_keys(self):
@@ -189,7 +201,7 @@ class ManifestTests(unittest.TestCase):
 
     def test_personal_apps_are_opt_in(self):
         for profile in ('apps', 'utils', 'assistant', 'containers', 'radio', 'gaming'):
-            self.assertNotIn(profile, installer.DEFAULT_PROFILES.split(','))
+            self.assertNotIn(profile, install_paths.DEFAULT_PROFILES.split(','))
 
     def test_the_firmware_is_fedora_s(self):
         self.assertEqual(self.arch['tablet']['firmware'], MANIFEST['fedora']['tablet']['firmware'])
@@ -197,18 +209,18 @@ class ManifestTests(unittest.TestCase):
 
 class ReleaseTests(unittest.TestCase):
     def test_arch_loads_its_module(self):
-        loaded = installer.load_plan(('core',), {'ID': 'arch', 'BUILD_ID': 'rolling'})
+        loaded = install_plan.load_plan(('core',), {'ID': 'arch', 'BUILD_ID': 'rolling'})
         self.assertIs(loaded.distro, arch)
         self.assertEqual(loaded.release, 'rolling')
 
     def test_the_container_image_is_still_rolling(self):
         # The archlinux image adds a VERSION_ID: the date it was built.
-        loaded = installer.load_plan(('core',), {'ID': 'arch', 'BUILD_ID': 'rolling', 'VERSION_ID': '20261101.0.620205'})
+        loaded = install_plan.load_plan(('core',), {'ID': 'arch', 'BUILD_ID': 'rolling', 'VERSION_ID': '20261101.0.620205'})
         self.assertEqual(loaded.release, 'rolling')
 
     def test_a_derivative_is_not_arch(self):
         with mock.patch('builtins.print'), self.assertRaises(SystemExit) as caught:
-            installer.load_plan(('core',), {'ID': 'endeavouros', 'ID_LIKE': 'arch', 'BUILD_ID': 'rolling'})
+            install_plan.load_plan(('core',), {'ID': 'endeavouros', 'ID_LIKE': 'arch', 'BUILD_ID': 'rolling'})
         self.assertIn('not verified', str(caught.exception))
 
 
@@ -563,7 +575,7 @@ def aur_plan(versions):
     distro = mock.Mock(PROTECTED=arch.PROTECTED, MANAGER='pacman')
     distro.version.side_effect = lambda package: versions.get(package, '')
     distro.installed.side_effect = lambda package: bool(versions.get(package))
-    return installer.Plan(distro, 'rolling', TABLE, [], ('core', 'apps'))
+    return install_plan.Plan(distro, 'rolling', TABLE, [], ('core', 'apps'))
 
 
 class AurStepTests(unittest.TestCase):
@@ -576,15 +588,15 @@ class AurStepTests(unittest.TestCase):
         self.addCleanup(home.stop)
 
     def test_missing_or_another_version_is_pending(self):
-        self.assertEqual(installer.aur_pending(aur_plan({'p': '1.24b-1'})), ['zen-browser-bin 1.24b-1'])
-        self.assertEqual(installer.aur_pending(aur_plan({'zen-browser-bin': '1.23b-1', 'p': '1.24b-1'})),
+        self.assertEqual(install_steps.aur_pending(aur_plan({'p': '1.24b-1'})), ['zen-browser-bin 1.24b-1'])
+        self.assertEqual(install_steps.aur_pending(aur_plan({'zen-browser-bin': '1.23b-1', 'p': '1.24b-1'})),
                          ['zen-browser-bin 1.23b-1 -> 1.24b-1'])
-        self.assertEqual(installer.aur_pending(aur_plan({'zen-browser-bin': '1.24b-1', 'p': '1.24b-1'})), [])
+        self.assertEqual(install_steps.aur_pending(aur_plan({'zen-browser-bin': '1.24b-1', 'p': '1.24b-1'})), [])
 
     def test_the_version_of_a_srcinfo(self):
         text = 'pkgbase = p\n\tpkgver = 1.2\n\tpkgrel = 3\n\tepoch = 2\n\npkgname = p\n\tpkgver = 9\n'
-        self.assertEqual(installer.srcinfo_version(text), '2:1.2-3')
-        self.assertEqual(installer.srcinfo_version('pkgbase = p\n\tpkgver = 1.24b\n\tpkgrel = 1\n'), '1.24b-1')
+        self.assertEqual(install_steps.srcinfo_version(text), '2:1.2-3')
+        self.assertEqual(install_steps.srcinfo_version('pkgbase = p\n\tpkgver = 1.24b\n\tpkgrel = 1\n'), '1.24b-1')
 
     def built_by(self, srcinfo, items):
         commands = []
@@ -597,8 +609,8 @@ class AurStepTests(unittest.TestCase):
                 path.mkdir(parents=True, exist_ok=True)
                 (path / '.SRCINFO').write_text(srcinfo)
             return reply()
-        with mock.patch('subprocess.run', side_effect=run), mock.patch.object(installer, 'import_key') as key:
-            installer.aur_apply(current, items)
+        with mock.patch('subprocess.run', side_effect=run), mock.patch.object(install_steps, 'import_key') as key:
+            install_steps.aur_apply(current, items)
         return commands, current.distro.build_package, key
 
     def test_apply_builds_the_pinned_commit_as_the_user(self):
@@ -623,18 +635,18 @@ class AurStepTests(unittest.TestCase):
 
     def test_only_what_apply_installs_is_recorded(self):
         record = {}
-        installer.aur_remember(aur_plan({'p': '1.0-1'}), ['zen-browser-bin 1.24b-1', 'p 1.0-1 -> 1.24b-1'], record)
+        install_steps.aur_remember(aur_plan({'p': '1.0-1'}), ['zen-browser-bin 1.24b-1', 'p 1.0-1 -> 1.24b-1'], record)
         self.assertEqual(record['packages'], ['zen-browser-bin'])
 
     def test_uninstall_removes_the_checkouts(self):
         (self.home / '.cache/dotfiles/aur/p').mkdir(parents=True)
-        self.assertEqual(installer.unaur_pending(aur_plan({})), [str(self.home / '.cache/dotfiles/aur')])
-        installer.unaur_apply(aur_plan({}), [])
+        self.assertEqual(install_undo.unaur_pending(aur_plan({})), [str(self.home / '.cache/dotfiles/aur')])
+        install_undo.unaur_apply(aur_plan({}), [])
         self.assertFalse((self.home / '.cache/dotfiles/aur').exists())
-        self.assertEqual(installer.unaur_pending(aur_plan({})), [])
+        self.assertEqual(install_undo.unaur_pending(aur_plan({})), [])
 
     def test_the_aur_step_comes_after_the_packages(self):
-        titles = [step.title for step in installer.STEPS]
+        titles = [step.title for step in install_steps.STEPS]
         self.assertEqual(titles.index('aur'), titles.index('packages') + 1)
 
 
@@ -648,11 +660,11 @@ class ReconstructTests(unittest.TestCase):
         distro.installed.return_value = False
         distro.repo_missing.return_value = True
         distro.auth_reconstruct.return_value = []
-        current = installer.Plan(distro, 'rolling', {'core': {'packages': ['gdm']}, 'apps': {'aur': [ITEM]}}, [], ('core',))
-        with mock.patch.object(installer, 'query', return_value=reply('graphical.target')), \
-                mock.patch.object(installer, 'booted', return_value=False), mock.patch.object(installer, 'login_shell', return_value='/bin/bash'), \
+        current = install_plan.Plan(distro, 'rolling', {'core': {'packages': ['gdm']}, 'apps': {'aur': [ITEM]}}, [], ('core',))
+        with mock.patch.object(install_plan, 'query', return_value=reply('graphical.target')), \
+                mock.patch.object(install_plan, 'booted', return_value=False), mock.patch.object(install_steps, 'login_shell', return_value='/bin/bash'), \
                 mock.patch('grp.getgrnam', return_value=mock.Mock(gr_mem=[])):
-            record = installer.reconstruct(current)
+            record = install_undo.reconstruct(current)
         self.assertEqual(record['packages'], ['gdm.x86_64', 'zen-browser-bin.x86_64'])
         self.assertEqual(record['boot'], {'gdm': 'disabled'})
 
@@ -677,11 +689,11 @@ key = 'https://downloads.1password.com/linux/keys/1password.asc'
         with tempfile.TemporaryDirectory() as folder:
             (Path(folder) / 'manifest.toml').write_text(self.MANIFEST.format(zen='a' * 40, one='b' * 40))
             out = io.StringIO()
-            with mock.patch.object(installer, 'INSTALL', Path(folder)), mock.patch.object(installer, 'REPO', Path(folder)), \
-                    mock.patch.object(installer, 'aur_head', side_effect=lambda package: heads[package]), \
-                    mock.patch.object(installer, 'aur_srcinfo', side_effect=lambda package, commit: 'pkgbase = x\n\tpkgver = 1.25b\n\tpkgrel = 2\n'), \
+            with mock.patch.object(install_paths, 'INSTALL', Path(folder)), mock.patch.object(install_paths, 'REPO', Path(folder)), \
+                    mock.patch.object(install_pins, 'aur_head', side_effect=lambda package: heads[package]), \
+                    mock.patch.object(install_pins, 'aur_srcinfo', side_effect=lambda package, commit: 'pkgbase = x\n\tpkgver = 1.25b\n\tpkgrel = 2\n'), \
                     mock.patch('sys.stdout', out):
-                code = installer.pins(update)
+                code = install_pins.pins(update)
             return code, out.getvalue(), (Path(folder) / 'manifest.toml').read_text()
 
     def test_nothing_newer(self):
@@ -707,8 +719,8 @@ key = 'https://downloads.1password.com/linux/keys/1password.asc'
         self.assertIn('zen-browser-bin: the AUR did not answer.', out)
 
     def test_pins_needs_no_supported_distribution(self):
-        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(installer, 'pins', return_value=0) as pins, \
-                mock.patch.object(installer, 'load_plan') as load:
+        with mock.patch('os.geteuid', return_value=1000), mock.patch.object(install_pins, 'pins', return_value=0) as pins, \
+                mock.patch.object(install_plan, 'load_plan') as load:
             self.assertEqual(installer.main(['pins', '--update']), 0)
         pins.assert_called_once_with(True)
         load.assert_not_called()

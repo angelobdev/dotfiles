@@ -3,6 +3,7 @@
 import atexit
 import importlib.util
 import io
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -13,16 +14,28 @@ from unittest import mock
 
 REPO = Path(__file__).resolve().parents[2]
 sys.dont_write_bytecode = True
+# Never the real state, even for a test that forgets to redirect a path: the installer's modules read XDG_STATE_HOME
+# when they are imported, and the record, the units file and the backups live under it.
+SANDBOX = tempfile.TemporaryDirectory()
+atexit.register(SANDBOX.cleanup)
+os.environ['XDG_STATE_HOME'] = SANDBOX.name
+sys.path.insert(0, str(REPO / 'scripts/install'))
+import install_paths  # noqa: E402
+import install_plan  # noqa: E402
+import install_record  # noqa: E402
+import install_steps  # noqa: E402
+import install_pins  # noqa: E402
+import install_undo  # noqa: E402
+import install_removal  # noqa: E402
+import install_run  # noqa: E402
 spec = importlib.util.spec_from_file_location('install_tui', REPO / 'scripts/install-tui.py')
 tui = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(tui)
-installer = tui.installer
-# Never the real state: apply writes its record there.
-SANDBOX = tempfile.TemporaryDirectory()
-atexit.register(SANDBOX.cleanup)
-installer.STATE = Path(SANDBOX.name)
-installer.RECORD = installer.STATE / 'install.json'
-installer.UNITS = installer.STATE / 'units'
+
+install_paths.STATE = Path(SANDBOX.name)
+install_paths.RECORD = install_paths.STATE / 'install.json'
+install_paths.UNITS = install_paths.STATE / 'units'
+install_paths.INTERFACE = install_paths.STATE / 'interface-before-theme.ini'
 
 TABLE = {
     'core': {'packages': ['a', 'b'], 'repos': ['one'], 'services': ['s.service']},
@@ -33,12 +46,12 @@ FIRMWARE = {'product': 'Model', 'purpose': 'Rotation', 'source': 'Vendor pack', 
 
 
 def plan(profiles=('core', 'plugins'), firmware=None):
-    return installer.Plan(mock.Mock(), '45', TABLE, [], profiles, firmware)
+    return install_plan.Plan(mock.Mock(), '45', TABLE, [], profiles, firmware)
 
 
 class ChoiceTests(unittest.TestCase):
     def test_every_profile_is_described(self):
-        self.assertEqual(set(tui.DESCRIPTIONS), set(installer.manifest_units()))
+        self.assertEqual(set(tui.DESCRIPTIONS), set(install_plan.manifest_units()))
 
     def test_core_cannot_be_turned_off(self):
         self.assertEqual(tui.toggled(('core', 'apps'), 'core'), ('core', 'apps'))
@@ -53,7 +66,7 @@ class ChoiceTests(unittest.TestCase):
         self.assertEqual(tui.toggled(('core', 'apps', 'apps.zen', 'apps.vscode'), 'apps.zen'), ('core', 'apps', 'apps.vscode'))
 
     def test_the_accordion_shows_the_parts_of_open_profiles(self):
-        names = installer.manifest_units()
+        names = install_plan.manifest_units()
         self.assertNotIn('apps.zen', tui.visible_units(names, set()))
         rows = tui.visible_units(names, {'apps'})
         self.assertEqual(rows[rows.index('apps') + 1], 'apps.zen')
@@ -84,7 +97,7 @@ class ChoiceTests(unittest.TestCase):
     def test_finish_only_while_the_first_login_has_not(self):
         with tempfile.TemporaryDirectory() as folder, mock.patch.dict('os.environ', {'HYPRLAND_INSTANCE_SIGNATURE': 'sig'}):
             autostart = Path(folder) / 'desktop-finish-install.desktop'
-            with mock.patch.object(installer, 'AUTOSTART', autostart):
+            with mock.patch.object(install_paths, 'AUTOSTART', autostart):
                 self.assertFalse(tui.post_pending())
                 autostart.write_text('')
                 self.assertTrue(tui.post_pending())
@@ -104,18 +117,18 @@ class ReviewTests(unittest.TestCase):
         def noisy(_plan):
             print('Warning: this Hyprland build is not verified')
             return ['item']
-        review = tui.review_step(plan(), installer.Step('verify', noisy, None))
+        review = tui.review_step(plan(), install_steps.Step('verify', noisy, None))
         self.assertEqual(review, tui.Review('verify', ['item'], '', 'Warning: this Hyprland build is not verified'))
 
     def test_a_failed_check_is_shown_not_raised(self):
         def failing(_plan):
             raise RuntimeError('dnf check-upgrade failed: no network')
-        review = tui.review_step(plan(), installer.Step('upgrade', failing, None))
+        review = tui.review_step(plan(), install_steps.Step('upgrade', failing, None))
         self.assertEqual((review.items, review.error), ([], 'dnf check-upgrade failed: no network'))
 
     def test_printed_warnings_join_the_preflight_ones(self):
         reviews = [tui.Review('verify', [], '', 'Warning: not verified')]
-        with mock.patch.object(installer, 'preflight_warnings', return_value=['Only 10 GiB free on /.']):
+        with mock.patch.object(install_run, 'preflight_warnings', return_value=['Only 10 GiB free on /.']):
             self.assertEqual(tui.review_warnings(plan(), reviews), ['Only 10 GiB free on /.', 'not verified'])
 
     def test_rows_fold_and_unfold_by_step(self):
@@ -160,8 +173,8 @@ class CompletionTests(unittest.TestCase):
         self.assertEqual(tui.complete('/no/such/place/x'), '/no/such/place/x')
 
 
-ALL = {name: tui.Status([], 2) for name in installer.manifest_units()}
-FRESH = {name: tui.Status(['a', 'b'], 2) for name in installer.manifest_units()}
+ALL = {name: tui.Status([], 2) for name in install_plan.manifest_units()}
+FRESH = {name: tui.Status(['a', 'b'], 2) for name in install_plan.manifest_units()}
 
 
 class StatusTests(unittest.TestCase):
@@ -169,7 +182,7 @@ class StatusTests(unittest.TestCase):
         distro = mock.Mock()
         distro.missing.side_effect = lambda packages: [package for package in packages if package in missing]
         distro.installed.side_effect = lambda package: package == 'old' and not swapped
-        return tui.profile_status(installer.Plan(distro, '45', TABLE, [], ('core',)), name)
+        return tui.profile_status(install_plan.Plan(distro, '45', TABLE, [], ('core',)), name)
 
     def test_a_profile_counts_its_packages_and_swaps(self):
         self.assertEqual(self.status([], swapped=True), tui.Status([], 3))
@@ -182,7 +195,7 @@ class StatusTests(unittest.TestCase):
         distro.installed.return_value = False
         table = {**TABLE, 'plugins': {'packages': ['hyprland', 'hyprland-devel']}}
         with mock.patch('sys.stdout', new_callable=io.StringIO) as out:
-            status = tui.profile_status(installer.Plan(distro, '45', table, [], ('plugins',)), 'plugins')
+            status = tui.profile_status(install_plan.Plan(distro, '45', table, [], ('plugins',)), 'plugins')
         self.assertEqual(status.missing[:2], ['hyprland', 'hyprland-devel'])
         distro.candidates.assert_not_called()
         self.assertEqual(out.getvalue(), '')
@@ -193,7 +206,7 @@ class StatusTests(unittest.TestCase):
         distro.missing.return_value = []
         for installed, missing in (('', ['zen']), ('1-1', ['zen']), ('2-1', [])):
             distro.version.return_value = installed
-            self.assertEqual(tui.profile_status(installer.Plan(distro, 'rolling', table, [], ('core',)), 'apps'), tui.Status(missing, 2))
+            self.assertEqual(tui.profile_status(install_plan.Plan(distro, 'rolling', table, [], ('core',)), 'apps'), tui.Status(missing, 2))
         self.assertEqual(tui.summary(table, 'apps'), '1 packages; from the AUR: zen.')
 
     def test_stow_links_count_once_they_point_into_the_repository(self):
@@ -227,14 +240,14 @@ class StatusTests(unittest.TestCase):
         self.assertEqual(tui.preselected(statuses), ('core', 'apps', 'apps.zen'))
         # A profile with parts but none of them there is not.
         self.assertEqual(tui.preselected({**statuses, 'apps.zen': tui.Status(['zen-browser'], 1)}), ('core',))
-        self.assertEqual(tui.preselected(ALL), installer.manifest_units())
+        self.assertEqual(tui.preselected(ALL), install_plan.manifest_units())
 
     def test_a_fresh_system_starts_from_the_defaults(self):
         # Without the hardware the parts detect, hardware brings only its firmware updates.
-        with mock.patch.dict(installer.DETECT, {name: (lambda: False) for name in installer.DETECT}):
-            with mock.patch.object(installer, 'touch_hardware', return_value=False):
+        with mock.patch.dict(install_plan.DETECT, {name: (lambda: False) for name in install_plan.DETECT}):
+            with mock.patch.object(install_plan, 'touch_hardware', return_value=False):
                 self.assertEqual(tui.preselected({**FRESH, 'apps': tui.Status([], 2)}), ('core', 'hardware', 'hardware.firmware', 'plugins', 'plugins.hyprspace', 'plugins.hyprglass', 'plugins.hyprcapture'))
-            with mock.patch.object(installer, 'touch_hardware', return_value=True):
+            with mock.patch.object(install_plan, 'touch_hardware', return_value=True):
                 self.assertEqual(tui.preselected(FRESH), ('core', 'hardware', 'hardware.firmware', 'tablet', 'plugins', 'plugins.hyprspace', 'plugins.hyprglass', 'plugins.hyprcapture'))
 
     def test_a_partial_profile_names_what_is_missing(self):
@@ -274,7 +287,7 @@ class FlowTests(unittest.TestCase):
         return chosen.call_args.args[1].profiles
 
     def test_the_installed_profiles_start_on(self):
-        self.assertEqual(self.first_choice(ALL, False), installer.manifest_units())
+        self.assertEqual(self.first_choice(ALL, False), install_plan.manifest_units())
 
     def test_given_profiles_win_over_what_is_found(self):
         self.assertEqual(self.first_choice(ALL, True), ('core', 'radio'))
@@ -290,8 +303,8 @@ class FlowTests(unittest.TestCase):
     def removal_flow(self, running, outcome='apply'):
         menus = iter(['uninstall', 'quit'])
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', side_effect=lambda ui: next(menus)), \
-                mock.patch.object(installer, 'hyprland_running', return_value=running), \
-                mock.patch.object(installer, 'uninstall_plan', side_effect=lambda chosen: chosen._replace(record={'packages': []})), \
+                mock.patch.object(install_undo, 'hyprland_running', return_value=running), \
+                mock.patch.object(install_undo, 'uninstall_plan', side_effect=lambda chosen: chosen._replace(record={'packages': []})), \
                 mock.patch.object(tui, 'notice') as noticed, mock.patch.object(tui, 'review', return_value=outcome) as reviewed, \
                 mock.patch.object(tui, 'detect') as detected:
             result = tui.interface(None, plan())
@@ -316,8 +329,8 @@ class FlowTests(unittest.TestCase):
         menus = iter(['remove', 'quit'])
         self.kept = []
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', side_effect=lambda ui: next(menus)), \
-                mock.patch.object(installer, 'hyprland_running', return_value=running), \
-                mock.patch.object(installer, 'removal_plan', side_effect=lambda chosen, removed, keep: self.kept.append(keep) or chosen._replace(record={'removing': list(removed)})), \
+                mock.patch.object(install_undo, 'hyprland_running', return_value=running), \
+                mock.patch.object(install_removal, 'removal_plan', side_effect=lambda chosen, removed, keep: self.kept.append(keep) or chosen._replace(record={'removing': list(removed)})), \
                 mock.patch.object(tui, 'notice') as noticed, mock.patch.object(tui, 'review', return_value='apply') as reviewed, \
                 mock.patch.object(tui, 'detect', return_value=ALL), mock.patch.object(tui, 'choose_removal', return_value=chooser) as chose:
             result = tui.interface(None, plan(), False, start, (), removal)
@@ -367,36 +380,36 @@ class FlowTests(unittest.TestCase):
 class ApplyTests(unittest.TestCase):
     def apply(self, done, answer, booted=True, running=False, applied=()):
         calls = []
-        installer.APPLIED[:] = applied
+        install_run.APPLIED[:] = applied
         with mock.patch('subprocess.run', side_effect=lambda command, **_: calls.append(command)), \
-                mock.patch.object(installer, 'hyprland_running', return_value=running), \
-                mock.patch.object(installer, 'run_steps', side_effect=lambda *_: calls.append('steps') or done) as steps, \
-                mock.patch.object(installer, 'next_steps'), mock.patch.object(installer, 'booted', return_value=booted), \
+                mock.patch.object(install_undo, 'hyprland_running', return_value=running), \
+                mock.patch.object(install_run, 'run_steps', side_effect=lambda *_: calls.append('steps') or done) as steps, \
+                mock.patch.object(install_run, 'next_steps'), mock.patch.object(install_plan, 'booted', return_value=booted), \
                 mock.patch.object(tui, 'keep_sudo'), mock.patch('builtins.input', return_value=answer), mock.patch('builtins.print'):
             self.assertEqual(tui.apply(plan()), 0)
-        steps.assert_called_once_with(mock.ANY, False, installer.STEPS)
+        steps.assert_called_once_with(mock.ANY, False, install_steps.STEPS)
         return calls
 
     def test_a_removal_runs_the_uninstall_steps_after_checking_for_hyprland(self):
         removal = plan()._replace(record={'packages': ['a']})
-        with mock.patch('subprocess.run'), mock.patch.object(installer, 'run_steps', return_value=0) as steps, \
-                mock.patch.object(installer, 'refuse_uninstall') as refused, mock.patch.object(installer, 'after_uninstall') as after, \
+        with mock.patch('subprocess.run'), mock.patch.object(install_run, 'run_steps', return_value=0) as steps, \
+                mock.patch.object(install_run, 'refuse_uninstall') as refused, mock.patch.object(install_run, 'after_uninstall') as after, \
                 mock.patch.object(tui, 'keep_sudo'), mock.patch('builtins.print'):
             tui.apply(removal)
         refused.assert_called_once()
-        steps.assert_called_once_with(removal, False, installer.UNSTEPS)
+        steps.assert_called_once_with(removal, False, install_undo.UNSTEPS)
         after.assert_called_once_with(removal, 0)
 
     def test_removing_profiles_runs_their_steps_and_needs_a_console_only_for_plugins(self):
         for removed, console in ((['gaming'], False), (['gaming', 'plugins'], True)):
             removal = plan()._replace(record={'removing': removed, 'packages': ['steam']})
-            with mock.patch('subprocess.run'), mock.patch.object(installer, 'run_steps', return_value=2) as steps, \
-                    mock.patch.object(installer, 'refuse_uninstall') as refused, mock.patch.object(installer, 'after_uninstall') as after, \
-                    mock.patch.object(installer, 'load_record') as record, mock.patch.object(tui, 'keep_sudo'), \
+            with mock.patch('subprocess.run'), mock.patch.object(install_run, 'run_steps', return_value=2) as steps, \
+                    mock.patch.object(install_run, 'refuse_uninstall') as refused, mock.patch.object(install_run, 'after_uninstall') as after, \
+                    mock.patch.object(install_record, 'load_record') as record, mock.patch.object(tui, 'keep_sudo'), \
                     mock.patch('builtins.print'), mock.patch('builtins.input') as asked:
                 self.assertEqual(tui.apply(removal), 0)
             self.assertEqual(refused.called, console)
-            steps.assert_called_once_with(removal, False, installer.PROFILE_UNSTEPS)
+            steps.assert_called_once_with(removal, False, install_removal.PROFILE_UNSTEPS)
             after.assert_not_called()
             record.assert_not_called()
             asked.assert_not_called()
@@ -412,7 +425,7 @@ class ApplyTests(unittest.TestCase):
     def test_inside_the_desktop_a_reboot_only_for_firmware(self):
         self.assertNotIn(('sudo', 'systemctl', 'reboot'), self.apply(3, 'y', running=True))
         self.assertEqual(self.apply(3, 'y', running=True, applied=['firmware'])[-1], ('sudo', 'systemctl', 'reboot'))
-        installer.APPLIED.clear()
+        install_run.APPLIED.clear()
 
     def test_no_reboot_question_when_nothing_changed_or_in_a_container(self):
         self.assertNotIn(('sudo', 'systemctl', 'reboot'), self.apply(0, 'y'))
@@ -430,7 +443,7 @@ def reply(stdout='', returncode=0, stderr=''):
     return subprocess.CompletedProcess((), returncode, stdout, stderr)
 
 
-PIN = installer.Pin('clones', 'zsh-autocomplete', 'a' * 40, 'b' * 40, '26.08.04 -> 26.09.01', 'https://x/compare', '', '26.09.01')
+PIN = install_pins.Pin('clones', 'zsh-autocomplete', 'a' * 40, 'b' * 40, '26.08.04 -> 26.09.01', 'https://x/compare', '', '26.09.01')
 
 
 def source(key, selectable=True, pins=()):
@@ -461,7 +474,7 @@ class UpdateSourceTests(unittest.TestCase):
     def test_system_packages_come_from_the_bar_s_own_check(self):
         updates = mock.Mock(COMPOSITOR=('hyprland',))
         updates.system_updates.return_value = ([{'name': 'hyprland', 'version': '0.58.0-1', 'repo': ''}], None)
-        current = installer.Plan(mock.Mock(MANAGER='dnf'), '45', TABLE, [], ('core',))
+        current = install_plan.Plan(mock.Mock(MANAGER='dnf'), '45', TABLE, [], ('core',))
         found = tui.package_source(current, updates)
         self.assertEqual((found.summary, found.details, found.selectable), ('1 update (dnf)', ['hyprland 0.58.0-1'], True))
         self.assertIn('plugins rebuild', found.note)
@@ -476,8 +489,8 @@ class UpdateSourceTests(unittest.TestCase):
 
     def pins(self, newer, ours=True):
         table = {**TABLE, 'core': {**TABLE['core'], 'clones': [{'repo': 'https://github.com/a/b', 'commit': 'a' * 40, 'path': '.p/zsh-autocomplete'}]}}
-        with mock.patch.object(installer, 'newer_pin', return_value=newer), mock.patch.object(installer, 'clone_ours', return_value=ours):
-            return tui.pin_source(installer.Plan(mock.Mock(), '45', table, [], ('core',)), 'clones', 'zsh plugins')
+        with mock.patch.object(install_pins, 'newer_pin', return_value=newer), mock.patch.object(install_steps, 'clone_ours', return_value=ours):
+            return tui.pin_source(install_plan.Plan(mock.Mock(), '45', table, [], ('core',)), 'clones', 'zsh plugins')
 
     def test_a_newer_pin_can_be_applied(self):
         found = self.pins(PIN)
@@ -524,7 +537,7 @@ class UpdateSourceTests(unittest.TestCase):
         self.assertIn('git fetch failed', self.repository(fetch=reply('', 128, 'Permission denied')).error)
 
     def test_git_never_prompts(self):
-        with mock.patch.dict('os.environ', {}, clear=False), mock.patch.object(installer, 'query', return_value=reply('')), \
+        with mock.patch.dict('os.environ', {}, clear=False), mock.patch.object(install_plan, 'query', return_value=reply('')), \
                 mock.patch('subprocess.run', return_value=reply()) as run:
             tui.os.environ.pop('GIT_SSH_COMMAND', None)
             tui.git('fetch', '--quiet', 'origin')
@@ -568,7 +581,7 @@ class UpdateSourceTests(unittest.TestCase):
 
     def test_updates_are_offered_once_the_desktop_is_there(self):
         for present in (True, False):
-            with mock.patch.object(installer, 'desktop_present', return_value=present), mock.patch.object(tui, 'post_pending', return_value=False):
+            with mock.patch.object(install_undo, 'desktop_present', return_value=present), mock.patch.object(tui, 'post_pending', return_value=False):
                 self.assertEqual('updates' in [key for key, _, _ in tui.menu_entries()], present)
 
 
@@ -576,7 +589,7 @@ class UpdateFlowTests(unittest.TestCase):
     def interface(self, outcome, recorded=('core', 'gaming'), present=True, statuses=ALL, start='menu'):
         menus = iter(['updates', 'quit'])
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', side_effect=lambda ui: next(menus)), \
-                mock.patch.object(installer, 'desktop_present', return_value=present), \
+                mock.patch.object(install_undo, 'desktop_present', return_value=present), \
                 mock.patch.object(tui, 'recorded_profiles', return_value=recorded), \
                 mock.patch.object(tui, 'detect', return_value=statuses) as detected, mock.patch.object(tui, 'notice') as noticed, \
                 mock.patch.object(tui, 'updates_screen', return_value=outcome) as screen:
@@ -603,7 +616,7 @@ class UpdateFlowTests(unittest.TestCase):
 
     def test_updates_can_be_the_first_screen_and_go_back_to_the_menu(self):
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', return_value='quit') as shown, \
-                mock.patch.object(installer, 'desktop_present', return_value=True), mock.patch.object(tui, 'recorded_profiles', return_value=('core',)), \
+                mock.patch.object(install_undo, 'desktop_present', return_value=True), mock.patch.object(tui, 'recorded_profiles', return_value=('core',)), \
                 mock.patch.object(tui, 'updates_screen', return_value=('back', None)):
             self.assertIsNone(tui.interface(None, plan(), False, 'updates'))
         shown.assert_called_once()
@@ -611,12 +624,12 @@ class UpdateFlowTests(unittest.TestCase):
     def test_the_record_names_the_profiles_unless_the_desktop_was_removed(self):
         for record, expected in (({'profiles': ['gaming', 'core', 'apps']}, ('core', 'apps', 'gaming')), ({'profiles': ['radio']}, ('core', 'radio')),
                                  ({}, ()), ({'profiles': ['core'], 'uninstalled': True}, ())):
-            with mock.patch.object(installer, 'load_record', return_value=record):
+            with mock.patch.object(install_record, 'load_record', return_value=record):
                 self.assertEqual(tui.recorded_profiles(), expected)
 
     def test_the_flag_opens_the_updates_screen(self):
         with mock.patch('os.geteuid', return_value=1000), mock.patch('sys.stdin'), mock.patch('sys.stdout'), \
-                mock.patch.object(installer, 'load_plan', return_value=plan()), mock.patch.object(installer, 'refuse'), \
+                mock.patch.object(install_plan, 'load_plan', return_value=plan()), mock.patch.object(install_run, 'refuse'), \
                 mock.patch('curses.wrapper', return_value=None) as wrapper, mock.patch('builtins.print'):
             tui.main(['--updates'])
             self.assertEqual(wrapper.call_args.args[3], 'updates')
@@ -642,9 +655,9 @@ class ApplyUpdatesTests(unittest.TestCase):
             manifest.write_text(self.MANIFEST)
             with mock.patch.object(tui, 'MANIFEST', manifest), mock.patch.object(tui, 'REPO', Path(folder)), \
                     mock.patch('subprocess.run', side_effect=lambda command, **_: calls.append(command)), \
-                    mock.patch.object(installer, 'query', return_value=reply('')), \
-                    mock.patch.object(installer, 'load_plan', side_effect=lambda profiles, firmware=None: plan(profiles)) as loaded, \
-                    mock.patch.object(installer, 'run_steps', side_effect=lambda current, preview, steps: calls.append([step.title for step in steps])), \
+                    mock.patch.object(install_plan, 'query', return_value=reply('')), \
+                    mock.patch.object(install_plan, 'load_plan', side_effect=lambda profiles, firmware=None: plan(profiles)) as loaded, \
+                    mock.patch.object(install_run, 'run_steps', side_effect=lambda current, preview, steps: calls.append([step.title for step in steps])), \
                     mock.patch.object(tui, 'keep_sudo'), mock.patch.object(tui, 'refresh_bar', side_effect=lambda: calls.append('bar')), \
                     mock.patch.object(bundle_module(), 'status', return_value='current'), mock.patch('builtins.print'):
                 self.assertEqual(tui.apply_updates(plan(), picked), 0)
@@ -689,16 +702,16 @@ class ApplyUpdatesTests(unittest.TestCase):
 
     def test_a_pull_links_new_files_then_reloads_what_changed(self):
         calls = self.after_pull(['hypr/.config/hypr/config/new.lua', 'quickshell/.config/quickshell/desktop/New.qml'], True)
-        self.assertEqual(calls[0], installer.stow_command(plan(), 'apply'))
+        self.assertEqual(calls[0], install_steps.stow_command(plan(), 'apply'))
         self.assertEqual(calls[1], ('hyprctl', 'reload'))
         self.assertEqual(calls[2][:2], ('hyprctl', 'eval'))
         self.assertIn('desktop-shell restart', calls[2][2])
 
     def test_a_pull_of_docs_only_links_and_restarts_nothing(self):
-        self.assertEqual(self.after_pull(['docs/README.md'], True), [installer.stow_command(plan(), 'apply')])
+        self.assertEqual(self.after_pull(['docs/README.md'], True), [install_steps.stow_command(plan(), 'apply')])
 
     def test_outside_the_session_a_pull_only_links(self):
-        self.assertEqual(self.after_pull(['quickshell/x.qml'], False), [installer.stow_command(plan(), 'apply')])
+        self.assertEqual(self.after_pull(['quickshell/x.qml'], False), [install_steps.stow_command(plan(), 'apply')])
 
     def test_a_pull_that_brought_nothing_does_nothing(self):
         self.assertEqual(self.after_pull([], True), [])
@@ -764,7 +777,7 @@ class HeadlessTests(unittest.TestCase):
     def run_headless(self, keys, pullable=True):
         source = tui.Source('repository', 'Repository', '2 commits behind origin/main', [], '', pullable)
         with mock.patch.object(tui, 'recorded_profiles', return_value=('core',)), \
-                mock.patch.object(installer, 'load_plan', return_value=plan(('core',))), mock.patch.object(installer, 'refuse'), \
+                mock.patch.object(install_plan, 'load_plan', return_value=plan(('core',))), mock.patch.object(install_run, 'refuse'), \
                 mock.patch.object(tui, 'repository_source', return_value=source), \
                 mock.patch.object(tui, 'git', return_value=subprocess.CompletedProcess([], 0, 'abc\n', '')), \
                 mock.patch('subprocess.run') as run, mock.patch.object(tui, 'after_pull') as after, \
@@ -798,10 +811,10 @@ class HeadlessTests(unittest.TestCase):
 
 class PluginPartTests(unittest.TestCase):
     def test_a_plugin_part_is_there_when_its_plugin_is_built(self):
-        table = installer.flatten_parts(tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text())['fedora'])
-        current = installer.Plan(mock.Mock(), '45', table, [], ('core',))
+        table = install_plan.flatten_parts(tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text())['fedora'])
+        current = install_plan.Plan(mock.Mock(), '45', table, [], ('core',))
         current.distro.installed_names.return_value = []
-        with mock.patch.object(installer, 'packages_pending', return_value=[]), \
+        with mock.patch.object(install_steps, 'packages_pending', return_value=[]), \
                 mock.patch.object(tui.bundle, 'repository_state', return_value={'Hyprspace': {'failed': False}, 'hyprglass': {'failed': True}}):
             self.assertEqual(tui.profile_status(current, 'plugins.hyprspace'), tui.Status([], 1))
             self.assertEqual(tui.profile_status(current, 'plugins.hyprglass'), tui.Status(['hyprglass'], 1))
