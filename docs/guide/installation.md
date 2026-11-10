@@ -204,6 +204,8 @@ It undoes the same way as the uninstall, step by step, but only what the record 
 
 `core` is the desktop itself: removing it is [Removal](#removal). `plugins` goes only from a console with Hyprland logged out, as the whole desktop does: without its packages the plugins can neither be checked at login nor rebuilt, so their builds go too. What the installer did not record (an install from before the record, whose packages came then) stays: the preview shows what is left to undo.
 
+A unit installed without a record of it (Herdr from its own installer, say) stays as well, and the record names it from then on: the guided installer and Settings pass what they find installed (`--keep`), so the units file the removal writes does not hide the AI block or anything else that is there. The preview says so (`assistant is installed, without a record so far`).
+
 ### Profiles in Settings
 
 Settings → System → Profiles (`desktop-shell toggle settings system/profiles`) lists every profile with its description and what of it is on this system, as the profiles screen of the guided installer reads it (`profiles.py list`): installed, partly installed (how much of it), not installed, or installed but not by the installer (Herdr from its own installer, say), which the installer has no record of and does not remove. **Install** (**Complete** for one partly there) and **Remove** show the installer's plan in the tab first:

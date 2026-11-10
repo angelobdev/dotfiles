@@ -301,9 +301,10 @@ class FlowTests(unittest.TestCase):
 
     def profile_removal(self, running, start='menu', removal=(), chooser=('next', ('gaming',))):
         menus = iter(['remove', 'quit'])
+        self.kept = []
         with mock.patch.object(tui, 'Screen'), mock.patch.object(tui, 'menu', side_effect=lambda ui: next(menus)), \
                 mock.patch.object(installer, 'hyprland_running', return_value=running), \
-                mock.patch.object(installer, 'removal_plan', side_effect=lambda chosen, removed: chosen._replace(record={'removing': list(removed)})), \
+                mock.patch.object(installer, 'removal_plan', side_effect=lambda chosen, removed, keep: self.kept.append(keep) or chosen._replace(record={'removing': list(removed)})), \
                 mock.patch.object(tui, 'notice') as noticed, mock.patch.object(tui, 'review', return_value='apply') as reviewed, \
                 mock.patch.object(tui, 'detect', return_value=ALL), mock.patch.object(tui, 'choose_removal', return_value=chooser) as chose:
             result = tui.interface(None, plan(), False, start, (), removal)
@@ -314,6 +315,13 @@ class FlowTests(unittest.TestCase):
         self.assertEqual((action, chosen.record), ('uninstall', {'removing': ['gaming']}))
         chose.assert_called_once()
         noticed.assert_not_called()
+
+    def test_a_removal_keeps_what_is_installed_without_a_record(self):
+        with mock.patch.object(tui, 'recorded_profiles', return_value=('core', 'gaming')):
+            self.profile_removal(running=False)
+        # Everything is installed here (ALL): what the record lacks stays, but gaming and its parts, which go.
+        self.assertIn('assistant', self.kept[0])
+        self.assertFalse({'core', 'gaming', 'gaming.steam'} & set(self.kept[0]))
 
     def test_remove_starts_on_the_review(self):
         (action, chosen), _, _, chose = self.profile_removal(running=False, start='removal', removal=('media',))

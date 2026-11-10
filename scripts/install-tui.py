@@ -1036,9 +1036,15 @@ def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
             if ui.frame('Remove profiles', 'Ctrl+C quits') is not None:
                 ui.wrap(2, 'Reading what the installer set up...')
                 ui.window.refresh()
+            if statuses is None:
+                statuses = detect(ui, plan)
+            # What is installed without a record stays, and is recorded: the units file then keeps it.
+            going, recorded = installer.with_parts(removal), recorded_profiles()
+            keep = tuple(name for name in installer.manifest_units()
+                         if name != 'core' and name not in going and name not in recorded and unit_installed(statuses, name))
             try:
                 with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-                    current = installer.removal_plan(plan, removal)
+                    current = installer.removal_plan(plan, removal, keep=keep)
             except (subprocess.CalledProcessError, RuntimeError, OSError) as error:
                 notice(ui, 'Remove profiles', f'What the installer set up could not be read: {error}')
                 continue

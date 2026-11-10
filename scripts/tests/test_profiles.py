@@ -109,6 +109,12 @@ class ProfilesTests(unittest.TestCase):
         self.assertEqual(value['preview'][-3:], ['dry-run', '--remove', 'gaming.steam-hidpi'])
         self.assertEqual(value['apply'][-3:], ['apply', '--remove', 'gaming.steam-hidpi'])
 
+    def test_a_removal_keeps_what_is_there_without_a_record(self):
+        with mock.patch.object(profiles, 'present_units', return_value={'assistant', 'gaming', 'gaming.steam-hidpi'}):
+            value = self.plan('remove', 'gaming.steam-hidpi')
+        # gaming is recorded, steam-hidpi goes: only the assistant is kept, and recorded.
+        self.assertEqual(value['apply'][-5:], ['apply', '--remove', 'gaming.steam-hidpi', '--keep', 'assistant'])
+
     def test_a_change_adds_then_removes(self):
         value = self.plan('change', 'apps.vscode', 'gaming.steam')
         self.assertEqual(value['apply'][1:], [str(Path(profiles.__file__).resolve()), 'run', 'apply', 'apps.vscode', 'gaming.steam'])
@@ -118,6 +124,12 @@ class ProfilesTests(unittest.TestCase):
                 mock.patch('subprocess.run', side_effect=lambda command: calls.append(command) or mock.Mock(returncode=0)):
             self.assertEqual(profiles.run('apply', 'apps.vscode', 'gaming.steam'), 0)
         self.assertEqual([command[2:] for command in calls], [['apply', '--profiles', 'core,apps,apps.vscode'], ['apply', '--remove', 'gaming.steam']])
+        calls.clear()
+        with mock.patch.object(profiles, 'installer_screens', return_value=TUI), mock.patch.object(TUI, 'recorded_profiles', return_value=('core', 'gaming')), \
+                mock.patch.object(profiles, 'present_units', return_value={'assistant', 'gaming'}), \
+                mock.patch('subprocess.run', side_effect=lambda command: calls.append(command) or mock.Mock(returncode=0)):
+            self.assertEqual(profiles.run('apply', '-', 'gaming.steam'), 0)
+        self.assertEqual([command[2:] for command in calls], [['apply', '--remove', 'gaming.steam', '--keep', 'assistant']])
 
     def test_removing_plugins_waits_for_a_session_without_hyprland(self):
         self.assertNotEqual(self.plan('remove', 'plugins', running=True)['blocked'], '')
