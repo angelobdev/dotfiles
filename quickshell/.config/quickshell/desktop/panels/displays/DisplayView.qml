@@ -17,18 +17,18 @@ ColumnLayout {
     property bool shown: false
     readonly property Item focusItem: root
     spacing: 14
-    property var monitors: []
+    readonly property var monitors: HyprSettings.monitorList
     property string mode: "extend"
     readonly property bool several: monitors.filter(m => m.name !== "FALLBACK").length > 1
     // The same names config/displays.lua looks for.
-    readonly property bool laptop: monitors.some(m => /^(eDP|LVDS|DSI)-/.test(m.name))
+    readonly property bool laptop: monitors.some(m => HyprSettings.isPanel(m.name))
     function choose(name) {
         mode = name;
         Quickshell.execDetached(["hyprctl", "eval", "desktop_display_mode(\"" + name + "\")"]);
         refresh.restart();
     }
     function update() {
-        lister.running = true;
+        HyprSettings.listMonitors();
         state.reload();
     }
     // A panel created open sets shown before any change is seen, hence both.
@@ -46,18 +46,7 @@ ColumnLayout {
     Timer {
         id: refresh
         interval: 400
-        onTriggered: lister.running = true
-    }
-    Process {
-        id: lister
-        command: ["hyprctl", "monitors", "all", "-j"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    root.monitors = JSON.parse(text);
-                } catch (failure) {}
-            }
-        }
+        onTriggered: HyprSettings.listMonitors()
     }
     FileView {
         id: state

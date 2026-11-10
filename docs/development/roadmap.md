@@ -335,6 +335,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #97: the arrival times of notifications were never dropped, and the whole map was copied at each arrival; only the live ones are kept (2026-11-10).
   - [x] #98: an Arch removal review parsed `pacman.log` and `pacman -Qi` about 6-10 times; both parsed answers are now kept in the installer's answer cache until the next change (2026-11-10).
   - [x] #99: the updates check started `git config core.sshCommand` before each of its git calls (14 processes for 7); the git environment is worked out once per run (2026-11-10).
+  - [x] #100: the Displays panel, Settings → Displays and the battery panel each ran `hyprctl monitors` and kept their own list (twice on the same Settings page), with three copies of the panel name test; `HyprSettings` now holds one listing and `isPanel()` (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
