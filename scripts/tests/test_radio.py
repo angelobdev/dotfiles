@@ -440,9 +440,14 @@ class ConcurrentPlayTests(unittest.TestCase):
                 self.assertEqual(run.wait(timeout=30), 0, run.stderr.read())
             state = json.loads((root / 'run/desktop-shell/radio.json').read_text())
             time.sleep(0.2)
-            alive = subprocess.run(['pgrep', '-f', '-x', 'sleep 30'], capture_output=True, text=True).stdout.split()
-            mine = [pid for pid in alive if Path(f'/proc/{pid}/environ').exists()
-                    and str(root / 'run').encode() in Path(f'/proc/{pid}/environ').read_bytes()]
+            mine = []
+            for process in Path('/proc').iterdir():
+                try:
+                    if (process / 'cmdline').read_bytes() == b'sleep\x0030\x00' and \
+                            str(root / 'run').encode() in (process / 'environ').read_bytes():
+                        mine.append(process.name)
+                except OSError:
+                    continue
             try:
                 self.assertEqual(mine, [str(state['pid'])])
             finally:
