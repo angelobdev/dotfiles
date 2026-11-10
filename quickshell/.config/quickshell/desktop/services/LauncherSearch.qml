@@ -40,22 +40,26 @@ Singleton {
         onTriggered: {
             const text = root.query.trim();
             if (/[0-9]/.test(text) && text.length <= 200) {
-                calculator.asked = text;
+                calculator.pending = text;
                 calculator.command = ["qalc", "-t", "-s", "decimal comma off", root.expression(text)];
                 calculator.running = false;
                 calculator.running = true;
             }
             if (text.length >= 3 && Config.launcherFiles) {
-                finder.asked = text;
+                finder.pending = text;
                 finder.command = ["fd", "--type", "f", "--fixed-strings", "--ignore-case", "--max-results", "8", "--", text, Quickshell.env("HOME")];
                 finder.running = false;
                 finder.running = true;
             }
         }
     }
+    // What a run answers is set when it starts: a run killed for a newer query reports its output after the newer
+    // query was asked for, and before the newer run starts (Store.qml does the same).
     Process {
         id: calculator
         property string asked: ""
+        property string pending: ""
+        onStarted: asked = pending
         stdout: StdioCollector {
             onStreamFinished: {
                 if (calculator.asked !== root.query.trim())
@@ -73,6 +77,8 @@ Singleton {
     Process {
         id: finder
         property string asked: ""
+        property string pending: ""
+        onStarted: asked = pending
         stdout: StdioCollector {
             onStreamFinished: {
                 if (finder.asked === root.query.trim())

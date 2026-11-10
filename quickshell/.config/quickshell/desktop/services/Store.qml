@@ -69,7 +69,7 @@ Singleton {
     function run(process, args) {
         process.command = ["python3", helper].concat(args);
         if (process === searcher) {
-            searcher.asked = asked();
+            searcher.pending = asked();
             searching = true;
         }
         process.running = true;
@@ -84,9 +84,13 @@ Singleton {
             };
         }
     }
+    // The search a run answers is set when it starts, not when it is asked for: the output of a run killed for a
+    // newer one is collected after the newer one was asked for, and before it starts, so it never passes as its answer.
     Process {
         id: searcher
         property string asked: ""
+        property string pending: ""
+        onStarted: asked = pending
         stdout: StdioCollector {
             onStreamFinished: {
                 if (searcher.asked !== root.asked())

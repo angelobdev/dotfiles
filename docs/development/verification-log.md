@@ -1114,3 +1114,9 @@ Reported by the user after the merges of the day:
 
 - Each `NetworkView` bound `scannerEnabled` of every Wi-Fi device to its own `shown`. With the panel closing (it stays loaded for a minute) and Settings → Network opening, the panel wrote `false` last and the Settings page stayed without scanning. `NetworkInfo` now keeps the views on screen (`watch(view, shown)`, on show, hide, creation and destruction) and is the only one to bind `scannerEnabled`, to "any view on screen and Wi-Fi on".
 - The live shell reloaded with no errors (one intermediate save had two `onShownChanged` handlers; the final file has one). Not tried on screen: it needs the panels opened. `check.sh` passes.
+
+## Answers of killed searches (#79), 2026-11-10
+
+- A throwaway Quickshell config (no windows) showed the order when a running `Process` is set to `running = false` and started again in the same tick with a new command: the killed run's collector finishes with its partial output, then it exits (code 15), then the new run starts. Store and the launcher set the query a run answers before that, so the killed run's output passed the check (the Store showed "unavailable" and stopped its spinner; the launcher showed files for the older text).
+- `Store.qml` (`searcher`) and `LauncherSearch.qml` (`calculator`, `finder`) now keep the query in `pending` and copy it to `asked` in `onStarted`. The same throwaway config with that pattern accepted only the new run's output.
+- The live shell reloaded with no errors; `check.sh` passes.
