@@ -102,7 +102,18 @@ Singleton {
         writer.command = ["python3", helper, "set", JSON.stringify(inFlight.backend), String(inFlight.percent)];
         writer.running = true;
     }
-    Component.onCompleted: refresh()
+    Component.onCompleted: {
+        refresh();
+        watcher.running = Config.osdEnabled;
+    }
+    // Set here, not bound: the restart below assigns running, which would drop a binding, and then turning the
+    // OSD off would leave the watcher running.
+    Connections {
+        target: Config
+        function onOsdEnabledChanged() {
+            watcher.running = Config.osdEnabled;
+        }
+    }
     onActiveChanged: if (active)
         refresh()
     Connections {
@@ -152,7 +163,6 @@ Singleton {
         }
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch"])
-        running: Config.osdEnabled
         stdout: SplitParser {
             onRead: data => {
                 try {
