@@ -281,6 +281,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #71: Keep awake said On after its `systemd-inhibit` had exited; the inhibitor now starts again, with `Backoff`, and logs its stderr (2026-11-10).
   - [x] #72: the 15-second display revert lived in the Settings window, which can be dropped before it fires; the countdown and the settings from before are now in `HyprSettings` (2026-11-10).
   - [x] #73: the network panel and Settings → Network each wrote the Wi-Fi `scannerEnabled`, the last one winning; `NetworkInfo` now owns it and scans while any network view is on screen (2026-11-10).
+  - [x] #74: Escape in a Settings text or time field assigned its text, so the field stopped following its setting and could write an old value back after Reset; it is bound again instead (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
