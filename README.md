@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img alt="The Theming panel switching themes live: wallpaper, shell, terminal and borders change together" src="docs/screenshots/themes.webp">
+  <img alt="Settings → Appearance applying each theme in turn: wallpaper, shell, bar, dock and borders change together" src="docs/screenshots/themes.webp">
 </p>
 
 ## Highlights
@@ -29,14 +29,6 @@ One shell, no external applets: bar, launcher, Control Center, dock, notificatio
 </p>
 
 `Super + I` opens one Settings panel for network, Bluetooth, displays, sound, power, appearance, the desktop, the AI assistant, keyboard, tablet and privacy. Its **System** section looks after the system with no terminal: it checks for updates and applies them, adds and removes [installer profiles](docs/guide/installation.md#profiles-in-settings) and rebuilds the [Hyprland plugins](docs/guide/plugins.md), in the background, behind one prompt. That prompt is the shell's own Polkit agent: on a machine with a fingerprint reader it asks for the fingerprint first, and **Use password** is one tap away.
-
-### Radio and music
-
-<p align="center">
-  <img alt="The Radio panel: the station list filtered as you type, then the video of the DJ set playing inside the panel" src="docs/screenshots/radio.webp" width="640">
-</p>
-
-`Super + M` opens the [Radio panel](docs/features/radio.md): web radio stations and vinyl DJ sets in categories, YouTube mixes and playlists found as you type, and the ones you save. The sound plays in an mpv of its own, on MPRIS like any other player, so the bar, the lock screen and the media keys control it; the video, when you want it, plays in the panel.
 
 ### An installer in profiles
 
@@ -53,12 +45,12 @@ The [installer](docs/guide/installation.md) comes in profiles: `core` is the des
 | --- | --- |
 | ![The application launcher](docs/screenshots/launcher.webp) | ![The Control Center](docs/screenshots/control-center.webp) |
 | **Launcher.** Apps as you type, then files, sums and unit conversions. | **Control Center.** Network, audio, brightness, media and switches. |
-| ![The Theming panel](docs/screenshots/theming.webp) | ![Icon themes from the KDE Store in the Theming panel](docs/screenshots/kde-store.webp) |
-| **[Themes that reach everything](docs/features/theming.md).** Shell, terminal, GTK and Qt apps, lock screen, wallpapers, fonts and icons in one click: eight themes, liquid Glass and High Contrast among them, plus one drawn from your wallpaper. | **KDE Store.** Cursor and icon themes, searched and installed in place. |
+| ![Settings → Appearance, with the theme cards](docs/screenshots/theming.webp) | ![The Radio panel: the station list filtered as you type, then the video of the DJ set playing inside the panel](docs/screenshots/radio.webp) |
+| **[Themes that reach everything](docs/features/theming.md).** Shell, terminal, GTK and Qt apps, lock screen, wallpapers, fonts and icons in one click: eight themes, liquid Glass and High Contrast among them, plus one drawn from your wallpaper, and cursor and icon themes from the KDE Store. | **[Radio and music](docs/features/radio.md).** `Super + M`: web radio stations and vinyl DJ sets, YouTube mixes and playlists found as you type, and the ones you save. The sound plays in an mpv of its own, on MPRIS like any other player, and the video, when you want it, in the panel. |
 | ![Notifications stacked in decks](docs/screenshots/notifications.webp) | ![The emoji picker](docs/screenshots/emoji.webp) |
 | **[Notifications in decks](docs/features/notifications.md).** One deck per app, or per site for browsers, opened on hover or tap. | **Emoji.** Search by name or browse by group, and paste into the focused window. |
-| ![The on-screen keyboard with word suggestions](docs/screenshots/keyboard.webp) | ![The AI console](docs/screenshots/console.webp) |
-| **[On-screen keyboard](docs/features/on-screen-keyboard.md).** Slide between keys, hit likely letters more easily, tap suggestions in Italian and English. It learns your words, and nothing you type leaves the machine. | **[AI console](docs/features/ai-assistant.md).** Claude Code, Codex or any coding agent dropping down from the bar, with a state icon, usage meters and a notification when it needs you. |
+| ![The on-screen keyboard with word suggestions](docs/screenshots/keyboard.webp) | ![The AI console: the Herdr app with Claude Code answering a question](docs/screenshots/console.webp) |
+| **[On-screen keyboard](docs/features/on-screen-keyboard.md).** Slide between keys, hit likely letters more easily, tap suggestions in Italian and English. It learns your words, and nothing you type leaves the machine. | **[AI console](docs/features/ai-assistant.md).** Claude Code, Codex or any coding agent dropping down from the bar in the Herdr app, with a state icon, usage meters and a notification when it needs you. |
 
 - **[A real tablet mode](docs/features/tablet-and-touch.md).** Fold the laptop and the shell grows its touch targets, the display follows the sensor, and gestures take over. Gesture touches never reach the app underneath, so a swipe over a video does not pause it.
 - **The small things.** Italian and English everywhere, Alt + Tab, per-app volume, a color picker and text from the screen, a camera and microphone indicator, Steam and gamescope launchers tuned for HiDPI, automounted drives, fingerprint unlock.
