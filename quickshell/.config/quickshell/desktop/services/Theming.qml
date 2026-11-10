@@ -105,23 +105,39 @@ Singleton {
         error = "";
         query();
     }
-    function query() {
+    // What can be read again: the themes and preferences (listing), the wallpapers of the theme (pack), and the
+    // font, icon and cursor lists (fc-list and directory scans, the slow ones).
+    readonly property var everything: ["listing", "pack", "fonts", "icons", "cursors"]
+    function query(parts) {
+        const wanted = parts ?? everything;
         // Asked again while they run (a store install, a rescan), they run once more with the new state.
-        listing.request();
-        root.refreshPack();
-        fontQuery.request();
-        iconQuery.request();
-        cursorQuery.request();
+        if (wanted.includes("listing"))
+            listing.request();
+        if (wanted.includes("pack"))
+            root.refreshPack();
+        if (wanted.includes("fonts"))
+            fontQuery.request();
+        if (wanted.includes("icons"))
+            iconQuery.request();
+        if (wanted.includes("cursors"))
+            cursorQuery.request();
     }
-    // Commands run one after another, so a wallpaper is applied before it is remembered.
-    function run(commands) {
+    // What the queued commands change, read again once they are all done.
+    property var stale: ({})
+    // Commands run one after another, so a wallpaper is applied before it is remembered. parts says what they
+    // change (everything when not said): a gap or glass value does not rescan every font and icon theme.
+    function run(commands, parts) {
+        for (const part of parts ?? everything)
+            stale[part] = true;
         queue = queue.concat(commands);
         if (!action.running)
             next();
     }
     function next() {
         if (queue.length === 0) {
-            query();
+            const parts = Object.keys(stale);
+            stale = {};
+            query(parts);
             return;
         }
         action.command = queue[0];
@@ -140,28 +156,28 @@ Singleton {
         run([["python3", helper, "dynamic", "--" + option, value]]);
     }
     function setWallpaper(path) {
-        run([["python3", wallpaperHelper, path], ["python3", helper, "remember-wallpaper", path]]);
+        run([["python3", wallpaperHelper, path], ["python3", helper, "remember-wallpaper", path]], ["pack"]);
     }
     function setFont(kind, family) {
         restartTab = "font";
         // An empty family clears the preference, so the font of the theme applies again.
-        run([["python3", helper, "font", "--" + kind, family]]);
+        run([["python3", helper, "font", "--" + kind, family]], ["listing", "fonts"]);
     }
     function setSize(size) {
         restartTab = "font";
-        run([["python3", helper, "font", "--size", String(size)]]);
+        run([["python3", helper, "font", "--size", String(size)]], ["listing", "fonts"]);
     }
     // No restart: the shell reads it from quickshell.json as it changes.
     function setTextScale(scale) {
-        run([["python3", helper, "text-scale", String(scale)]]);
+        run([["python3", helper, "text-scale", String(scale)]], ["listing"]);
     }
     function setUnified(on) {
         restartTab = "font";
-        run([["python3", helper, "font", "--unified", on ? "on" : "off"]]);
+        run([["python3", helper, "font", "--unified", on ? "on" : "off"]], ["listing", "fonts"]);
     }
     function setIcons(id) {
         restartTab = "icons";
-        run([["python3", helper, "icon-theme", id === "" ? "default" : id]]);
+        run([["python3", helper, "icon-theme", id === "" ? "default" : id]], ["listing", "icons"]);
     }
     // No restart needed: Hyprland draws the new cursor at once, apps started afterwards follow it.
     function setCursor(theme, size) {
@@ -170,11 +186,11 @@ Singleton {
             command.push("--theme", theme === "" ? "default" : theme);
         if (size !== undefined)
             command.push("--size", String(size));
-        run([command]);
+        run([command], ["listing", "cursors"]);
     }
     function setShellIcons(source) {
         restartTab = "icons";
-        run([["python3", helper, "shell-icons", source]]);
+        run([["python3", helper, "shell-icons", source]], ["listing", "icons"]);
     }
     function setWindowStyle(option, value) {
         const flags = {
@@ -183,20 +199,20 @@ Singleton {
             gapsIn: "--gaps-in",
             gapsOut: "--gaps-out"
         };
-        run([["python3", helper, "window-style", flags[option], String(value)]]);
+        run([["python3", helper, "window-style", flags[option], String(value)]], ["listing"]);
     }
     function setGlass(option, value) {
-        run([["python3", helper, "glass", "--option", option, "--value", String(value)]]);
+        run([["python3", helper, "glass", "--option", option, "--value", String(value)]], ["listing"]);
     }
     function resetGlass() {
-        run([["python3", helper, "glass", "--reset"]]);
+        run([["python3", helper, "glass", "--reset"]], ["listing"]);
     }
     // Hyprland reloads with or without animations, blur, shadows and glass; the shell follows quickshell.json.
     function setReduceEffects(reduced) {
-        run([["python3", helper, "reduce-effects", reduced ? "on" : "off"]]);
+        run([["python3", helper, "reduce-effects", reduced ? "on" : "off"]], ["listing"]);
     }
     function setBarStyle(style) {
-        run([["python3", helper, "bar-style", style]]);
+        run([["python3", helper, "bar-style", style]], ["listing"]);
     }
     // A family or icon theme typed by hand is checked first, then applied like a list entry.
     function applyCustom(kind, name) {
@@ -210,12 +226,12 @@ Singleton {
         checker.running = true;
     }
     function openFolder(kind) {
-        run([["python3", helper, "open-folder", kind]]);
+        run([["python3", helper, "open-folder", kind]], []);
     }
     // Fonts added by hand reach fontconfig after a cache refresh; icon packs are picked up directly.
     function rescan(kind) {
         if (kind === "fonts")
-            run([["fc-cache", "-f"]]);
+            run([["fc-cache", "-f"]], ["fonts"]);
         else
             refresh();
     }
@@ -264,7 +280,7 @@ Singleton {
                 return;
             }
             root.restartTab = root.customKind === "icons" ? "icons" : "font";
-            root.run([["python3", root.helper].concat(root.customCommand)]);
+            root.run([["python3", root.helper].concat(root.customCommand)], ["listing", root.customKind === "icons" ? "icons" : "fonts"]);
         }
     }
     // One JSON line per thumbnail; the gallery refreshes as they appear.
