@@ -14,6 +14,8 @@ ColumnLayout {
     // On screen (kept for its hosts; the lists come from the Updates service).
     property bool shown: false
     readonly property Item focusItem: root
+    // Package rows shown at most; the list says how many more there are.
+    readonly property int packageRows: 100
     spacing: 12
     // Sections switched off for the next Update; all of them are on by default.
     property var skipped: ({})
@@ -147,13 +149,22 @@ ColumnLayout {
                 text: I18n.tr("updates.packagesHeading")
                 key: "system"
             }
+            // The first ones only: a release upgrade lists a thousand packages and more, each one a row built at
+            // once in this column. The count of the rest follows, as for the commits.
             Repeater {
-                model: Updates.packages
+                model: Updates.packages.slice(0, root.packageRows)
                 Entry {
                     required property var modelData
                     name: modelData.name
                     version: modelData.version
                 }
+            }
+            Text {
+                visible: Updates.packages.length > root.packageRows
+                text: I18n.tr("updates.packagesMore", [Updates.packages.length - root.packageRows])
+                color: Theme.muted
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(11)
             }
             Section {
                 visible: Updates.flatpaks.length > 0
