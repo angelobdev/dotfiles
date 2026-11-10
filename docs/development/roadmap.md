@@ -275,54 +275,26 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [x] Timeouts on the one-shot calls of recording, portal picker, osk layout and clipboard; `check.sh` globs `scripts/tests/test_*.py`; fastfetch "threads"; the two animation literals follow `reduceMotion`.
 - [x] Checked: the bar double-tap does not fire from a bar button or the window title. Buttons and the title accept the press, so the handler underneath never sees it (qmltestrunner with touch on the same structure: button and title 0 toggles, empty bar 1); the user confirmed it with the mouse.
 
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
+- [x] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one, each in its own PR (#114 to #159), all merged on 2026-11-10.
   - [x] #69: a file already in `$HOME` stopped the install at the stow step, because the dry-run simulated Stow over the files `apply` would back up. The dry-run now leaves them out of the simulation (2026-11-10).
   - [x] #70: a second Settings save while `hyprsettings.py` still rendered the first was dropped, so `settings.lua` kept the older settings. The renderer is a `CoalescedProcess` (2026-11-10).
   - [x] #71: Keep awake said On after its `systemd-inhibit` had exited; the inhibitor now starts again, with `Backoff`, and logs its stderr (2026-11-10).
   - [x] #72: the 15-second display revert lived in the Settings window, which can be dropped before it fires; the countdown and the settings from before are now in `HyprSettings` (2026-11-10).
   - [x] #73: the network panel and Settings → Network each wrote the Wi-Fi `scannerEnabled`, the last one winning; `NetworkInfo` now owns it and scans while any network view is on screen (2026-11-10).
   - [x] #74: Escape in a Settings text or time field assigned its text, so the field stopped following its setting and could write an old value back after Reset; it is bound again instead (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #75: a failing app integration (btop, Herdr, gsettings, cursor, VS Code) stopped a theme switch halfway, after `current.json` was written; each now runs through `best_effort`, which reports the reason on stderr and goes on (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #76: `nmcli connection up/down` (VPN, hotspot, MAC change) was killed after 15 s while nmcli waits up to 90 s; activations now get 95 s, and a timeout is a translated `network.errors.noAnswer` instead of Python's text (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #77: two radio plays at once (the panel and a bind) could both start an mpv, one of them untracked; `play`, `stop`, `save` and `remove` now hold a lock, and a SIGTERM from the panel waits for the end of the change (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #78: the herdr agent list was a debounce that a steady stream of events put off, and a refresh asked while `hc ls` ran was dropped; it is now a 150 ms throttle on a `CoalescedProcess` (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #79: the output of a Store search or launcher calculation/file search killed for a newer one passed as the newer answer ("unavailable", partial files); what a run answers is now set when it starts (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #80: after one restart of `brightness.py watch`, turning the OSD off no longer stopped it (the retry had dropped the `running` binding); the watcher is now started and stopped on `osdEnabledChanged` (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #81: an apply of some install steps (the Updates screen with pins) skipped setting aside an unreadable record and rebuilding a missing one, and could save a near-empty record that later uninstalls trusted; it now does both, and only a whole install records its profiles (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #82: a failing `gsettings` left an empty `interface-before-theme.ini` for good and stopped `desktop-theme apply`; the backup is now written aside and moved in on success, and the theme applies either way (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #83: `git ls-remote` for the pins had no timeout (a stalled remote hung the Updates screen), and one AUR error ended the whole `pins` listing; remotes now get 60 s and a failing entry is reported on its own (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #84: profile detection in the guided installer could run a dnf solver query and print the Hyprland build warning over the curses screen; it now only reads what is installed (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #85: Stop sent SIGTERM and SIGKILL to the pid in `radio.json` without checking it was still the radio's mpv; it now checks the process was started with the radio's socket (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #86: with many windows the Alt+Tab grid grew past the screen; the thumbnails now shrink (down to a third) until every window fits (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #87: `dnf5-plugins` was installed quietly by the repos step, outside the manifest, the preview and the record; copr repositories now name it in `needs`, a `repo tools` step installs and records it, and a copr is removed through its file so the uninstall order does not matter (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #88: `displays.lua` and `theme.lua` took an empty `XDG_STATE_HOME` as set (state under `/desktop-session`, theme fallback); they now treat it as unset, as `installed.lua` and the installer do (2026-11-10).
   - [x] #89: raw English exception text reached the Store, Theming and Network panels; unexpected errors are now said with a catalog key (`theme.errors.failed`, `network.errors.commandFailed`, `store.errors.unavailable`) and the system's words as the detail, and the clipboard, recording and portal helpers also catch timeouts (`SubprocessError`) (2026-11-10).
   - [x] #90: the "HH:MM" hint of time fields was a raw literal (`settings.timePlaceholder` now); `check-i18n.py` scans the literals a shown property can display, ternaries included, with a short list of literals that stay as they are (units, key syntax, product names, font samples) (2026-11-10).
@@ -334,30 +306,22 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #96: every change of `shell.json` (each slider step in Settings) ran `agents.py list`; only a change of the primary agent does now (2026-11-10).
   - [x] #97: the arrival times of notifications were never dropped, and the whole map was copied at each arrival; only the live ones are kept (2026-11-10).
   - [x] #98: an Arch removal review parsed `pacman.log` and `pacman -Qi` about 6-10 times; both parsed answers are now kept in the installer's answer cache until the next change (2026-11-10).
+  - [x] #98: an Arch removal review parsed `pacman.log` and `pacman -Qi` about 6-10 times; both parsed answers are now kept in the installer's answer cache until the next change (2026-11-10).
   - [x] #99: the updates check started `git config core.sshCommand` before each of its git calls (14 processes for 7); the git environment is worked out once per run (2026-11-10).
   - [x] #100: the Displays panel, Settings → Displays and the battery panel each ran `hyprctl monitors` and kept their own list (twice on the same Settings page), with three copies of the panel name test; `HyprSettings` now holds one listing and `isPanel()` (2026-11-10).
-  - [x] #143 (found in the live log during the review): the zoom keys showed the OSD but never zoomed, since `hl.config` went through `Hyprland.dispatch`, which wraps it in `hl.dispatch()`; it goes through `hyprctl eval` now (2026-11-10).
+  - [x] #101: `install-desktop.py` (2056 lines) is the command line, about 100 lines; the installer is `scripts/install/install_{paths,plan,record,steps,pins,undo,removal,run}.py`, which the guided installer imports directly (no `importlib` of the script any more). Every name across modules is `module.name`, the tests patch each in its module and run with their own `XDG_STATE_HOME`; previews, `profiles.py` and the guided installer answer as before (2026-11-10).
+  - [x] #102: the answer cache, `run_query`, `sudo`, `file_differs` and `write_file`, written word for word in `fedora.py` and `arch.py`, live in `scripts/install/backend.py`; each backend keeps one-line wrappers that pass its own `run_query` and `sudo`, so the names the tests replace stay where they were (2026-11-10).
+  - [x] #103: `theme.py` (1605 lines, seven areas) is the command line and the apply, about 680 lines; `theme_paths.py`, `theme_core.py`, `theme_apps.py`, `theme_wallpapers.py` and `theme_assets.py` hold the rest, each name across modules written `module.name`. `list`, `icons`, `cursors`, `fonts`, `wallpapers`, `dynamic`, `tone` and the rendered files of four themes are byte for byte as before, and the tests ran without writing outside their sandbox (2026-11-10).
+  - [x] #104: `services/Watcher.qml` keeps a long-lived helper running while wanted, with `Backoff` and its stderr in `qs log`; the Bluetooth agent, hyprsunset, the rotation watcher and the two clipboard watchers use it instead of a fixed 2-3 s retry forever. The keyboard helper (kept after the keyboard hides, its command changes with the input method) and the herdr event stream (its reconnect also relists) keep their own (2026-11-10).
+  - [x] #105: the background-job plumbing written several times over: `common.py` has `read_json`, `lock_held` and `last_lines` for `jobs.py`, `updates.py`, `plugins.py`, `agent.py` and `radio.py`, and `plugins.py` writes its record with `write_atomic` instead of a fixed `.tmp`; `services/JobRecord.js` holds Job.qml's stale-record check, which Updates and Plugins now use too, so the previous run's record no longer replaces the one just started (2026-11-10).
+  - [x] #106: `bind()`, the `desktop-shell` path and the other wrapper paths were rebuilt in each Lua module and machine profile; `config/util.lua` holds them with `state_home()`, and the 103 binds of `binds.lua`, `input.lua`, `plugins.lua`, `tablet.lua` and the profile give the same keys, commands and descriptions (2026-11-10).
+  - [x] #107: the tile card around a group of option rows was written out nine times in seven Settings and System files; it is `components/GroupCard.qml` now. The padding had not drifted: each copy was symmetric (10 or 12 above and below), and each keeps its own (2026-11-10).
   - [x] #108: `architecture.md` listed an old module load order; it now names `machines`, `console`, the user's `settings.lua` and `hypr.lua`, and `displays.setup()` (2026-11-10).
   - [x] #109: the workspace pill (160 ms), the OSD (80 ms) and the Alt+Tab card (90 ms) hand-rolled their durations; they use `Theme.motionFast` (120 ms) now, a small visible change in speed (2026-11-10).
   - [x] #110: `displays.lua`'s `M.has_panel()` and `Radio.busy` had no users and went (2026-11-10).
   - [x] #111: Night shift wrote `session.json` twice in a row for one change; it uses `SessionState.setMany` (2026-11-10).
   - [x] #112: tests for the helpers that had none, all without hardware: `brightness.py` (backends, DDC/CI readings, the panel found without a mapping), the Bluetooth agent's replies (only the pending request, PIN and passkey limits), `recording.py` (areas in logical pixels, rotated displays), `xwayland.py`, `clipboard.py` and `bar_visibility.py` (2026-11-10).
-  - [x] #106: `bind()`, the `desktop-shell` path and the other wrapper paths were rebuilt in each Lua module and machine profile; `config/util.lua` holds them with `state_home()`, and the 103 binds of `binds.lua`, `input.lua`, `plugins.lua`, `tablet.lua` and the profile give the same keys, commands and descriptions (2026-11-10).
-  - [x] #107: the tile card around a group of option rows was written out nine times in seven Settings and System files; it is `components/GroupCard.qml` now. The padding had not drifted: each copy was symmetric (10 or 12 above and below), and each keeps its own (2026-11-10).
-  - [x] #104: `services/Watcher.qml` keeps a long-lived helper running while wanted, with `Backoff` and its stderr in `qs log`; the Bluetooth agent, hyprsunset, the rotation watcher and the two clipboard watchers use it instead of a fixed 2-3 s retry forever. The keyboard helper (kept after the keyboard hides, its command changes with the input method) and the herdr event stream (its reconnect also relists) keep their own (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
-  - [x] #105: the background-job plumbing written several times over: `common.py` has `read_json`, `lock_held` and `last_lines` for `jobs.py`, `updates.py`, `plugins.py`, `agent.py` and `radio.py`, and `plugins.py` writes its record with `write_atomic` instead of a fixed `.tmp`; `services/JobRecord.js` holds Job.qml's stale-record check, which Updates and Plugins now use too, so the previous run's record no longer replaces the one just started (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
-  - [x] #103: `theme.py` (1605 lines, seven areas) is the command line and the apply, about 680 lines; `theme_paths.py`, `theme_core.py`, `theme_apps.py`, `theme_wallpapers.py` and `theme_assets.py` hold the rest, each name across modules written `module.name`. `list`, `icons`, `cursors`, `fonts`, `wallpapers`, `dynamic`, `tone` and the rendered files of four themes are byte for byte as before, and the tests ran without writing outside their sandbox (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
-  - [x] #101: `install-desktop.py` (2056 lines) is the command line, about 100 lines; the installer is `scripts/install/install_{paths,plan,record,steps,pins,undo,removal,run}.py`, which the guided installer imports directly (no `importlib` of the script any more). Every name across modules is `module.name`, the tests patch each in its module and run with their own `XDG_STATE_HOME`; previews, `profiles.py` and the guided installer answer as before (2026-11-10).
-  - [x] #98: an Arch removal review parsed `pacman.log` and `pacman -Qi` about 6-10 times; both parsed answers are now kept in the installer's answer cache until the next change (2026-11-10).
-
-- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
-  - [x] #102: the answer cache, `run_query`, `sudo`, `file_differs` and `write_file`, written word for word in `fedora.py` and `arch.py`, live in `scripts/install/backend.py`; each backend keeps one-line wrappers that pass its own `run_query` and `sudo`, so the names the tests replace stay where they were (2026-11-10).
+  - [x] #143 (found in the live log during the review): the zoom keys showed the OSD but never zoomed, since `hl.config` went through `Hyprland.dispatch`, which wraps it in `hl.dispatch()`; it goes through `hyprctl eval` now (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
