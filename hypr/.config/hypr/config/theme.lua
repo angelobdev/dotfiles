@@ -21,7 +21,11 @@ local defaults = {
     reduceEffects = false,
 }
 
-local state = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")
+-- An empty XDG_STATE_HOME counts as unset, as in installed.lua and the installer.
+local state = os.getenv("XDG_STATE_HOME")
+if not state or state == "" then
+    state = os.getenv("HOME") .. "/.local/state"
+end
 local ok, loaded = pcall(dofile, state .. "/desktop-theme/hyprland.lua")
 if not ok or type(loaded) ~= "table" then
     loaded = {}

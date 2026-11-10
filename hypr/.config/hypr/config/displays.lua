@@ -5,7 +5,12 @@
 
 local M = {}
 
-local folder = (os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")) .. "/desktop-session"
+-- An empty XDG_STATE_HOME counts as unset, as in installed.lua and the installer.
+local state_home = os.getenv("XDG_STATE_HOME")
+if not state_home or state_home == "" then
+    state_home = os.getenv("HOME") .. "/.local/state"
+end
+local folder = state_home .. "/desktop-session"
 local state = folder .. "/rotation.lua"
 -- The display mode chosen with Super + P, kept across reloads and logins.
 local display_state = folder .. "/display.lua"
