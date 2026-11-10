@@ -1638,7 +1638,7 @@ class CompositorGuardTests(unittest.TestCase):
 
 class FedoraTests(unittest.TestCase):
     def test_answers_are_kept_until_a_change(self):
-        self.addCleanup(setattr, fedora, 'answers', None)
+        self.addCleanup(setattr, fedora.answers, 'kept', None)
         fedora.remember_answers()
         with mock.patch.object(fedora, 'run_query', return_value=reply('x')) as run, mock.patch('subprocess.run'):
             fedora.query('dnf', 'repoquery', 'a')

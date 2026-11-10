@@ -1,10 +1,10 @@
 """Fedora operations of install-desktop.py; another distribution is a module with these same names."""
 import json
-import os
 from pathlib import Path
 import re
 import subprocess
-import tempfile
+
+import backend
 
 ADMIN_GROUP = 'wheel'
 # The documented prerequisites of the installer itself: never removed.
@@ -18,39 +18,29 @@ AUTH_FEATURE = 'with-fingerprint'
 AUTH_PROFILE = 'custom/desktop-tablet'
 
 
-# rpm and dnf answers kept while nothing changes, when the installer turns it on: planning an uninstall asks dnf
-# the same questions from several steps, each a solver run of seconds. Any change through sudo() forgets them.
-answers = None
+# rpm and dnf answers kept while nothing changes, when the installer turns it on (backend.Answers). Any change
+# through sudo() forgets them.
+answers = backend.Answers(('dnf', 'rpm'))
 
 
 def remember_answers():
-    global answers
-    answers = {}
+    answers.remember()
 
 
 def forget_answers():
-    if answers is not None:
-        answers.clear()
+    answers.forget()
 
 
 def query(*command):
-    if answers is None or command[0] not in ('dnf', 'rpm'):
-        return run_query(command)
-    if command not in answers:
-        answers[command] = run_query(command)
-    return answers[command]
+    return answers.query(command, run_query)
 
 
 def run_query(command):
-    return subprocess.run(command, capture_output=True, text=True, env={**os.environ, 'LC_ALL': 'C'})
+    return backend.run_query(command)
 
 
 def sudo(*command):
-    forget_answers()
-    try:
-        subprocess.run(('sudo', *command), check=True)
-    finally:
-        forget_answers()
+    backend.sudo(command, forget_answers)
 
 
 def missing(packages):
@@ -115,17 +105,11 @@ def add_repo(repo, release):
 
 
 def file_differs(path, content):
-    try:
-        return Path(path).read_text(encoding='utf-8') != content
-    except OSError:
-        return True
+    return backend.file_differs(path, content)
 
 
 def write_file(path, content, mode='0644'):
-    with tempfile.NamedTemporaryFile('w', encoding='utf-8', prefix='desktop-install-') as temporary:
-        temporary.write(content)
-        temporary.flush()
-        sudo('install', '-D', '-o', 'root', '-g', 'root', '-m', mode, temporary.name, str(path))
+    backend.write_file(path, content, mode, sudo)
 
 
 def install_firmware(source, target):
