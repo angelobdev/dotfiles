@@ -1119,4 +1119,8 @@ Reported by the user after the merges of the day:
 
 - A throwaway Quickshell config (no windows) showed the order when a running `Process` is set to `running = false` and started again in the same tick with a new command: the killed run's collector finishes with its partial output, then it exits (code 15), then the new run starts. Store and the launcher set the query a run answers before that, so the killed run's output passed the check (the Store showed "unavailable" and stopped its spinner; the launcher showed files for the older text).
 - `Store.qml` (`searcher`) and `LauncherSearch.qml` (`calculator`, `finder`) now keep the query in `pending` and copy it to `asked` in `onStarted`. The same throwaway config with that pattern accepted only the new run's output.
+## Clipboard history without the poll (#92), 2026-11-10
+
+- cliphist writes `~/.cache/cliphist/db` (a bbolt file, 8 MB here) in place at each copy. A throwaway Quickshell config showed that a `FileView` with `preload: false` and `watchChanges` reports those in-place writes without loading the file (`loaded` stays false), and only while `watchChanges` is true: writes before it is set and after it is cleared were not reported.
+- `Clipboard.qml` now lists the history when the panel opens (as before) and on each change of the database while it is open, instead of every second; the listing is a `CoalescedProcess`, and an output equal to the last one leaves `entries` alone.
 - The live shell reloaded with no errors; `check.sh` passes.
