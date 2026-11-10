@@ -1106,3 +1106,7 @@ Reported by the user after the merges of the day:
 - The inhibitor (`systemd-inhibit --what=idle … cat`) was bound to `keepAwake`: once it exited, nothing ran it again while the switch still said On. `Idle.qml` now starts and stops it on `keepAwakeChanged`, starts it again after an exit while Keep awake is on (`Backoff`: 2 s, doubled after each run shorter than a minute), and sends its stderr to `qs log`.
 - Live, Keep awake on: after the reload the inhibitor was listed by `systemd-inhibit --list` ("Resta attivo"). Killed by pid, a new one was listed about 4 s later (the run had lasted less than a minute, so the wait had doubled).
 - `check.sh` passes.
+## Display revert outlives the Settings window (#72), 2026-11-10
+
+- The countdown after Apply in Settings → Displays, and the monitors from before, moved from `MonitorSettings.qml` to `services/HyprSettings.qml` (`tryMonitor`, `keepMonitors`, `revertMonitors`, `trying`, `secondsLeft`). The page shows the same bar from there, and lists the monitors again on `monitorsReverted`. A Settings window dropped during the 15 seconds (`panelKeepSeconds` below 15, or a page rebuilt) no longer stops the revert, and a Settings window opened again during the countdown shows it.
+- Not tried on screen: applying a mode changes the display, and the shell has no IPC into HyprSettings. The live shell reloaded both files with no errors; `check.sh` passes.

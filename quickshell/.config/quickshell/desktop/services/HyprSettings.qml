@@ -96,6 +96,33 @@ Singleton {
             monitors: monitors
         }));
     }
+    // Settings → Displays applies a monitor for 15 seconds unless kept; then, or on Revert, the monitors from before
+    // come back. Kept here rather than in the panel, which can be dropped while the countdown runs.
+    property var previousMonitors: null
+    property int secondsLeft: 0
+    readonly property bool trying: previousMonitors !== null
+    signal monitorsReverted
+    function tryMonitor(name, fields) {
+        // A second Apply during the countdown keeps the settings from before the first one.
+        if (previousMonitors === null)
+            previousMonitors = JSON.parse(JSON.stringify(monitors));
+        setMonitor(name, fields);
+        secondsLeft = 15;
+        countdown.restart();
+    }
+    function keepMonitors() {
+        countdown.stop();
+        previousMonitors = null;
+        secondsLeft = 0;
+    }
+    function revertMonitors() {
+        countdown.stop();
+        if (previousMonitors !== null)
+            setMonitors(previousMonitors);
+        previousMonitors = null;
+        secondsLeft = 0;
+        monitorsReverted();
+    }
     function setBinds(list) {
         save(Object.assign({}, current, {
             binds: list
@@ -141,6 +168,16 @@ Singleton {
         }
         // Hyprland reloads settings.lua by itself; the layout it then uses is read again.
         onExited: activeLater.restart()
+    }
+    Timer {
+        id: countdown
+        interval: 1000
+        repeat: true
+        onTriggered: {
+            root.secondsLeft -= 1;
+            if (root.secondsLeft <= 0)
+                root.revertMonitors();
+        }
     }
     Timer {
         id: activeLater
