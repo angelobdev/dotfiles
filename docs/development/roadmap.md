@@ -338,6 +338,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #100: the Displays panel, Settings → Displays and the battery panel each ran `hyprctl monitors` and kept their own list (twice on the same Settings page), with three copies of the panel name test; `HyprSettings` now holds one listing and `isPanel()` (2026-11-10).
   - [x] #143 (found in the live log during the review): the zoom keys showed the OSD but never zoomed, since `hl.config` went through `Hyprland.dispatch`, which wraps it in `hl.dispatch()`; it goes through `hyprctl eval` now (2026-11-10).
   - [x] #108: `architecture.md` listed an old module load order; it now names `machines`, `console`, the user's `settings.lua` and `hypr.lua`, and `displays.setup()` (2026-11-10).
+  - [x] #109: the workspace pill (160 ms), the OSD (80 ms) and the Alt+Tab card (90 ms) hand-rolled their durations; they use `Theme.motionFast` (120 ms) now, a small visible change in speed (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
