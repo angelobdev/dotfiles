@@ -14,6 +14,7 @@ apply-status: that state as JSON, with the end of the log.
 from common import release_id, write_atomic
 from i18n import tr
 import fcntl
+import functools
 import json
 import os
 from pathlib import Path
@@ -103,15 +104,20 @@ def flatpak_updates(output):
     return updates
 
 
-def git(*arguments):
-    # Never a password or passphrase prompt (no one sees this run): ssh fails instead, unless the user set their own
-    # command. The same as the updates screen of the guided installer.
+# Never a password or passphrase prompt (no one sees this run): ssh fails instead, unless the user set their own
+# command. The same as the updates screen of the guided installer. Worked out once per run: it asks git itself.
+@functools.cache
+def git_environment():
     environment = dict(os.environ, GIT_TERMINAL_PROMPT='0', LC_ALL='C')
-    command = ['git', '-C', str(REPO)]
-    if 'GIT_SSH_COMMAND' not in environment and not subprocess.run(command + ['config', 'core.sshCommand'], capture_output=True,
-                                                                   text=True, env=environment, timeout=10).stdout.strip():
+    if 'GIT_SSH_COMMAND' not in environment and not subprocess.run(['git', '-C', str(REPO), 'config', 'core.sshCommand'],
+                                                                   capture_output=True, text=True, env=environment,
+                                                                   timeout=10).stdout.strip():
         environment['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes'
-    return subprocess.run(command + list(arguments), capture_output=True, text=True, env=environment, timeout=120)
+    return environment
+
+
+def git(*arguments):
+    return subprocess.run(['git', '-C', str(REPO), *arguments], capture_output=True, text=True, env=git_environment(), timeout=120)
 
 
 def repository_updates():
