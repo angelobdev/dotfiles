@@ -41,7 +41,7 @@ Match the surrounding code. Comments are sparse one-liners that explain *why* ("
 
 ## Hyprland Lua
 
-- Every bind goes through `bind(keys, dispatcher, description, flags)`. The English description is also the Hints lookup key (mapped in `i18n/Sources.js`), so keep descriptions byte-identical or update the mapping and both catalogs.
+- Every bind goes through `bind(keys, dispatcher, description, flags)`, the one in `config/util.lua` (`local bind = require("config.util").bind`), which also has the wrapper paths (`bin`, `shell`) and `state_home()`. The English description is also the Hints lookup key (mapped in `i18n/Sources.js`), so keep descriptions byte-identical or update the mapping and both catalogs.
 - User-facing errors from Lua use `python3 ~/.local/libexec/desktop/i18n.py --notify "<title key>" "<message key>"`; `check-i18n.py` scans that literal in `binds.lua`.
 - Guard plugin APIs (`hl.plugin or {}`); a model's settings go in a profile in `config/machines/` (chosen by DMI in `machines/init.lua`), a user's own in `~/.config/desktop/hypr.lua`, never in the repository.
 

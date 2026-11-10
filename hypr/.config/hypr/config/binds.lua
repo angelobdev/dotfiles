@@ -1,13 +1,10 @@
-local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
+local util = require("config.util")
+local shell = util.shell
 local installed = require("config.installed")
 
 -- *** Utilities *** --
 
-local function bind(keys, dispatcher, description, flags)
-    flags = flags or {}
-    flags.description = description
-    hl.bind(keys, dispatcher, flags)
-end
+local bind = util.bind
 
 local function screenshot(mode)
     return function()
@@ -73,7 +70,7 @@ bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminal")
 bind("XF86Calculator", hl.dsp.exec_cmd("gnome-calculator"), "Calculator")
 -- The AI assistant, only with its profile installed.
 if installed("assistant") then
-    bind("SUPER + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-ai"'), "AI assistant")
+    bind("SUPER + A", hl.dsp.exec_cmd(util.bin("desktop-ai")), "AI assistant")
     -- console.lua: into the drop-down console without showing it, or back out of it.
     bind("SUPER + SHIFT + A", function() desktop_console_move() end, "AI assistant · move window in or out")
 end
@@ -104,17 +101,17 @@ bind("SUPER + SHIFT + V", hl.dsp.exec_cmd(shell .. " toggle audio"), "Sound & au
 bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Battery & power")
 bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendar")
 bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Keyboard shortcuts")
-bind("SUPER + SHIFT + T", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-area" text'), "Text from screen area")
+bind("SUPER + SHIFT + T", hl.dsp.exec_cmd(util.bin("desktop-area") .. " text"), "Text from screen area")
 if installed("assistant") then
-    bind("SUPER + CTRL + A", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-area" ask'), "Ask the assistant about a screen area")
+    bind("SUPER + CTRL + A", hl.dsp.exec_cmd(util.bin("desktop-area") .. " ask"), "Ask the assistant about a screen area")
 end
 bind("SUPER + ALT + plus", hl.dsp.exec_cmd(shell .. " zoom in"), "Zoom in", { repeating = true })
 bind("SUPER + ALT + minus", hl.dsp.exec_cmd(shell .. " zoom out"), "Zoom out", { repeating = true })
 bind("SUPER + ALT + 0", hl.dsp.exec_cmd(shell .. " zoom reset"), "Reset zoom")
 bind("SUPER + period", hl.dsp.exec_cmd(shell .. " toggle emoji"), "Emoji")
-bind("SUPER + SHIFT + P", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-color"'), "Color picker")
-bind("SUPER + SHIFT + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper"'), "Choose wallpaper")
-bind("SUPER + CTRL + W", hl.dsp.exec_cmd('"' .. os.getenv("HOME") .. '/.local/bin/desktop-wallpaper" --next'), "Next wallpaper")
+bind("SUPER + SHIFT + P", hl.dsp.exec_cmd(util.bin("desktop-color")), "Color picker")
+bind("SUPER + SHIFT + W", hl.dsp.exec_cmd(util.bin("desktop-wallpaper")), "Choose wallpaper")
+bind("SUPER + CTRL + W", hl.dsp.exec_cmd(util.bin("desktop-wallpaper") .. " --next"), "Next wallpaper")
 bind("SUPER + I", hl.dsp.exec_cmd(shell .. " toggle settings"), "Settings")
 bind("SUPER + CTRL + T", hl.dsp.exec_cmd(shell .. " toggle theming"), "Theming")
 bind("SUPER + CTRL + N", hl.dsp.exec_cmd(shell .. " dnd toggle"), "Do Not Disturb")
@@ -179,6 +176,6 @@ bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), 
     { locked = true, repeating = true })
 
 -- Power Management
-local power = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-power"'
+local power = util.bin("desktop-power")
 bind("SUPER + L", hl.dsp.exec_cmd(power .. " lock"), "Lock screen")
 bind("XF86Sleep", hl.dsp.exec_cmd(power .. " suspend"), "Suspend")

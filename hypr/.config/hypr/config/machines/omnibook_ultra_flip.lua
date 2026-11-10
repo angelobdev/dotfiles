@@ -14,12 +14,9 @@ tablet.monitor({
 -- The 2-in-1 posture (SW_TABLET_MODE) comes on this switch.
 tablet.switch("Intel HID switches")
 
-local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
-local function bind(keys, dispatcher, description, flags)
-    flags = flags or {}
-    flags.description = description
-    hl.bind(keys, dispatcher, flags)
-end
+local util = require("config.util")
+local shell = util.shell
+local bind = util.bind
 
 -- Verified firmware actions: F1 (two screens) emits Super+P, the display picker; the three-diamond
 -- programmable key (F11) emits XF86Launch2. Fn/Fn Lock chooses action mode.

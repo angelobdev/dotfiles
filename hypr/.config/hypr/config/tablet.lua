@@ -6,7 +6,7 @@ local displays = require("config.displays")
 
 local M = {}
 
-local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
+local shell = require("config.util").shell
 -- Touch and stylus devices of the internal display; without them every touchscreen and tablet follows it.
 local devices = {}
 
