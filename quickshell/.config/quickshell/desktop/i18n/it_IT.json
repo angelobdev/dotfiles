@@ -1276,7 +1276,8 @@
       "lastDoneCompositor": "Aggiornato alle %1. Tra gli aggiornamenti c’era Hyprland: esci e rientra, e i plugin vengono ricompilati a quel login.",
       "lastFailed": "L’ultimo aggiornamento non è finito (stato %1): guarda il log qui sotto, poi premi di nuovo Aggiorna.",
       "stopped": "L’ultimo aggiornamento si è fermato prima di finire: premi di nuovo Aggiorna."
-    }
+    },
+    "packagesMore": "…e altri %1"
   },
   "gaming": {
     "title": "Steam e gamescope",
