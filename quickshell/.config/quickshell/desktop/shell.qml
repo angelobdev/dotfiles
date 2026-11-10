@@ -46,7 +46,7 @@ ShellRoot {
         }
         // desktop-radio video: the Radio panel, with the picture of what plays.
         function radioVideo(): void {
-            ShellState.show("radio");
+            ShellState.open("radio");
             Radio.requestVideo();
         }
         function dock(action: string): bool {

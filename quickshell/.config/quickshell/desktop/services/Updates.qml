@@ -121,7 +121,7 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 if (text.trim() === "default")
-                    ShellState.show("updates");
+                    ShellState.open("updates");
             }
         }
     }
