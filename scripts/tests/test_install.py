@@ -729,6 +729,22 @@ class UninstallTests(unittest.TestCase):
         self.assertFalse(installer.RECORD.exists())
         self.assertEqual(installer.RECORD.with_name('install.json.unreadable').read_text(), '{"packages": [')
 
+    def test_some_install_steps_still_set_aside_and_rebuild_the_record(self):
+        # The Updates screen of the guided installer runs only the steps of the pins it moves.
+        idle = installer.Step('clones', lambda current: [], None)
+        other = installer.Step('packages', lambda current: [], None)
+        installer.RECORD.parent.mkdir(parents=True, exist_ok=True)
+        installer.RECORD.write_text('{"packages": [')
+        with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True, 'packages': ['a.x86_64']}) as rebuilt, \
+                mock.patch.object(installer, 'desktop_present', return_value=True), \
+                mock.patch.object(installer, 'STEPS', (other, idle)), mock.patch('sys.stderr'):
+            installer.run_steps(plan(fake_distro()), False, (idle,))
+        rebuilt.assert_called_once()
+        self.assertEqual(installer.RECORD.with_name('install.json.unreadable').read_text(), '{"packages": [')
+        saved = json.loads(installer.RECORD.read_text())
+        self.assertEqual(saved['packages'], ['a.x86_64'])
+        self.assertNotIn('profiles', saved, 'only a whole install records its profiles')
+
     def test_what_is_already_back_is_left_alone(self):
         self.system(True)
         self.sandbox()
