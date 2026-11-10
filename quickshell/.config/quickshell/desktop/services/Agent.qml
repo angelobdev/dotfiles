@@ -191,7 +191,10 @@ Singleton {
                     next[terminal.address] = terminal;
             details = next;
         } catch (failure) {}
-        relist.restart();
+        // Started, not restarted: a steady stream of events (an agent at work) would otherwise keep putting the
+        // list off, and the bar stay on the old state.
+        if (!relist.running)
+            relist.start();
     }
     function agentMoved(agent) {
         if (consoleOpen)
@@ -305,7 +308,7 @@ Singleton {
             root.herdr = code === 0;
             if (root.herdr) {
                 events.running = true;
-                lister.running = true;
+                lister.request();
             }
         }
     }
@@ -331,10 +334,10 @@ Singleton {
     Timer {
         id: relist
         interval: 150
-        onTriggered: if (!lister.running)
-            lister.running = true
+        onTriggered: lister.request()
     }
-    Process {
+    // Asked while it runs, it runs once more after: the last change (an agent that finished) is never lost.
+    CoalescedProcess {
         id: lister
         command: ["sh", "-c", "PATH=\"$HOME/.local/bin:$PATH\" exec herdr-core ls --json"]
         stdout: StdioCollector {
