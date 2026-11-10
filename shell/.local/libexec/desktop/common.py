@@ -1,5 +1,6 @@
 """Shared by the helpers: atomic file replacement, the image types they accept, ImageMagick, Hyprland and the distribution."""
 import contextlib
+import fcntl
 import hashlib
 import json
 import os
@@ -67,6 +68,37 @@ def write_atomic(path, text, follow=True, mode=None):
     # mode: always this one (private files), instead of the replaced file's.
     with replacing(path, follow, mode=mode) as temporary:
         temporary.write_text(text, encoding='utf-8')
+
+
+def read_json(path):
+    """A JSON object from a file: {} when it is missing, unreadable or holds anything else."""
+    try:
+        value = json.loads(Path(path).read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def lock_held(path):
+    """Whether another process holds the flock of path: a background job holds its lock for as long as it runs."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open('a') as handle:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return True
+        fcntl.flock(handle, fcntl.LOCK_UN)
+    return False
+
+
+def last_lines(path, count):
+    """The last count non-empty lines of a log, [] when there is none."""
+    try:
+        lines = Path(path).read_text(encoding='utf-8', errors='replace').splitlines()
+    except OSError:
+        return []
+    return [line for line in lines if line.strip()][-count:]
 
 
 def magick(*arguments, timeout=60, check=False):

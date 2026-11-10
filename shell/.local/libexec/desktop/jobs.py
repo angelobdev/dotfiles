@@ -8,7 +8,7 @@ jobs.py run NAME [--root] [--title TEXT] -- COMMAND...
 jobs.py status NAME
     That state as JSON, with the end of the log.
 """
-from common import write_atomic
+from common import last_lines, lock_held, read_json, write_atomic
 from i18n import tr
 import fcntl
 import json
@@ -29,33 +29,6 @@ def paths(name):
     if not NAME.fullmatch(name):
         raise ValueError(tr('jobs.errors.name', [name]))
     return JOBS / f'{name}.json', JOBS / f'{name}.log', JOBS / f'.{name}.lock'
-
-
-def read(state):
-    try:
-        value = json.loads(state.read_text(encoding='utf-8'))
-    except (OSError, ValueError):
-        return {}
-    return value if isinstance(value, dict) else {}
-
-
-def held(lock):
-    # A job holds its lock for as long as it runs.
-    with lock.open('a') as handle:
-        try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            return True
-        fcntl.flock(handle, fcntl.LOCK_UN)
-    return False
-
-
-def tail(log, count=LOG_LINES):
-    try:
-        lines = log.read_text(encoding='utf-8', errors='replace').splitlines()
-    except OSError:
-        return []
-    return [line for line in lines if line.strip()][-count:]
 
 
 def run(name, command, root=False, title=''):
@@ -80,7 +53,7 @@ def run(name, command, root=False, title=''):
         write_atomic(state, json.dumps({'running': False, 'started': started, 'finished': int(time.time()), 'status': status,
                                         'title': title, 'root': root}) + '\n')
     if title:
-        lines = tail(log, 5)
+        lines = last_lines(log, 5)
         body = tr('jobs.done') if status == 0 else tr('jobs.failed', [lines[-1] if lines else str(status)])
         subprocess.run(['notify-send', '--app-name=' + title, '--app-icon=' + ('emblem-ok-symbolic' if status == 0 else 'dialog-error'),
                         title, body], check=False)
@@ -89,10 +62,10 @@ def run(name, command, root=False, title=''):
 
 def status(name):
     state, log, lock = paths(name)
-    value = read(state)
-    if value.get('running') and not (lock.exists() and held(lock)):
+    value = read_json(state)
+    if value.get('running') and not (lock.exists() and lock_held(lock)):
         value = {**value, 'running': False, 'status': -1}  # Stopped without writing its result.
-    return {**value, 'log': tail(log)}
+    return {**value, 'log': last_lines(log, LOG_LINES)}
 
 
 def main(arguments):

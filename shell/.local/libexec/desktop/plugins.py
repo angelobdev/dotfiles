@@ -8,6 +8,7 @@ plugins.py rebuild       Rebuild in the background with one pkexec prompt (privi
 plugins.py clear-cache old|all
                          Remove build cache entries no plugin would reuse, or all of them.
 """
+from common import last_lines, lock_held, read_json, write_atomic
 from i18n import tr
 import fcntl
 import json
@@ -51,30 +52,18 @@ def session_matches(stamp):
 
 
 def read_rebuild():
-    try:
-        value = json.loads(REBUILD.read_text(encoding='utf-8'))
-    except (OSError, ValueError):
-        return {}
-    return value if isinstance(value, dict) else {}
+    return read_json(REBUILD)
 
 
 def write_rebuild(value):
+    # Atomic, through a temporary file of its own: two writers (the shell's rebuild, a login rebuild) never share one.
     STATE.mkdir(parents=True, exist_ok=True)
-    temporary = REBUILD.with_suffix('.tmp')
-    temporary.write_text(json.dumps(value) + '\n', encoding='utf-8')
-    temporary.replace(REBUILD)
+    write_atomic(REBUILD, json.dumps(value) + '\n')
 
 
 def locked():
     # A rebuild holds the lock for as long as it runs.
-    STATE.mkdir(parents=True, exist_ok=True)
-    with open(LOCK, 'a') as handle:
-        try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            return True
-        fcntl.flock(handle, fcntl.LOCK_UN)
-    return False
+    return lock_held(LOCK)
 
 
 def ask_rebuild(state):
@@ -140,11 +129,7 @@ def last_line():
 
 
 def log_tail(count=LOG_LINES):
-    try:
-        lines = LOG.read_text(encoding='utf-8', errors='replace').splitlines()
-    except OSError:
-        return []
-    return [line for line in lines if line.strip()][-count:]
+    return last_lines(LOG, count)
 
 
 def loaded():

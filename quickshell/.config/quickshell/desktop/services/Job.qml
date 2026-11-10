@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "JobRecord.js" as JobRecord
 
 // One background operation of jobs.py, by name: start() runs it detached (a shell restart or a closed panel does not
 // stop it), and its record and log follow it from ~/.local/state/desktop-shell/jobs/NAME.json. finished() fires when a
@@ -46,11 +47,9 @@ Scope {
                 if (!value || typeof value !== "object")
                     return;
                 // Not the record of an earlier run over the one just started (unless it never started).
-                if (root.requested > 0) {
-                    if ((value.started ?? 0) < root.requested - 5 && Date.now() / 1000 - root.requested < 30)
-                        return;
-                    root.requested = 0;
-                }
+                if (JobRecord.stale(value, root.requested, Date.now() / 1000))
+                    return;
+                root.requested = 0;
                 root.log = Array.isArray(value.log) ? value.log.filter(line => typeof line === "string") : [];
                 const wasRunning = root.running;
                 delete value.log;
