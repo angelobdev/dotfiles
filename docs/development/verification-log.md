@@ -1110,3 +1110,7 @@ Reported by the user after the merges of the day:
 
 - The countdown after Apply in Settings → Displays, and the monitors from before, moved from `MonitorSettings.qml` to `services/HyprSettings.qml` (`tryMonitor`, `keepMonitors`, `revertMonitors`, `trying`, `secondsLeft`). The page shows the same bar from there, and lists the monitors again on `monitorsReverted`. A Settings window dropped during the 15 seconds (`panelKeepSeconds` below 15, or a page rebuilt) no longer stops the revert, and a Settings window opened again during the countdown shows it.
 - Not tried on screen: applying a mode changes the display, and the shell has no IPC into HyprSettings. The live shell reloaded both files with no errors; `check.sh` passes.
+## One owner for Wi-Fi scanning (#73), 2026-11-10
+
+- Each `NetworkView` bound `scannerEnabled` of every Wi-Fi device to its own `shown`. With the panel closing (it stays loaded for a minute) and Settings → Network opening, the panel wrote `false` last and the Settings page stayed without scanning. `NetworkInfo` now keeps the views on screen (`watch(view, shown)`, on show, hide, creation and destruction) and is the only one to bind `scannerEnabled`, to "any view on screen and Wi-Fi on".
+- The live shell reloaded with no errors (one intermediate save had two `onShownChanged` handlers; the final file has one). Not tried on screen: it needs the panels opened. `check.sh` passes.

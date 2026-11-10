@@ -100,9 +100,17 @@ ColumnLayout {
         NetworkInfo.refreshDetails(activeDevice?.name);
         NetworkInfo.refreshExtras();
     }
-    onShownChanged: shown ? opened() : closed()
-    Component.onCompleted: if (shown)
-        opened()
+    // Wi-Fi scans while any network view is on screen: NetworkInfo drives the scanner for all of them.
+    onShownChanged: {
+        NetworkInfo.watch(root, shown);
+        shown ? opened() : closed();
+    }
+    Component.onCompleted: {
+        NetworkInfo.watch(root, shown);
+        if (shown)
+            opened();
+    }
+    Component.onDestruction: NetworkInfo.watch(root, false)
     function closed() {
         cancelPassword();
         cancelHidden();
@@ -174,18 +182,6 @@ ColumnLayout {
             duration: Theme.motionNormal
             easing.type: Easing.BezierSpline
             easing.bezierCurve: Theme.easeOut
-        }
-    }
-    Variants {
-        model: root.wifiDevices
-        delegate: QtObject {
-            required property var modelData
-            // Only scan while the user is looking at the network panel.
-            property var scanBinding: Binding {
-                target: modelData
-                property: "scannerEnabled"
-                value: root.shown && Networking.wifiEnabled
-            }
         }
     }
     InputField {

@@ -280,6 +280,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #70: a second Settings save while `hyprsettings.py` still rendered the first was dropped, so `settings.lua` kept the older settings. The renderer is a `CoalescedProcess` (2026-11-10).
   - [x] #71: Keep awake said On after its `systemd-inhibit` had exited; the inhibitor now starts again, with `Backoff`, and logs its stderr (2026-11-10).
   - [x] #72: the 15-second display revert lived in the Settings window, which can be dropped before it fires; the countdown and the settings from before are now in `HyprSettings` (2026-11-10).
+  - [x] #73: the network panel and Settings → Network each wrote the Wi-Fi `scannerEnabled`, the last one winning; `NetworkInfo` now owns it and scans while any network view is on screen (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
