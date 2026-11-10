@@ -28,6 +28,11 @@ Singleton {
     function toggle(name, screen) {
         show(name, screen, 0);
     }
+    // Opens a panel and leaves it open when it already is (show() and toggle() close it then).
+    function open(name, screen) {
+        if (panel !== name)
+            show(name, screen, 0);
+    }
     // Opens a Control Center sub-panel; panels slide sideways instead of dropping from the bar.
     function push(name) {
         show(name, activeScreen, 1);
