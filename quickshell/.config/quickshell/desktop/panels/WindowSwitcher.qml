@@ -151,7 +151,7 @@ PanelWindow {
         opacity: root.open ? 1 : 0
         Behavior on opacity {
             NumberAnimation {
-                duration: Theme.reduceMotion ? 0 : 90
+                duration: Theme.motionFast
             }
         }
         GridLayout {
