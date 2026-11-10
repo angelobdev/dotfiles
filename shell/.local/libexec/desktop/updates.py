@@ -11,7 +11,7 @@ screen's apply without the screen (install-tui.py --apply-updates), behind one p
 (privileged.py). Its state is in updates-apply.json, its output in updates-apply.log, and a notification gives the result.
 apply-status: that state as JSON, with the end of the log.
 """
-from common import release_id, write_atomic
+from common import last_lines, lock_held, read_json, release_id, write_atomic
 from i18n import tr
 import fcntl
 import functools
@@ -200,31 +200,16 @@ def retry_later():
 
 
 def read_apply():
-    try:
-        value = json.loads(APPLY.read_text(encoding='utf-8'))
-    except (OSError, ValueError):
-        return {}
-    return value if isinstance(value, dict) else {}
+    return read_json(APPLY)
 
 
 def apply_running():
     # An apply holds the lock for as long as it runs.
-    APPLY_LOCK.parent.mkdir(parents=True, exist_ok=True)
-    with APPLY_LOCK.open('a') as handle:
-        try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            return True
-        fcntl.flock(handle, fcntl.LOCK_UN)
-    return False
+    return lock_held(APPLY_LOCK)
 
 
 def log_tail(count=LOG_LINES):
-    try:
-        lines = APPLY_LOG.read_text(encoding='utf-8', errors='replace').splitlines()
-    except OSError:
-        return []
-    return [line for line in lines if line.strip()][-count:]
+    return last_lines(APPLY_LOG, count)
 
 
 def apply(keys):

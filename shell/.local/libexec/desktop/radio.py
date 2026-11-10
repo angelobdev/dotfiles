@@ -14,7 +14,7 @@ as JSON. mpv keeps the sound; the panel follows its position and pause (status).
 search QUERY [all|playlist|video]: YouTube results, as JSON.
 save JSON, remove ID|URL: the saved items.
 """
-from common import write_atomic
+from common import read_json, write_atomic
 from i18n import tr
 import contextlib
 import fcntl
@@ -76,14 +76,6 @@ def radio_socket_path():
 def config_path():
     base = Path(os.environ.get('XDG_CONFIG_HOME') or HOME / '.config')
     return base / 'desktop' / 'radio.json'
-
-
-def read_json(path):
-    try:
-        value = json.loads(Path(path).read_text(encoding='utf-8'))
-    except (OSError, ValueError):
-        return {}
-    return value if isinstance(value, dict) else {}
 
 
 def station(entry):

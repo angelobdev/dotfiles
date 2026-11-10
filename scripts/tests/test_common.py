@@ -79,5 +79,34 @@ class CommonTests(unittest.TestCase):
                 common.download('https://example.com/list', target, hashlib.sha256(body).hexdigest())
             self.assertEqual(target.read_bytes(), body)
 
+
+class JobFileTests(unittest.TestCase):
+    def test_a_json_object_or_nothing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'state.json'
+            self.assertEqual(common.read_json(path), {})
+            for text, value in (('{"running": true}', {'running': True}), ('[1]', {}), ('{', {}), ('null', {})):
+                path.write_text(text)
+                self.assertEqual(common.read_json(path), value)
+
+    def test_a_lock_is_held_only_while_another_holds_it(self):
+        import fcntl
+        with tempfile.TemporaryDirectory() as directory:
+            lock = Path(directory) / 'jobs/.x.lock'
+            self.assertFalse(common.lock_held(lock))
+            with lock.open('a') as handle:
+                fcntl.flock(handle, fcntl.LOCK_EX)
+                # Another open of the file: flock locks belong to the open file, as in another process.
+                self.assertTrue(common.lock_held(lock))
+            self.assertFalse(common.lock_held(lock))
+
+    def test_the_last_lines_skip_empty_ones(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / 'x.log'
+            self.assertEqual(common.last_lines(log, 3), [])
+            log.write_text('one\n\ntwo\n   \nthree\nfour\n')
+            self.assertEqual(common.last_lines(log, 3), ['two', 'three', 'four'])
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "JobRecord.js" as JobRecord
 import ".."
 
 // Available updates: updates.py check (desktop-updates.timer 5 minutes after login and every 6 hours, or Check
@@ -51,6 +52,8 @@ Singleton {
     // with one pkexec prompt when root is needed; updates-apply.json holds its state and the log its output.
     property var applyState: ({})
     property var applyLog: []
+    // When apply() asked, in seconds: until updates.py records that run, the file still holds the one before.
+    property real requested: 0
     readonly property bool applying: applyState.running === true
     // The repository can be fast-forwarded: behind its upstream, with nothing of its own and no local changes.
     readonly property bool pullable: behind > 0 && !(repository.ahead > 0) && repository.dirty !== true
@@ -58,6 +61,7 @@ Singleton {
         if (applying || keys.length === 0)
             return;
         // Shown at once; updates.py writes the same as soon as it holds its lock.
+        requested = Date.now() / 1000;
         applyState = {
             running: true,
             keys: keys
@@ -90,12 +94,13 @@ Singleton {
         stdout: StdioCollector {
             onStreamFinished: {
                 const value = root.parse(text);
+                // Not the file of an earlier apply over the one just started (unless it never started), as Job.qml.
+                if (JobRecord.stale(value, root.requested, Date.now() / 1000))
+                    return;
+                root.requested = 0;
                 root.applyLog = Array.isArray(value.log) ? value.log.filter(line => typeof line === "string") : [];
-                // Not the file of an earlier apply over the one just started.
-                if (!(root.applying && !value.running && value.finished === undefined)) {
-                    delete value.log;
-                    root.applyState = value;
-                }
+                delete value.log;
+                root.applyState = value;
             }
         }
     }

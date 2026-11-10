@@ -2,6 +2,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import "JobRecord.js" as JobRecord
 import ".."
 
 // The Hyprland plugins (plugins.py). At Hyprland startup `desktop-plugins reload` writes plugin-rebuild.json with
@@ -16,6 +17,8 @@ Singleton {
     // Set by shell.qml from the polkit agent: no prompt can show before it is registered.
     property bool agentReady: false
     property var rebuild: ({})
+    // When startRebuild() asked, in seconds: until plugins.py records that run, the file holds the one before.
+    property real requested: 0
     property var status: ({})
     readonly property bool running: rebuild.running === true
     readonly property bool wanted: typeof rebuild.wanted === "string" && !running
@@ -38,6 +41,7 @@ Singleton {
         if (running)
             return;
         // Shown at once; plugins.py writes the same as soon as it holds the lock.
+        requested = Date.now() / 1000;
         rebuild = Object.assign({}, rebuild, {
             running: true
         });
@@ -65,7 +69,9 @@ Singleton {
         printErrors: false
         onFileChanged: reload()
         onLoaded: {
-            root.rebuild = root.parse(text());
+            const value = root.parse(text());
+            if (!JobRecord.stale(value, root.requested, Date.now() / 1000))
+                root.rebuild = value;
             root.refresh();
         }
         onLoadFailed: root.rebuild = ({})
@@ -78,7 +84,9 @@ Singleton {
                 const value = root.parse(text);
                 root.status = value;
                 // The same record as plugin-rebuild.json, with the log: the newest of the two wins.
-                if (value.rebuild && typeof value.rebuild === "object" && !(root.rebuild.running && !value.rebuild.running && value.rebuild.finished === undefined)) {
+                // Not the record of an earlier rebuild over the one just started (unless it never started), as Job.qml.
+                if (value.rebuild && typeof value.rebuild === "object" && !JobRecord.stale(value.rebuild, root.requested, Date.now() / 1000)) {
+                    root.requested = 0;
                     const record = Object.assign({}, value.rebuild);
                     delete record.log;
                     root.rebuild = record;

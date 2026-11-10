@@ -7,7 +7,7 @@ to the conversation, and exit code 2 changes what it does (keeps working after S
 statusline: the status line JSON on stdin -> ~/.local/state/desktop-shell/agent-usage.json (the 5-hour and
 7-day limits, model, context) and one line for the terminal.
 """
-from common import write_atomic
+from common import read_json, write_atomic
 from i18n import tr
 import fcntl
 import json
@@ -60,14 +60,6 @@ def state_for(event, current):
     if name == 'StopFailure':
         return state, one_line(event.get('error'))
     return state, ''
-
-
-def read_json(path):
-    try:
-        data = json.loads(path.read_text(encoding='utf-8'))
-        return data if isinstance(data, dict) else {}
-    except (OSError, ValueError):
-        return {}
 
 
 def hook(event, at):
