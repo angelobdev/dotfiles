@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Graphite rendered by theme.py must match the fallbacks the stowed configs keep."""
+import io
 import json
 from pathlib import Path
 import re
@@ -711,6 +712,31 @@ class DynamicThemeTests(unittest.TestCase):
 
 
 class ReviewRegressionTests(unittest.TestCase):
+    def test_a_failing_app_integration_does_not_stop_the_switch(self):
+        # A hung dconf or an unwritable btop folder: reported, and the steps after it still run.
+        with tempfile.TemporaryDirectory() as directory:
+            original = theme.STATE
+            theme.STATE = Path(directory)
+            try:
+                with mock.patch.object(theme, 'load', return_value=GRAPHITE), \
+                        mock.patch.object(theme, 'preferences', return_value={}), \
+                        mock.patch.object(theme, 'render_all', return_value={}), \
+                        mock.patch.object(theme, 'apply_btop', side_effect=OSError('read-only')), \
+                        mock.patch.object(theme, 'apply_herdr') as herdr, \
+                        mock.patch.object(theme, 'apply_gsettings', side_effect=theme.subprocess.TimeoutExpired('gsettings', 5)), \
+                        mock.patch.object(theme, 'apply_cursor') as cursor, \
+                        mock.patch('sys.stderr', new_callable=io.StringIO) as errors:
+                    theme.apply_btop.__name__ = 'apply_btop'
+                    theme.apply_gsettings.__name__ = 'apply_gsettings'
+                    theme.apply('graphite')
+                self.assertEqual(json.loads((theme.STATE / 'current.json').read_text()), {'theme': 'graphite'})
+                herdr.assert_called_once()
+                cursor.assert_called_once()
+                self.assertIn('apply_btop: read-only', errors.getvalue())
+                self.assertIn('apply_gsettings:', errors.getvalue())
+            finally:
+                theme.STATE = original
+
     def test_empty_vscode_settings_get_valid_json(self):
         self.assertEqual(json.loads(theme.vscode_settings('{}', 'workbench.colorTheme', 'X')), {'workbench.colorTheme': 'X'})
 

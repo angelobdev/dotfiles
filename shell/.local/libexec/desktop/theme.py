@@ -915,7 +915,7 @@ def generate(image=None):
     write_atomic(CONFIG / 'themes' / DYNAMIC / 'theme.json', json.dumps(theme, indent=2, ensure_ascii=False) + '\n')
     previous = current()
     applied = apply(DYNAMIC)
-    apply_vscode(applied)
+    best_effort(apply_vscode, applied)
     reload()
     if previous != DYNAMIC:
         remember(previous, wallpaper_chosen_under(previous))
@@ -955,6 +955,16 @@ def current():
     return DEFAULT
 
 
+# An app integration that fails (a hung dconf, an unwritable btop folder, a Herdr file it cannot read) is
+# reported and skipped: the theme itself is written by then, and the rest of the switch (the reloads, the
+# remembered wallpaper) must still happen. The reason goes to stderr, which the panel shows only on a failure.
+def best_effort(step, *args):
+    try:
+        step(*args)
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        print(f'{step.__name__}: {error}', file=sys.stderr)
+
+
 # Everything is rendered before anything is written, so a template error leaves the old theme intact.
 def apply(name):
     theme = with_preferences(load(name), preferences(), name)
@@ -965,10 +975,10 @@ def apply(name):
     if 'qtct.conf' in outputs:
         for config in QTCT:
             install(config, outputs['qtct.conf'])
-    apply_btop(outputs.get('btop.theme'))
-    apply_herdr(complete(theme))
-    apply_gsettings(theme)
-    apply_cursor(theme)
+    best_effort(apply_btop, outputs.get('btop.theme'))
+    best_effort(apply_herdr, complete(theme))
+    best_effort(apply_gsettings, theme)
+    best_effort(apply_cursor, theme)
     return theme
 
 
@@ -1375,7 +1385,7 @@ def command_cursor_fetch(arguments):
 def command_set(arguments):
     previous = current()
     theme = apply(arguments.name)
-    apply_vscode(theme)
+    best_effort(apply_vscode, theme)
     reload()
     # Colours switch at once; the wallpaper (a conversion, maybe a download) follows in the background.
     if previous != arguments.name:
