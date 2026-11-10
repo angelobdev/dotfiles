@@ -352,9 +352,11 @@ class FlowTests(unittest.TestCase):
 
 
 class ApplyTests(unittest.TestCase):
-    def apply(self, done, answer, booted=True):
+    def apply(self, done, answer, booted=True, running=False, applied=()):
         calls = []
+        installer.APPLIED[:] = applied
         with mock.patch('subprocess.run', side_effect=lambda command, **_: calls.append(command)), \
+                mock.patch.object(installer, 'hyprland_running', return_value=running), \
                 mock.patch.object(installer, 'run_steps', side_effect=lambda *_: calls.append('steps') or done) as steps, \
                 mock.patch.object(installer, 'next_steps'), mock.patch.object(installer, 'booted', return_value=booted), \
                 mock.patch.object(tui, 'keep_sudo'), mock.patch('builtins.input', return_value=answer), mock.patch('builtins.print'):
@@ -393,6 +395,11 @@ class ApplyTests(unittest.TestCase):
     def test_a_reboot_only_when_asked(self):
         self.assertEqual(self.apply(3, 'y')[-1], ('sudo', 'systemctl', 'reboot'))
         self.assertNotIn(('sudo', 'systemctl', 'reboot'), self.apply(3, ''))
+
+    def test_inside_the_desktop_a_reboot_only_for_firmware(self):
+        self.assertNotIn(('sudo', 'systemctl', 'reboot'), self.apply(3, 'y', running=True))
+        self.assertEqual(self.apply(3, 'y', running=True, applied=['firmware'])[-1], ('sudo', 'systemctl', 'reboot'))
+        installer.APPLIED.clear()
 
     def test_no_reboot_question_when_nothing_changed_or_in_a_container(self):
         self.assertNotIn(('sudo', 'systemctl', 'reboot'), self.apply(0, 'y'))

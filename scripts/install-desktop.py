@@ -57,6 +57,8 @@ BOOT_AUTOSTART = 'finish the plugins at the first login'
 Plan = namedtuple('Plan', 'distro release table commands profiles firmware record', defaults=(None, None))
 # remember(plan, items, record) notes in the record what apply is about to change, and what was there before.
 Step = namedtuple('Step', 'title pending apply remember', defaults=(None,))
+# The titles of the steps the last run_steps applied: what they need afterwards (restart_needed).
+APPLIED = []
 sys.dont_write_bytecode = True
 sys.path.insert(0, str(REPO / 'scripts/hyprpm'))
 import bundle  # noqa: E402
@@ -1582,6 +1584,7 @@ def preflight(plan):
 
 def run_steps(plan, preview, steps=STEPS):
     done = 0
+    APPLIED.clear()
     record = None if preview else load_record(set_aside=steps is STEPS)
     if record and record.get('uninstalled'):
         record = {}  # A new install after an uninstall starts its own record.
@@ -1605,6 +1608,7 @@ def run_steps(plan, preview, steps=STEPS):
                 step.remember(plan, items, record)
                 save_record(record)
             step.apply(plan, items)
+            APPLIED.append(step.title)
     return done
 
 
@@ -1662,8 +1666,21 @@ def next_steps(plan, done):
     elif 'plugins' in plan.profiles and not STAMP.exists():
         print('Reboot and sign in. A terminal opens and builds the plugins; if it does not, press Super + Return and run:')
         print(f'  {REPO / "scripts/install-desktop.py"} post --profiles {",".join(plan.profiles)}')
+    elif hyprland_running():
+        # Inside the desktop: only what the applied steps need.
+        print({'reboot': 'Done. Reboot: the new firmware loads at the next boot.',
+               'login': 'Done. Log out and back in: new groups and the login shell come with the next login.'}.get(restart_needed(), 'Done.'))
     else:
         print('Done. Reboot to reach the login screen.')
+
+
+def restart_needed():
+    """What the steps the last run applied need inside a running desktop: 'reboot', 'login' or None."""
+    if {'firmware', 'boot'} & set(APPLIED):
+        return 'reboot'
+    if {'groups', 'shell'} & set(APPLIED):
+        return 'login'
+    return None
 
 
 def post(plan):
