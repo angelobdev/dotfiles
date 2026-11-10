@@ -424,6 +424,12 @@ class StepTests(unittest.TestCase):
         with mock.patch('shutil.which', return_value=None):
             self.assertIn('not installed', installer.stow_pending(plan(fake_distro()))[0])
 
+    def test_files_stow_would_back_up_are_pending_not_an_error(self):
+        output = 'Will back up on apply: /home/u/.config/kitty/kitty.conf\nLINK: .config/kitty/kitty.conf => x\n'
+        with mock.patch.object(installer, 'query', return_value=mock.Mock(returncode=0, stdout=output, stderr='')):
+            self.assertEqual(installer.stow_pending(plan(fake_distro())),
+                             ['Will back up on apply: /home/u/.config/kitty/kitty.conf', 'LINK: .config/kitty/kitty.conf => x'])
+
     def test_a_stow_error_stops_the_run(self):
         with mock.patch.object(installer, 'query', return_value=mock.Mock(returncode=2, stdout='', stderr='Parent must be a real directory')):
             with self.assertRaises(RuntimeError) as caught:

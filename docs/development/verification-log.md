@@ -1088,3 +1088,11 @@ Reported by the user after the merges of the day:
 - The Theme tab (#59): a window-style and a dynamic-mode change from outside the panel move the page too.
 - The glass settings page by hand, and Glass Light on screen.
 - Power Saver turning on by itself at 20% on a real discharge.
+
+## A file in the way of Stow (#69), 2026-11-10
+
+- `stow.py dry-run` printed `Will back up on apply` for each file in the way and then exited with the status of `stow --simulate`, which aborts on them (exit 1). The installer previews each step before applying it and stops on that exit, so `stow.py apply`, which backs them up, never ran: with one regular `~/.config/kitty/kitty.conf` the install stopped at the stow step every time.
+- The dry-run now passes Stow one `--ignore=^<path>` per file in the way. Stow matches it against the path relative to the target with `\z` appended, so only that path is left out (`kitty.conf.tpl` still links).
+- Against a throwaway target holding a regular `kitty.conf` and a GTK `settings.ini` linked elsewhere: dry-run exit 0 with both listed, nothing changed; `apply` moved both to the backup folder and linked them; a second dry-run had nothing to back up. The dry-run of the real home is unchanged.
+- `scripts/tests/test_stow.py` covers both runs with the real Stow (it fails without the fix); `stow` is now installed by `check.yml` on both distributions, so the test does not skip there. Both container installs now start with a `kitty.conf` of the user's own and check that apply backs it up and links it, and that the uninstall puts it back (run by `install.yml` on this PR).
+- `check.sh` passes.
