@@ -95,67 +95,54 @@ ColumnLayout {
         GroupTitle {
             text: I18n.tr("settings.hypr.layoutGroup")
         }
-        Rectangle {
+        GroupCard {
             Layout.fillWidth: true
-            implicitHeight: layoutRows.implicitHeight + 20
-            radius: Theme.corner(12)
-            color: Theme.tile
-            ColumnLayout {
-                id: layoutRows
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: parent.top
-                    margins: 10
-                    leftMargin: 14
-                    rightMargin: 14
-                }
-                spacing: 10
-                RowLayout {
+            verticalPadding: 10
+            spacing: 10
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 14
+                ColumnLayout {
                     Layout.fillWidth: true
-                    spacing: 14
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 2
-                        Text {
-                            text: I18n.tr("settings.hypr.layout")
-                            color: Theme.text
-                            font.family: Theme.font
-                            font.pixelSize: Theme.textSize(13)
-                        }
-                        Hint {
-                            text: HyprSettings.layout === "" ? I18n.tr("settings.hypr.layoutSystem", [HyprSettings.active || "—"]) : I18n.tr("settings.hypr.layoutHint")
-                        }
+                    spacing: 2
+                    Text {
+                        text: I18n.tr("settings.hypr.layout")
+                        color: Theme.text
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(13)
                     }
-                    InputField {
-                        id: layoutField
-                        implicitWidth: 120
-                        text: HyprSettings.layout
-                        placeholderText: HyprSettings.active
-                        Accessible.name: I18n.tr("settings.hypr.layout")
-                        onEditingFinished: if (text.trim() !== HyprSettings.layout && (text.trim() === "" || HyprSettings.validLayout(text.trim())))
-                            HyprSettings.setKeyboard(text, variantField.text)
-                    }
-                    InputField {
-                        id: variantField
-                        implicitWidth: 120
-                        text: HyprSettings.variant
-                        placeholderText: I18n.tr("settings.hypr.variant")
-                        enabled: layoutField.text.trim() !== ""
-                        Accessible.name: I18n.tr("settings.hypr.variant")
-                        onEditingFinished: if (text.trim() !== HyprSettings.variant && HyprSettings.validVariant(text.trim()))
-                            HyprSettings.setKeyboard(layoutField.text, text)
+                    Hint {
+                        text: HyprSettings.layout === "" ? I18n.tr("settings.hypr.layoutSystem", [HyprSettings.active || "—"]) : I18n.tr("settings.hypr.layoutHint")
                     }
                 }
-                Text {
-                    Layout.fillWidth: true
-                    visible: (layoutField.text.trim() !== "" && !HyprSettings.validLayout(layoutField.text.trim())) || !HyprSettings.validVariant(variantField.text.trim())
-                    text: I18n.tr("settings.hypr.layoutInvalid")
-                    color: Theme.danger
-                    wrapMode: Text.WordWrap
-                    font.family: Theme.font
-                    font.pixelSize: Theme.textSize(11)
+                InputField {
+                    id: layoutField
+                    implicitWidth: 120
+                    text: HyprSettings.layout
+                    placeholderText: HyprSettings.active
+                    Accessible.name: I18n.tr("settings.hypr.layout")
+                    onEditingFinished: if (text.trim() !== HyprSettings.layout && (text.trim() === "" || HyprSettings.validLayout(text.trim())))
+                        HyprSettings.setKeyboard(text, variantField.text)
                 }
+                InputField {
+                    id: variantField
+                    implicitWidth: 120
+                    text: HyprSettings.variant
+                    placeholderText: I18n.tr("settings.hypr.variant")
+                    enabled: layoutField.text.trim() !== ""
+                    Accessible.name: I18n.tr("settings.hypr.variant")
+                    onEditingFinished: if (text.trim() !== HyprSettings.variant && HyprSettings.validVariant(text.trim()))
+                        HyprSettings.setKeyboard(layoutField.text, text)
+                }
+            }
+            Text {
+                Layout.fillWidth: true
+                visible: (layoutField.text.trim() !== "" && !HyprSettings.validLayout(layoutField.text.trim())) || !HyprSettings.validVariant(variantField.text.trim())
+                text: I18n.tr("settings.hypr.layoutInvalid")
+                color: Theme.danger
+                wrapMode: Text.WordWrap
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(11)
             }
         }
     }
@@ -166,93 +153,80 @@ ColumnLayout {
         GroupTitle {
             text: I18n.tr("settings.hypr.bindsGroup")
         }
-        Rectangle {
+        GroupCard {
             Layout.fillWidth: true
-            implicitHeight: bindRows.implicitHeight + 20
-            radius: Theme.corner(12)
-            color: Theme.tile
-            ColumnLayout {
-                id: bindRows
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: parent.top
-                    margins: 10
-                    leftMargin: 14
-                    rightMargin: 14
-                }
-                spacing: 8
-                Hint {
-                    text: I18n.tr("settings.hypr.bindsHint")
-                }
-                Repeater {
-                    model: bindModel
-                    ColumnLayout {
-                        id: bindRow
-                        required property int index
-                        required property string keys
-                        required property string command
-                        required property string description
-                        // What else is on these keys: Hyprland binds (the repository, hypr.lua, this list) and the
-                        // other rows here.
-                        readonly property var takenBy: HyprSettings.takenBy(keys, description.trim() || command.trim())
-                        readonly property int twins: root.duplicates(index, keys)
+            verticalPadding: 10
+            spacing: 8
+            Hint {
+                text: I18n.tr("settings.hypr.bindsHint")
+            }
+            Repeater {
+                model: bindModel
+                ColumnLayout {
+                    id: bindRow
+                    required property int index
+                    required property string keys
+                    required property string command
+                    required property string description
+                    // What else is on these keys: Hyprland binds (the repository, hypr.lua, this list) and the
+                    // other rows here.
+                    readonly property var takenBy: HyprSettings.takenBy(keys, description.trim() || command.trim())
+                    readonly property int twins: root.duplicates(index, keys)
+                    Layout.fillWidth: true
+                    spacing: 4
+                    RowLayout {
                         Layout.fillWidth: true
-                        spacing: 4
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 8
-                            InputField {
-                                Layout.preferredWidth: 180
-                                text: bindRow.keys
-                                placeholderText: "SUPER + B"
-                                color: text === "" || HyprSettings.validKeys(text) ? Theme.text : Theme.danger
-                                Accessible.name: I18n.tr("settings.hypr.keys")
-                                onEditingFinished: if (text !== bindRow.keys)
-                                    root.editRow(bindRow.index, "keys", text)
-                            }
-                            InputField {
-                                Layout.fillWidth: true
-                                text: bindRow.command
-                                placeholderText: I18n.tr("settings.hypr.command")
-                                Accessible.name: I18n.tr("settings.hypr.command")
-                                onEditingFinished: if (text !== bindRow.command)
-                                    root.editRow(bindRow.index, "command", text)
-                            }
-                            InputField {
-                                Layout.preferredWidth: 160
-                                text: bindRow.description
-                                placeholderText: I18n.tr("settings.hypr.description")
-                                Accessible.name: I18n.tr("settings.hypr.description")
-                                onEditingFinished: if (text !== bindRow.description)
-                                    root.editRow(bindRow.index, "description", text)
-                            }
-                            PanelIconButton {
-                                iconName: "trash"
-                                tooltip: I18n.tr("settings.hypr.remove")
-                                onClicked: root.removeRow(bindRow.index)
-                            }
+                        spacing: 8
+                        InputField {
+                            Layout.preferredWidth: 180
+                            text: bindRow.keys
+                            placeholderText: "SUPER + B"
+                            color: text === "" || HyprSettings.validKeys(text) ? Theme.text : Theme.danger
+                            Accessible.name: I18n.tr("settings.hypr.keys")
+                            onEditingFinished: if (text !== bindRow.keys)
+                                root.editRow(bindRow.index, "keys", text)
                         }
-                        Text {
+                        InputField {
                             Layout.fillWidth: true
-                            visible: bindRow.takenBy.length > 0 || bindRow.twins > 0
-                            text: bindRow.takenBy.length > 0 ? I18n.tr("settings.hypr.taken", [bindRow.takenBy.join(", ")]) : I18n.tr("settings.hypr.twice")
-                            textFormat: Text.PlainText
-                            wrapMode: Text.WordWrap
-                            color: Theme.danger
-                            font.family: Theme.font
-                            font.pixelSize: Theme.textSize(11)
+                            text: bindRow.command
+                            placeholderText: I18n.tr("settings.hypr.command")
+                            Accessible.name: I18n.tr("settings.hypr.command")
+                            onEditingFinished: if (text !== bindRow.command)
+                                root.editRow(bindRow.index, "command", text)
+                        }
+                        InputField {
+                            Layout.preferredWidth: 160
+                            text: bindRow.description
+                            placeholderText: I18n.tr("settings.hypr.description")
+                            Accessible.name: I18n.tr("settings.hypr.description")
+                            onEditingFinished: if (text !== bindRow.description)
+                                root.editRow(bindRow.index, "description", text)
+                        }
+                        PanelIconButton {
+                            iconName: "trash"
+                            tooltip: I18n.tr("settings.hypr.remove")
+                            onClicked: root.removeRow(bindRow.index)
                         }
                     }
+                    Text {
+                        Layout.fillWidth: true
+                        visible: bindRow.takenBy.length > 0 || bindRow.twins > 0
+                        text: bindRow.takenBy.length > 0 ? I18n.tr("settings.hypr.taken", [bindRow.takenBy.join(", ")]) : I18n.tr("settings.hypr.twice")
+                        textFormat: Text.PlainText
+                        wrapMode: Text.WordWrap
+                        color: Theme.danger
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(11)
+                    }
                 }
-                ActionButton {
-                    text: I18n.tr("settings.hypr.add")
-                    onClicked: bindModel.append({
-                        keys: "",
-                        command: "",
-                        description: ""
-                    })
-                }
+            }
+            ActionButton {
+                text: I18n.tr("settings.hypr.add")
+                onClicked: bindModel.append({
+                    keys: "",
+                    command: "",
+                    description: ""
+                })
             }
         }
     }

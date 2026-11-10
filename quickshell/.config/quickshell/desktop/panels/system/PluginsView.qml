@@ -98,66 +98,52 @@ ColumnLayout {
                 color: Theme.danger
             }
             // The bundle and the plugins in it.
-            Rectangle {
+            GroupCard {
                 Layout.fillWidth: true
-                implicitHeight: bundleRows.implicitHeight + 24
-                radius: Theme.corner(12)
-                color: Theme.tile
                 visible: root.status.state !== undefined
-                ColumnLayout {
-                    id: bundleRows
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                        top: parent.top
-                        margins: 12
-                        leftMargin: 14
-                        rightMargin: 14
-                    }
-                    spacing: 10
-                    Line {
-                        text: root.stateKeys[root.status.state] ? I18n.tr(root.stateKeys[root.status.state]) : ""
-                        font.weight: Font.DemiBold
-                        font.pixelSize: Theme.textSize(13)
-                        color: root.status.state === "current" ? Theme.text : Theme.danger
-                    }
-                    Line {
-                        text: I18n.tr("settings.plugins.hyprland", [root.status.hyprland || "—", (root.status.verified ?? []).join(", ")])
-                        color: Theme.muted
-                        font.pixelSize: Theme.textSize(11)
-                    }
-                    Line {
-                        visible: root.atLogin
-                        text: I18n.tr("settings.plugins.atLogin")
-                    }
-                    Repeater {
-                        model: root.plugins
-                        RowLayout {
-                            id: pluginRow
-                            required property var modelData
+                spacing: 10
+                Line {
+                    text: root.stateKeys[root.status.state] ? I18n.tr(root.stateKeys[root.status.state]) : ""
+                    font.weight: Font.DemiBold
+                    font.pixelSize: Theme.textSize(13)
+                    color: root.status.state === "current" ? Theme.text : Theme.danger
+                }
+                Line {
+                    text: I18n.tr("settings.plugins.hyprland", [root.status.hyprland || "—", (root.status.verified ?? []).join(", ")])
+                    color: Theme.muted
+                    font.pixelSize: Theme.textSize(11)
+                }
+                Line {
+                    visible: root.atLogin
+                    text: I18n.tr("settings.plugins.atLogin")
+                }
+                Repeater {
+                    model: root.plugins
+                    RowLayout {
+                        id: pluginRow
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: 12
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: 12
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
-                                Line {
-                                    text: pluginRow.modelData.name + " · " + I18n.tr("settings.plugins.profile", [pluginRow.modelData.profile])
-                                    font.pixelSize: Theme.textSize(13)
-                                    font.weight: Font.DemiBold
-                                }
-                                Line {
-                                    text: pluginRow.modelData.repo + " @ " + String(pluginRow.modelData.revision).slice(0, 7)
-                                    color: Theme.muted
-                                    font.pixelSize: Theme.textSize(11)
-                                }
+                            spacing: 2
+                            Line {
+                                text: pluginRow.modelData.name + " · " + I18n.tr("settings.plugins.profile", [pluginRow.modelData.profile])
+                                font.pixelSize: Theme.textSize(13)
+                                font.weight: Font.DemiBold
                             }
-                            Text {
-                                text: root.pluginState(pluginRow.modelData)
-                                textFormat: Text.PlainText
-                                color: pluginRow.modelData.loaded ? Theme.text : Theme.muted
-                                font.family: Theme.font
-                                font.pixelSize: Theme.textSize(12)
+                            Line {
+                                text: pluginRow.modelData.repo + " @ " + String(pluginRow.modelData.revision).slice(0, 7)
+                                color: Theme.muted
+                                font.pixelSize: Theme.textSize(11)
                             }
+                        }
+                        Text {
+                            text: root.pluginState(pluginRow.modelData)
+                            textFormat: Text.PlainText
+                            color: pluginRow.modelData.loaded ? Theme.text : Theme.muted
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(12)
                         }
                     }
                 }

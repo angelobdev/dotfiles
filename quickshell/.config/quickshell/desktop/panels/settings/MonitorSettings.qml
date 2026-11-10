@@ -120,136 +120,122 @@ ColumnLayout {
         font.pixelSize: Theme.textSize(12)
         font.weight: Font.DemiBold
     }
-    Rectangle {
+    GroupCard {
         Layout.fillWidth: true
-        implicitHeight: form.implicitHeight + 24
-        radius: Theme.corner(12)
-        color: Theme.tile
-        ColumnLayout {
-            id: form
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                margins: 12
-                leftMargin: 14
-                rightMargin: 14
+        spacing: 10
+        ChoiceChips {
+            visible: root.monitors.length > 1
+            enabled: !HyprSettings.trying
+            options: root.monitors.map(entry => ({
+                        name: entry.name,
+                        label: entry.name
+                    }))
+            current: root.selected
+            onChosen: name => root.selected = name
+        }
+        Setting {
+            visible: !root.panel && root.resolutions.length > 0
+            label: I18n.tr("settings.monitors.resolution")
+            options: root.resolutions.map(value => ({
+                        name: value,
+                        label: value.replace("x", " × ")
+                    }))
+            current: root.resolution
+            onChosen: name => {
+                root.resolution = name;
+                if (!root.rates.includes(root.rate))
+                    root.rate = root.rates[0] ?? "";
             }
-            spacing: 10
-            ChoiceChips {
-                visible: root.monitors.length > 1
-                enabled: !HyprSettings.trying
-                options: root.monitors.map(entry => ({
-                            name: entry.name,
-                            label: entry.name
-                        }))
-                current: root.selected
-                onChosen: name => root.selected = name
+        }
+        Setting {
+            visible: !root.panel && root.rates.length > 0
+            label: I18n.tr("settings.monitors.refresh")
+            options: root.rates.map(value => ({
+                        name: value,
+                        label: I18n.tr("settings.monitors.hertz", [value])
+                    }))
+            current: root.rate
+            onChosen: name => root.rate = name
+        }
+        Text {
+            Layout.fillWidth: true
+            visible: root.panel
+            text: I18n.tr("settings.monitors.panelHint")
+            wrapMode: Text.WordWrap
+            color: Theme.muted
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize(11)
+        }
+        Setting {
+            label: I18n.tr("settings.monitors.scale")
+            options: root.scales.map(value => ({
+                        name: String(value),
+                        label: Math.round(value * 100) + "%"
+                    }))
+            current: String(root.nearestScale(root.chosenScale))
+            onChosen: name => root.chosenScale = Number(name)
+        }
+        Setting {
+            label: I18n.tr("settings.monitors.position")
+            options: root.positions.map(value => ({
+                        name: value,
+                        label: I18n.tr({
+                            "auto": "settings.monitors.positions.auto",
+                            "auto-left": "settings.monitors.positions.left",
+                            "auto-right": "settings.monitors.positions.right",
+                            "auto-up": "settings.monitors.positions.up",
+                            "auto-down": "settings.monitors.positions.down"
+                        }[value])
+                    }))
+            current: root.position
+            onChosen: name => root.position = name
+        }
+        RowLayout {
+            visible: !HyprSettings.trying
+            spacing: 8
+            ActionButton {
+                highlighted: true
+                text: I18n.tr("settings.monitors.apply")
+                enabled: root.selected !== "" && !Config.unreadable
+                onClicked: root.apply()
             }
-            Setting {
-                visible: !root.panel && root.resolutions.length > 0
-                label: I18n.tr("settings.monitors.resolution")
-                options: root.resolutions.map(value => ({
-                            name: value,
-                            label: value.replace("x", " × ")
-                        }))
-                current: root.resolution
-                onChosen: name => {
-                    root.resolution = name;
-                    if (!root.rates.includes(root.rate))
-                        root.rate = root.rates[0] ?? "";
-                }
+            ActionButton {
+                visible: root.saved !== null
+                text: I18n.tr("settings.monitors.reset")
+                onClicked: root.reset()
             }
-            Setting {
-                visible: !root.panel && root.rates.length > 0
-                label: I18n.tr("settings.monitors.refresh")
-                options: root.rates.map(value => ({
-                            name: value,
-                            label: I18n.tr("settings.monitors.hertz", [value])
-                        }))
-                current: root.rate
-                onChosen: name => root.rate = name
-            }
+        }
+        // The countdown: keep, or go back now; at zero it goes back by itself.
+        RowLayout {
+            visible: HyprSettings.trying
+            Layout.fillWidth: true
+            spacing: 8
             Text {
                 Layout.fillWidth: true
-                visible: root.panel
-                text: I18n.tr("settings.monitors.panelHint")
+                text: I18n.tr("settings.monitors.confirm", [HyprSettings.secondsLeft])
                 wrapMode: Text.WordWrap
-                color: Theme.muted
+                color: Theme.text
                 font.family: Theme.font
-                font.pixelSize: Theme.textSize(11)
+                font.pixelSize: Theme.textSize(13)
             }
-            Setting {
-                label: I18n.tr("settings.monitors.scale")
-                options: root.scales.map(value => ({
-                            name: String(value),
-                            label: Math.round(value * 100) + "%"
-                        }))
-                current: String(root.nearestScale(root.chosenScale))
-                onChosen: name => root.chosenScale = Number(name)
+            ActionButton {
+                highlighted: true
+                text: I18n.tr("settings.monitors.keep")
+                onClicked: HyprSettings.keepMonitors()
             }
-            Setting {
-                label: I18n.tr("settings.monitors.position")
-                options: root.positions.map(value => ({
-                            name: value,
-                            label: I18n.tr({
-                                "auto": "settings.monitors.positions.auto",
-                                "auto-left": "settings.monitors.positions.left",
-                                "auto-right": "settings.monitors.positions.right",
-                                "auto-up": "settings.monitors.positions.up",
-                                "auto-down": "settings.monitors.positions.down"
-                            }[value])
-                        }))
-                current: root.position
-                onChosen: name => root.position = name
+            ActionButton {
+                text: I18n.tr("settings.monitors.revert")
+                onClicked: HyprSettings.revertMonitors()
             }
-            RowLayout {
-                visible: !HyprSettings.trying
-                spacing: 8
-                ActionButton {
-                    highlighted: true
-                    text: I18n.tr("settings.monitors.apply")
-                    enabled: root.selected !== "" && !Config.unreadable
-                    onClicked: root.apply()
-                }
-                ActionButton {
-                    visible: root.saved !== null
-                    text: I18n.tr("settings.monitors.reset")
-                    onClicked: root.reset()
-                }
-            }
-            // The countdown: keep, or go back now; at zero it goes back by itself.
-            RowLayout {
-                visible: HyprSettings.trying
-                Layout.fillWidth: true
-                spacing: 8
-                Text {
-                    Layout.fillWidth: true
-                    text: I18n.tr("settings.monitors.confirm", [HyprSettings.secondsLeft])
-                    wrapMode: Text.WordWrap
-                    color: Theme.text
-                    font.family: Theme.font
-                    font.pixelSize: Theme.textSize(13)
-                }
-                ActionButton {
-                    highlighted: true
-                    text: I18n.tr("settings.monitors.keep")
-                    onClicked: HyprSettings.keepMonitors()
-                }
-                ActionButton {
-                    text: I18n.tr("settings.monitors.revert")
-                    onClicked: HyprSettings.revertMonitors()
-                }
-            }
-            Text {
-                Layout.fillWidth: true
-                visible: HyprSettings.skipped.some(name => name.startsWith("monitors."))
-                text: I18n.tr("settings.hypr.skipped", [HyprSettings.skipped.filter(name => name.startsWith("monitors.")).join(", ")])
-                wrapMode: Text.WordWrap
-                color: Theme.danger
-                font.family: Theme.font
-                font.pixelSize: Theme.textSize(11)
-            }
+        }
+        Text {
+            Layout.fillWidth: true
+            visible: HyprSettings.skipped.some(name => name.startsWith("monitors."))
+            text: I18n.tr("settings.hypr.skipped", [HyprSettings.skipped.filter(name => name.startsWith("monitors.")).join(", ")])
+            wrapMode: Text.WordWrap
+            color: Theme.danger
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize(11)
         }
     }
 }

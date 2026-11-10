@@ -343,6 +343,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #111: Night shift wrote `session.json` twice in a row for one change; it uses `SessionState.setMany` (2026-11-10).
   - [x] #112: tests for the helpers that had none, all without hardware: `brightness.py` (backends, DDC/CI readings, the panel found without a mapping), the Bluetooth agent's replies (only the pending request, PIN and passkey limits), `recording.py` (areas in logical pixels, rotated displays), `xwayland.py`, `clipboard.py` and `bar_visibility.py` (2026-11-10).
   - [x] #106: `bind()`, the `desktop-shell` path and the other wrapper paths were rebuilt in each Lua module and machine profile; `config/util.lua` holds them with `state_home()`, and the 103 binds of `binds.lua`, `input.lua`, `plugins.lua`, `tablet.lua` and the profile give the same keys, commands and descriptions (2026-11-10).
+  - [x] #107: the tile card around a group of option rows was written out nine times in seven Settings and System files; it is `components/GroupCard.qml` now. The padding had not drifted: each copy was symmetric (10 or 12 above and below), and each keeps its own (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
