@@ -410,5 +410,50 @@ class VideoTests(Sandbox):
             radio.play_target({'url': 'https://www.youtube.com/watch?v=Pe_zj-WZotg'})
         self.assertIn('--no-video', popen.call_args.args[0])
 
+
+class ConcurrentPlayTests(unittest.TestCase):
+    def test_two_plays_at_once_leave_one_mpv_the_one_in_the_state(self):
+        # The real helper twice at the same moment, with an mpv that only waits to be stopped.
+        import os
+        import subprocess
+        import time
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'bin').mkdir()
+            fake = root / 'bin/mpv'
+            fake.write_text('#!/bin/sh\nexec sleep 30\n')
+            fake.chmod(0o755)
+            (root / 'run').mkdir(mode=0o700)
+            environment = {**os.environ, 'PATH': f"{root / 'bin'}:{os.environ['PATH']}", 'XDG_RUNTIME_DIR': str(root / 'run'),
+                           'XDG_CONFIG_HOME': str(root / 'config')}
+            helper = REPO / 'shell/.local/libexec/desktop/radio.py'
+            # An mpv slow to stop holds each play in stop_playback for 0.75 s: without one change at a time, both
+            # plays would stop it, then both start an mpv.
+            old = subprocess.Popen(['sh', '-c', 'trap "" TERM; exec sleep 30'], env=environment)
+            self.addCleanup(lambda: old.poll() is None and old.kill())
+            time.sleep(0.2)
+            (root / 'run/desktop-shell').mkdir()
+            (root / 'run/desktop-shell/radio.json').write_text(json.dumps({'active': True, 'playing': True, 'pid': old.pid}))
+            runs = [subprocess.Popen([sys.executable, str(helper), 'play', f'https://example.com/{n}'], env=environment,
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True) for n in (1, 2)]
+            for run in runs:
+                self.assertEqual(run.wait(timeout=30), 0, run.stderr.read())
+            state = json.loads((root / 'run/desktop-shell/radio.json').read_text())
+            time.sleep(0.2)
+            mine = []
+            for process in Path('/proc').iterdir():
+                try:
+                    if (process / 'cmdline').read_bytes() == b'sleep\x0030\x00' and \
+                            str(root / 'run').encode() in (process / 'environ').read_bytes():
+                        mine.append(process.name)
+                except OSError:
+                    continue
+            try:
+                self.assertEqual(mine, [str(state['pid'])])
+            finally:
+                for pid in mine:
+                    os.kill(int(pid), 15)
+
+
 if __name__ == '__main__':
     unittest.main()
