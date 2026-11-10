@@ -12,10 +12,13 @@ Singleton {
     readonly property bool busy: operation.running
     readonly property bool collecting: Config.clipboardEnabled && !paused
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/clipboard.py"
+    readonly property string database: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/cliphist/db"
+    // The output of the last listing: the same one again changes nothing (the panel filters every entry anew).
+    property string listed: ""
     function refresh() {
-        if (listing.running || operation.running)
+        if (operation.running)
             return;
-        listing.running = true;
+        listing.request();
     }
     function act(action, id) {
         if (operation.running)
@@ -60,7 +63,8 @@ Singleton {
         textWatcher.running = collecting;
         imageWatcher.running = collecting;
     }
-    Process {
+    // Asked while it runs (a copy during a listing), it lists once more after.
+    CoalescedProcess {
         id: listing
         command: ["python3", root.helper, "list"]
         stdout: StdioCollector {
@@ -71,8 +75,11 @@ Singleton {
         }
         onExited: (code, status) => {
             if (code === 0) {
+                if (data.text === root.listed && root.error === "")
+                    return;
                 try {
                     root.entries = JSON.parse(data.text);
+                    root.listed = data.text;
                     root.error = "";
                 } catch (e) {
                     root.error = I18n.tr("clipboard.errors.historyUnavailable");
@@ -95,10 +102,13 @@ Singleton {
             root.refresh();
         }
     }
-    Timer {
-        interval: 1000
-        running: ShellState.panel === "clipboard"
-        repeat: true
-        onTriggered: root.refresh()
+    // cliphist writes its database in place at each copy: while the panel is open, a change of it lists the
+    // history again. Only the notification, never the file (megabytes). The panel lists it when it opens.
+    FileView {
+        path: root.database
+        preload: false
+        watchChanges: ShellState.panel === "clipboard"
+        printErrors: false
+        onFileChanged: root.refresh()
     }
 }
