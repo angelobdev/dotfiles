@@ -206,7 +206,11 @@ def main():
         else:
             print(tr('store.errors.usage'), file=sys.stderr)
             return 2
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        # Not the store's JSON (a maintenance page served with 200): the store is unavailable, not a parse error.
+        result = {'error': tr('store.errors.unavailable')}
     except ValueError as error:
+        # Raised here on purpose, with a translated message.
         result = {'error': str(error)}
     except (tarfile.TarError, zipfile.BadZipFile, EOFError):
         result = {'error': tr('store.errors.format')}

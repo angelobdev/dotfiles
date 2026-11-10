@@ -976,6 +976,7 @@
   "theme": {
     "errors": {
       "checksum": "%1 did not match its checksum and was discarded.",
+      "failed": "The theme could not be applied: %1",
       "color": "Theme value %1 is not a #rrggbb or #rrggbbaa colour: %2",
       "control": "Theme value %1 holds a line break or control character.",
       "filter": "Unknown theme template filter: %1",

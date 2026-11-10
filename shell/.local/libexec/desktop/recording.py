@@ -103,6 +103,6 @@ def main():
 if __name__ == '__main__':
     try:
         sys.exit(main())
-    except (OSError, ValueError, subprocess.CalledProcessError) as error:
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
         print(json.dumps({'recording': False, 'error': tr('recording.errors.failed', [error])}), flush=True)
         sys.exit(1)
