@@ -354,6 +354,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 
 - [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #101: `install-desktop.py` (2056 lines) is the command line, about 100 lines; the installer is `scripts/install/install_{paths,plan,record,steps,pins,undo,removal,run}.py`, which the guided installer imports directly (no `importlib` of the script any more). Every name across modules is `module.name`, the tests patch each in its module and run with their own `XDG_STATE_HOME`; previews, `profiles.py` and the guided installer answer as before (2026-11-10).
+  - [x] #98: an Arch removal review parsed `pacman.log` and `pacman -Qi` about 6-10 times; both parsed answers are now kept in the installer's answer cache until the next change (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
