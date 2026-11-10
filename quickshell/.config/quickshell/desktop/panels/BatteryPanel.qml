@@ -36,12 +36,13 @@ Overlay {
     }
     // The internal display (config/displays.lua keeps its refresh, one for battery and one for mains power): VRR
     // when it can, or one of its fixed rates; "" is its preferred mode.
-    property var monitors: []
+    // Only the monitors in use, as hyprctl monitors lists them: a panel switched off (lid closed) has no refresh to choose.
+    readonly property var monitors: HyprSettings.monitorList.filter(m => !m.disabled)
     property var refreshChoices: ({
             battery: "",
             ac: ""
         })
-    readonly property var panelMonitor: monitors.find(m => /^(eDP|LVDS|DSI)-/.test(m.name)) ?? null
+    readonly property var panelMonitor: monitors.find(m => HyprSettings.isPanel(m.name)) ?? null
     readonly property var refreshOptions: {
         const monitor = panelMonitor;
         if (!monitor)
@@ -91,24 +92,13 @@ Overlay {
         };
     }
     onOpened: {
-        lister.running = true;
+        HyprSettings.listMonitors();
         refreshState.reload();
     }
     Timer {
         id: relist
         interval: 600
-        onTriggered: lister.running = true
-    }
-    Process {
-        id: lister
-        command: ["hyprctl", "monitors", "-j"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    root.monitors = JSON.parse(text);
-                } catch (failure) {}
-            }
-        }
+        onTriggered: HyprSettings.listMonitors()
     }
     FileView {
         id: refreshState

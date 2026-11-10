@@ -96,6 +96,17 @@ Singleton {
             monitors: monitors
         }));
     }
+    // Every monitor Hyprland has (hyprctl monitors all: disabled ones too), listed for Settings → Displays, the
+    // Displays panel and the battery panel alike: one listing, asked for again by whichever needs it.
+    property var monitorList: []
+    signal monitorsListed
+    function listMonitors() {
+        monitorLister.request();
+    }
+    // The laptop's own panel, by the names config/displays.lua looks for.
+    function isPanel(name) {
+        return /^(eDP|LVDS|DSI)-/.test(name ?? "");
+    }
     // Settings → Displays applies a monitor for 15 seconds unless kept; then, or on Revert, the monitors from before
     // come back. Kept here rather than in the panel, which can be dropped while the countdown runs.
     property var previousMonitors: null
@@ -168,6 +179,18 @@ Singleton {
         }
         // Hyprland reloads settings.lua by itself; the layout it then uses is read again.
         onExited: activeLater.restart()
+    }
+    CoalescedProcess {
+        id: monitorLister
+        command: ["hyprctl", "monitors", "all", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    root.monitorList = JSON.parse(text);
+                } catch (failure) {}
+                root.monitorsListed();
+            }
+        }
     }
     Timer {
         id: countdown

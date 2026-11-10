@@ -18,10 +18,10 @@ ColumnLayout {
     // On screen: the monitors are read again each time it shows.
     property bool shown: false
     spacing: 6
-    property var monitors: []
+    readonly property var monitors: HyprSettings.monitorList.filter(entry => entry.name !== "FALLBACK")
     property string selected: ""
     readonly property var monitor: monitors.find(entry => entry.name === selected) ?? null
-    readonly property bool panel: /^(eDP|LVDS|DSI)-/.test(selected)
+    readonly property bool panel: HyprSettings.isPanel(selected)
     readonly property var saved: HyprSettings.monitors[selected] ?? null
     // The form, from the saved settings or what the monitor runs now.
     property string resolution: ""
@@ -49,8 +49,7 @@ ColumnLayout {
     readonly property var resolutions: modes.map(mode => mode.resolution).filter((value, index, all) => all.indexOf(value) === index)
     readonly property var rates: modes.filter(mode => mode.resolution === resolution).map(mode => mode.rate)
     function load() {
-        if (!lister.running)
-            lister.running = true;
+        HyprSettings.listMonitors();
     }
     onShownChanged: if (shown)
         load()
@@ -104,21 +103,14 @@ ColumnLayout {
         interval: 1500
         onTriggered: root.load()
     }
-    Process {
-        id: lister
-        command: ["hyprctl", "monitors", "all", "-j"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    root.monitors = JSON.parse(text).filter(entry => entry.name !== "FALLBACK");
-                } catch (failure) {
-                    root.monitors = [];
-                }
-                if (!root.monitors.some(entry => entry.name === root.selected))
-                    root.selected = root.monitors[0]?.name ?? "";
-                else if (!HyprSettings.trying)
-                    root.fill();
-            }
+    // The shared listing (HyprSettings), whichever view asked for it: the form follows it while on screen.
+    Connections {
+        target: HyprSettings
+        function onMonitorsListed() {
+            if (!root.monitors.some(entry => entry.name === root.selected))
+                root.selected = root.monitors[0]?.name ?? "";
+            else if (root.shown && !HyprSettings.trying)
+                root.fill();
         }
     }
     Text {
