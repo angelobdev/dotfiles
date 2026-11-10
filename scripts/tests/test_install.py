@@ -974,7 +974,7 @@ class ProfileRemovalTests(unittest.TestCase):
     def test_the_plugins_profile_waits_until_hyprland_is_gone(self):
         with mock.patch('os.geteuid', return_value=1000), mock.patch.object(installer, 'load_plan', return_value=plan(fake_distro())), \
                 mock.patch.object(installer, 'refuse'), mock.patch.object(installer, 'refuse_uninstall') as refused, \
-                mock.patch.object(installer, 'removal_plan', side_effect=lambda current, removed, preview: current._replace(record={})), \
+                mock.patch.object(installer, 'removal_plan', side_effect=lambda current, removed, preview, keep: current._replace(record={})), \
                 mock.patch.object(installer, 'record_notes', return_value=[]), \
                 mock.patch.object(installer, 'run_steps', return_value=0) as steps, mock.patch('builtins.print'):
             installer.main(['apply', '--remove', 'apps'])
@@ -1001,6 +1001,40 @@ class ProfileRemovalTests(unittest.TestCase):
         current.distro.removal.side_effect = lambda names: list(names) + (['shared.x86_64'] if 'apponly.x86_64' in names else [])
         current.distro.requirements.side_effect = lambda names: {'apponly.x86_64'} if 'shared.x86_64' in names else set()
         self.assertEqual(installer.unpackages_pending(current), ['zen.x86_64', 'keep apponly.x86_64  (a package that stays needs it)'])
+
+    def test_a_removal_records_what_is_there_without_a_record(self):
+        # Herdr from its own installer: the record has no assistant, so the units file would hide the AI block.
+        self.system(False)
+        record = self.recorded()
+        current = self.plan(record, ('apps',))
+        current = current._replace(record=installer.profile_record(current, record, ('apps',), keep=('assistant', 'apps', 'core')))
+        self.assertEqual(current.record['keeping'], ['assistant'])
+        self.assertIn(f'note in {installer.RECORD} that assistant is installed, without a record so far',
+                      installer.unprofile_record_pending(current))
+        with mock.patch('subprocess.run'):
+            installer.run_steps(current, False, installer.PROFILE_UNSTEPS)
+        self.assertEqual(json.loads(installer.RECORD.read_text())['profiles'], ['core', 'gaming', 'gaming.steam-hidpi', 'assistant'])
+        self.assertIn('assistant', installer.UNITS.read_text().split())
+
+    def test_what_a_kept_unit_needs_stays(self):
+        record = self.recorded()
+        table = {**PROFILE_TABLE, 'assistant': {'packages': ['apponly']}}
+        current = installer.Plan(fake_distro(pending=False), '45', table, [], ('core',))
+        self.assertIn('apponly', installer.profile_record(current, record, ('apps',)).get('packages'))
+        self.assertNotIn('apponly', installer.profile_record(current, record, ('apps',), keep=('assistant',))['packages'])
+
+    def test_an_install_says_which_units_the_record_names_from_now_on(self):
+        self.recorded()
+        current = installer.Plan(fake_distro(pending=False), '45', PROFILE_TABLE, [], ('core', 'apps', 'gaming', 'gaming.steam-hidpi', 'radio'))
+        self.assertEqual(installer.recording_notes(current), [f'{installer.RECORD} names radio from now on.'])
+        installer.RECORD.unlink()
+        self.assertEqual(installer.recording_notes(current), [])  # A first install: everything is new, nothing to say.
+
+    def test_keep_goes_with_remove(self):
+        for arguments in (['dry-run', '--keep', 'assistant'], ['dry-run', '--remove', 'apps', '--keep', 'nothing']):
+            with mock.patch('sys.stderr'), self.assertRaises(SystemExit) as caught:
+                installer.main(arguments)
+            self.assertEqual(caught.exception.code, 2)
 
     def test_nothing_recorded_for_the_profile_is_nothing_to_do(self):
         self.recorded(profiles=['core', 'gaming'])

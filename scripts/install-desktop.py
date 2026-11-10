@@ -1323,15 +1323,19 @@ def staying_profiles(record, removed):
     return tuple(name for name in manifest_units() if name not in removed and (recorded is None or name in recorded or name == 'core'))
 
 
-def profile_record(plan, record, removed):
-    """The part of record that only the removed profiles set up, as a record for the steps of PROFILE_UNSTEPS."""
+def profile_record(plan, record, removed, keep=()):
+    """The part of record that only the removed profiles set up, as a record for the steps of PROFILE_UNSTEPS.
+
+    keep: units on the system without a record of them (Herdr from its own installer, say). They stay, so nothing
+    they need goes, and the record names them from now on: the units file it writes never leaves them out."""
     real = load_record()
     # Only profiles still installed by the record's account: one removed already has nothing left to undo, and what of
     # it stayed (a package core needs) is core's now.
     recorded = real.get('profiles') if isinstance(real.get('profiles'), list) and not real.get('uninstalled') else None
     undone = [name for name in units(plan.table) if name in removed and (recorded is None or name in recorded)]
+    keeping = [name for name in manifest_units() if name in keep and name not in removed and recorded is not None and name not in recorded]
     going = plan._replace(profiles=tuple(undone))
-    staying = plan._replace(profiles=tuple(name for name in staying_profiles(real, removed) if name in plan.table))
+    staying = plan._replace(profiles=tuple(name for name in staying_profiles(real, removed) + tuple(keeping) if name in plan.table))
 
     def only(key):
         kept = merged(staying, key)
@@ -1348,7 +1352,8 @@ def profile_record(plan, record, removed):
     clones = {item['path'] for item in only('clones')}
     services = record.get('services', {})
     narrowed = {
-        'removing': [name for name in manifest_units() if name in removed], 'undone': undone, 'staying': sorted(wanted),
+        'removing': [name for name in manifest_units() if name in removed], 'undone': undone, 'keeping': keeping,
+        'staying': sorted(wanted),
         'packages': [name for name in record.get('packages', ()) if name in packages],
         'swaps': [pair for pair in record.get('swaps', ()) if list(pair) in swapped],
         'repos': [name for name in record.get('repos', ()) if name in only('repos')],
@@ -1374,9 +1379,9 @@ def profile_record(plan, record, removed):
     return narrowed
 
 
-def removal_plan(plan, removed, preview=True):
+def removal_plan(plan, removed, preview=True, keep=()):
     whole = uninstall_plan(plan, preview)
-    return plan._replace(record=profile_record(plan, whole.record, removed))
+    return plan._replace(record=profile_record(plan, whole.record, removed, keep))
 
 
 def removing_plugins(plan):
@@ -1431,7 +1436,11 @@ def unprofile_stow_apply(plan, items):
 def unprofile_record_pending(plan):
     recorded = load_record().get('profiles')
     listed = [name for name in plan.record['removing'] if isinstance(recorded, list) and name in recorded]
-    return [f'note in {RECORD} that {", ".join(listed)} ' + ('is' if len(listed) == 1 else 'are') + ' no longer installed'] if listed else []
+    keeping = plan.record.get('keeping', ())
+    items = [f'note in {RECORD} that {", ".join(listed)} ' + ('is' if len(listed) == 1 else 'are') + ' no longer installed'] if listed else []
+    if keeping:
+        items.append(f'note in {RECORD} that {", ".join(keeping)} ' + ('is' if len(keeping) == 1 else 'are') + ' installed, without a record so far')
+    return items
 
 
 def unprofile_record_apply(plan, items):
@@ -1443,6 +1452,7 @@ def unprofile_record_apply(plan, items):
     narrowed = plan.record
     if isinstance(record.get('profiles'), list):
         record['profiles'] = [name for name in record['profiles'] if name not in narrowed['removing']]
+        record['profiles'] += [name for name in narrowed.get('keeping', ()) if name not in record['profiles']]
     gone = {
         'packages': plan.distro.missing(narrowed['packages']) if narrowed['packages'] else [],
         'swaps': [pair for pair in narrowed['swaps'] if not plan.distro.installed(pair[1])],
@@ -1611,6 +1621,14 @@ def after_uninstall(plan, done):
         return
     print('Done. Not undone: the system upgrade, and what you changed by hand.')
     print(f'Left in place: your preferences in ~/.config/desktop, and this repository ({REPO}).')
+
+
+def recording_notes(plan):
+    # The units an install adds to the record: one already on the system (installed by hand) changes nothing else.
+    record = load_record()
+    recorded = record.get('profiles') if isinstance(record.get('profiles'), list) and not record.get('uninstalled') else None
+    new = [name for name in plan.profiles if recorded and name not in recorded]
+    return [f'{RECORD} names {", ".join(new)} from now on.'] if new else []
 
 
 def record_notes(plan):
@@ -1898,12 +1916,17 @@ def main(argv=None):
     parser.add_argument('--uninstall', action='store_true', help='undo what apply set up, from its record (dry-run shows it, apply does it)')
     parser.add_argument('--remove', metavar='PROFILES', help='undo what only these profiles set up (comma separated, not core), '
                         'leaving what the other installed profiles need')
+    parser.add_argument('--keep', metavar='UNITS', help='with --remove: units on this system without a record of them, which stay and '
+                        'are recorded from now on (Settings passes what it finds installed)')
     args = parser.parse_args(argv)
     if (args.uninstall or args.remove) and args.action in ('post', 'pins'):
         parser.error('--uninstall and --remove go with dry-run or apply.')
     if args.uninstall and args.remove:
         parser.error('--uninstall removes every profile: leave --remove out.')
     removed = tuple(args.remove.split(',')) if args.remove else ()
+    kept = tuple(args.keep.split(',')) if args.keep else ()
+    if kept and (not removed or set(kept) - set(manifest_units())):
+        parser.error(f'--keep goes with --remove, and takes {", ".join(manifest_units()[1:])}.')
     if args.remove and not removable_profiles(removed):
         parser.error(f'--remove takes {", ".join(manifest_units()[1:])}; core goes only with --uninstall.')
     # Removing a profile removes its parts.
@@ -1925,7 +1948,7 @@ def main(argv=None):
         refuse(plan)
         if args.action == 'apply' and 'plugins' in removed:
             refuse_uninstall()
-        plan = removal_plan(plan, removed, preview=args.action == 'dry-run')
+        plan = removal_plan(plan, removed, preview=args.action == 'dry-run', keep=kept)
         for note in record_notes(plan):
             print('Note: ' + note)
         done = run_steps(plan, args.action == 'dry-run', PROFILE_UNSTEPS)
@@ -1951,6 +1974,8 @@ def main(argv=None):
     if args.action == 'post':
         post(plan)
         return 0
+    for note in recording_notes(plan):
+        print('Note: ' + note)
     done = run_steps(plan, args.action == 'dry-run')
     if args.action == 'apply':
         next_steps(plan, done)

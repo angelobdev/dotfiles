@@ -9,7 +9,7 @@ plan install UNITS / plan remove UNITS / plan change ADD REMOVE: JSON with the c
 as the desktop user) and apply (run by jobs.py behind one pkexec prompt), and blocked, a reason it cannot run now.
 Units are profiles or parts (profile.part), comma-separated; "-" is none. Install keeps the recorded units and adds
 these, a profile with its default parts; remove undoes what only they set up, a profile with all of its parts; change
-does both, the adding first.
+does both, the adding first. Both keep the units found installed without a record, and record them.
 run dry-run|apply ADD REMOVE: the installer for a change, one run after the other.
 """
 from contextlib import redirect_stderr, redirect_stdout
@@ -94,6 +94,17 @@ def install_arguments(tui, names):
     return ['--profiles', ','.join(installer.normalized(set(recorded) | present_units(tui) | {'core'} | set(names) | added))]
 
 
+def keep_arguments(tui, removing):
+    # A removal keeps them too, and records them: without that, the units file it writes would leave out what is
+    # installed but was never recorded (the AI block with a hand-installed Herdr).
+    installer = tui.installer
+    with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+        recorded = set(tui.recorded_profiles())
+    going = set(installer.with_parts(tuple(removing)))
+    kept = sorted(present_units(tui) - recorded - going)
+    return ['--keep', ','.join(kept)] if kept else []
+
+
 def plan(action, first, second=''):
     tui = installer_screens()
     installer = tui.installer
@@ -115,7 +126,7 @@ def plan(action, first, second=''):
         else:
             if not installer.removable_profiles(tuple(names)):
                 raise ValueError(tr('settings.profiles.errors.name', [first]))
-            arguments, remove = ['--remove', ','.join(names)], names
+            arguments, remove = ['--remove', ','.join(names), *keep_arguments(tui, names)], names
         preview, apply = script + ['dry-run', *arguments], script + ['apply', *arguments]
     # The running Hyprland has the plugins loaded: the installer refuses, and so does this, before the prompt.
     blocked = tr('settings.profiles.pluginsInSession') if 'plugins' in remove and installer.hyprland_running() else ''
@@ -131,7 +142,7 @@ def run(mode, first, second):
     if add:
         status = subprocess.run(script + install_arguments(tui, add)).returncode
     if remove and status == 0:
-        status = subprocess.run(script + ['--remove', ','.join(remove)]).returncode
+        status = subprocess.run(script + ['--remove', ','.join(remove), *keep_arguments(tui, remove)]).returncode
     return status
 
 

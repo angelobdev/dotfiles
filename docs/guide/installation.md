@@ -204,6 +204,8 @@ It undoes the same way as the uninstall, step by step, but only what the record 
 
 `core` is the desktop itself: removing it is [Removal](#removal). `plugins` goes only from a console with Hyprland logged out, as the whole desktop does: without its packages the plugins can neither be checked at login nor rebuilt, so their builds go too. What the installer did not record (an install from before the record, whose packages came then) stays: the preview shows what is left to undo.
 
+A unit installed without a record of it (Herdr from its own installer, say) stays as well, and the record names it from then on: the guided installer and Settings pass what they find installed (`--keep`), so the units file the removal writes does not hide the AI block or anything else that is there. The preview says so (`assistant is installed, without a record so far`).
+
 ### Profiles in Settings
 
 Settings → System → Profiles (`desktop-shell toggle settings system/profiles`) lists every profile with its description and what of it is on this system, as the profiles screen of the guided installer reads it (`profiles.py list`): installed, partly installed (how much of it), not installed, or installed but not by the installer (Herdr from its own installer, say), which the installer has no record of and does not remove. **Install** (**Complete** for one partly there) and **Remove** show the installer's plan in the tab first:
@@ -212,6 +214,6 @@ Settings → System → Profiles (`desktop-shell toggle settings system/profiles
 - **Remove**, for a profile the installer recorded, previews `dry-run --remove NAME`; see [its removal](#removing-profiles).
 
 - **What is there without a record** (Herdr from its own installer, say) is kept on: an install from here records it, so nothing that needs it is hidden afterwards.
-- **Parts**: the arrow beside a profile with parts shows them, one switch each. **Apply changes** previews what the switches changed: the parts switched on are added, those switched off removed (`profiles.py run`, the installer for one, then the other).
+- **Parts**: the arrow beside a profile with parts shows them, one switch each. A switch is on when the installer has that part in its record (without any record, when it is on the system): a part there without a record, installed by hand or left by a removal because the installer had not installed its packages, is off and says so, and switching it on records it (the preview says `names … from now on`). **Apply changes** previews what the switches changed: the parts switched on are added, those switched off removed (`profiles.py run`, the installer for one, then the other).
 
 Nothing changes before **Apply**. Apply runs the same command with `apply` in the background (`jobs.py`), behind one password or fingerprint prompt through the [root broker](../development/architecture.md#root-for-operations-from-settings). The tab shows the progress, the result and, while it runs or when it failed, the end of the log. A notification gives the result, and the list is read again. Removing `plugins` waits for a session without Hyprland, as the installer requires, and the tab says so before any prompt. `core` has neither button: it is the desktop itself. **Open the guided installer** opens its menu in a terminal, for the rest: the first install, removing the desktop, firmware.
