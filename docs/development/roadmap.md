@@ -336,6 +336,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #98: an Arch removal review parsed `pacman.log` and `pacman -Qi` about 6-10 times; both parsed answers are now kept in the installer's answer cache until the next change (2026-11-10).
   - [x] #99: the updates check started `git config core.sshCommand` before each of its git calls (14 processes for 7); the git environment is worked out once per run (2026-11-10).
   - [x] #100: the Displays panel, Settings → Displays and the battery panel each ran `hyprctl monitors` and kept their own list (twice on the same Settings page), with three copies of the panel name test; `HyprSettings` now holds one listing and `isPanel()` (2026-11-10).
+  - [x] #143 (found in the live log during the review): the zoom keys showed the OSD but never zoomed, since `hl.config` went through `Hyprland.dispatch`, which wraps it in `hl.dispatch()`; it goes through `hyprctl eval` now (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
