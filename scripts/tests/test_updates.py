@@ -165,11 +165,23 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(error, 'updates.errors.git')
 
     def test_git_never_prompts(self):
+        updates.git_environment.cache_clear()
+        self.addCleanup(updates.git_environment.cache_clear)
         with mock.patch.dict('os.environ', {}, clear=False), mock.patch('subprocess.run', return_value=done()) as run:
             updates.os.environ.pop('GIT_SSH_COMMAND', None)
             updates.git('fetch', '--quiet', 'origin')
         environment = run.call_args.kwargs['env']
         self.assertEqual((environment['GIT_TERMINAL_PROMPT'], environment['GIT_SSH_COMMAND']), ('0', 'ssh -o BatchMode=yes'))
+
+    def test_git_asks_for_its_ssh_command_once_per_run(self):
+        updates.git_environment.cache_clear()
+        self.addCleanup(updates.git_environment.cache_clear)
+        with mock.patch.dict('os.environ', {}, clear=False), mock.patch('subprocess.run', return_value=done()) as run:
+            updates.os.environ.pop('GIT_SSH_COMMAND', None)
+            for _ in range(3):
+                updates.git('status')
+        configs = [call for call in run.call_args_list if call.args[0][-2:] == ['config', 'core.sshCommand']]
+        self.assertEqual((len(configs), run.call_count), (1, 4))
 
     def test_a_failed_fetch_keeps_the_last_state_and_the_other_lists(self):
         before = {'checked': 1.0, 'packages': [], 'flatpaks': [], 'repository': {'behind': 2, 'commits': []}}
