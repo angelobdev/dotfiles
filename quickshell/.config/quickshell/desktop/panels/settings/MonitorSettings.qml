@@ -28,9 +28,6 @@ ColumnLayout {
     property string rate: ""
     property real chosenScale: 1
     property string position: "auto"
-    // Settings → Displays before the last Apply, while the countdown runs.
-    property var previous: null
-    property int secondsLeft: 0
     readonly property var scales: [1, 1.25, 1.333, 1.5, 1.667, 1.75, 2, 2.5, 3]
     readonly property var positions: ["auto", "auto-left", "auto-right", "auto-up", "auto-down"]
     // "2560x1440@59.95Hz" → { resolution: "2560x1440", rate: "59.95" }, each listed once.
@@ -87,37 +84,18 @@ ColumnLayout {
         // A listed mode only, and never on the panel.
         if (!panel && modes.some(mode => mode.resolution === resolution && mode.rate === rate))
             fields.mode = resolution + "@" + rate;
-        previous = JSON.parse(JSON.stringify(HyprSettings.monitors));
-        HyprSettings.setMonitor(selected, fields);
-        secondsLeft = 15;
-        countdown.restart();
-        relist.restart();
-    }
-    function keep() {
-        countdown.stop();
-        previous = null;
-        secondsLeft = 0;
-    }
-    function revert() {
-        countdown.stop();
-        if (previous !== null)
-            HyprSettings.setMonitors(previous);
-        previous = null;
-        secondsLeft = 0;
+        HyprSettings.tryMonitor(selected, fields);
         relist.restart();
     }
     function reset() {
         HyprSettings.setMonitor(selected, null);
         relist.restart();
     }
-    Timer {
-        id: countdown
-        interval: 1000
-        repeat: true
-        onTriggered: {
-            root.secondsLeft -= 1;
-            if (root.secondsLeft <= 0)
-                root.revert();
+    // The countdown lives in HyprSettings, so it reverts even if this window is gone by then.
+    Connections {
+        target: HyprSettings
+        function onMonitorsReverted() {
+            relist.restart();
         }
     }
     // After a change the monitors are listed again, once Hyprland has reloaded.
@@ -138,7 +116,7 @@ ColumnLayout {
                 }
                 if (!root.monitors.some(entry => entry.name === root.selected))
                     root.selected = root.monitors[0]?.name ?? "";
-                else if (root.previous === null)
+                else if (!HyprSettings.trying)
                     root.fill();
             }
         }
@@ -168,7 +146,7 @@ ColumnLayout {
             spacing: 10
             ChoiceChips {
                 visible: root.monitors.length > 1
-                enabled: root.previous === null
+                enabled: !HyprSettings.trying
                 options: root.monitors.map(entry => ({
                             name: entry.name,
                             label: entry.name
@@ -234,7 +212,7 @@ ColumnLayout {
                 onChosen: name => root.position = name
             }
             RowLayout {
-                visible: root.previous === null
+                visible: !HyprSettings.trying
                 spacing: 8
                 ActionButton {
                     highlighted: true
@@ -250,12 +228,12 @@ ColumnLayout {
             }
             // The countdown: keep, or go back now; at zero it goes back by itself.
             RowLayout {
-                visible: root.previous !== null
+                visible: HyprSettings.trying
                 Layout.fillWidth: true
                 spacing: 8
                 Text {
                     Layout.fillWidth: true
-                    text: I18n.tr("settings.monitors.confirm", [root.secondsLeft])
+                    text: I18n.tr("settings.monitors.confirm", [HyprSettings.secondsLeft])
                     wrapMode: Text.WordWrap
                     color: Theme.text
                     font.family: Theme.font
@@ -264,11 +242,11 @@ ColumnLayout {
                 ActionButton {
                     highlighted: true
                     text: I18n.tr("settings.monitors.keep")
-                    onClicked: root.keep()
+                    onClicked: HyprSettings.keepMonitors()
                 }
                 ActionButton {
                     text: I18n.tr("settings.monitors.revert")
-                    onClicked: root.revert()
+                    onClicked: HyprSettings.revertMonitors()
                 }
             }
             Text {
