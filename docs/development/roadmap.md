@@ -331,6 +331,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #93: the Settings sections held translated labels, so a catalog reload made a new list and rebuilt every visited page; they hold catalog keys now, translated where shown (2026-11-10).
   - [x] #94: the Updates list built a row for every pending package at once (a thousand and more after a release upgrade); it shows the first 100 and how many more (2026-11-10).
   - [x] #95: every `ActionButton` with a tooltip created its tooltip window up front (42 per calendar month, rebuilt on each change); the window now exists only while the pointer is on the button (2026-11-10).
+  - [x] #96: every change of `shell.json` (each slider step in Settings) ran `agents.py list`; only a change of the primary agent does now (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
