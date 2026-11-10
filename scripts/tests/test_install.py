@@ -712,6 +712,12 @@ class UninstallTests(unittest.TestCase):
         current.distro.packages_from.return_value = {'a.x86_64'}
         self.assertEqual(installer.unrepos_pending(current), ['one'])
 
+    def test_the_recorded_profiles_are_a_list_or_nobody_can_tell(self):
+        self.assertEqual(installer.recorded_profiles({'profiles': ['core', 'radio']}), ['core', 'radio'])
+        for record in ({}, {'profiles': 'core'}, {'profiles': ['core'], 'uninstalled': True}):
+            with self.subTest(record=record):
+                self.assertIsNone(installer.recorded_profiles(record))
+
     def test_a_record_that_knows_only_the_profiles_is_rebuilt(self):
         installer.save_record({'profiles': ['core']})
         with mock.patch.object(installer, 'reconstruct', return_value={'reconstructed': True}) as rebuilt:

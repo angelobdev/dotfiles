@@ -1343,10 +1343,17 @@ def removable_profiles(profiles):
     return bool(profiles) and 'core' not in profiles and not set(profiles) - set(manifest_units())
 
 
+def recorded_profiles(record):
+    # The profiles the record says are installed: None without such a list (no record yet, an install from before
+    # records had one, or one undone by an uninstall), which callers take as "nobody can tell".
+    profiles = record.get('profiles')
+    return profiles if isinstance(profiles, list) and not record.get('uninstalled') else None
+
+
 def staying_profiles(record, removed):
     # The profiles the record says are installed, but those; without a record of them, every other profile, so that
     # nothing another one may need goes.
-    recorded = record.get('profiles') if isinstance(record.get('profiles'), list) and not record.get('uninstalled') else None
+    recorded = recorded_profiles(record)
     return tuple(name for name in manifest_units() if name not in removed and (recorded is None or name in recorded or name == 'core'))
 
 
@@ -1358,7 +1365,7 @@ def profile_record(plan, record, removed, keep=()):
     real = load_record()
     # Only profiles still installed by the record's account: one removed already has nothing left to undo, and what of
     # it stayed (a package core needs) is core's now.
-    recorded = real.get('profiles') if isinstance(real.get('profiles'), list) and not real.get('uninstalled') else None
+    recorded = recorded_profiles(real)
     undone = [name for name in units(plan.table) if name in removed and (recorded is None or name in recorded)]
     keeping = [name for name in manifest_units() if name in keep and name not in removed and recorded is not None and name not in recorded]
     going = plan._replace(profiles=tuple(undone))
@@ -1666,7 +1673,7 @@ def after_uninstall(plan, done):
 def recording_notes(plan):
     # The units an install adds to the record: one already on the system (installed by hand) changes nothing else.
     record = load_record()
-    recorded = record.get('profiles') if isinstance(record.get('profiles'), list) and not record.get('uninstalled') else None
+    recorded = recorded_profiles(record)
     new = [name for name in plan.profiles if recorded and name not in recorded]
     return [f'{RECORD} names {", ".join(new)} from now on.'] if new else []
 

@@ -918,9 +918,8 @@ def recorded_profiles():
     # Quiet: an unreadable record says so on stderr, over the screen.
     with redirect_stderr(io.StringIO()):
         record = installer.load_record()
-    if record.get('uninstalled'):
-        return ()
-    return tuple(name for name in installer.manifest_units() if name in record.get('profiles', ()) or name == 'core' and record.get('profiles'))
+    profiles = installer.recorded_profiles(record) or []
+    return tuple(name for name in installer.manifest_units() if name in profiles or name == 'core' and profiles)
 
 
 def default_choice(sources):
