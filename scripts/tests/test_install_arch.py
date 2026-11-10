@@ -276,7 +276,7 @@ class PacmanTests(unittest.TestCase):
             query.assert_not_called()
 
     def test_answers_are_kept_until_a_change(self):
-        self.addCleanup(setattr, arch, 'answers', None)
+        self.addCleanup(setattr, arch.answers, 'kept', None)
         arch.remember_answers()
         with mock.patch.object(arch, 'run_query', return_value=reply('x')) as run, mock.patch('subprocess.run'):
             arch.query('pacman', '-Qi')
@@ -528,7 +528,7 @@ class HistoryTests(unittest.TestCase):
             log = Path(folder) / 'pacman.log'
             log.write_text(self.LOG)
             arch.remember_answers()
-            self.addCleanup(setattr, arch, 'answers', None)
+            self.addCleanup(setattr, arch.answers, 'kept', None)
             with mock.patch.object(arch, 'LOG', log), mock.patch.object(arch.subprocess, 'run'):
                 first = arch.history()
                 log.write_text('')

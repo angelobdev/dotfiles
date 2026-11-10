@@ -1,10 +1,10 @@
 """Arch Linux operations of install-desktop.py: the functions of fedora.py, with pacman, plus the AUR builds."""
-import os
 from pathlib import Path
 import re
 import shutil
 import subprocess
-import tempfile
+
+import backend
 
 ADMIN_GROUP = 'wheel'
 # The documented prerequisites of the installer itself: never removed.
@@ -23,49 +23,35 @@ INSTALL = ('pacman', '-Syu', '--needed', '--noconfirm', '--')
 ASK_CONFLICT = '--ask=4'
 
 
-# pacman answers kept while nothing changes, when the installer turns it on, as in fedora.py. Any change through
-# sudo() or makepkg forgets them.
-answers = None
+# pacman answers kept while nothing changes, when the installer turns it on, as in fedora.py (backend.Answers).
+# Any change through sudo() or makepkg forgets them.
+answers = backend.Answers(('pacman', 'pacman-conf', 'checkupdates'))
 
 
 def remember_answers():
-    global answers
-    answers = {}
+    answers.remember()
 
 
 def forget_answers():
-    if answers is not None:
-        answers.clear()
+    answers.forget()
 
 
 def query(*command):
-    if answers is None or command[0] not in ('pacman', 'pacman-conf', 'checkupdates'):
-        return run_query(command)
-    if command not in answers:
-        answers[command] = run_query(command)
-    return answers[command]
+    return answers.query(command, run_query)
 
 
 # A parsed answer (pacman's log, every installed package) kept like query() keeps pacman's: one removal review
 # asks for them many times over, and only a change through sudo() or makepkg makes them stale.
 def remembered(key, compute):
-    if answers is None:
-        return compute()
-    if key not in answers:
-        answers[key] = compute()
-    return answers[key]
+    return answers.remembered(key, compute)
 
 
 def run_query(command):
-    return subprocess.run(command, capture_output=True, text=True, env={**os.environ, 'LC_ALL': 'C'})
+    return backend.run_query(command)
 
 
 def sudo(*command):
-    forget_answers()
-    try:
-        subprocess.run(('sudo', *command), check=True)
-    finally:
-        forget_answers()
+    backend.sudo(command, forget_answers)
 
 
 def bare(names):
@@ -246,17 +232,11 @@ def add_repo(repo, release):
 
 
 def file_differs(path, content):
-    try:
-        return Path(path).read_text(encoding='utf-8') != content
-    except OSError:
-        return True
+    return backend.file_differs(path, content)
 
 
 def write_file(path, content, mode='0644'):
-    with tempfile.NamedTemporaryFile('w', encoding='utf-8', prefix='desktop-install-') as temporary:
-        temporary.write(content)
-        temporary.flush()
-        sudo('install', '-D', '-o', 'root', '-g', 'root', '-m', mode, temporary.name, str(path))
+    backend.write_file(path, content, mode, sudo)
 
 
 def install_firmware(source, target):
