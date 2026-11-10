@@ -103,7 +103,7 @@ Singleton {
     function listMonitors() {
         monitorLister.request();
     }
-    // The laptop's own panel, by the names config/displays.lua looks for.
+    // The internal panel of a laptop, by the names config/displays.lua looks for.
     function isPanel(name) {
         return /^(eDP|LVDS|DSI)-/.test(name ?? "");
     }
