@@ -174,7 +174,8 @@ Item {
                 row.keyTarget?.forceActiveFocus();
             }
             Keys.onEscapePressed: {
-                text = String(row.value);
+                // Bound again, not assigned: a fixed text would stop following the setting (a later Reset kept it).
+                text = Qt.binding(() => String(row.value));
                 row.keyTarget?.forceActiveFocus();
             }
         }
