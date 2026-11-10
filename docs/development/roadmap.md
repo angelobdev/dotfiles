@@ -349,6 +349,9 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #105: the background-job plumbing written several times over: `common.py` has `read_json`, `lock_held` and `last_lines` for `jobs.py`, `updates.py`, `plugins.py`, `agent.py` and `radio.py`, and `plugins.py` writes its record with `write_atomic` instead of a fixed `.tmp`; `services/JobRecord.js` holds Job.qml's stale-record check, which Updates and Plugins now use too, so the previous run's record no longer replaces the one just started (2026-11-10).
 
+- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
+  - [x] #103: `theme.py` (1605 lines, seven areas) is the command line and the apply, about 680 lines; `theme_paths.py`, `theme_core.py`, `theme_apps.py`, `theme_wallpapers.py` and `theme_assets.py` hold the rest, each name across modules written `module.name`. `list`, `icons`, `cursors`, `fonts`, `wallpapers`, `dynamic`, `tone` and the rendered files of four themes are byte for byte as before, and the tests ran without writing outside their sandbox (2026-11-10).
+
 ### Backlog (reported 2026-11-03)
 
 - [x] Light GTK dialogs with the dark theme (file chooser, keyring unlock): GTK 3 asked for `Adwaita-dark`, which Fedora 44 no longer ships (`gnome-themes-extra` is gone), and fell back to light Adwaita. Themes now name `adw-gtk3-dark`/`adw-gtk3` (`adw-gtk3-theme` in the manifest), which also takes the theme palette from `gtk.css`. The portal file chooser floats centered at 50%×60% of the monitor instead of tiling to full height (`portal-file-chooser` rule).
