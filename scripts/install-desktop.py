@@ -64,12 +64,19 @@ sys.path.insert(0, str(REPO / 'scripts/hyprpm'))
 import bundle  # noqa: E402
 
 
-def query(*command):
-    # A tool that is not installed yet is an empty answer: the preview runs before the packages.
+# How long a remote (git ls-remote for the pins) may take: the guided installer's Updates screen waits on it.
+REMOTE_TIMEOUT = 60
+
+
+def query(*command, timeout=None):
+    # A tool that is not installed yet is an empty answer: the preview runs before the packages. One that takes
+    # longer than timeout is a failed one (124, as timeout(1) says).
     try:
-        return subprocess.run(command, capture_output=True, text=True)
+        return subprocess.run(command, capture_output=True, text=True, timeout=timeout)
     except FileNotFoundError:
         return subprocess.CompletedProcess(command, 127, '', '')
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(command, 124, '', f'no answer in {timeout} s')
 
 
 def parent(unit):
@@ -1721,7 +1728,7 @@ Pin = namedtuple('Pin', 'kind name old new label url version tag hashes', defaul
 
 
 def remote_head(repo):
-    result = query('git', 'ls-remote', repo, 'HEAD')
+    result = query('git', 'ls-remote', repo, 'HEAD', timeout=REMOTE_TIMEOUT)
     fields = result.stdout.split()
     return fields[0] if result.returncode == 0 and fields else ''
 
@@ -1743,7 +1750,7 @@ def version_key(name):
 
 def remote_tags(repo):
     # {tag: commit}. An annotated tag stands for the commit it points to, its ^{} line.
-    result = query('git', 'ls-remote', '--tags', repo)
+    result = query('git', 'ls-remote', '--tags', repo, timeout=REMOTE_TIMEOUT)
     tags = {}
     for line in result.stdout.splitlines() if result.returncode == 0 else ():
         commit, _, ref = line.partition('\t')
@@ -1873,7 +1880,12 @@ def pins(update):
     tables = [table for table in tomllib.loads(text).values() if isinstance(table, dict)]
     newer, failed = [], 0
     for kind, item in pin_entries(tables):
-        pin = newer_pin(kind, item)
+        # One remote that fails (the AUR's .SRCINFO, a release page) is that entry's failure, not the listing's.
+        try:
+            pin = newer_pin(kind, item)
+        except OSError as error:
+            pin = False
+            print(f'{pin_name(kind, item)}: {error}')
         if pin is False:
             where = 'the AUR' if kind == 'aur' else item.get('repo') or item['latest']
             print(f'{pin_name(kind, item)}: {where} did not answer.')
