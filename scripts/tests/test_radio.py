@@ -429,8 +429,9 @@ class ConcurrentPlayTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / 'bin').mkdir()
+            # Its arguments stay in its command line, as mpv's do: Stop checks for the radio's socket there.
             fake = root / 'bin/mpv'
-            fake.write_text('#!/bin/sh\nexec sleep 30\n')
+            fake.write_text(f'#!{sys.executable}\nimport time\ntime.sleep(30)\n')
             fake.chmod(0o755)
             (root / 'run').mkdir(mode=0o700)
             environment = {**os.environ, 'PATH': f"{root / 'bin'}:{os.environ['PATH']}", 'XDG_RUNTIME_DIR': str(root / 'run'),
@@ -438,11 +439,14 @@ class ConcurrentPlayTests(unittest.TestCase):
             helper = REPO / 'shell/.local/libexec/desktop/radio.py'
             # An mpv slow to stop holds each play in stop_playback for 0.75 s: without one change at a time, both
             # plays would stop it, then both start an mpv.
-            old = subprocess.Popen(['sh', '-c', 'trap "" TERM; exec sleep 30'], env=environment)
+            sock = root / 'run/desktop-shell/radio-mpv.sock'
+            old = subprocess.Popen([sys.executable, '-c', 'import signal, time; signal.signal(signal.SIGTERM, signal.SIG_IGN); time.sleep(30)',
+                                    f'--input-ipc-server={sock}'], env=environment)
             self.addCleanup(lambda: old.poll() is None and old.kill())
             time.sleep(0.2)
             (root / 'run/desktop-shell').mkdir()
-            (root / 'run/desktop-shell/radio.json').write_text(json.dumps({'active': True, 'playing': True, 'pid': old.pid}))
+            (root / 'run/desktop-shell/radio.json').write_text(json.dumps({'active': True, 'playing': True, 'pid': old.pid,
+                                                                           'socket': str(sock)}))
             runs = [subprocess.Popen([sys.executable, str(helper), 'play', f'https://example.com/{n}'], env=environment,
                                      stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True) for n in (1, 2)]
             for run in runs:
@@ -452,7 +456,7 @@ class ConcurrentPlayTests(unittest.TestCase):
             mine = []
             for process in Path('/proc').iterdir():
                 try:
-                    if (process / 'cmdline').read_bytes() == b'sleep\x0030\x00' and \
+                    if str(fake).encode() in (process / 'cmdline').read_bytes() and \
                             str(root / 'run').encode() in (process / 'environ').read_bytes():
                         mine.append(process.name)
                 except OSError:
