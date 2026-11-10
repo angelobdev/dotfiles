@@ -23,53 +23,55 @@ Overlay {
     // Every section, in sidebar order and grouped under a label (settings.sidebar.<group>), after GNOME Settings. Network, Bluetooth, Displays and Sound show the views
     // of their quick panels, Appearance the Theming view; the others are built from SettingsSchema.js
     // (settings/OptionsSection.qml).
+    // Labels as catalog keys, translated where shown: a translation reload would otherwise make a new array, and the
+    // page Repeater below would rebuild every page visited so far (scroll, focus and half-typed values lost).
     readonly property var sections: [
         {
             name: "network",
             icon: "wifi",
-            label: I18n.tr("settings.sections.network"),
+            labelKey: "settings.sections.network",
             group: "connections"
         },
         {
             name: "bluetooth",
             icon: "bluetooth",
-            label: I18n.tr("settings.sections.bluetooth"),
+            labelKey: "settings.sections.bluetooth",
             group: "connections"
         },
         {
             name: "displays",
             icon: "monitor",
-            label: I18n.tr("settings.sections.displays"),
+            labelKey: "settings.sections.displays",
             group: "devices"
         },
         {
             name: "sound",
             icon: "volume-high",
-            label: I18n.tr("settings.sections.sound"),
+            labelKey: "settings.sections.sound",
             group: "devices"
         },
         {
             name: "power",
             icon: "battery-75",
-            label: I18n.tr("settings.sections.power"),
+            labelKey: "settings.sections.power",
             group: "devices"
         },
         {
             name: "appearance",
             icon: "palette",
-            label: I18n.tr("settings.sections.appearance"),
+            labelKey: "settings.sections.appearance",
             group: "personalization"
         },
         {
             name: "desktop",
             icon: "apps",
-            label: I18n.tr("settings.sections.desktop"),
+            labelKey: "settings.sections.desktop",
             group: "personalization"
         },
         {
             name: "assistant",
             icon: "assistant",
-            label: I18n.tr("settings.sections.assistant"),
+            labelKey: "settings.sections.assistant",
             group: "personalization",
             // Only with the AI Assistant profile installed (services/Installed.qml).
             unit: "assistant"
@@ -77,25 +79,25 @@ Overlay {
         {
             name: "keyboard",
             icon: "keyboard",
-            label: I18n.tr("settings.sections.keyboard"),
+            labelKey: "settings.sections.keyboard",
             group: "input"
         },
         {
             name: "tablet",
             icon: "rotate",
-            label: I18n.tr("settings.sections.tablet"),
+            labelKey: "settings.sections.tablet",
             group: "input"
         },
         {
             name: "privacy",
             icon: "eye-off",
-            label: I18n.tr("settings.sections.privacy"),
+            labelKey: "settings.sections.privacy",
             group: "system"
         },
         {
             name: "system",
             icon: "controls",
-            label: I18n.tr("settings.sections.system"),
+            labelKey: "settings.sections.system",
             group: "system"
         }
     ]
@@ -255,7 +257,7 @@ Overlay {
                             anchors.fill: parent
                             alignLeft: true
                             iconName: sidebarRow.modelData.icon ?? ""
-                            text: sidebarRow.modelData.label
+                            text: I18n.tr(sidebarRow.modelData.labelKey)
                             highlighted: sidebarRow.modelData.name === root.section
                             onClicked: root.showSection(sidebarRow.modelData.name, "")
                         }
@@ -321,7 +323,7 @@ Overlay {
                             Component {
                                 id: appearanceView
                                 ThemingView {
-                                    title: page.modelData.label
+                                    title: I18n.tr(page.modelData.labelKey)
                                     active: root.open && root.section === "appearance" && (!root.compact || !root.showingSidebar)
                                 }
                             }
@@ -344,7 +346,7 @@ Overlay {
                                         }
                                         Heading {
                                             Layout.fillWidth: true
-                                            text: network.inDetails ? network.title : page.modelData.label
+                                            text: network.inDetails ? network.title : I18n.tr(page.modelData.labelKey)
                                             elide: Text.ElideRight
                                         }
                                     }
@@ -363,7 +365,7 @@ Overlay {
                                     spacing: 14
                                     Heading {
                                         Layout.fillWidth: true
-                                        text: page.modelData.label
+                                        text: I18n.tr(page.modelData.labelKey)
                                     }
                                     BluetoothView {
                                         id: bluetooth
@@ -380,7 +382,7 @@ Overlay {
                                     spacing: 14
                                     Heading {
                                         Layout.fillWidth: true
-                                        text: page.modelData.label
+                                        text: I18n.tr(page.modelData.labelKey)
                                     }
                                     DisplayView {
                                         id: displays
@@ -402,7 +404,7 @@ Overlay {
                                     spacing: 14
                                     Heading {
                                         Layout.fillWidth: true
-                                        text: page.modelData.label
+                                        text: I18n.tr(page.modelData.labelKey)
                                     }
                                     AudioView {
                                         id: sound
@@ -418,7 +420,7 @@ Overlay {
                                     spacing: 14
                                     Heading {
                                         Layout.fillWidth: true
-                                        text: page.modelData.label
+                                        text: I18n.tr(page.modelData.labelKey)
                                     }
                                     AgentView {
                                         id: assistant
@@ -436,7 +438,7 @@ Overlay {
                             Component {
                                 id: systemView
                                 SystemView {
-                                    title: page.modelData.label
+                                    title: I18n.tr(page.modelData.labelKey)
                                     shown: page.shownHere
                                 }
                             }
@@ -445,7 +447,7 @@ Overlay {
                                 id: keyboardView
                                 OptionsSection {
                                     section: page.modelData.name
-                                    title: page.modelData.label
+                                    title: I18n.tr(page.modelData.labelKey)
                                     KeyboardHyprland {}
                                 }
                             }
@@ -454,7 +456,7 @@ Overlay {
                                 id: powerView
                                 OptionsSection {
                                     section: page.modelData.name
-                                    title: page.modelData.label
+                                    title: I18n.tr(page.modelData.labelKey)
                                     PowerProfileGroup {}
                                 }
                             }
@@ -462,7 +464,7 @@ Overlay {
                                 id: optionsView
                                 OptionsSection {
                                     section: page.modelData.name
-                                    title: page.modelData.label
+                                    title: I18n.tr(page.modelData.labelKey)
                                 }
                             }
                         }

@@ -328,6 +328,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #90: the "HH:MM" hint of time fields was a raw literal (`settings.timePlaceholder` now); `check-i18n.py` scans the literals a shown property can display, ternaries included, with a short list of literals that stay as they are (units, key syntax, product names, font samples) (2026-11-10).
   - [x] #91: every Theming action re-ran all five `theme.py` queries (fc-list and the icon and cursor scans included); each action now says what it changes, and only that is read again (2026-11-10).
   - [x] #92: the open clipboard panel ran python3 and `cliphist list` every second; it now lists the history when it opens and when cliphist's database changes (a `FileView` watch, no load), and an unchanged listing replaces nothing (2026-11-10).
+  - [x] #93: the Settings sections held translated labels, so a catalog reload made a new list and rebuilt every visited page; they hold catalog keys now, translated where shown (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
