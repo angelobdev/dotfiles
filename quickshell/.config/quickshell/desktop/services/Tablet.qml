@@ -173,15 +173,10 @@ Singleton {
     // Claims the accelerometer only while its reading can rotate the display; restarted if it exits while
     // still needed (a binding on running would not run it again once the process has set it false).
     readonly property bool watching: enabled && ready && active && !locked && available
-    onWatchingChanged: watcher.running = watching
-    Timer {
-        interval: 3000
-        repeat: true
-        running: root.watching && !watcher.running
-        onTriggered: watcher.running = true
-    }
-    Process {
+    Watcher {
         id: watcher
+        wanted: root.watching
+        name: "rotation.py watch"
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch"])
         stdout: SplitParser {

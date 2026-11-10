@@ -78,16 +78,11 @@ Singleton {
                 probe.running = true;
         }
     }
-    // Started and stopped with active, and restarted if it exits while still on.
-    onActiveChanged: sunset.running = active
-    Timer {
-        interval: 3000
-        repeat: true
-        running: root.active && !sunset.running
-        onTriggered: sunset.running = true
-    }
-    Process {
+    // Started and stopped with active, and started again if it exits while still on (Watcher).
+    Watcher {
         id: sunset
+        wanted: root.active
+        name: "hyprsunset"
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["hyprsunset", "-t", String(root.temperature)])
         stderr: StdioCollector {

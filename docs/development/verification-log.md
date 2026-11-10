@@ -1124,3 +1124,9 @@ Reported by the user after the merges of the day:
 - cliphist writes `~/.cache/cliphist/db` (a bbolt file, 8 MB here) in place at each copy. A throwaway Quickshell config showed that a `FileView` with `preload: false` and `watchChanges` reports those in-place writes without loading the file (`loaded` stays false), and only while `watchChanges` is true: writes before it is set and after it is cleared were not reported.
 - `Clipboard.qml` now lists the history when the panel opens (as before) and on each change of the database while it is open, instead of every second; the listing is a `CoalescedProcess`, and an output equal to the last one leaves `entries` alone.
 - The live shell reloaded with no errors; `check.sh` passes.
+
+## One Watcher for the long-lived helpers (#104), 2026-11-10
+
+- `services/Watcher.qml` is a `Process` with `wanted`: started and stopped with it, started again after an exit while still wanted, after `Backoff` (3 s, doubled after each run shorter than a minute, up to a minute), with its stderr in `qs log` under `name`. A throwaway Quickshell config with a helper that prints to stderr and exits at once: restarts 0.4 s then 0.8 s apart (base 200 ms for the test), the stderr lines logged, the instance's own `onExited` run too, and no restart once `wanted` went false.
+- Live, after the reload: `bluetooth_agent.py` and both `wl-paste --watch` clipboard watchers running; rotation and hyprsunset not, as tablet mode and Night shift were off. The text watcher, killed, was running again a few seconds later with a new pid.
+- `check.sh` passes.

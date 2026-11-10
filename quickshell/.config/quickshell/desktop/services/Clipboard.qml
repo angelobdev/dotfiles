@@ -28,40 +28,19 @@ Singleton {
         operation.command = ["python3", helper, action].concat(id ? [id] : []);
         operation.running = true;
     }
-    Process {
+    // Started and stopped with collecting, and started again after an exit (Watcher).
+    Watcher {
         id: textWatcher
-        // What a watcher that keeps failing says reaches qs log instead of nowhere.
-        stderr: SplitParser {
-            onRead: line => console.warn("clipboard.py watch-text:", line)
-        }
+        wanted: root.collecting
+        name: "clipboard.py watch-text"
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch-text", String(Config.clipboardMaxItems)])
-        running: root.collecting
     }
-    Process {
+    Watcher {
         id: imageWatcher
-        // What a watcher that keeps failing says reaches qs log instead of nowhere.
-        stderr: SplitParser {
-            onRead: line => console.warn("clipboard.py watch-image:", line)
-        }
-        // Ends with the shell, even a killed one (setpriv: the kernel signals it).
+        wanted: root.collecting
+        name: "clipboard.py watch-image"
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper, "watch-image", String(Config.clipboardMaxItems)])
-        running: root.collecting
-    }
-    Timer {
-        interval: 2000
-        running: root.collecting && !(textWatcher.running && imageWatcher.running)
-        repeat: true
-        onTriggered: {
-            if (!textWatcher.running)
-                textWatcher.running = true;
-            if (!imageWatcher.running)
-                imageWatcher.running = true;
-        }
-    }
-    onCollectingChanged: {
-        textWatcher.running = collecting;
-        imageWatcher.running = collecting;
     }
     // Asked while it runs (a copy during a listing), it lists once more after.
     CoalescedProcess {
