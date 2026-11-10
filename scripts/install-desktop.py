@@ -1592,14 +1592,20 @@ def preflight(plan):
 def run_steps(plan, preview, steps=STEPS):
     done = 0
     APPLIED.clear()
-    record = None if preview else load_record(set_aside=steps is STEPS)
+    # Install steps, all of them or some (the guided installer's Updates screen runs only the pins it moves):
+    # either way an unreadable record is set aside and a missing one rebuilt before anything is remembered,
+    # or the next uninstall would trust a record that knows only what this run added.
+    installing = all(step in STEPS for step in steps)
+    record = None if preview else load_record(set_aside=installing)
     if record and record.get('uninstalled'):
         record = {}  # A new install after an uninstall starts its own record.
-    if record is not None and steps is STEPS:
+    if record is not None and installing:
         if not knows_changes(record) and desktop_present():
             # Installed before there was a record: what came then is told by the history, or uninstall would miss it.
             record = {**reconstruct(plan), **record}
-        keep(record, 'profiles', plan.profiles)
+        # Only a whole install says the profiles are installed.
+        if tuple(steps) == STEPS:
+            keep(record, 'profiles', plan.profiles)
         save_record(record)
     for step in steps:
         items = step.pending(plan)

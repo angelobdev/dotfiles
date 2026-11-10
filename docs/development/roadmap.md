@@ -301,6 +301,9 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #80: after one restart of `brightness.py watch`, turning the OSD off no longer stopped it (the retry had dropped the `running` binding); the watcher is now started and stopped on `osdEnabledChanged` (2026-11-10).
 
+- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
+  - [x] #81: an apply of some install steps (the Updates screen with pins) skipped setting aside an unreadable record and rebuilding a missing one, and could save a near-empty record that later uninstalls trusted; it now does both, and only a whole install records its profiles (2026-11-10).
+
 ### Backlog (reported 2026-11-03)
 
 - [x] Light GTK dialogs with the dark theme (file chooser, keyring unlock): GTK 3 asked for `Adwaita-dark`, which Fedora 44 no longer ships (`gnome-themes-extra` is gone), and fell back to light Adwaita. Themes now name `adw-gtk3-dark`/`adw-gtk3` (`adw-gtk3-theme` in the manifest), which also takes the theme palette from `gtk.css`. The portal file chooser floats centered at 50%×60% of the monitor instead of tiling to full height (`portal-file-chooser` rule).
