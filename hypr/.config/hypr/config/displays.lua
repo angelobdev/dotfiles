@@ -337,10 +337,6 @@ function M.on_transform(hook)
     transform_hook = hook
 end
 
-function M.has_panel()
-    return find_panel()
-end
-
 -- Found by its name when no machine profile declares it; a laptop lid by the kernel's name for it.
 function M.setup()
     if not declared then
