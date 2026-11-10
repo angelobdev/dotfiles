@@ -350,7 +350,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #105: the background-job plumbing written several times over: `common.py` has `read_json`, `lock_held` and `last_lines` for `jobs.py`, `updates.py`, `plugins.py`, `agent.py` and `radio.py`, and `plugins.py` writes its record with `write_atomic` instead of a fixed `.tmp`; `services/JobRecord.js` holds Job.qml's stale-record check, which Updates and Plugins now use too, so the previous run's record no longer replaces the one just started (2026-11-10).
 
 - [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
-  - [ ] #103, step 1: the icon and cursor themes (discovery, the cursor packs and their downloads, XCursor and hyprcursor previews, the PNG encoder) moved from `theme.py` to `theme_assets.py`, about 300 lines that need nothing of the colour themes; `list`, `icons`, `cursors`, `fonts` and `wallpapers` answer byte for byte as before. The app integrations and wallpapers use the render core (`STATE`, `current`, `mix`, `split_color`), so they wait for that core to move first (2026-11-10).
+  - [x] #103: `theme.py` (1605 lines, seven areas) is the command line and the apply, about 680 lines; `theme_paths.py`, `theme_core.py`, `theme_apps.py`, `theme_wallpapers.py` and `theme_assets.py` hold the rest, each name across modules written `module.name`. `list`, `icons`, `cursors`, `fonts`, `wallpapers`, `dynamic`, `tone` and the rendered files of four themes are byte for byte as before, and the tests ran without writing outside their sandbox (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 

@@ -78,7 +78,7 @@ Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha
 
 ## Themes
 
-`theme.py` turns `themes/<id>/theme.json` plus `templates/*.tpl` (both under `~/.local/share/desktop/`, stowed from `shell/`) into `~/.local/state/desktop-theme/`. The stowed application configs only reference those generated files and keep Graphite fallbacks (details in [configuration](../features/theming.md#themes)).
+`theme.py` turns `themes/<id>/theme.json` plus `templates/*.tpl` (both under `~/.local/share/desktop/`, stowed from `shell/`) into `~/.local/state/desktop-theme/`. `theme.py` is the command line and the apply; the rest is in sibling modules it imports: `theme_paths.py` (every folder it reads or writes, which the tests redirect in one place), `theme_core.py` (theme files, palette, preferences, the current theme, rendering), `theme_apps.py` (btop, Herdr, VS Code, gsettings, the cursor), `theme_wallpapers.py` (sets, memory, downloads, thumbnails) and `theme_assets.py` (icon and cursor themes). Across modules a name is always written `module.name`, so a test that patches it in its module reaches every caller. The stowed application configs only reference those generated files and keep Graphite fallbacks (details in [configuration](../features/theming.md#themes)).
 
 `scripts/tests/test_theme.py` (run by `check.sh`) renders Graphite and compares it with those fallbacks:
 - `hyprlock.conf` and the qtXct `colors/desktop.conf`, byte for byte;
