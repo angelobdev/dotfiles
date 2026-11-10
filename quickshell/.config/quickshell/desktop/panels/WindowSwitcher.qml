@@ -134,7 +134,18 @@ PanelWindow {
     Card {
         id: card
         anchors.centerIn: parent
-        readonly property int columns: Math.max(1, Math.min(root.windows.length, Math.floor((root.width - 96) / 236)))
+        // Thumbnails are 224×176 with 12 between them; with more windows than fit on screen they shrink (down to a
+        // third) instead of the grid growing past it, where Tab would select a window nobody can see.
+        readonly property real cellScale: {
+            const count = Math.max(1, root.windows.length);
+            for (let scale = 1; scale > 0.34; scale -= 0.05) {
+                const columns = Math.max(1, Math.min(count, Math.floor((root.width - 96) / (224 * scale + 12))));
+                if (Math.ceil(count / columns) * (176 * scale + 12) - 12 <= root.height - 96)
+                    return scale;
+            }
+            return 1 / 3;
+        }
+        readonly property int columns: Math.max(1, Math.min(root.windows.length, Math.floor((root.width - 96) / (224 * cellScale + 12))))
         width: grid.implicitWidth + 2 * Theme.dialogPadding
         height: grid.implicitHeight + 2 * Theme.dialogPadding
         opacity: root.open ? 1 : 0
@@ -157,8 +168,8 @@ PanelWindow {
                     required property int index
                     readonly property bool current: index === root.selected
                     readonly property string appId: Dock.appIdOf(modelData)
-                    implicitWidth: 224
-                    implicitHeight: 176
+                    implicitWidth: Math.round(224 * card.cellScale)
+                    implicitHeight: Math.round(176 * card.cellScale)
                     radius: Theme.corner(12)
                     color: current ? Theme.raised : "transparent"
                     border.color: current ? Theme.accent : "transparent"

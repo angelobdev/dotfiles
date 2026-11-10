@@ -316,6 +316,9 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #85: Stop sent SIGTERM and SIGKILL to the pid in `radio.json` without checking it was still the radio's mpv; it now checks the process was started with the radio's socket (2026-11-10).
 
+- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
+  - [x] #86: with many windows the Alt+Tab grid grew past the screen; the thumbnails now shrink (down to a third) until every window fits (2026-11-10).
+
 ### Backlog (reported 2026-11-03)
 
 - [x] Light GTK dialogs with the dark theme (file chooser, keyring unlock): GTK 3 asked for `Adwaita-dark`, which Fedora 44 no longer ships (`gnome-themes-extra` is gone), and fell back to light Adwaita. Themes now name `adw-gtk3-dark`/`adw-gtk3` (`adw-gtk3-theme` in the manifest), which also takes the theme palette from `gtk.css`. The portal file chooser floats centered at 50%×60% of the monitor instead of tiling to full height (`portal-file-chooser` rule).
