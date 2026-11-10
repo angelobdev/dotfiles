@@ -35,7 +35,7 @@ install -d -m 700 -o "$user" /tmp/runtime
 cp -a "$source/." "$repo"
 chown -R "$user:" "$repo"
 # A file of the user's own where the repository links: apply backs it up (#69), uninstall puts it back.
-as_user install -D -m 644 /dev/stdin "$home/.config/kitty/kitty.conf" <<<'# mine'
+as_user bash -c 'mkdir -p "$HOME/.config/kitty" && echo "# mine" >"$HOME/.config/kitty/kitty.conf"'
 authselect select local --force >/dev/null
 cd "$repo"
 packages() { rpm -qa --qf '%{NAME}.%{ARCH}\n' | sort -u; }
