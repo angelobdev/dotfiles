@@ -29,7 +29,6 @@ Singleton {
     property string lastQuery: ""
     property string searchType: "all"
     readonly property bool searching: searchProc.running
-    readonly property bool busy: actionProc.running
     // Where mpv is, and the item it plays (of a playlist too), from status.
     property real position: 0
     property string item: ""
