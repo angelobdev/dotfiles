@@ -1066,3 +1066,8 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - `radio.webp`: the earlier take, now the whole screen (800 × 500) like the other pictures in the table.
 - `console.webp`: a separate Herdr space, `demo`, made with `herdr-app do space.new` (Claude Code with `--settings '{"language":"english"}'` and one question about Settings → System → Profiles), shown with `terminal.show`, then closed (`space.close`). The working session's space was never on screen.
 - `launcher.webp` and `theming.webp`: the launcher with nothing typed (a short query matched three apps, a sum left the panel empty), and the Theme tab on Tokyo Night. Afterwards Gruvbox, the Italian shell, the cursor and the console were put back.
+
+## Theme tab follows a theme set elsewhere (#58), 2026-11-10
+
+- `services/Theming.qml` watches `current.json` and `preferences.json` in the theme state directory, which `theme.py` rewrites with each theme and each window, glass or dynamic setting, and lists the themes again when either changes, once the panel has listed them a first time (before that, nothing shows the list).
+- Live, Italian shell: with Settings → Appearance → Theme open, `desktop-theme set catppuccin-mocha` and then `everforest` from a terminal moved **Attuale** to Catppuccin Mocha and then Everforest. The theme was put back to Gruvbox. Not tried: a window-style or dynamic-mode change from outside the panel (same path, through `preferences.json`).
