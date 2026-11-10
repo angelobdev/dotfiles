@@ -2,6 +2,7 @@
 """install-tui.py: the choices it offers map onto install-desktop.py, and nothing runs before the plan is confirmed."""
 import atexit
 import importlib.util
+import io
 from pathlib import Path
 import subprocess
 import sys
@@ -173,6 +174,18 @@ class StatusTests(unittest.TestCase):
     def test_a_profile_counts_its_packages_and_swaps(self):
         self.assertEqual(self.status([], swapped=True), tui.Status([], 3))
         self.assertEqual(self.status(['c']), tui.Status(['c', 'old -> new'], 3))
+
+    def test_detection_never_asks_the_solver_or_prints(self):
+        # The plugins profile with Hyprland not installed: the build warning belongs to the review, not the screen.
+        distro = mock.Mock()
+        distro.missing.side_effect = lambda packages: list(packages)
+        distro.installed.return_value = False
+        table = {**TABLE, 'plugins': {'packages': ['hyprland', 'hyprland-devel']}}
+        with mock.patch('sys.stdout', new_callable=io.StringIO) as out:
+            status = tui.profile_status(installer.Plan(distro, '45', table, [], ('plugins',)), 'plugins')
+        self.assertEqual(status.missing[:2], ['hyprland', 'hyprland-devel'])
+        distro.candidates.assert_not_called()
+        self.assertEqual(out.getvalue(), '')
 
     def test_aur_packages_count_until_they_are_at_their_pinned_version(self):
         table = {**TABLE, 'apps': {'packages': ['base-devel'], 'aur': [{'package': 'zen', 'commit': 'c' * 40, 'version': '2-1'}]}}

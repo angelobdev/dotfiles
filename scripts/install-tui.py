@@ -108,7 +108,9 @@ def profile_status(plan, name):
     # Only what can be seen without sudo: its packages, its swaps, its AUR packages, its archives and its Stow links.
     one = plan._replace(profiles=(name,))
     wanted = list(dict.fromkeys(installer.wanted_packages(one)))
-    missing = (installer.packages_pending(one) if wanted else []) + installer.swaps_pending(one)
+    # Only what is installed: packages_pending would also ask the solver about the Hyprland build and print its
+    # warning over the curses screen. The review step, which captures it, still says so.
+    missing = (one.distro.missing(wanted) if wanted else []) + installer.swaps_pending(one)
     missing += [item.split()[0] for item in installer.aur_pending(one)]
     missing += [item.split()[0] for item in installer.archives_pending(one)]
     links = [(package, path) for package in plan.table[name].get('stow', ()) for path in stow_files(package)]
