@@ -515,6 +515,7 @@
       "invalidPassword": "Le password Wi-Fi hanno 8–64 caratteri e nessun a capo",
       "invalidSsid": "Inserisci un nome di rete senza a capo",
       "networkNotFound": "Rete Wi-Fi non trovata",
+      "noAnswer": "NetworkManager non ha finito entro %1 secondi",
       "noSecret": "Nessuna password salvata per questa rete",
       "noSecrets": "Credenziali richieste ma non fornite",
       "qrUnavailable": "Impossibile creare il codice QR",

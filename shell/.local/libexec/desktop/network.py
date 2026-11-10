@@ -23,9 +23,17 @@ VPN_TYPES = {'vpn', 'wireguard'}
 MAC_MODES = {'default': '', 'private': 'stable-ssid', 'rotating': 'random', 'fixed': 'permanent'}
 
 
-def nmcli(*args, secrets=False):
-    result = subprocess.run(['nmcli', '-t', '-e', 'yes'] + (['-s'] if secrets else []) + list(args),
-        capture_output=True, text=True, timeout=15)
+# nmcli connection up/down waits up to 90 s itself (--wait): a VPN asking for a secret or a slow DHCP takes that
+# long, and killing nmcli earlier would only hide that NetworkManager is still connecting.
+ACTIVATION_TIMEOUT = 95
+
+
+def nmcli(*args, secrets=False, timeout=15):
+    try:
+        result = subprocess.run(['nmcli', '-t', '-e', 'yes'] + (['-s'] if secrets else []) + list(args),
+            capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        raise ValueError(tr('network.errors.noAnswer', (timeout,))) from None
     if result.returncode != 0:
         raise ValueError(tr('network.errors.commandFailed', ((result.stderr or result.stdout).strip()[:300],)))
     return result.stdout
@@ -184,7 +192,7 @@ def set_mac(uuid, mode):
     nmcli('connection', 'modify', uuid, ('802-11-wireless' if kind == WIFI else '802-3-ethernet') + '.cloned-mac-address', value)
     # The address is only chosen while activating, so an active connection has to reconnect.
     if device:
-        nmcli('connection', 'up', uuid)
+        nmcli('connection', 'up', uuid, timeout=ACTIVATION_TIMEOUT)
 
 
 def add_hidden(device, ssid, secure):
@@ -207,7 +215,11 @@ def add_hidden(device, ssid, secure):
         # stdout echoes the editor session, password included, so only stderr is reported.
         raise ValueError(tr('network.errors.commandFailed', (result.stderr.strip()[-300:] or result.returncode,)))
     uuid = saved[-1].rsplit('(', 1)[1].split(')', 1)[0]
-    activation = subprocess.run(['nmcli', 'connection', 'up', uuid], capture_output=True, text=True, timeout=60)
+    try:
+        activation = subprocess.run(['nmcli', 'connection', 'up', uuid], capture_output=True, text=True, timeout=ACTIVATION_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        # Still connecting, maybe still asking for a secret: the profile stays.
+        raise ValueError(tr('network.errors.noAnswer', (ACTIVATION_TIMEOUT,))) from None
     if activation.returncode != 0:
         # Do not leave a broken profile behind for a mistyped name or password.
         subprocess.run(['nmcli', 'connection', 'delete', uuid], capture_output=True, timeout=15)
@@ -268,14 +280,14 @@ def hotspot_on(device):
         # Unambiguous characters only, so the password is easy to type on a phone.
         alphabet = 'abcdefghjkmnpqrstuvwxyz23456789'
         edit(uuid, ['set wifi-sec.psk ' + ''.join(secrets.choice(alphabet) for _ in range(12))])
-    nmcli('connection', 'up', uuid, 'ifname', device)
+    nmcli('connection', 'up', uuid, 'ifname', device, timeout=ACTIVATION_TIMEOUT)
     return hotspot()
 
 
 def hotspot_off():
     uuid = hotspot_profile()
     if uuid and connection(uuid)[2]:
-        nmcli('connection', 'down', uuid)
+        nmcli('connection', 'down', uuid, timeout=ACTIVATION_TIMEOUT)
     return hotspot()
 
 
@@ -440,7 +452,7 @@ def main():
     elif args.command == 'vpn':
         result = {'vpn': vpns()}
     elif args.command in ('vpn-up', 'vpn-down'):
-        nmcli('connection', 'up' if args.command == 'vpn-up' else 'down', args.uuid)
+        nmcli('connection', 'up' if args.command == 'vpn-up' else 'down', args.uuid, timeout=ACTIVATION_TIMEOUT)
         result = {'vpn': vpns()}
     elif args.command == 'hotspot':
         result = hotspot()
