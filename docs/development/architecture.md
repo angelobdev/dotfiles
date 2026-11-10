@@ -72,6 +72,24 @@ Hyprspace, Hyprgrass, Hyprglass and HyprCapture are built by hyprpm from the pin
 
 Bar hiding during Hyprspace: `bar_visibility.py` polls `desktop-bar` layer alpha over Hyprland IPC (every 2 s at rest, every 100 ms while a bar is hidden and for 4 s after a `wake` line on stdin, which the hot corner, the assist button and `desktop-shell overview` send before opening the overview); `BarVisibility.hidden(screen)` drops the bar's exclusive zone and input mask while keeping the surface mapped (it carries the idle inhibitor).
 
+## Installer
+
+`scripts/install-desktop.py` is only the command line. The installer is in `scripts/install/`, one module per concern, each depending only on the ones before it:
+
+| Module | Holds |
+| --- | --- |
+| `install_paths.py` | the repository, the manifest, the record and units file in `$XDG_STATE_HOME/dotfiles`, the session names |
+| `install_plan.py` | the manifest's units, the plan (`load_plan`), hardware detection, `query` and the other questions about the system |
+| `install_record.py` | `install.json` (load, save, `keep`, `recorded_profiles`) and the units file |
+| `install_steps.py` | the install steps (`STEPS`): each one's pending, apply and remember |
+| `install_pins.py` | newer pins for the manifest (`pins`, `newer_pin`, `apply_pin`) |
+| `install_undo.py` | uninstall (`UNSTEPS`, `uninstall_plan`, `reconstruct`, `desktop_present`) |
+| `install_removal.py` | removing profiles or parts (`PROFILE_UNSTEPS`, `removal_plan`) |
+| `install_run.py` | `run_steps` and what is said around a run (preflight, notes, what to do afterwards) |
+| `backend.py`, `fedora.py`, `arch.py` | the distribution: what `plan.distro` names |
+
+The guided installer (`install-tui.py`) imports the same modules. Across modules a name is always written `module.name`, so a test that patches it in its module (`mock.patch.object(install_plan, 'query')`) reaches every caller. The tests also point `XDG_STATE_HOME` at a temporary folder before importing, so that a missed redirect cannot reach the real record.
+
 ## Stow packages
 
 `scripts/stow.py` stows an explicit `PACKAGES` tuple with `--no-folding`: directories in `$HOME` are real, files are symlinks. A new file therefore does not exist in `$HOME` until `stow.py apply` runs. `.claude/`, `scripts/` and top-level files are never stowed.

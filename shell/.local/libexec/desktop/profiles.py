@@ -25,6 +25,12 @@ from i18n import tr
 
 # This file is a Stow link into the repository: shell/.local/libexec/desktop/profiles.py.
 REPO = Path(__file__).resolve().parents[4]
+# The installer's modules, the same ones install-desktop.py and the guided installer run.
+sys.path.insert(0, str(REPO / 'scripts/install'))
+import install_paths  # noqa: E402
+import install_plan  # noqa: E402
+import install_undo  # noqa: E402
+import install_removal  # noqa: E402
 
 
 def installer_screens():
@@ -44,20 +50,19 @@ def row(tui, statuses, name, recorded, defaults):
 def listing():
     try:
         tui = installer_screens()
-        installer = tui.installer
         # Quiet: the installer prints warnings, and exits on a distribution it does not support.
         with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-            plan = installer.load_plan(('core',))
+            plan = install_plan.load_plan(('core',))
             plan.distro.remember_answers()
             recorded = tui.recorded_profiles()
-            defaults = installer.default_profiles(plan.table).split(',')
-            units = installer.units(plan.table)
+            defaults = install_plan.default_profiles(plan.table).split(',')
+            units = install_plan.units(plan.table)
             statuses = {name: tui.profile_status(plan, name) for name in units}
             rows = []
-            for name in installer.PROFILES:
+            for name in install_paths.PROFILES:
                 parts = [row(tui, statuses, part, recorded, defaults) | {'part': part.split('.', 1)[1],
-                                                                         'default': part in installer.default_parts(name, plan.table)}
-                         for part in units if installer.parent(part) == name and part != name]
+                                                                         'default': part in install_plan.default_parts(name, plan.table)}
+                         for part in units if install_plan.parent(part) == name and part != name]
                 rows.append(row(tui, statuses, name, recorded, defaults) | {'parts': parts})
     except SystemExit as stop:
         return {'profiles': [], 'error': str(stop.code or '')}
@@ -66,10 +71,10 @@ def listing():
     return {'profiles': rows, 'error': ''}
 
 
-def checked(installer, text):
+def checked(text):
     # Units of the manifest, comma-separated; "-" or nothing is none.
     names = [name for name in text.split(',') if name and name != '-']
-    if not all(re.fullmatch(r'[a-z0-9][a-z0-9.-]*', name) for name in names) or set(names) - set(installer.manifest_units()):
+    if not all(re.fullmatch(r'[a-z0-9][a-z0-9.-]*', name) for name in names) or set(names) - set(install_plan.manifest_units()):
         raise ValueError(tr('settings.profiles.errors.name', [text]))
     return names
 
@@ -77,66 +82,62 @@ def checked(installer, text):
 def present_units(tui):
     # Units all there on this system without a record of them (Herdr from its own installer, say): an install from
     # here keeps them, as the TUI starts them on, so the units file never leaves out what is installed.
-    installer = tui.installer
     with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-        plan = installer.load_plan(('core',))
+        plan = install_plan.load_plan(('core',))
         plan.distro.remember_answers()
-        statuses = {name: tui.profile_status(plan, name) for name in installer.units(plan.table)}
+        statuses = {name: tui.profile_status(plan, name) for name in install_plan.units(plan.table)}
     return {name for name in statuses if name != 'core' and tui.unit_installed(statuses, name)}
 
 
 def install_arguments(tui, names):
-    installer = tui.installer
     with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
         recorded = tui.recorded_profiles()
     # A profile added here comes with its default parts.
-    added = {part for name in names if name not in recorded for part in installer.default_parts(name)}
-    return ['--profiles', ','.join(installer.normalized(set(recorded) | present_units(tui) | {'core'} | set(names) | added))]
+    added = {part for name in names if name not in recorded for part in install_plan.default_parts(name)}
+    return ['--profiles', ','.join(install_plan.normalized(set(recorded) | present_units(tui) | {'core'} | set(names) | added))]
 
 
 def keep_arguments(tui, removing):
     # A removal keeps them too, and records them: without that, the units file it writes would leave out what is
     # installed but was never recorded (the AI block with a hand-installed Herdr).
-    installer = tui.installer
     with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
         recorded = set(tui.recorded_profiles())
-    going = set(installer.with_parts(tuple(removing)))
+    going = set(install_plan.with_parts(tuple(removing)))
     kept = sorted(present_units(tui) - recorded - going)
     return ['--keep', ','.join(kept)] if kept else []
 
 
 def plan(action, first, second=''):
     tui = installer_screens()
-    installer = tui.installer
     script = [sys.executable, str(REPO / 'scripts/install-desktop.py')]
     if action == 'change':
-        add, remove = checked(installer, first), checked(installer, second)
-        if not add and not remove or remove and not installer.removable_profiles(tuple(remove)):
+        add, remove = checked(first), checked(second)
+        if not add and not remove or remove and not install_removal.removable_profiles(tuple(remove)):
             raise ValueError(tr('settings.profiles.errors.name', [f'{first} {second}']))
         runner = [sys.executable, str(Path(__file__).resolve()), 'run']
         arguments = [','.join(add) or '-', ','.join(remove) or '-']
         preview, apply = runner + ['dry-run', *arguments], runner + ['apply', *arguments]
     else:
-        names = checked(installer, first)
+        names = checked(first)
         if not names:
             raise ValueError(tr('settings.profiles.errors.name', [first]))
         if action == 'install':
             arguments = install_arguments(tui, names)
             remove = []
         else:
-            if not installer.removable_profiles(tuple(names)):
+            if not install_removal.removable_profiles(tuple(names)):
                 raise ValueError(tr('settings.profiles.errors.name', [first]))
             arguments, remove = ['--remove', ','.join(names), *keep_arguments(tui, names)], names
         preview, apply = script + ['dry-run', *arguments], script + ['apply', *arguments]
     # The running Hyprland has the plugins loaded: the installer refuses, and so does this, before the prompt.
-    blocked = tr('settings.profiles.pluginsInSession') if 'plugins' in remove and installer.hyprland_running() else ''
+    blocked = tr('settings.profiles.pluginsInSession') if 'plugins' in remove and install_undo.hyprland_running() else ''
     return {'preview': preview, 'apply': apply, 'blocked': blocked}
 
 
 def run(mode, first, second):
     """A change: the installer adds, then removes. Its status is the first that failed."""
     tui = installer_screens()
-    add, remove = checked(tui.installer, first), checked(tui.installer, second)
+    add, remove = checked(first), checked(second)
     script = [sys.executable, str(REPO / 'scripts/install-desktop.py'), mode]
     status = 0
     if add:

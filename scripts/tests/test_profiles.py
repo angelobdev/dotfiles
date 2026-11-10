@@ -12,6 +12,9 @@ from unittest import mock
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / 'shell/.local/libexec/desktop'))
 import profiles  # noqa: E402
+import install_paths  # noqa: E402
+import install_plan  # noqa: E402
+import install_undo  # noqa: E402
 import tomllib  # noqa: E402
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text())
@@ -25,12 +28,12 @@ def screens(statuses, recorded=('core', 'gaming'), exit_code=None):
     # install-tui.py as the helper uses it, with the Fedora manifest: the record and the state of each unit (what is
     # not named is not there at all).
     tui = TUI
-    current = TUI.installer.load_plan(('core',), {'ID': 'fedora', 'VERSION_ID': '45'})
+    current = install_plan.load_plan(('core',), {'ID': 'fedora', 'VERSION_ID': '45'})
     patches = [mock.patch.object(tui, 'recorded_profiles', return_value=recorded),
                mock.patch.object(tui, 'profile_status', side_effect=lambda plan, name: statuses.get(name, Status(['x'], 1))),
-               mock.patch.object(tui.installer, 'load_plan', side_effect=SystemExit(exit_code) if exit_code else None, return_value=current),
-               mock.patch.object(tui.installer, 'touch_hardware', return_value=False),
-               mock.patch.dict(tui.installer.DETECT, {name: (lambda: False) for name in tui.installer.DETECT})]
+               mock.patch.object(install_plan, 'load_plan', side_effect=SystemExit(exit_code) if exit_code else None, return_value=current),
+               mock.patch.object(install_plan, 'touch_hardware', return_value=False),
+               mock.patch.dict(install_plan.DETECT, {name: (lambda: False) for name in install_plan.DETECT})]
     return tui, patches
 
 
@@ -58,7 +61,7 @@ class ProfilesTests(unittest.TestCase):
         listed = self.listing(statuses, recorded=('core', 'gaming', 'gaming.steam'))
         self.assertEqual(listed['error'], '')
         rows = {row['name']: row for row in listed['profiles']}
-        self.assertEqual(list(rows), list(TUI.installer.PROFILES))
+        self.assertEqual(list(rows), list(install_paths.PROFILES))
         self.assertEqual((rows['core']['installed'], rows['core']['recorded'], rows['core']['default'], rows['core']['parts']), (True, True, True, []))
         # A profile with parts is there when its own setup (none for hardware) and one of its parts are.
         self.assertTrue(rows['hardware']['installed'])
@@ -80,10 +83,10 @@ class ProfilesTests(unittest.TestCase):
     def plan(self, action, *names, recorded=('core', 'gaming'), running=False):
         tui = TUI
         with mock.patch.object(tui, 'recorded_profiles', return_value=recorded), \
-                mock.patch.object(tui.installer, 'hyprland_running', return_value=running), \
+                mock.patch.object(install_undo, 'hyprland_running', return_value=running), \
                 mock.patch.object(profiles, 'installer_screens', return_value=tui), \
-                mock.patch.object(tui.installer, 'distro_table', return_value=tui.installer.flatten_parts(MANIFEST['fedora'])), \
-                mock.patch.dict(tui.installer.DETECT, {name: (lambda: False) for name in tui.installer.DETECT}):
+                mock.patch.object(install_plan, 'distro_table', return_value=install_plan.flatten_parts(MANIFEST['fedora'])), \
+                mock.patch.dict(install_plan.DETECT, {name: (lambda: False) for name in install_plan.DETECT}):
             out = io.StringIO()
             with contextlib.redirect_stdout(out):
                 profiles.main(['plan', action, *names])
@@ -144,7 +147,7 @@ class ProfilesTests(unittest.TestCase):
     def test_the_real_installer_loads(self):
         # The helper reads install-tui.py from the repository it is linked from.
         tui = profiles.installer_screens()
-        self.assertIn('assistant', tui.installer.PROFILES)
+        self.assertIn('assistant', install_paths.PROFILES)
         self.assertTrue(callable(tui.profile_status))
 
 if __name__ == '__main__':

@@ -21,11 +21,17 @@ import threading
 
 REPO = Path(__file__).resolve().parent.parent
 sys.dont_write_bytecode = True
-_spec = importlib.util.spec_from_file_location('install_desktop', REPO / 'scripts/install-desktop.py')
-installer = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(installer)
-sys.path.insert(0, str(REPO / 'scripts/hyprpm'))
+# The installer's modules: the same plan, steps and record as install-desktop.py, which is only their command line.
+sys.path.insert(0, str(REPO / 'scripts/install'))
+import install_paths  # noqa: E402  (puts scripts/hyprpm on the path, for bundle)
 import bundle  # noqa: E402
+import install_pins  # noqa: E402
+import install_plan  # noqa: E402
+import install_record  # noqa: E402
+import install_removal  # noqa: E402
+import install_run  # noqa: E402
+import install_steps  # noqa: E402
+import install_undo  # noqa: E402
 
 # One line each, for every profile and part; docs/guide/installation.md has the long version.
 DESCRIPTIONS = {
@@ -107,19 +113,19 @@ def linked(package, path):
 def profile_status(plan, name):
     # Only what can be seen without sudo: its packages, its swaps, its AUR packages, its archives and its Stow links.
     one = plan._replace(profiles=(name,))
-    wanted = list(dict.fromkeys(installer.wanted_packages(one)))
+    wanted = list(dict.fromkeys(install_steps.wanted_packages(one)))
     # Only what is installed: packages_pending would also ask the solver about the Hyprland build and print its
     # warning over the curses screen. The review step, which captures it, still says so.
-    missing = (one.distro.missing(wanted) if wanted else []) + installer.swaps_pending(one)
-    missing += [item.split()[0] for item in installer.aur_pending(one)]
-    missing += [item.split()[0] for item in installer.archives_pending(one)]
+    missing = (one.distro.missing(wanted) if wanted else []) + install_steps.swaps_pending(one)
+    missing += [item.split()[0] for item in install_steps.aur_pending(one)]
+    missing += [item.split()[0] for item in install_steps.archives_pending(one)]
     links = [(package, path) for package in plan.table[name].get('stow', ()) for path in stow_files(package)]
     missing += [str(path.relative_to(REPO)) for package, path in links if not linked(package, path)]
     # A part of plugins is its plugin too, built by hyprpm: Hyprspace and hyprglass need nothing else of their own.
     plugins = [plugin for plugin, unit in bundle.PROFILE_OF.items() if unit == name and unit.startswith('plugins.')]
     state = bundle.repository_state() if plugins else {}
     missing += [plugin for plugin in plugins if state.get(plugin, {}).get('failed', True)]
-    return Status(missing, len(wanted) + len(installer.swaps(one)) + len(installer.merged(one, 'aur')) + len(installer.merged(one, 'archives'))
+    return Status(missing, len(wanted) + len(install_steps.swaps(one)) + len(install_plan.merged(one, 'aur')) + len(install_plan.merged(one, 'archives'))
                   + len(links) + len(plugins))
 
 
@@ -129,7 +135,7 @@ def installed(status):
 
 def children(name):
     # The parts of a profile, in manifest order.
-    return tuple(unit for unit in installer.manifest_units() if unit != name and installer.parent(unit) == name)
+    return tuple(unit for unit in install_plan.manifest_units() if unit != name and install_plan.parent(unit) == name)
 
 
 def unit_installed(statuses, name):
@@ -160,8 +166,8 @@ def status_label(status):
 def preselected(statuses):
     # On a desktop already set up, what it has; on a fresh system, the defaults.
     if not installed(statuses['core']):
-        return tuple(installer.default_profiles().split(','))
-    return tuple(name for name in installer.manifest_units() if name == 'core' or unit_installed(statuses, name))
+        return tuple(install_plan.default_profiles().split(','))
+    return tuple(name for name in install_plan.manifest_units() if name == 'core' or unit_installed(statuses, name))
 
 
 def status_text(status):
@@ -182,10 +188,10 @@ def toggled(profiles, name, table=None):
     if name in chosen:
         chosen -= {name, *children(name)}
     else:
-        chosen |= {name, installer.parent(name)}
-        if installer.parent(name) == name:
-            chosen |= set(installer.default_parts(name, table))
-    return installer.normalized(chosen)
+        chosen |= {name, install_plan.parent(name)}
+        if install_plan.parent(name) == name:
+            chosen |= set(install_plan.default_parts(name, table))
+    return install_plan.normalized(chosen)
 
 
 def summary(table, name):
@@ -212,7 +218,7 @@ def removed_profiles(plan):
 
 
 def undo_steps(plan):
-    return installer.PROFILE_UNSTEPS if removed_profiles(plan) else installer.UNSTEPS
+    return install_removal.PROFILE_UNSTEPS if removed_profiles(plan) else install_undo.UNSTEPS
 
 
 def command(plan, action='apply'):
@@ -228,11 +234,11 @@ def command(plan, action='apply'):
 
 def firmware_items(plan):
     # The vendor blobs this model still needs; none unless tablet is chosen and the model matches.
-    return installer.firmware_needed(plan)
+    return install_steps.firmware_needed(plan)
 
 
 def missing_firmware(plan, items):
-    return [item for item in items if not installer.firmware_source(plan, item)]
+    return [item for item in items if not install_steps.firmware_source(plan, item)]
 
 
 def review_step(plan, step):
@@ -249,10 +255,10 @@ def review_step(plan, step):
 
 def review_warnings(plan, reviews):
     if removing(plan):
-        warnings = installer.record_notes(plan)
+        warnings = install_run.record_notes(plan)
     else:
         try:
-            warnings = installer.preflight_warnings(plan)
+            warnings = install_run.preflight_warnings(plan)
         except OSError as error:
             warnings = [str(error)]
     for review in reviews:
@@ -367,10 +373,10 @@ class Screen:
 
 
 def system_lines():
-    release = installer.os_release()
+    release = install_plan.os_release()
     return (
         ('System', f'{release.get("PRETTY_NAME", "unknown")}, {platform.machine()}'),
-        ('Model', installer.dmi('product_name') or 'unknown'),
+        ('Model', install_steps.dmi('product_name') or 'unknown'),
         ('User', getpass.getuser()),
         ('Free on /', f'{shutil.disk_usage("/").free // 2**30} GiB'),
         ('Repository', str(REPO)),
@@ -380,18 +386,18 @@ def system_lines():
 
 def post_pending():
     # The first login of a new install opens a terminal for this; once it has finished, there is nothing to finish.
-    return bool(os.environ.get('HYPRLAND_INSTANCE_SIGNATURE')) and installer.AUTOSTART.exists()
+    return bool(os.environ.get('HYPRLAND_INSTANCE_SIGNATURE')) and install_paths.AUTOSTART.exists()
 
 
 def menu_entries():
     # Updates only once there is a desktop to update.
     entries = [('install', 'Install or update the desktop', 'Choose the profiles, review what is left to do, then apply it.')]
-    if installer.desktop_present():
+    if install_undo.desktop_present():
         entries.append(('updates', 'Check for updates', 'System packages, Flatpak apps, AUR packages and zsh plugins newer '
                         'than their pins, and this repository: see what is new, check what to take, apply it.'))
     if post_pending():
         entries.append(('post', 'Finish the installation', 'Build the Hyprland plugins and list what is left to do by hand.'))
-    if installer.desktop_present():
+    if install_undo.desktop_present():
         entries.append(('remove', 'Remove profiles', 'Undo what some profiles set up (Docker, Steam, the apps...), leaving the desktop '
                         'and what the other profiles need.'))
     entries.append(('uninstall', 'Remove the desktop', 'Undo what the installer set up: plugins, login, links and settings, '
@@ -432,7 +438,7 @@ def menu(ui):
 
 def detect(ui, plan):
     statuses = {}
-    names = installer.manifest_units()
+    names = install_plan.manifest_units()
     for index, name in enumerate(names):
         row = ui.frame('Profiles', 'Ctrl+C quits')
         if row is not None:
@@ -444,12 +450,12 @@ def detect(ui, plan):
 
 def visible_units(names, expanded):
     # The rows of the accordion: every profile, and the parts of the open ones under it.
-    return [name for name in names if installer.parent(name) == name or installer.parent(name) in expanded]
+    return [name for name in names if install_plan.parent(name) == name or install_plan.parent(name) in expanded]
 
 
 def unit_row(name, checked, expanded):
     # A profile with parts shows whether it is open; a part is indented under its profile.
-    if installer.parent(name) != name:
+    if install_plan.parent(name) != name:
         return f'    {checked} {name.split(".", 1)[1]}'
     return f'{("v" if name in expanded else ">") if children(name) else " "} {checked} {name}'
 
@@ -465,7 +471,7 @@ def move_in_accordion(key, names, cursor, expanded):
     if key in RIGHT and children(name):
         return cursor, expanded | {name}
     if key in LEFT:
-        profile = installer.parent(name)
+        profile = install_plan.parent(name)
         expanded = expanded - {profile}
         return visible_units(names, expanded).index(profile), expanded
     return cursor, expanded
@@ -473,7 +479,7 @@ def move_in_accordion(key, names, cursor, expanded):
 
 def choose_profiles(ui, plan, mode, statuses, preset=False):
     profiles = tuple(plan.profiles)
-    names = installer.manifest_units()
+    names = install_plan.manifest_units()
     cursor, expanded = 0, set()
     found = installed(statuses['core'])
     if mode == 'post':
@@ -484,7 +490,7 @@ def choose_profiles(ui, plan, mode, statuses, preset=False):
         intro = 'The profiles found on this system start on. core is the desktop itself and always stays on.'
     else:
         intro = 'Choose what to install. core is the desktop itself and always stays on.'
-    defaults = tuple(installer.default_profiles(plan.table).split(','))
+    defaults = tuple(install_plan.default_profiles(plan.table).split(','))
     keys = 'Up/Down move   Right/Left parts   Space toggle   d defaults   ' + ('i installed   ' if found else '') + 'Enter continue   Esc back   q quit'
     while True:
         row = ui.frame('Profiles', keys)
@@ -530,7 +536,7 @@ def choose_profiles(ui, plan, mode, statuses, preset=False):
 def choose_removal(ui, plan, statuses, chosen=()):
     # Every profile and part but core, with what of it is on this system; nothing starts checked. A profile goes
     # with all of its parts.
-    names = [name for name in installer.manifest_units() if name != 'core']
+    names = [name for name in install_plan.manifest_units() if name != 'core']
     chosen, cursor, expanded = set(chosen), 0, set()
     while True:
         row = ui.frame('Remove profiles', 'Up/Down move   Right/Left parts   Space toggle   Enter continue   Esc back   q quit')
@@ -543,7 +549,7 @@ def choose_removal(ui, plan, statuses, chosen=()):
         top = min(max(0, cursor - shown + 1), cursor)
         for index, name in enumerate(rows[top:top + shown], start=top):
             selected = index == cursor
-            checked = name in chosen or installer.parent(name) in chosen
+            checked = name in chosen or install_plan.parent(name) in chosen
             ui.put(row, 2, ('> ' if selected else '  ') + unit_row(name, '[x]' if checked else '[ ]', expanded), curses.A_REVERSE if selected else 0)
             ui.put(row, 28, unit_label(statuses, name), ui.style('ok' if unit_installed(statuses, name) else 'warn'))
             ui.put(row, 40, clip(DESCRIPTIONS.get(name, ''), ui.size()[1] - 42), ui.style('dim'))
@@ -557,10 +563,10 @@ def choose_removal(ui, plan, statuses, chosen=()):
             cursor, expanded = move_in_accordion(key, names, cursor, expanded)
         elif key == ' ':
             chosen ^= {name}
-            if installer.parent(name) == name:
+            if install_plan.parent(name) == name:
                 chosen -= set(children(name))
         elif key in ENTER and chosen:
-            return 'next', installer.with_parts(tuple(unit for unit in names if unit in chosen))
+            return 'next', install_plan.with_parts(tuple(unit for unit in names if unit in chosen))
         elif key in ENTER:
             ui.footer('Nothing is checked: Space checks a profile or a part.', 'warn')
             ui.key()
@@ -637,9 +643,9 @@ def choose_firmware(ui, plan, items):
 def collect(ui, plan):
     # A fresh look each time (check again, after apply), shared by the steps within it.
     plan.distro.remember_answers()
-    installer.found_firmware.cache_clear()
+    install_steps.found_firmware.cache_clear()
     reviews = []
-    steps = undo_steps(plan) if removing(plan) else installer.STEPS
+    steps = undo_steps(plan) if removing(plan) else install_steps.STEPS
     for index, step in enumerate(steps):
         row = ui.frame('Checking', 'Ctrl+C quits')
         if row is not None:
@@ -799,18 +805,18 @@ PIN_NOTES = {
 
 def pin_source(plan, kind, title):
     # The pins of the installed profiles with a newer commit upstream; None when the profiles pin nothing of kind.
-    items = installer.merged(plan, kind)
+    items = install_plan.merged(plan, kind)
     if not items:
         return None
     pins, held, details, failed = [], [], [], []
     for item in items:
         try:
-            pin = installer.newer_pin(kind, item)
+            pin = install_pins.newer_pin(kind, item)
         except OSError as error:
-            pin, details = False, details + [f'{installer.pin_name(kind, item)}: {error}']
+            pin, details = False, details + [f'{install_pins.pin_name(kind, item)}: {error}']
         if pin is False:
-            failed.append(installer.pin_name(kind, item))
-        elif pin and kind == 'clones' and not installer.clone_ours(installer.clone_path(item)):
+            failed.append(install_pins.pin_name(kind, item))
+        elif pin and kind == 'clones' and not install_steps.clone_ours(install_steps.clone_path(item)):
             # The clones step leaves a changed clone alone: the pin would move without it.
             held.append(pin.name)
             details += [f'{pin.name} {pin.label}: ~/{item["path"]} has local changes, so it stays as it is '
@@ -827,7 +833,7 @@ def pin_source(plan, kind, title):
 def git(*arguments):
     # Never a password or passphrase prompt over the screen: ssh fails instead, unless the user set their own command.
     environment = dict(os.environ, GIT_TERMINAL_PROMPT='0', LC_ALL='C')
-    if 'GIT_SSH_COMMAND' not in environment and not installer.query('git', '-C', str(REPO), 'config', 'core.sshCommand').stdout.strip():
+    if 'GIT_SSH_COMMAND' not in environment and not install_plan.query('git', '-C', str(REPO), 'config', 'core.sshCommand').stdout.strip():
         environment['GIT_SSH_COMMAND'] = 'ssh -o BatchMode=yes'
     return subprocess.run(('git', '-C', str(REPO), *arguments), capture_output=True, text=True, env=environment, timeout=120)
 
@@ -860,7 +866,7 @@ def repository_source():
 def desktop_source(plan):
     # What the installed profiles still need from the manifest, after a pull for instance. The upgrade is the
     # System packages line.
-    work = [review for review in (review_step(plan, step) for step in installer.STEPS if step.title != 'upgrade')
+    work = [review for review in (review_step(plan, step) for step in install_steps.STEPS if step.title != 'upgrade')
             if review.items or review.error]
     details = []
     for review in work:
@@ -917,9 +923,9 @@ def recorded_profiles():
     # The profiles the installer applied here, from its record; a missing package does not make one less of them.
     # Quiet: an unreadable record says so on stderr, over the screen.
     with redirect_stderr(io.StringIO()):
-        record = installer.load_record()
-    profiles = installer.recorded_profiles(record) or []
-    return tuple(name for name in installer.manifest_units() if name in profiles or name == 'core' and profiles)
+        record = install_record.load_record()
+    profiles = install_removal.recorded_profiles(record) or []
+    return tuple(name for name in install_plan.manifest_units() if name in profiles or name == 'core' and profiles)
 
 
 def default_choice(sources):
@@ -1030,7 +1036,7 @@ def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
             # Back to the choice, or to the menu when the profiles came with --remove.
             stage = 'remove' if start != 'removal' else 'menu'
             start = 'menu'
-            if 'plugins' in removal and installer.hyprland_running():
+            if 'plugins' in removal and install_undo.hyprland_running():
                 notice(ui, 'Remove profiles', 'Removing plugins takes away the Hyprland plugins, which the running Hyprland has '
                        'loaded. Log out, switch to a console with Ctrl+Alt+F3, sign in there and start this again.')
                 continue
@@ -1040,12 +1046,12 @@ def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
             if statuses is None:
                 statuses = detect(ui, plan)
             # What is installed without a record stays, and is recorded: the units file then keeps it.
-            going, recorded = installer.with_parts(removal), recorded_profiles()
-            keep = tuple(name for name in installer.manifest_units()
+            going, recorded = install_plan.with_parts(removal), recorded_profiles()
+            keep = tuple(name for name in install_plan.manifest_units()
                          if name != 'core' and name not in going and name not in recorded and unit_installed(statuses, name))
             try:
                 with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-                    current = installer.removal_plan(plan, removal, keep=keep)
+                    current = install_removal.removal_plan(plan, removal, keep=keep)
             except (subprocess.CalledProcessError, RuntimeError, OSError) as error:
                 notice(ui, 'Remove profiles', f'What the installer set up could not be read: {error}')
                 continue
@@ -1057,14 +1063,14 @@ def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
         elif stage == 'updates':
             # Of the profiles of this desktop, whatever --profiles says.
             stage = 'menu'
-            if not installer.desktop_present():
+            if not install_undo.desktop_present():
                 notice(ui, 'Updates', 'The desktop is not installed yet: Install or update the desktop comes first.')
                 continue
             profiles = recorded_profiles()
             if not profiles:
                 if statuses is None:
                     statuses = detect(ui, plan)
-                profiles = tuple(name for name in installer.manifest_units() if name == 'core' or unit_installed(statuses, name))
+                profiles = tuple(name for name in install_plan.manifest_units() if name == 'core' or unit_installed(statuses, name))
             current = plan._replace(profiles=profiles)
             outcome, picked = updates_screen(ui, current)
             if outcome == 'quit':
@@ -1074,7 +1080,7 @@ def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
         elif stage == 'uninstall':
             # Back to the menu whatever the answer, unless the removal is confirmed.
             stage = 'menu'
-            if installer.hyprland_running():
+            if install_undo.hyprland_running():
                 notice(ui, 'Remove the desktop', 'Hyprland is running, and removing the desktop takes away the configuration '
                        'it runs on. Log out, switch to a console with Ctrl+Alt+F3, sign in there and start this again.')
                 continue
@@ -1083,7 +1089,7 @@ def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
                 ui.window.refresh()
             try:
                 with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
-                    removal = installer.uninstall_plan(plan)
+                    removal = install_undo.uninstall_plan(plan)
             except (subprocess.CalledProcessError, RuntimeError, OSError) as error:
                 notice(ui, 'Remove the desktop', f'What the installer set up could not be read: {error}')
                 continue
@@ -1097,7 +1103,7 @@ def interface(window, plan, preset=False, start='menu', adding=(), removal=()):
                 statuses = detect(ui, plan)
                 if not preset:
                     found = preselected(statuses)
-                    plan = plan._replace(profiles=installer.normalized(set(found) | set(adding)))
+                    plan = plan._replace(profiles=install_plan.normalized(set(found) | set(adding)))
             outcome, profiles = choose_profiles(ui, plan, mode, statuses, preset)
             plan = plan._replace(profiles=profiles)
             if outcome == 'quit':
@@ -1138,27 +1144,27 @@ def confirm(question):
 
 def apply(plan):
     if removing(plan) and (not removed_profiles(plan) or 'plugins' in removed_profiles(plan)):
-        installer.refuse_uninstall()
+        install_run.refuse_uninstall()
     if removing(plan) and not removed_profiles(plan):
-        installer.load_record(set_aside=True)  # An unreadable record is kept aside before uninstall marks it undone.
+        install_record.load_record(set_aside=True)  # An unreadable record is kept aside before uninstall marks it undone.
     print(f'Running: {command(plan)}', flush=True)
     subprocess.run(('sudo', '-v'), check=True)
     stop = threading.Event()
     threading.Thread(target=keep_sudo, args=(stop,), daemon=True).start()
     try:
-        done = installer.run_steps(plan, False, undo_steps(plan) if removing(plan) else installer.STEPS)
+        done = install_run.run_steps(plan, False, undo_steps(plan) if removing(plan) else install_steps.STEPS)
     finally:
         stop.set()
     if removed_profiles(plan):
         print(f'Done: {", ".join(removed_profiles(plan))} removed.' if done else 'Nothing to do.')
         return 0
     if removing(plan):
-        installer.after_uninstall(plan, done)
+        install_run.after_uninstall(plan, done)
     else:
-        installer.next_steps(plan, done)
+        install_run.next_steps(plan, done)
     # Inside the running desktop, only when the applied steps need it (firmware, the boot target).
-    reboot = not installer.hyprland_running() or installer.restart_needed() == 'reboot'
-    if done and installer.booted() and reboot and confirm('Reboot now? [y/N] '):
+    reboot = not install_undo.hyprland_running() or install_run.restart_needed() == 'reboot'
+    if done and install_plan.booted() and reboot and confirm('Reboot now? [y/N] '):
         subprocess.run(('sudo', 'systemctl', 'reboot'), check=True)
     return 0
 
@@ -1181,8 +1187,8 @@ def after_pull(plan, before):
     changed = git('diff', '--name-only', before, 'HEAD').stdout.split()
     if not changed or not shutil.which('stow'):
         return
-    print('Linking new files: ' + ' '.join(installer.stow_command(plan, 'apply')), flush=True)
-    subprocess.run(installer.stow_command(plan, 'apply'), check=True)
+    print('Linking new files: ' + ' '.join(install_steps.stow_command(plan, 'apply')), flush=True)
+    subprocess.run(install_steps.stow_command(plan, 'apply'), check=True)
     if not os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
         return
     if any(path.startswith('hypr/') for path in changed):
@@ -1198,7 +1204,7 @@ def after_pull(plan, before):
 def update_flatpaks():
     # The system's apps with sudo, as the installer installs them; your own as you.
     subprocess.run(('sudo', 'flatpak', 'update', '--system', '-y', '--noninteractive'), check=True)
-    if installer.query('flatpak', 'list', '--user', '--app', '--columns=application').stdout.strip():
+    if install_plan.query('flatpak', 'list', '--user', '--app', '--columns=application').stdout.strip():
         subprocess.run(('flatpak', 'update', '--user', '-y', '--noninteractive'), check=True)
 
 
@@ -1221,15 +1227,15 @@ def apply_updates(plan, picked):
         if pins:
             text = MANIFEST.read_text(encoding='utf-8')
             for pin in pins:
-                text = installer.apply_pin(text, pin)
+                text = install_pins.apply_pin(text, pin)
             MANIFEST.write_text(text, encoding='utf-8')
             print(f'Pinned in {MANIFEST.relative_to(REPO)}: ' + ', '.join(f'{pin.name} {pin.label}' for pin in pins), flush=True)
             # Read again: the steps below build and check out what it pins now.
-            plan = installer.load_plan(plan.profiles, firmware=plan.firmware)
+            plan = install_plan.load_plan(plan.profiles, firmware=plan.firmware)
         titles = {STEP_OF[key] for key in keys if key in STEP_OF}
-        steps = tuple(step for step in installer.STEPS if step.title in titles)
+        steps = tuple(step for step in install_steps.STEPS if step.title in titles)
         if steps:
-            installer.run_steps(plan, False, steps)
+            install_run.run_steps(plan, False, steps)
         if 'flatpak' in keys:
             update_flatpaks()
     finally:
@@ -1254,9 +1260,9 @@ def apply_headless(keys):
     the root broker). The repository goes first, as on the screen, and the rest is applied by its new version."""
     if set(keys) - set(HEADLESS) or not keys:
         sys.exit(f'--apply-updates takes {", ".join(HEADLESS)}.')
-    profiles = recorded_profiles() or tuple(installer.default_profiles().split(','))
-    plan = installer.load_plan(profiles)
-    installer.refuse(plan)
+    profiles = recorded_profiles() or tuple(install_plan.default_profiles().split(','))
+    plan = install_plan.load_plan(profiles)
+    install_run.refuse(plan)
     rest = [key for key in HEADLESS if key in keys and key != 'repository']
     if 'repository' in keys:
         source = repository_source()
@@ -1291,7 +1297,7 @@ def main(argv=None):
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--firmware', metavar='DIR', help='directory the firmware screen starts with')
     parser.add_argument('--profiles', help='profiles chosen at the start (default: the ones installed, or on a fresh system '
-                        f'{installer.DEFAULT_PROFILES}, and tablet on a 2-in-1)')
+                        f'{install_paths.DEFAULT_PROFILES}, and tablet on a 2-in-1)')
     parser.add_argument('--updates', action='store_true', help='start on the updates screen')
     parser.add_argument('--add', metavar='PROFILES', help='start on the profiles, these checked on top of the installed ones')
     parser.add_argument('--remove', metavar='PROFILES', help='start on the review of removing these profiles (not core)')
@@ -1306,24 +1312,24 @@ def main(argv=None):
     removal = tuple(args.remove.split(',')) if args.remove else ()
     if sum(bool(value) for value in (args.updates, adding, removal, args.profiles and (adding or removal))) > 1:
         parser.error('--updates, --add and --remove go one at a time, and --add or --remove without --profiles.')
-    units = installer.manifest_units()
+    units = install_plan.manifest_units()
     if adding and set(adding) - set(units):
         parser.error(f'--add takes {", ".join(units)}.')
-    if removal and not installer.removable_profiles(removal):
+    if removal and not install_removal.removable_profiles(removal):
         parser.error(f'--remove takes {", ".join(units[1:])}; Remove the desktop removes core.')
-    profiles = tuple((args.profiles or installer.default_profiles()).split(','))
-    if not installer.valid_profiles(profiles):
+    profiles = tuple((args.profiles or install_plan.default_profiles()).split(','))
+    if not install_plan.valid_profiles(profiles):
         parser.error(f'--profiles needs core, and takes only {", ".join(units)}.')
-    profiles = installer.normalized(profiles)
+    profiles = install_plan.normalized(profiles)
     # Adding a profile brings its default parts; removing one, all of its parts.
-    adding = installer.normalized(set(adding) | {part for name in adding for part in installer.default_parts(name)})
-    removal = installer.with_parts(removal) if removal else ()
+    adding = install_plan.normalized(set(adding) | {part for name in adding for part in install_plan.default_parts(name)})
+    removal = install_plan.with_parts(removal) if removal else ()
     if os.geteuid() == 0:
         sys.exit('Run as the desktop user: the installer asks sudo for each system change.')
     if not (sys.stdin.isatty() and sys.stdout.isatty()):
         sys.exit('Run it in a terminal; without one, use install-desktop.py.')
-    plan = installer.load_plan(profiles, firmware=args.firmware)
-    installer.refuse(plan)
+    plan = install_plan.load_plan(profiles, firmware=args.firmware)
+    install_run.refuse(plan)
     set_locale()
     os.environ.setdefault('ESCDELAY', '25')
     try:
@@ -1336,7 +1342,7 @@ def main(argv=None):
         return 0
     action, plan, *picked = choice
     if action == 'post':
-        installer.post(plan)
+        install_run.post(plan)
         return 0
     if action == 'pull':
         return pull(plan)

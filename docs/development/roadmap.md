@@ -353,7 +353,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #103: `theme.py` (1605 lines, seven areas) is the command line and the apply, about 680 lines; `theme_paths.py`, `theme_core.py`, `theme_apps.py`, `theme_wallpapers.py` and `theme_assets.py` hold the rest, each name across modules written `module.name`. `list`, `icons`, `cursors`, `fonts`, `wallpapers`, `dynamic`, `tone` and the rendered files of four themes are byte for byte as before, and the tests ran without writing outside their sandbox (2026-11-10).
 
 - [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
-  - [ ] #101, step 1: the "profiles the record says are installed, unless uninstalled" expression, written four times over the installer and the guided installer, is `recorded_profiles(record)`. The split of `install-desktop.py` into modules waits: the guided installer and about 200 tests reach and patch its functions as `installer.*` (2026-11-10).
+  - [x] #101: `install-desktop.py` (2056 lines) is the command line, about 100 lines; the installer is `scripts/install/install_{paths,plan,record,steps,pins,undo,removal,run}.py`, which the guided installer imports directly (no `importlib` of the script any more). Every name across modules is `module.name`, the tests patch each in its module and run with their own `XDG_STATE_HOME`; previews, `profiles.py` and the guided installer answer as before (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
