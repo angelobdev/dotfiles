@@ -46,6 +46,16 @@ def query(*command):
     return answers[command]
 
 
+# A parsed answer (pacman's log, every installed package) kept like query() keeps pacman's: one removal review
+# asks for them many times over, and only a change through sudo() or makepkg makes them stale.
+def remembered(key, compute):
+    if answers is None:
+        return compute()
+    if key not in answers:
+        answers[key] = compute()
+    return answers[key]
+
+
 def run_query(command):
     return subprocess.run(command, capture_output=True, text=True, env={**os.environ, 'LC_ALL': 'C'})
 
@@ -93,6 +103,10 @@ def dependency_name(dependency):
 
 def local_packages():
     # Every installed package by name: {name: {'arch', 'explicit', 'depends', 'provides'}}, from one pacman -Qi.
+    return remembered(('local packages',), read_local_packages)
+
+
+def read_local_packages():
     packages = {}
     for block in records(query('pacman', '-Qi').stdout):
         if 'Name' in block:
@@ -408,6 +422,10 @@ ACTION_LINE = re.compile(r'^\[[^\]]+\] \[ALPM\] (installed|reinstalled|upgraded|
 
 def history():
     # The transactions of pacman's log, oldest first: the command that ran and what it changed.
+    return remembered(('history',), read_history)
+
+
+def read_history():
     try:
         lines = LOG.read_text(encoding='utf-8', errors='replace').splitlines()
     except FileNotFoundError:

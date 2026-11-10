@@ -333,6 +333,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #95: every `ActionButton` with a tooltip created its tooltip window up front (42 per calendar month, rebuilt on each change); the window now exists only while the pointer is on the button (2026-11-10).
   - [x] #96: every change of `shell.json` (each slider step in Settings) ran `agents.py list`; only a change of the primary agent does now (2026-11-10).
   - [x] #97: the arrival times of notifications were never dropped, and the whole map was copied at each arrival; only the live ones are kept (2026-11-10).
+  - [x] #98: an Arch removal review parsed `pacman.log` and `pacman -Qi` about 6-10 times; both parsed answers are now kept in the installer's answer cache until the next change (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 

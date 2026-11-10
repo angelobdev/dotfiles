@@ -511,6 +511,19 @@ class HistoryTests(unittest.TestCase):
             with mock.patch.object(arch, 'LOG', Path(folder) / 'pacman.log'):
                 self.assertEqual(arch.brought(), set())
 
+    def test_the_log_is_read_once_until_something_changes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            log = Path(folder) / 'pacman.log'
+            log.write_text(self.LOG)
+            arch.remember_answers()
+            self.addCleanup(setattr, arch, 'answers', None)
+            with mock.patch.object(arch, 'LOG', log), mock.patch.object(arch.subprocess, 'run'):
+                first = arch.history()
+                log.write_text('')
+                self.assertIs(arch.history(), first, 'kept while nothing changed')
+                arch.sudo('true')
+                self.assertEqual(arch.history(), [], 'read again after a change')
+
     def test_no_log_is_no_history(self):
         with mock.patch.object(arch, 'LOG', Path('/nonexistent/pacman.log')):
             self.assertEqual(arch.history(), [])
