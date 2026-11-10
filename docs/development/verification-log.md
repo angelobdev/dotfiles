@@ -1101,3 +1101,8 @@ Reported by the user after the merges of the day:
 - `HyprSettings.save()` wrote `shell.json` every time but started `hyprsettings.py render` on a plain `Process`, which ignores a new command while it runs: two quick edits left `settings.lua` on the first one. The renderer is now a `CoalescedProcess` (`request()`).
 - A throwaway Quickshell config (no windows) with two `CoalescedProcess`, one with an `onExited` of its own as the renderer has: a request made while the first run was going ran once more after it with the newer command, in both, and the instance handler ran next to the base one. Two requests in the same tick, before the process starts, make one run with the newer command.
 - The live shell reloaded with no errors. `check.sh` passes.
+## Keep awake inhibitor restarts (#71), 2026-11-10
+
+- The inhibitor (`systemd-inhibit --what=idle … cat`) was bound to `keepAwake`: once it exited, nothing ran it again while the switch still said On. `Idle.qml` now starts and stops it on `keepAwakeChanged`, starts it again after an exit while Keep awake is on (`Backoff`: 2 s, doubled after each run shorter than a minute), and sends its stderr to `qs log`.
+- Live, Keep awake on: after the reload the inhibitor was listed by `systemd-inhibit --list` ("Resta attivo"). Killed by pid, a new one was listed about 4 s later (the run had lasted less than a minute, so the wait had doubled).
+- `check.sh` passes.
