@@ -9,8 +9,14 @@ case "${1:-apply}" in
         if command -v gsettings >/dev/null; then
             state="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
             mkdir -p "$state"
+            # Complete or absent: written aside and moved in only once gsettings succeeded. A failure (a missing
+            # schema) leaves no empty backup behind and does not stop the theme below.
             if [[ ! -e "$state/interface-before-theme.ini" ]]; then
-                gsettings list-recursively org.gnome.desktop.interface >"$state/interface-before-theme.ini"
+                if gsettings list-recursively org.gnome.desktop.interface >"$state/interface-before-theme.ini.tmp"; then
+                    mv "$state/interface-before-theme.ini.tmp" "$state/interface-before-theme.ini"
+                else
+                    rm -f "$state/interface-before-theme.ini.tmp"
+                fi
             fi
         fi
         # Renders the current theme and sets its gsettings, which also inform portal-aware

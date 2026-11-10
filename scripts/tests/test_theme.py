@@ -830,5 +830,40 @@ class GlassTuningTests(unittest.TestCase):
         self.assertIn('gapsOut = 16,', rendered)
 
 
+
+class WrapperTests(unittest.TestCase):
+    """desktop-theme apply with a stand-in gsettings and theme.py, in a temporary home."""
+
+    def run_apply(self, gsettings):
+        import os
+        import subprocess
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        home = Path(directory.name)
+        (home / 'bin').mkdir()
+        (home / 'bin/gsettings').write_text('#!/bin/sh\n' + gsettings)
+        (home / 'bin/gsettings').chmod(0o755)
+        helper = home / '.local/libexec/desktop/theme.py'
+        helper.parent.mkdir(parents=True)
+        helper.write_text('import pathlib, sys\npathlib.Path(sys.argv[0]).with_name("applied").write_text(sys.argv[1])\n')
+        result = subprocess.run(['bash', str(REPO / 'shell/.local/bin/desktop-theme'), 'apply'], capture_output=True, text=True,
+                                env={**os.environ, 'HOME': str(home), 'XDG_STATE_HOME': str(home / 'state'),
+                                     'PATH': f"{home / 'bin'}:{os.environ['PATH']}"}, timeout=30)
+        return result, home
+
+    def test_the_interface_backup_is_complete_and_kept(self):
+        result, home = self.run_apply("echo 'org.gnome.desktop.interface gtk-theme Adwaita'\n")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        backup = home / 'state/dotfiles/interface-before-theme.ini'
+        self.assertEqual(backup.read_text(), 'org.gnome.desktop.interface gtk-theme Adwaita\n')
+        self.assertEqual((home / '.local/libexec/desktop/applied').read_text(), 'apply')
+
+    def test_a_failing_gsettings_leaves_no_backup_and_the_theme_applies(self):
+        result, home = self.run_apply('echo "No such schema" >&2; exit 1\n')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(list((home / 'state/dotfiles').iterdir()), [])
+        self.assertEqual((home / '.local/libexec/desktop/applied').read_text(), 'apply')
+
+
 if __name__ == '__main__':
     unittest.main()
