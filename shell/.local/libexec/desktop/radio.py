@@ -16,6 +16,8 @@ save JSON, remove ID|URL: the saved items.
 """
 from common import write_atomic
 from i18n import tr
+import contextlib
+import fcntl
 import html
 import json
 import os
@@ -47,6 +49,24 @@ def runtime_dir():
 
 def state_path():
     return runtime_dir() / 'radio.json'
+
+
+# One change of what plays at a time (the panel, a bind and a terminal can ask together): stop, start and the
+# state written after it go as one, or two plays would both start an mpv and only the second be in radio.json.
+# The panel ends an action it replaces with SIGTERM: that waits for the end of the change, and the newer action
+# waits on the lock, so it finds the state of this one.
+@contextlib.contextmanager
+def exclusive():
+    stopped = []
+    previous = signal.signal(signal.SIGTERM, lambda number, frame: stopped.append(number))
+    try:
+        with (runtime_dir() / '.radio.lock').open('a') as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            yield
+    finally:
+        signal.signal(signal.SIGTERM, previous)
+        if stopped:
+            os.kill(os.getpid(), signal.SIGTERM)
 
 
 def radio_socket_path():
@@ -562,10 +582,14 @@ def main(argv=None):
             print(json.dumps(live_state(), ensure_ascii=False))
             return 0
         if command == 'play' and len(args) >= 2:
-            print(json.dumps(play_target(args[1]), ensure_ascii=False))
+            with exclusive():
+                result = play_target(args[1])
+            print(json.dumps(result, ensure_ascii=False))
             return 0
         if command == 'stop':
-            print(json.dumps(stop_playback(), ensure_ascii=False))
+            with exclusive():
+                result = stop_playback()
+            print(json.dumps(result, ensure_ascii=False))
             return 0
         if command in ('toggle', 'next', 'previous'):
             mpv_ipc({'toggle': ['cycle', 'pause'], 'next': ['playlist-next', 'weak'], 'previous': ['playlist-prev', 'weak']}[command])
@@ -579,17 +603,21 @@ def main(argv=None):
             print(json.dumps({'results': results}, ensure_ascii=False))
             return 0
         if command == 'save' and len(args) >= 2:
-            entry = add_saved_item(args[1])
+            with exclusive():
+                entry = add_saved_item(args[1])
             print(json.dumps({'saved': load_saved(), 'entry': entry}, ensure_ascii=False))
             return 0
         if command == 'remove' and len(args) >= 2:
-            remove_saved_item(args[1])
+            with exclusive():
+                remove_saved_item(args[1])
             print(json.dumps({'saved': load_saved()}, ensure_ascii=False))
             return 0
         if command not in ('play', 'save', 'remove'):
             matched = match_station(command)
             if matched:
-                print(json.dumps(play_target(matched), ensure_ascii=False))
+                with exclusive():
+                    result = play_target(matched)
+                print(json.dumps(result, ensure_ascii=False))
                 return 0
     except ValueError as error:
         print(error, file=sys.stderr)

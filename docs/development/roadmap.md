@@ -289,6 +289,9 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #76: `nmcli connection up/down` (VPN, hotspot, MAC change) was killed after 15 s while nmcli waits up to 90 s; activations now get 95 s, and a timeout is a translated `network.errors.noAnswer` instead of Python's text (2026-11-10).
 
+- [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
+  - [x] #77: two radio plays at once (the panel and a bind) could both start an mpv, one of them untracked; `play`, `stop`, `save` and `remove` now hold a lock, and a SIGTERM from the panel waits for the end of the change (2026-11-10).
+
 ### Backlog (reported 2026-11-03)
 
 - [x] Light GTK dialogs with the dark theme (file chooser, keyring unlock): GTK 3 asked for `Adwaita-dark`, which Fedora 44 no longer ships (`gnome-themes-extra` is gone), and fell back to light Adwaita. Themes now name `adw-gtk3-dark`/`adw-gtk3` (`adw-gtk3-theme` in the manifest), which also takes the theme palette from `gtk.css`. The portal file chooser floats centered at 50%×60% of the monitor instead of tiling to full height (`portal-file-chooser` rule).
