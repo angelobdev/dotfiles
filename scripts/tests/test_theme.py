@@ -12,6 +12,7 @@ from unittest import mock
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / 'shell/.local/libexec/desktop'))
 import theme  # noqa: E402
+import theme_assets  # noqa: E402
 
 TEMPLATES = REPO / 'shell/.local/share/desktop/templates'
 GRAPHITE = json.loads((REPO / 'shell/.local/share/desktop/themes/graphite/theme.json').read_text(encoding='utf-8'))
@@ -305,9 +306,9 @@ class IconThemeTests(unittest.TestCase):
             for name, size in (('Sloppy', '48px'), ('Tidy', '48')):
                 (root / name / '48/apps').mkdir(parents=True)
                 (root / name / 'index.theme').write_text(f'[Icon Theme]\nName={name}\nDirectories=48/apps\n\n[48/apps]\nSize={size}\nType=Fixed\n')
-                for icon in theme.ICON_SAMPLES:
+                for icon in theme_assets.ICON_SAMPLES:
                     (root / name / '48/apps' / (icon + '.svg')).write_text('<svg/>')
-            self.assertEqual([listed['id'] for listed in theme.icon_themes([root])], ['Sloppy', 'Tidy'])
+            self.assertEqual([listed['id'] for listed in theme_assets.icon_themes([root])], ['Sloppy', 'Tidy'])
 
 
 class GsettingsTests(unittest.TestCase):
@@ -359,7 +360,7 @@ class CursorTests(unittest.TestCase):
             (root / 'Hypr/manifest.hl').write_text('')
             (root / 'Papirus').mkdir()
             (root / 'default/cursors').mkdir(parents=True)
-            self.assertEqual(theme.cursor_themes([root]), [{'id': 'Bibata', 'name': 'Bibata Modern'}, {'id': 'Hypr', 'name': 'Hypr'}])
+            self.assertEqual(theme_assets.cursor_themes([root]), [{'id': 'Bibata', 'name': 'Bibata Modern'}, {'id': 'Hypr', 'name': 'Hypr'}])
 
     def test_a_cursor_pack_unpacks_only_its_folder(self):
         import hashlib
@@ -379,23 +380,23 @@ class CursorTests(unittest.TestCase):
 
             def download(entry, destination):
                 destination.write_bytes(archive.read_bytes())
-            with mock.patch.object(theme, 'CURSOR_PACKS', packs), mock.patch.object(theme, 'USER_ICONS', root / 'icons'), \
-                    mock.patch.object(theme, 'CURSOR_DOWNLOADS', root / 'cache'), mock.patch.object(theme, 'download', side_effect=download) as fetched:
-                theme.fetch_cursor('pack-light')
+            with mock.patch.object(theme_assets, 'CURSOR_PACKS', packs), mock.patch.object(theme_assets, 'USER_ICONS', root / 'icons'), \
+                    mock.patch.object(theme_assets, 'CURSOR_DOWNLOADS', root / 'cache'), mock.patch.object(theme_assets, 'download', side_effect=download) as fetched:
+                theme_assets.fetch_cursor('pack-light')
                 self.assertEqual((root / 'icons/pack-light/cursors/left_ptr').read_bytes(), b'light')
                 self.assertFalse((root / 'icons/pack-dark').exists())
-                self.assertEqual(theme.cursor_themes([root / 'icons']), [{'id': 'pack-light', 'name': 'Pack Light'}])
+                self.assertEqual(theme_assets.cursor_themes([root / 'icons']), [{'id': 'pack-light', 'name': 'Pack Light'}])
                 # Installed meanwhile (the other of two fetches): nothing more to do.
-                theme.fetch_cursor('pack-light')
+                theme_assets.fetch_cursor('pack-light')
                 self.assertEqual(fetched.call_count, 1)
                 import shutil
                 shutil.rmtree(root / 'icons/pack-light')
-                theme.fetch_cursor('pack-light')
+                theme_assets.fetch_cursor('pack-light')
                 self.assertEqual(fetched.call_count, 1)  # The archive is kept.
                 # A kept archive that no longer matches is fetched again (download() checks the new one).
                 shutil.rmtree(root / 'icons/pack-light')
                 packs['pack-light']['sha256'] = '0' * 64
-                theme.fetch_cursor('pack-light')
+                theme_assets.fetch_cursor('pack-light')
                 self.assertEqual(fetched.call_count, 2)
                 self.assertEqual(sorted(path.name for path in (root / 'icons').iterdir()), ['pack-light'])
 
@@ -405,8 +406,8 @@ class CursorTests(unittest.TestCase):
         import struct
         chunks, toc, position = b'', b'', 16 + 12 * len(images)
         for size, width, height, pixel in images:
-            chunk = struct.pack('<IIIIIIIII', 36, theme.XCURSOR_IMAGE, size, 1, width, height, 0, 0, 0) + pixel * (width * height)
-            toc += struct.pack('<III', theme.XCURSOR_IMAGE, size, position)
+            chunk = struct.pack('<IIIIIIIII', 36, theme_assets.XCURSOR_IMAGE, size, 1, width, height, 0, 0, 0) + pixel * (width * height)
+            toc += struct.pack('<III', theme_assets.XCURSOR_IMAGE, size, position)
             chunks += chunk
             position += len(chunk)
         return b'Xcur' + struct.pack('<III', 16, 0x10000, len(images)) + toc + chunks
@@ -422,12 +423,12 @@ class CursorTests(unittest.TestCase):
     def test_an_xcursor_preview_takes_the_largest_fitting_size_unpremultiplied(self):
         # Premultiplied half-transparent red (B, G, R, A little endian) becomes straight red at alpha 128.
         data = self.xcursor((24, 24, 24, bytes((0, 0, 255, 255))), (48, 48, 48, bytes((0, 0, 64, 128))), (128, 128, 128, bytes((0, 0, 0, 0))))
-        self.assertEqual(self.png_size_and_first_pixel(theme.xcursor_png(data)), ((48, 48), bytes((127, 0, 0, 128))))
+        self.assertEqual(self.png_size_and_first_pixel(theme_assets.xcursor_png(data)), ((48, 48), bytes((127, 0, 0, 128))))
         # Only sizes above the largest: the smallest of them.
-        self.assertEqual(self.png_size_and_first_pixel(theme.xcursor_png(data, largest=16))[0], (24, 24))
+        self.assertEqual(self.png_size_and_first_pixel(theme_assets.xcursor_png(data, largest=16))[0], (24, 24))
         for broken in (b'not a cursor', data[:40], b'Xcur' + data[4:16]):
             with self.assertRaises(ValueError):
-                theme.xcursor_png(broken)
+                theme_assets.xcursor_png(broken)
 
     def test_cursor_samples_fall_back_to_x11_names_and_are_cached(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -436,17 +437,17 @@ class CursorTests(unittest.TestCase):
             (root / 'Old/cursors/left_ptr').write_bytes(self.xcursor((32, 32, 32, bytes((0, 0, 0, 255)))))
             (root / 'Old/cursors/hand2').write_bytes(b'broken')
             (root / 'Old/cursors/pointer').symlink_to('hand2')
-            with mock.patch.object(theme, 'CURSOR_PREVIEWS', root / 'cache'):
-                samples = theme.cursor_samples(theme.cursor_theme_dir('Old', [root]))
+            with mock.patch.object(theme_assets, 'CURSOR_PREVIEWS', root / 'cache'):
+                samples = theme_assets.cursor_samples(theme_assets.cursor_theme_dir('Old', [root]))
                 # Arrow from left_ptr; the broken hand and the missing shapes stay empty.
                 self.assertTrue(samples[0].endswith('.png'))
                 self.assertEqual(samples[1:], ['', '', '', ''])
                 self.assertEqual(self.png_size_and_first_pixel(Path(samples[0]).read_bytes())[0], (32, 32))
                 # A second listing reads the cache; a changed file gets a new preview.
-                self.assertEqual(theme.cursor_samples(root / 'Old')[0], samples[0])
+                self.assertEqual(theme_assets.cursor_samples(root / 'Old')[0], samples[0])
                 (root / 'Old/cursors/left_ptr').write_bytes(self.xcursor((24, 24, 24, bytes((0, 0, 0, 255)))))
-                self.assertNotEqual(theme.cursor_samples(root / 'Old')[0], samples[0])
-            self.assertIsNone(theme.cursor_theme_dir('Missing', [root]))
+                self.assertNotEqual(theme_assets.cursor_samples(root / 'Old')[0], samples[0])
+            self.assertIsNone(theme_assets.cursor_theme_dir('Missing', [root]))
 
     def test_hyprcursor_samples_come_from_the_shape_archives(self):
         import zipfile
@@ -461,8 +462,8 @@ class CursorTests(unittest.TestCase):
             with zipfile.ZipFile(root / 'Hypr/shapes/text.hlc', 'w') as shape:
                 shape.writestr('meta.hl', 'define_size = 0, text.svg\n')
                 shape.writestr('text.svg', b'<svg/>')
-            with mock.patch.object(theme, 'CURSOR_PREVIEWS', root / 'cache'):
-                samples = theme.cursor_samples(theme.cursor_theme_dir('Hypr', [root]))
+            with mock.patch.object(theme_assets, 'CURSOR_PREVIEWS', root / 'cache'):
+                samples = theme_assets.cursor_samples(theme_assets.cursor_theme_dir('Hypr', [root]))
             self.assertEqual(Path(samples[0]).read_bytes(), b'large.png')
             self.assertEqual((Path(samples[2]).suffix, Path(samples[2]).read_bytes()), ('.svg', b'<svg/>'))
             self.assertEqual(samples[1], '')
@@ -473,12 +474,12 @@ class CursorTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             packs = {'pack': {'name': 'Pack', 'file': 'p.tar', 'member': 'pack', 'url': 'https://example.com/p.tar', 'sha256': '0' * 64}}
-            with mock.patch.object(theme, 'CURSOR_PACKS', packs), mock.patch.object(theme, 'USER_ICONS', root / 'icons'), \
-                    mock.patch.object(theme, 'CURSOR_DOWNLOADS', root / 'cache'), mock.patch.object(theme, 'download') as fetched:
+            with mock.patch.object(theme_assets, 'CURSOR_PACKS', packs), mock.patch.object(theme_assets, 'USER_ICONS', root / 'icons'), \
+                    mock.patch.object(theme_assets, 'CURSOR_DOWNLOADS', root / 'cache'), mock.patch.object(theme_assets, 'download') as fetched:
                 (root / 'cache').mkdir()
                 with open(root / 'cache/.lock', 'a') as first:
                     fcntl.flock(first, fcntl.LOCK_EX)
-                    second = threading.Thread(target=theme.fetch_cursor, args=('pack',))
+                    second = threading.Thread(target=theme_assets.fetch_cursor, args=('pack',))
                     second.start()
                     second.join(0.3)
                     self.assertTrue(second.is_alive())  # Waiting for the first.
@@ -567,7 +568,7 @@ class FontAndIconTests(unittest.TestCase):
             theme_dir('Child', directories.format('Child Pack', 'Base'), ('folder', 'preferences-system'))
             theme_dir('Pointers', '[Icon Theme]\nName=Pointers\n')
             theme_dir('hicolor', directories.format('Hicolor', ''), ('text-x-generic',))
-            listed = theme.icon_themes([root])
+            listed = theme_assets.icon_themes([root])
             self.assertEqual([entry['id'] for entry in listed], ['Base', 'Child'])
             child = next(entry for entry in listed if entry['id'] == 'Child')
             self.assertEqual(child['name'], 'Child Pack')
