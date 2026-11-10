@@ -95,33 +95,20 @@ ColumnLayout {
                         font.pixelSize: Theme.textSize(12)
                         font.weight: Font.DemiBold
                     }
-                    Rectangle {
+                    GroupCard {
                         Layout.fillWidth: true
-                        implicitHeight: rows.implicitHeight + 20
-                        radius: Theme.corner(12)
-                        color: Theme.tile
-                        ColumnLayout {
-                            id: rows
-                            anchors {
-                                left: parent.left
-                                right: parent.right
-                                top: parent.top
-                                margins: 10
-                                leftMargin: 14
-                                rightMargin: 14
-                            }
-                            spacing: 12
-                            Repeater {
-                                model: group.modelData.options
-                                OptionRow {
-                                    required property var modelData
-                                    Layout.fillWidth: true
-                                    Layout.minimumHeight: Theme.hit(36)
-                                    option: modelData
-                                    current: scroll.activeFocus && root.flat[root.current]?.key === modelData.key
-                                    keyTarget: scroll
-                                    Component.onCompleted: root.rows[modelData.key] = this
-                                }
+                        verticalPadding: 10
+                        spacing: 12
+                        Repeater {
+                            model: group.modelData.options
+                            OptionRow {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                Layout.minimumHeight: Theme.hit(36)
+                                option: modelData
+                                current: scroll.activeFocus && root.flat[root.current]?.key === modelData.key
+                                keyTarget: scroll
+                                Component.onCompleted: root.rows[modelData.key] = this
                             }
                         }
                     }

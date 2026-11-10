@@ -192,219 +192,195 @@ ColumnLayout {
         Layout.fillHeight: true
         contentWidth: availableWidth
         clip: true
-        Rectangle {
+        GroupCard {
             width: parent.width
-            implicitHeight: rows.implicitHeight + 24
             visible: root.listed.length > 0
-            radius: Theme.corner(12)
-            color: Theme.tile
-            ColumnLayout {
-                id: rows
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: parent.top
-                    margins: 12
-                    leftMargin: 14
-                    rightMargin: 14
-                }
-                spacing: 12
-                Repeater {
-                    model: root.listed
-                    ColumnLayout {
-                        id: profileRow
-                        required property var modelData
-                        readonly property bool core: modelData.name === "core"
-                        // A list inside modelData reaches the delegate as a Qt sequence, not a JS array: copied into one.
-                        readonly property var parts: modelData.parts ? Array.from(modelData.parts) : []
-                        readonly property bool open: root.expanded[modelData.name] === true
-                        readonly property var pending: root.changes({
-                            parts: parts
-                        })
+            spacing: 12
+            Repeater {
+                model: root.listed
+                ColumnLayout {
+                    id: profileRow
+                    required property var modelData
+                    readonly property bool core: modelData.name === "core"
+                    // A list inside modelData reaches the delegate as a Qt sequence, not a JS array: copied into one.
+                    readonly property var parts: modelData.parts ? Array.from(modelData.parts) : []
+                    readonly property bool open: root.expanded[modelData.name] === true
+                    readonly property var pending: root.changes({
+                        parts: parts
+                    })
+                    Layout.fillWidth: true
+                    spacing: 8
+                    RowLayout {
                         Layout.fillWidth: true
-                        spacing: 8
-                        RowLayout {
+                        spacing: 12
+                        // Its parts, one switch each, before the title; a profile without parts keeps the room empty, so every title lines up.
+                        Item {
+                            Layout.alignment: Qt.AlignTop
+                            implicitWidth: root.toggleWidth
+                            implicitHeight: toggle.implicitHeight
+                            CompactIconButton {
+                                id: toggle
+                                visible: profileRow.parts.length > 0
+                                iconName: profileRow.open ? "chevron-up" : "chevron-down"
+                                tooltip: I18n.tr("settings.profiles.parts")
+                                onClicked: {
+                                    const next = Object.assign({}, root.expanded);
+                                    next[profileRow.modelData.name] = !profileRow.open;
+                                    root.expanded = next;
+                                }
+                            }
+                        }
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: 12
-                            // Its parts, one switch each, before the title; a profile without parts keeps the room empty, so every title lines up.
-                            Item {
-                                Layout.alignment: Qt.AlignTop
-                                implicitWidth: root.toggleWidth
-                                implicitHeight: toggle.implicitHeight
-                                CompactIconButton {
-                                    id: toggle
-                                    visible: profileRow.parts.length > 0
-                                    iconName: profileRow.open ? "chevron-up" : "chevron-down"
-                                    tooltip: I18n.tr("settings.profiles.parts")
-                                    onClicked: {
-                                        const next = Object.assign({}, root.expanded);
-                                        next[profileRow.modelData.name] = !profileRow.open;
-                                        root.expanded = next;
-                                    }
-                                }
-                            }
-                            ColumnLayout {
+                            spacing: 2
+                            Text {
                                 Layout.fillWidth: true
-                                spacing: 2
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: profileRow.modelData.name +(profileRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
-                                    textFormat: Text.PlainText
-                                    color: Theme.text
-                                    font.family: Theme.font
-                                    font.pixelSize: Theme.textSize(13)
-                                    font.weight: Font.DemiBold
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: root.described(profileRow.modelData.name)
-                                    wrapMode: Text.WordWrap
-                                    color: Theme.muted
-                                    font.family: Theme.font
-                                    font.pixelSize: Theme.textSize(11)
-                                }
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: profileRow.core ? root.stateText(profileRow.modelData) + " · " + I18n.tr("settings.profiles.coreHint") : root.stateText(profileRow.modelData)
-                                    wrapMode: Text.WordWrap
-                                    color: profileRow.modelData.installed ? Theme.text : Theme.muted
-                                    font.family: Theme.font
-                                    font.pixelSize: Theme.textSize(11)
-                                }
+                                text: profileRow.modelData.name +(profileRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
+                                textFormat: Text.PlainText
+                                color: Theme.text
+                                font.family: Theme.font
+                                font.pixelSize: Theme.textSize(13)
+                                font.weight: Font.DemiBold
                             }
-                            // Install while something of it is missing (Complete when part is there), Remove while the installer has a record of it.
-                            ActionButton {
-                                visible: !profileRow.modelData.installed
-                                enabled: !root.busy
-                                text: I18n.tr(profileRow.modelData.done > 0 ? "settings.profiles.complete" : "settings.profiles.install")
-                                onClicked: root.plan("install", profileRow.modelData.name)
+                            Text {
+                                Layout.fillWidth: true
+                                text: root.described(profileRow.modelData.name)
+                                wrapMode: Text.WordWrap
+                                color: Theme.muted
+                                font.family: Theme.font
+                                font.pixelSize: Theme.textSize(11)
                             }
-                            ActionButton {
-                                visible: !profileRow.core && profileRow.modelData.recorded
-                                enabled: !root.busy
-                                destructive: true
-                                text: I18n.tr("settings.profiles.remove")
-                                onClicked: root.plan("remove", profileRow.modelData.name)
+                            Text {
+                                Layout.fillWidth: true
+                                text: profileRow.core ? root.stateText(profileRow.modelData) + " · " + I18n.tr("settings.profiles.coreHint") : root.stateText(profileRow.modelData)
+                                wrapMode: Text.WordWrap
+                                color: profileRow.modelData.installed ? Theme.text : Theme.muted
+                                font.family: Theme.font
+                                font.pixelSize: Theme.textSize(11)
                             }
                         }
-                        Repeater {
-                            model: profileRow.open ? profileRow.parts : []
-                            RowLayout {
-                                id: partRow
-                                required property var modelData
-                                Layout.fillWidth: true
-                                Layout.leftMargin: root.toggleWidth + 12
-                                spacing: 10
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: root.partName(partRow.modelData) + (partRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
-                                    textFormat: Text.PlainText
-                                    elide: Text.ElideRight
-                                    color: Theme.text
-                                    font.family: Theme.font
-                                    font.pixelSize: Theme.textSize(12)
-                                }
-                                Text {
-                                    text: root.stateText(partRow.modelData)
-                                    color: partRow.modelData.installed ? Theme.text : Theme.muted
-                                    font.family: Theme.font
-                                    font.pixelSize: Theme.textSize(11)
-                                }
-                                ControlSwitch {
-                                    enabled: !root.busy
-                                    checked: root.partOn(partRow.modelData)
-                                    onToggled: root.stage(partRow.modelData, checked)
-                                }
-                            }
-                        }
-                        // What the switches changed in this profile: shown in the plan first, like Install and Remove.
+                        // Install while something of it is missing (Complete when part is there), Remove while the installer has a record of it.
                         ActionButton {
-                            visible: profileRow.open && (profileRow.pending.add.length > 0 || profileRow.pending.remove.length > 0)
-                            Layout.leftMargin: root.toggleWidth + 12
+                            visible: !profileRow.modelData.installed
                             enabled: !root.busy
-                            highlighted: true
-                            text: I18n.tr("settings.profiles.applyParts")
-                            onClicked: root.plan("change", profileRow.modelData.name, profileRow.pending.add.join(","), profileRow.pending.remove.join(","))
+                            text: I18n.tr(profileRow.modelData.done > 0 ? "settings.profiles.complete" : "settings.profiles.install")
+                            onClicked: root.plan("install", profileRow.modelData.name)
                         }
+                        ActionButton {
+                            visible: !profileRow.core && profileRow.modelData.recorded
+                            enabled: !root.busy
+                            destructive: true
+                            text: I18n.tr("settings.profiles.remove")
+                            onClicked: root.plan("remove", profileRow.modelData.name)
+                        }
+                    }
+                    Repeater {
+                        model: profileRow.open ? profileRow.parts : []
+                        RowLayout {
+                            id: partRow
+                            required property var modelData
+                            Layout.fillWidth: true
+                            Layout.leftMargin: root.toggleWidth + 12
+                            spacing: 10
+                            Text {
+                                Layout.fillWidth: true
+                                text: root.partName(partRow.modelData) + (partRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
+                                textFormat: Text.PlainText
+                                elide: Text.ElideRight
+                                color: Theme.text
+                                font.family: Theme.font
+                                font.pixelSize: Theme.textSize(12)
+                            }
+                            Text {
+                                text: root.stateText(partRow.modelData)
+                                color: partRow.modelData.installed ? Theme.text : Theme.muted
+                                font.family: Theme.font
+                                font.pixelSize: Theme.textSize(11)
+                            }
+                            ControlSwitch {
+                                enabled: !root.busy
+                                checked: root.partOn(partRow.modelData)
+                                onToggled: root.stage(partRow.modelData, checked)
+                            }
+                        }
+                    }
+                    // What the switches changed in this profile: shown in the plan first, like Install and Remove.
+                    ActionButton {
+                        visible: profileRow.open && (profileRow.pending.add.length > 0 || profileRow.pending.remove.length > 0)
+                        Layout.leftMargin: root.toggleWidth + 12
+                        enabled: !root.busy
+                        highlighted: true
+                        text: I18n.tr("settings.profiles.applyParts")
+                        onClicked: root.plan("change", profileRow.modelData.name, profileRow.pending.add.join(","), profileRow.pending.remove.join(","))
                     }
                 }
             }
         }
     }
     // The plan before Apply: the installer's dry-run, as its preview prints it.
-    Rectangle {
+    GroupCard {
         Layout.fillWidth: true
         visible: root.review !== null || planner.running
-        implicitHeight: reviewRows.implicitHeight + 24
-        radius: Theme.corner(12)
-        color: Theme.tile
-        ColumnLayout {
-            id: reviewRows
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                margins: 12
-            }
-            spacing: 8
+        leftPadding: 12
+        rightPadding: 12
+        spacing: 8
+        Text {
+            Layout.fillWidth: true
+            text: root.review ? I18n.tr(root.review.action === "install" ? "settings.profiles.reviewInstall" : root.review.action === "change" ? "settings.profiles.reviewChange" : "settings.profiles.reviewRemove", [root.review.name]) : I18n.tr("settings.profiles.reading")
+            wrapMode: Text.WordWrap
+            color: Theme.text
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize(13)
+            font.weight: Font.DemiBold
+        }
+        ScrollView {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Math.min(previewLines.implicitHeight, 220)
+            visible: (root.review?.preview ?? "") !== ""
+            clip: true
+            contentWidth: availableWidth
             Text {
-                Layout.fillWidth: true
-                text: root.review ? I18n.tr(root.review.action === "install" ? "settings.profiles.reviewInstall" : root.review.action === "change" ? "settings.profiles.reviewChange" : "settings.profiles.reviewRemove", [root.review.name]) : I18n.tr("settings.profiles.reading")
-                wrapMode: Text.WordWrap
+                id: previewLines
+                width: parent.width
+                text: root.review?.preview ?? ""
+                textFormat: Text.PlainText
+                wrapMode: Text.WrapAnywhere
                 color: Theme.text
-                font.family: Theme.font
-                font.pixelSize: Theme.textSize(13)
-                font.weight: Font.DemiBold
-            }
-            ScrollView {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Math.min(previewLines.implicitHeight, 220)
-                visible: (root.review?.preview ?? "") !== ""
-                clip: true
-                contentWidth: availableWidth
-                Text {
-                    id: previewLines
-                    width: parent.width
-                    text: root.review?.preview ?? ""
-                    textFormat: Text.PlainText
-                    wrapMode: Text.WrapAnywhere
-                    color: Theme.text
-                    font.family: "monospace"
-                    font.pixelSize: Theme.textSize(11)
-                }
-            }
-            Text {
-                Layout.fillWidth: true
-                visible: previewer.running
-                text: I18n.tr("settings.profiles.reading")
-                color: Theme.muted
-                font.family: Theme.font
+                font.family: "monospace"
                 font.pixelSize: Theme.textSize(11)
             }
-            Text {
-                Layout.fillWidth: true
-                visible: (root.review?.blocked ?? "") !== ""
-                text: root.review?.blocked ?? ""
-                textFormat: Text.PlainText
-                wrapMode: Text.WordWrap
-                color: Theme.danger
-                font.family: Theme.font
-                font.pixelSize: Theme.textSize(12)
+        }
+        Text {
+            Layout.fillWidth: true
+            visible: previewer.running
+            text: I18n.tr("settings.profiles.reading")
+            color: Theme.muted
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize(11)
+        }
+        Text {
+            Layout.fillWidth: true
+            visible: (root.review?.blocked ?? "") !== ""
+            text: root.review?.blocked ?? ""
+            textFormat: Text.PlainText
+            wrapMode: Text.WordWrap
+            color: Theme.danger
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize(12)
+        }
+        RowLayout {
+            spacing: 8
+            ActionButton {
+                highlighted: true
+                destructive: root.review?.action === "remove"
+                text: I18n.tr("settings.profiles.apply")
+                enabled: root.review !== null && !previewer.running && root.review.blocked === "" && !job.running
+                onClicked: root.apply()
             }
-            RowLayout {
-                spacing: 8
-                ActionButton {
-                    highlighted: true
-                    destructive: root.review?.action === "remove"
-                    text: I18n.tr("settings.profiles.apply")
-                    enabled: root.review !== null && !previewer.running && root.review.blocked === "" && !job.running
-                    onClicked: root.apply()
-                }
-                ActionButton {
-                    text: I18n.tr("common.cancel")
-                    enabled: !planner.running
-                    onClicked: root.review = null
-                }
+            ActionButton {
+                text: I18n.tr("common.cancel")
+                enabled: !planner.running
+                onClicked: root.review = null
             }
         }
     }

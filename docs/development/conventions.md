@@ -20,6 +20,7 @@ Match the surrounding code. Comments are sparse one-liners that explain *why* ("
 - Do not try to override an `Overlay` handler from a panel: QML runs both the base and the derived handler. For Escape, set `closeOnEscape: false` and handle it in the panel (see `PowerMenu`).
 - Models rebuilt from fresh JS arrays recreate every delegate; when delegates are heavy or animate, wrap the array in `ScriptModel { values: …; objectProp: "id" }` (delegates are reused and `modelData` is updated).
 - Side panels use `SidePanelCard` + `PanelHeader`; centred dialogs use `Card` + `Heading`.
+- A group of option rows on a tile (Settings, System) is a `GroupCard`: its children go in a padded column; set `verticalPadding`, `leftPadding` or `rightPadding` only where a group needs other padding.
 - JS libraries use `.pragma library`.
 - Avoid apostrophes in QML comments (`the dock window`, not `the dock's window`): `check-i18n.py` scans every quoted literal in QML, and two apostrophes form a bogus string.
 - Edit QML in place (editors, Claude's Edit tool, Python `r+`). `sed -i` and other tools that replace the file give it a new inode, and Quickshell stops watching it, so later edits silently never load. If that happened, a real in-place change to `shell.qml` (for example a temporary comment) reloads everything; rewriting identical content does not. Check what is actually loaded (`hyprctl layers`, `desktop-shell status`) before trusting a test.

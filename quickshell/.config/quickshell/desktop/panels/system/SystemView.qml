@@ -141,57 +141,45 @@ ColumnLayout {
         // About
         ColumnLayout {
             spacing: 10
-            Rectangle {
+            GroupCard {
                 Layout.fillWidth: true
-                implicitHeight: facts.implicitHeight + 24
-                radius: Theme.corner(12)
-                color: Theme.tile
-                ColumnLayout {
-                    id: facts
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                        top: parent.top
-                        margins: 12
-                        leftMargin: 14
-                    }
-                    spacing: 10
-                    Fact {
-                        label: I18n.tr("settings.system.distribution")
-                        value: root.about.distribution ?? ""
-                    }
-                    Fact {
-                        label: I18n.tr("settings.system.model")
-                        value: root.about.model ?? ""
-                    }
-                    Fact {
-                        label: I18n.tr("settings.system.processor")
-                        value: (root.about.processor?.name ?? "") === "" ? "" : root.about.processor.threads > 1 ? I18n.tr("settings.system.threads", [root.about.processor.name, root.about.processor.threads]) : root.about.processor.name
-                    }
-                    Fact {
-                        label: I18n.tr("settings.system.memory")
-                        value: root.about.memory ?? ""
-                    }
-                    Fact {
-                        label: I18n.tr("settings.system.kernel")
-                        value: root.about.kernel ?? ""
-                    }
-                    Fact {
-                        label: "Hyprland"
-                        value: root.about.hyprland ?? ""
-                    }
-                    Fact {
-                        label: "Quickshell"
-                        value: root.about.quickshell ?? ""
-                    }
-                    Fact {
-                        label: I18n.tr("settings.system.desktop")
-                        value: (root.about.repository?.commit ?? "") === "" ? "" : I18n.tr(root.about.repository.changed ? "settings.system.commitChanged" : "settings.system.commit", [root.about.repository.commit, root.about.repository.date])
-                    }
-                    Fact {
-                        label: I18n.tr("settings.system.repository")
-                        value: root.about.repository?.path ?? ""
-                    }
+                rightPadding: 12
+                spacing: 10
+                Fact {
+                    label: I18n.tr("settings.system.distribution")
+                    value: root.about.distribution ?? ""
+                }
+                Fact {
+                    label: I18n.tr("settings.system.model")
+                    value: root.about.model ?? ""
+                }
+                Fact {
+                    label: I18n.tr("settings.system.processor")
+                    value: (root.about.processor?.name ?? "") === "" ? "" : root.about.processor.threads > 1 ? I18n.tr("settings.system.threads", [root.about.processor.name, root.about.processor.threads]) : root.about.processor.name
+                }
+                Fact {
+                    label: I18n.tr("settings.system.memory")
+                    value: root.about.memory ?? ""
+                }
+                Fact {
+                    label: I18n.tr("settings.system.kernel")
+                    value: root.about.kernel ?? ""
+                }
+                Fact {
+                    label: "Hyprland"
+                    value: root.about.hyprland ?? ""
+                }
+                Fact {
+                    label: "Quickshell"
+                    value: root.about.quickshell ?? ""
+                }
+                Fact {
+                    label: I18n.tr("settings.system.desktop")
+                    value: (root.about.repository?.commit ?? "") === "" ? "" : I18n.tr(root.about.repository.changed ? "settings.system.commitChanged" : "settings.system.commit", [root.about.repository.commit, root.about.repository.date])
+                }
+                Fact {
+                    label: I18n.tr("settings.system.repository")
+                    value: root.about.repository?.path ?? ""
                 }
             }
             Item {

@@ -31,108 +31,94 @@ ColumnLayout {
     GroupTitle {
         text: I18n.tr("assistant.agentsGroup")
     }
-    Rectangle {
+    GroupCard {
         Layout.fillWidth: true
-        implicitHeight: rows.implicitHeight + 24
-        radius: Theme.corner(12)
-        color: Theme.tile
-        ColumnLayout {
-            id: rows
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                margins: 12
-                leftMargin: 14
-                rightMargin: 14
-            }
-            spacing: 10
-            Setting {
-                label: I18n.tr("assistant.primary")
-                enabled: root.installed.length > 0
-                options: [
-                    {
-                        name: "",
-                        label: root.automatic ? I18n.tr("assistant.primaryAutomatic", [root.automatic.name]) : I18n.tr("assistant.primaryNone")
-                    }
-                ].concat(root.installed.map(agent => ({
-                            name: agent.id,
-                            label: agent.name
-                        })))
-                current: root.installed.some(agent => agent.id === Config.aiPrimary) ? Config.aiPrimary : ""
-                onChosen: name => Config.set("aiPrimary", name, "")
-            }
-            Hint {
-                visible: (Agent.catalog.override ?? "") !== ""
-                text: I18n.tr("assistant.primaryOverride", [Agent.catalog.override ?? ""])
-            }
-            Hint {
-                text: Agent.herdr ? I18n.tr("assistant.primaryHerdr") : I18n.tr("assistant.primaryKitty")
-            }
-            Repeater {
-                model: root.listed
-                RowLayout {
-                    id: agentRow
-                    required property var modelData
-                    Layout.fillWidth: true
-                    spacing: 12
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 2
-                        Text {
-                            Layout.fillWidth: true
-                            text: agentRow.modelData.name + (agentRow.modelData.vendor ? " · " + agentRow.modelData.vendor : "")
-                            textFormat: Text.PlainText
-                            color: Theme.text
-                            font.family: Theme.font
-                            font.pixelSize: Theme.textSize(13)
-                        }
-                        Hint {
-                            text: agentRow.modelData.path !== "" ? I18n.tr("assistant.installedAt", [agentRow.modelData.path]) : agentRow.modelData.missing.length > 0 ? I18n.tr("assistant.needs", [agentRow.modelData.missing.join(", ")]) : I18n.tr("assistant.notInstalled")
-                            textFormat: Text.PlainText
-                        }
-                    }
-                    ActionButton {
-                        visible: agentRow.modelData.path === "" && agentRow.modelData.install !== ""
-                        enabled: !Agent.installing && agentRow.modelData.missing.length === 0
-                        text: Agent.installing ? I18n.tr("assistant.installing") : I18n.tr("assistant.installAction")
-                        onClicked: Agent.install(agentRow.modelData.id)
-                    }
+        spacing: 10
+        Setting {
+            label: I18n.tr("assistant.primary")
+            enabled: root.installed.length > 0
+            options: [
+                {
+                    name: "",
+                    label: root.automatic ? I18n.tr("assistant.primaryAutomatic", [root.automatic.name]) : I18n.tr("assistant.primaryNone")
                 }
-            }
-            // The install from here: its progress, its result and, while it runs or when it failed, its output (a login
-            // link, say).
-            Hint {
-                visible: Agent.installError !== "" || Agent.installJob.running || Agent.installJob.record.finished !== undefined && Agent.installName !== ""
-                text: Agent.installError !== "" ? Agent.installError : Agent.installJob.running ? I18n.tr("assistant.install.running", [Agent.installName]) : Agent.installJob.record.status === 0 ? I18n.tr("assistant.install.done", [Agent.installName]) : I18n.tr("assistant.install.failed", [Agent.installName, Agent.installJob.record.status ?? -1])
-                textFormat: Text.PlainText
-                color: Agent.installError !== "" || Agent.installJob.failed ? Theme.danger : Theme.text
-            }
-            Rectangle {
+            ].concat(root.installed.map(agent => ({
+                        name: agent.id,
+                        label: agent.name
+                    })))
+            current: root.installed.some(agent => agent.id === Config.aiPrimary) ? Config.aiPrimary : ""
+            onChosen: name => Config.set("aiPrimary", name, "")
+        }
+        Hint {
+            visible: (Agent.catalog.override ?? "") !== ""
+            text: I18n.tr("assistant.primaryOverride", [Agent.catalog.override ?? ""])
+        }
+        Hint {
+            text: Agent.herdr ? I18n.tr("assistant.primaryHerdr") : I18n.tr("assistant.primaryKitty")
+        }
+        Repeater {
+            model: root.listed
+            RowLayout {
+                id: agentRow
+                required property var modelData
                 Layout.fillWidth: true
-                visible: Agent.installJob.log.length > 0 && (Agent.installJob.running || Agent.installJob.failed)
-                implicitHeight: installLog.implicitHeight + 16
-                radius: Theme.corner(10)
-                color: Theme.tile
-                Text {
-                    id: installLog
-                    anchors {
-                        left: parent.left
-                        right: parent.right
-                        top: parent.top
-                        margins: 8
+                spacing: 12
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 2
+                    Text {
+                        Layout.fillWidth: true
+                        text: agentRow.modelData.name + (agentRow.modelData.vendor ? " · " + agentRow.modelData.vendor : "")
+                        textFormat: Text.PlainText
+                        color: Theme.text
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(13)
                     }
-                    text: Agent.installJob.log.slice(-10).join("\n")
-                    textFormat: Text.PlainText
-                    wrapMode: Text.WrapAnywhere
-                    color: Theme.text
-                    font.family: "monospace"
-                    font.pixelSize: Theme.textSize(10)
+                    Hint {
+                        text: agentRow.modelData.path !== "" ? I18n.tr("assistant.installedAt", [agentRow.modelData.path]) : agentRow.modelData.missing.length > 0 ? I18n.tr("assistant.needs", [agentRow.modelData.missing.join(", ")]) : I18n.tr("assistant.notInstalled")
+                        textFormat: Text.PlainText
+                    }
+                }
+                ActionButton {
+                    visible: agentRow.modelData.path === "" && agentRow.modelData.install !== ""
+                    enabled: !Agent.installing && agentRow.modelData.missing.length === 0
+                    text: Agent.installing ? I18n.tr("assistant.installing") : I18n.tr("assistant.installAction")
+                    onClicked: Agent.install(agentRow.modelData.id)
                 }
             }
-            Hint {
-                text: I18n.tr("assistant.agentsHint")
+        }
+        // The install from here: its progress, its result and, while it runs or when it failed, its output (a login
+        // link, say).
+        Hint {
+            visible: Agent.installError !== "" || Agent.installJob.running || Agent.installJob.record.finished !== undefined && Agent.installName !== ""
+            text: Agent.installError !== "" ? Agent.installError : Agent.installJob.running ? I18n.tr("assistant.install.running", [Agent.installName]) : Agent.installJob.record.status === 0 ? I18n.tr("assistant.install.done", [Agent.installName]) : I18n.tr("assistant.install.failed", [Agent.installName, Agent.installJob.record.status ?? -1])
+            textFormat: Text.PlainText
+            color: Agent.installError !== "" || Agent.installJob.failed ? Theme.danger : Theme.text
+        }
+        Rectangle {
+            Layout.fillWidth: true
+            visible: Agent.installJob.log.length > 0 && (Agent.installJob.running || Agent.installJob.failed)
+            implicitHeight: installLog.implicitHeight + 16
+            radius: Theme.corner(10)
+            color: Theme.tile
+            Text {
+                id: installLog
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    top: parent.top
+                    margins: 8
+                }
+                text: Agent.installJob.log.slice(-10).join("\n")
+                textFormat: Text.PlainText
+                wrapMode: Text.WrapAnywhere
+                color: Theme.text
+                font.family: "monospace"
+                font.pixelSize: Theme.textSize(10)
             }
+        }
+        Hint {
+            text: I18n.tr("assistant.agentsHint")
         }
     }
 }
