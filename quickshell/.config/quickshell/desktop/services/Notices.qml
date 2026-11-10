@@ -121,6 +121,14 @@ Singleton {
         id: saveHistory
         interval: 500
         onTriggered: {
+            // Only live notifications need their arrival time (archive() reads it): the rest go, or the map, copied
+            // at every arrival, would grow for the whole session.
+            const kept = {};
+            for (const n of server.trackedNotifications.values)
+                if (root.arrived[n.id] !== undefined)
+                    kept[n.id] = root.arrived[n.id];
+            if (Object.keys(kept).length !== Object.keys(root.arrived).length)
+                root.arrived = kept;
             // Until the file has been read, saving would replace the history with an empty one.
             if (!root.historyLoaded)
                 return;
