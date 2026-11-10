@@ -1,4 +1,4 @@
-local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
+local shell = require("config.util").shell
 
 -- The keyboard layout the system has (localectl set-x11-keymap writes it for X11 and Wayland sessions alike), else
 -- the console's keymap, else us. ~/.config/desktop/hypr.lua can set another one.

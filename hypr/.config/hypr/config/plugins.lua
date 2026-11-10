@@ -2,7 +2,7 @@
 -- and --verify-config without loading native code.
 local plugins = hl.plugin or {}
 local theme = require("config.theme")
-local shell = '"' .. os.getenv("HOME") .. '/.local/bin/desktop-shell"'
+local shell = require("config.util").shell
 
 if plugins.overview then
     hl.config({
