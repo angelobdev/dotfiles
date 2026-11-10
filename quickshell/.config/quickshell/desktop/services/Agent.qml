@@ -293,10 +293,11 @@ Singleton {
         name: "agent-install"
         onFinished: root.refreshCatalog()
     }
-    // The primary agent chosen in Settings: read again so the title and the console follow.
+    // The primary agent chosen in Settings: read again so the title and the console follow. Only that value:
+    // agents.py reads nothing else of shell.json, which every other setting (each slider step) rewrites.
     Connections {
         target: Config
-        function onUserChanged() {
+        function onAiPrimaryChanged() {
             root.refreshCatalog();
         }
     }
