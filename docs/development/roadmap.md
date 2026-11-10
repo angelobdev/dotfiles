@@ -278,6 +278,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #69: a file already in `$HOME` stopped the install at the stow step, because the dry-run simulated Stow over the files `apply` would back up. The dry-run now leaves them out of the simulation (2026-11-10).
   - [x] #70: a second Settings save while `hyprsettings.py` still rendered the first was dropped, so `settings.lua` kept the older settings. The renderer is a `CoalescedProcess` (2026-11-10).
+  - [x] #71: Keep awake said On after its `systemd-inhibit` had exited; the inhibitor now starts again, with `Backoff`, and logs its stderr (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 
