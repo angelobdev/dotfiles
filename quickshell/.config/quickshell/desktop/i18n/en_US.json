@@ -960,7 +960,8 @@
       "clearOld": "Remove old builds",
       "clearAll": "Remove all…",
       "clearAllConfirm": "Remove all: the next rebuild compiles every plugin"
-    }
+    },
+    "timePlaceholder": "HH:MM"
   },
   "sharing": {
     "chooseSourceHint": "Choose the display or window to share with the application.",

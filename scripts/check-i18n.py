@@ -124,6 +124,39 @@ class TranslationTests(unittest.TestCase):
         for match in re.finditer(r':\s*("[^"\n]+")', adapters):
             self.assert_translation_key(json.loads(match[1]), catalog)
 
+    # Literals a shown property may hold as they are: none of them is a sentence of the interface.
+    UNTRANSLATED = {
+        ' Wh': 'a unit symbol, as %, W',
+        'SUPER + B': "Hyprland's key syntax, the example of a bind",
+        '/shell.json': 'part of a path',
+        'Hyprland': 'a product name', 'Quickshell': 'a product name',
+        'Aa': 'a font sample', '0O 1lI {} [] => fn main() { println!(\\"hello\\"); }': 'a monospace font sample',
+    }
+
+    def test_shown_text_is_translated(self):
+        # A string literal that a shown property (text, placeholderText, tooltip, ...) can display, outside
+        # I18n.tr/plural. Literals compared with ===, or passed to a string method, are not shown.
+        shown = re.compile(r'^\s*(text|placeholderText|title|tooltip|subtitle|label|description|Accessible\.name|Accessible\.description)\s*:\s*(.+)$')
+        literal = re.compile(r"\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*'")
+        translated = re.compile(r"I18n\.(?:tr|plural)\(\s*(?:\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*')")
+        for path in DESKTOP.rglob('*.qml'):
+            for number, line in enumerate(path.read_text().splitlines(), 1):
+                match = shown.match(line)
+                if not match:
+                    continue
+                expression = translated.sub('I18N', match[2])
+                for found in literal.finditer(expression):
+                    value = found[0][1:-1]
+                    before, after = expression[:found.start()].rstrip(), expression[found.end():].lstrip()
+                    if re.search(r'(===|!==|==|!=)$', before) or re.match(r'(===|!==|==|!=)', after):
+                        continue
+                    if re.search(r'\.(startsWith|endsWith|includes|replace|split|join|indexOf)\($', before) or before.endswith('env('):
+                        continue
+                    if not re.search(r'[A-Za-z]{2,}', value) or re.fullmatch(r'[a-z][a-zA-Z0-9]*(?:\.[a-z][a-zA-Z0-9]*)+', value):
+                        continue
+                    with self.subTest(file=f'{path.relative_to(DESKTOP)}:{number}', value=value):
+                        self.assertIn(value, self.UNTRANSLATED, 'Shown text outside I18n.tr: ' + value)
+
     def test_python_and_command_references(self):
         catalog = self.flattened_catalog('en_US')
         for path in HELPER.parent.glob('*.py'):

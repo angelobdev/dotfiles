@@ -960,7 +960,8 @@
       "clearOld": "Rimuovi le build vecchie",
       "clearAll": "Rimuovi tutto…",
       "clearAllConfirm": "Rimuovi tutto: la prossima ricompilazione compila ogni plugin"
-    }
+    },
+    "timePlaceholder": "HH:MM"
   },
   "sharing": {
     "chooseSourceHint": "Scegli il monitor o la finestra da rendere visibile all’applicazione.",
