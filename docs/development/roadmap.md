@@ -325,6 +325,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [ ] Second review (2026-11-10): four read-only reviews (QML services, QML UI, Python and Bash helpers, installer and Hyprland Lua). One issue per finding, #69 to #112, tracked in #113, fixed one by one.
   - [x] #88: `displays.lua` and `theme.lua` took an empty `XDG_STATE_HOME` as set (state under `/desktop-session`, theme fallback); they now treat it as unset, as `installed.lua` and the installer do (2026-11-10).
   - [x] #89: raw English exception text reached the Store, Theming and Network panels; unexpected errors are now said with a catalog key (`theme.errors.failed`, `network.errors.commandFailed`, `store.errors.unavailable`) and the system's words as the detail, and the clipboard, recording and portal helpers also catch timeouts (`SubprocessError`) (2026-11-10).
+  - [x] #90: the "HH:MM" hint of time fields was a raw literal (`settings.timePlaceholder` now); `check-i18n.py` scans the literals a shown property can display, ternaries included, with a short list of literals that stay as they are (units, key syntax, product names, font samples) (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 

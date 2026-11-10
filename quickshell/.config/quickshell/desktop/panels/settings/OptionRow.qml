@@ -163,7 +163,7 @@ Item {
         InputField {
             implicitWidth: row.option.type === "time" ? 90 : 220
             text: String(row.value)
-            placeholderText: row.option.type === "time" ? "HH:MM" : ""
+            placeholderText: row.option.type === "time" ? I18n.tr("settings.timePlaceholder") : ""
             validator: RegularExpressionValidator {
                 regularExpression: row.option.type === "time" ? /^([01][0-9]|2[0-3]):[0-5][0-9]$/ : /.*/
             }
