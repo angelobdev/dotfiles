@@ -35,7 +35,7 @@ installer.INTERFACE = installer.STATE / 'interface-before-theme.ini'
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
 PROFILE_KEYS = {'repos', 'packages', 'swaps', 'stow', 'exclude', 'login_shell', 'clones', 'firmware', 'services', 'user_services', 'disable', 'files', 'groups', 'flatpaks', 'firewall_zone', 'auth', 'notes', 'archives', 'default'}
 TABLE = {
-    'repos': {'one': {'kind': 'copr', 'name': 'a/b'}},
+    'repos': {'one': {'kind': 'copr', 'name': 'a/b', 'needs': ['dnf5-plugins']}},
     'core': {'repos': ['one'], 'packages': ['a', 'b'], 'exclude': ['tour'], 'services': ['s.service'], 'user_services': ['u.service'],
              'disable': ['d.socket'], 'files': [{'path': '/etc/x', 'content': '\nx\n'}], 'groups': ['g'], 'notes': ['first'],
              'login_shell': '/usr/bin/zsh', 'clones': [{'repo': 'https://example.com/p.git', 'commit': 'c' * 40, 'path': '.local/p'}]},
@@ -541,7 +541,7 @@ class RecordTests(unittest.TestCase):
         with mock.patch('subprocess.run'):
             installer.run_steps(plan(fake_distro()), False)
         record = self.saved()
-        self.assertEqual(record['packages'], ['a', 'b', 'c', 'new'])
+        self.assertEqual(record['packages'], ['dnf5-plugins', 'a', 'b', 'c', 'new'])
         self.assertEqual(record['swaps'], [['old', 'new']])
         self.assertEqual(record['repos'], ['one'])
         self.assertEqual(record['files'], {'/etc/x': None})
@@ -1655,12 +1655,26 @@ class FedoraTests(unittest.TestCase):
         self.assertEqual(fedora.repo_file({'kind': 'copr', 'name': 'lionheartp/Hyprland'}).name,
                          '_copr:copr.fedorainfracloud.org:lionheartp:Hyprland.repo')
 
-    def test_a_copr_repo_brings_the_command_it_needs(self):
-        with mock.patch.object(fedora, 'missing', return_value=['dnf5-plugins']), mock.patch.object(fedora, 'install') as install, \
-                mock.patch.object(fedora, 'sudo') as sudo:
+    def test_a_copr_repo_is_enabled_and_removed_through_its_file(self):
+        with mock.patch.object(fedora, 'install') as install, mock.patch.object(fedora, 'sudo') as sudo:
             fedora.add_repo({'kind': 'copr', 'name': 'a/b'}, '45')
-        install.assert_called_once_with(['dnf5-plugins'])
-        sudo.assert_called_once_with('dnf', 'copr', 'enable', '-y', 'a/b')
+            fedora.remove_repo({'kind': 'copr', 'name': 'a/b'})
+        install.assert_not_called()
+        self.assertEqual(sudo.call_args_list, [mock.call('dnf', 'copr', 'enable', '-y', 'a/b'),
+                                               mock.call('rm', '-f', '/etc/yum.repos.d/_copr:copr.fedorainfracloud.org:a:b.repo')])
+
+    def test_what_a_repository_needs_is_a_step_of_its_own_and_recorded(self):
+        # dnf5-plugins for a copr, only while a repository that needs it is still to add, and before it.
+        titles = [step.title for step in installer.STEPS]
+        self.assertEqual(titles.index('repo tools') + 1, titles.index('repos'))
+        self.assertEqual(installer.repo_tools_pending(plan(fake_distro())), ['dnf5-plugins'])
+        self.assertEqual(installer.repo_tools_pending(plan(fake_distro(pending=False))), [])
+        record = {}
+        installer.repo_tools_remember(plan(fake_distro()), ['dnf5-plugins'], record)
+        self.assertEqual(record, {'packages': ['dnf5-plugins']})
+        for name, repo in MANIFEST['fedora']['repos'].items():
+            if repo['kind'] == 'copr':
+                self.assertIn('dnf5-plugins', repo.get('needs', ()), name)
 
     def test_release_packages_name_the_release(self):
         repo = {'kind': 'release', 'url': 'https://example.com/free-{release}.rpm'}

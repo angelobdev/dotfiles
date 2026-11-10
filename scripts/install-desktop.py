@@ -212,6 +212,17 @@ def repos_pending(plan):
     return [name for name in merged(plan, 'repos') if plan.distro.repo_missing(plan.table['repos'][name])]
 
 
+# What the repositories still to add need first (the manifest's needs, dnf5-plugins for a copr): in the preview
+# and the record like any package, instead of installed quietly by the repos step.
+def repo_tools_pending(plan):
+    needed = [tool for name in repos_pending(plan) for tool in plan.table['repos'][name].get('needs', ())]
+    return plan.distro.missing(list(dict.fromkeys(needed))) if needed else []
+
+
+def repo_tools_apply(plan, tools):
+    plan.distro.install(tools)
+
+
 def repos_apply(plan, names):
     for name in names:
         plan.distro.add_repo(plan.table['repos'][name], plan.release)
@@ -749,6 +760,10 @@ def repos_remember(plan, items, record):
     keep(record, 'repos', items)
 
 
+def repo_tools_remember(plan, items, record):
+    keep(record, 'packages', items)
+
+
 def swaps_remember(plan, items, record):
     keep(record, 'swaps', [[old, new] for old, new in swaps(plan) if f'{old} -> {new}' in items])
 
@@ -841,6 +856,7 @@ def boot_remember(plan, items, record):
 
 # In order. boot stays last: a run that stops earlier leaves a system that still starts on the console.
 STEPS = (
+    Step('repo tools', repo_tools_pending, repo_tools_apply, repo_tools_remember),
     Step('repos', repos_pending, repos_apply, repos_remember),
     Step('upgrade', upgrade_pending, upgrade_apply),
     # Before packages: a package that needs the replacement would conflict with what it replaces.

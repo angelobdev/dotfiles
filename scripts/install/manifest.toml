@@ -36,13 +36,17 @@ commands = [
 [fedora]
 versions = ['45']
 
+# needs: packages a repository's command needs before it can be added (dnf copr comes with dnf5-plugins, which
+# Server and minimal installs lack). Installed by the repo tools step and recorded like any package.
 [fedora.repos.hyprland]
 kind = 'copr'
 name = 'lionheartp/Hyprland'
+needs = ['dnf5-plugins']
 
 [fedora.repos.zen]
 kind = 'copr'
 name = 'sneexy/zen-browser'
+needs = ['dnf5-plugins']
 
 [fedora.repos.rpmfusion-free]
 kind = 'release'

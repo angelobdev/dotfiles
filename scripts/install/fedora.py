@@ -106,8 +106,7 @@ def repo_missing(repo):
 
 def add_repo(repo, release):
     if repo['kind'] == 'copr':
-        if missing(['dnf5-plugins']):
-            install(['dnf5-plugins'])
+        # dnf5-plugins, which dnf copr needs, comes from the repo tools step (the manifest's needs).
         sudo('dnf', 'copr', 'enable', '-y', repo['name'])
     elif repo['kind'] == 'release':
         install([repo['url'].format(release=release)])
@@ -273,7 +272,9 @@ def remove(names):
 
 def remove_repo(repo):
     if repo['kind'] == 'copr':
-        sudo('dnf', 'copr', 'remove', '-y', repo['name'])
+        # The file dnf copr enable wrote, removed as dnf copr remove does: an uninstall removes the recorded
+        # packages, dnf5-plugins among them, before the repositories.
+        sudo('rm', '-f', str(repo_file(repo)))
     elif repo['kind'] == 'release':
         remove([repo['package']])
     else:
