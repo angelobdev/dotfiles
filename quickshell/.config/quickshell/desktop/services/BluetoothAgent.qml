@@ -46,11 +46,12 @@ Singleton {
             cancel(current.device);
         prompt = null;
     }
-    Process {
+    // Always wanted; started again after an exit (Watcher).
+    Watcher {
         id: process
+        name: "bluetooth_agent.py"
         // Ends with the shell, even a killed one (setpriv: the kernel signals it).
         command: ["setpriv", "--pdeathsig", "TERM", "--"].concat(["python3", root.helper])
-        running: true
         stdinEnabled: true
         stdout: SplitParser {
             onRead: line => {
@@ -80,11 +81,5 @@ Singleton {
             root.pairing = [];
             root.error = I18n.tr("bluetooth.errors.agentUnavailable");
         }
-    }
-    Timer {
-        interval: 3000
-        repeat: true
-        running: !process.running
-        onTriggered: process.running = true
     }
 }

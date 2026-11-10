@@ -32,6 +32,7 @@ singleton Zoom 1.0 Zoom.qml
 singleton Store 1.0 Store.qml
 CoalescedProcess 1.0 CoalescedProcess.qml
 Backoff 1.0 Backoff.qml
+Watcher 1.0 Watcher.qml
 singleton HyprSettings 1.0 HyprSettings.qml
 singleton Plugins 1.0 Plugins.qml
 Job 1.0 Job.qml
