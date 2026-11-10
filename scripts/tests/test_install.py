@@ -1415,8 +1415,23 @@ class ClonePinTests(unittest.TestCase):
         item = {**self.ITEM, 'track': None, 'repo': 'https://github.com/romkatv/powerlevel10k', 'path': '.p/powerlevel10k'}
         with mock.patch.object(installer, 'query', return_value=reply(f'{"7" * 40}\tHEAD\n')) as query:
             pin = installer.newer_pin('clones', item)
-        query.assert_called_once_with('git', 'ls-remote', 'https://github.com/romkatv/powerlevel10k', 'HEAD')
+        query.assert_called_once_with('git', 'ls-remote', 'https://github.com/romkatv/powerlevel10k', 'HEAD', timeout=installer.REMOTE_TIMEOUT)
         self.assertEqual((pin.label, pin.tag), (f'{"2" * 12} -> {"7" * 12}', ''))
+
+    def test_a_remote_that_does_not_answer_in_time_is_a_failure(self):
+        with mock.patch.object(installer.subprocess, 'run', side_effect=installer.subprocess.TimeoutExpired('git', 60)):
+            result = installer.query('git', 'ls-remote', 'x', 'HEAD', timeout=60)
+        self.assertEqual(result.returncode, 124)
+
+    def test_one_failing_entry_does_not_end_the_pins_listing(self):
+        entries = [('aur', {'package': 'one'}), ('clones', {**self.ITEM, 'path': '.p/two'})]
+        answers = [OSError('HTTP Error 502'), None]
+        with mock.patch.object(installer, 'pin_entries', return_value=entries), \
+                mock.patch.object(installer, 'newer_pin', side_effect=answers) as newer, \
+                mock.patch('sys.stdout', new_callable=io.StringIO) as out:
+            self.assertEqual(installer.pins(False), 1)
+        self.assertEqual(newer.call_count, 2)
+        self.assertIn('one: HTTP Error 502', out.getvalue())
 
     def test_repin_rewrites_the_commit_and_the_release_it_is_at(self):
         text = f"[[fedora.core.clones]]\ncommit = '{'2' * 40}'  # 26.9.30\npath = 'p'\n\n[[arch.core.clones]]\ncommit = '{'2' * 40}'  # 26.9.30\n"
