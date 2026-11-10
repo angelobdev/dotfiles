@@ -20,29 +20,50 @@
 
 ## Highlights
 
-- **One shell, no external applets.** Bar, launcher, Control Center, dock, notifications, calendar, clipboard, power menu, Polkit agent and screen-sharing picker are all [Quickshell](https://quickshell.org/) and share one design.
-- **[A real tablet mode](docs/features/tablet-and-touch.md).** Fold the laptop and the shell grows its touch targets, the display follows the sensor, and gestures take over. Gesture touches never reach the app underneath, so a swipe over a video does not pause it.
-- **[An on-screen keyboard written for this desktop](docs/features/on-screen-keyboard.md).** Slide between keys, hit likely letters more easily, tap word suggestions in Italian and English. It learns your words, and nothing you type leaves the machine.
-- **[Themes that reach everything](docs/features/theming.md).** One click changes the shell, terminal, GTK and Qt apps, lock screen, wallpapers, fonts and icons. Eight hand-made themes, liquid Glass and High Contrast among them, plus a dynamic one drawn from your wallpaper, and cursor and icon themes straight from the KDE Store.
-- **[Notifications in decks](docs/features/notifications.md).** Popups stack per app, or per site for browsers, and open on hover or tap.
-- **[Claude Code as part of the desktop](docs/features/ai-assistant.md).** A drop-down console, a state icon in the bar, usage meters and notifications when it needs you.
-- **[A guided installer](docs/guide/installation.md).** Pick profiles, review every change, then apply. The same tool [checks for updates](docs/guide/installation.md#checking-for-updates) later: system packages, pinned plugins and, on Arch, AUR packages; the update icon in the bar opens it.
-- **The small things.** Italian and English everywhere, Alt + Tab, per-app volume, an emoji picker, a color picker and text from the screen, a camera and microphone indicator, Steam and gamescope launchers tuned for HiDPI, automounted drives, fingerprint unlock.
+One shell, no external applets: bar, launcher, Control Center, dock, notifications, calendar, clipboard, power menu, Settings, Polkit agent and screen-sharing picker are all [Quickshell](https://quickshell.org/) and share one design.
 
-## Gallery
+### Settings for the whole desktop
+
+<p align="center">
+  <img alt="Settings going through its sections: themes, wallpapers, desktop, displays, sound, keyboard, tablet, updates and the installer profiles" src="docs/screenshots/settings.webp">
+</p>
+
+`Super + I` opens one Settings panel for network, Bluetooth, displays, sound, power, appearance, the desktop, the AI assistant, keyboard, tablet and privacy. Its **System** section looks after the system with no terminal: it checks for updates and applies them, adds and removes [installer profiles](docs/guide/installation.md#profiles-in-settings) and rebuilds the [Hyprland plugins](docs/guide/plugins.md), in the background, behind one prompt. That prompt is the shell's own Polkit agent: on a machine with a fingerprint reader it asks for the fingerprint first, and **Use password** is one tap away.
+
+### Radio and music
+
+<p align="center">
+  <img alt="The Radio panel: the station list filtered as you type, then the video of the DJ set playing inside the panel" src="docs/screenshots/radio.webp" width="640">
+</p>
+
+`Super + M` opens the [Radio panel](docs/features/radio.md): web radio stations and vinyl DJ sets in categories, YouTube mixes and playlists found as you type, and the ones you save. The sound plays in an mpv of its own, on MPRIS like any other player, so the bar, the lock screen and the media keys control it; the video, when you want it, plays in the panel.
+
+### An installer in profiles
+
+| | |
+| --- | --- |
+| ![The guided installer's profiles, with the hardware and app parts open](docs/screenshots/installer.webp) | ![Settings → System → Profiles, with the hardware and app parts open](docs/screenshots/settings-profiles.webp) |
+| **Guided installer.** Pick profiles and parts, review every change, then apply. | **Profiles in Settings.** Add or remove them later, part by part. |
+
+The [installer](docs/guide/installation.md) comes in profiles: `core` is the desktop itself, then `hardware`, `tablet`, `plugins`, `apps`, `utils`, `assistant`, `containers`, `radio` and `gaming`, each yours to take or leave. Profiles with parts let you pick them one by one: the hardware this machine has, each Hyprland plugin, each app and command-line tool, Steam and gamescope. What a missing part or profile drives, such as a plugin's shortcuts or the whole AI block, is hidden. The same tool [checks for updates](docs/guide/installation.md#checking-for-updates): system packages, pinned plugins and, on Arch, AUR packages.
+
+### And the rest
 
 | | |
 | --- | --- |
 | ![The application launcher](docs/screenshots/launcher.webp) | ![The Control Center](docs/screenshots/control-center.webp) |
 | **Launcher.** Apps as you type, then files, sums and unit conversions. | **Control Center.** Network, audio, brightness, media and switches. |
 | ![The Theming panel](docs/screenshots/theming.webp) | ![Icon themes from the KDE Store in the Theming panel](docs/screenshots/kde-store.webp) |
-| **Theming.** Eight themes, wallpapers, fonts and icons in one place. | **KDE Store.** Cursor and icon themes, searched and installed in place. |
+| **[Themes that reach everything](docs/features/theming.md).** Shell, terminal, GTK and Qt apps, lock screen, wallpapers, fonts and icons in one click: eight themes, liquid Glass and High Contrast among them, plus one drawn from your wallpaper. | **KDE Store.** Cursor and icon themes, searched and installed in place. |
 | ![Notifications stacked in decks](docs/screenshots/notifications.webp) | ![The emoji picker](docs/screenshots/emoji.webp) |
-| **Notifications.** One deck per app, newest on top. | **Emoji.** Search by name or browse by group, and paste into the focused window. |
-| ![The on-screen keyboard with word suggestions](docs/screenshots/keyboard.webp) | ![The Claude Code console](docs/screenshots/console.webp) |
-| **On-screen keyboard.** Suggestions above the keys. | **AI console.** Claude Code dropping down from the bar, ready in this repository. |
+| **[Notifications in decks](docs/features/notifications.md).** One deck per app, or per site for browsers, opened on hover or tap. | **Emoji.** Search by name or browse by group, and paste into the focused window. |
+| ![The on-screen keyboard with word suggestions](docs/screenshots/keyboard.webp) | ![The AI console](docs/screenshots/console.webp) |
+| **[On-screen keyboard](docs/features/on-screen-keyboard.md).** Slide between keys, hit likely letters more easily, tap suggestions in Italian and English. It learns your words, and nothing you type leaves the machine. | **[AI console](docs/features/ai-assistant.md).** Claude Code, Codex or any coding agent dropping down from the bar, with a state icon, usage meters and a notification when it needs you. |
 
-The animation at the top cycles through the themes; the stills use the Tokyo Night theme with a wallpaper from [Omarchy](https://github.com/basecamp/omarchy).
+- **[A real tablet mode](docs/features/tablet-and-touch.md).** Fold the laptop and the shell grows its touch targets, the display follows the sensor, and gestures take over. Gesture touches never reach the app underneath, so a swipe over a video does not pause it.
+- **The small things.** Italian and English everywhere, Alt + Tab, per-app volume, a color picker and text from the screen, a camera and microphone indicator, Steam and gamescope launchers tuned for HiDPI, automounted drives, fingerprint unlock.
+
+The animation at the top cycles through the themes; the other pictures use the Tokyo Night theme.
 
 ## Getting started
 

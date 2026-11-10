@@ -1039,3 +1039,13 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - Tests: `test_profiles` (what is present is kept). `check.sh` passes, including `--verify-config` with the guarded binds.
 - Not tried on screen: with no units file here, everything shows.
 
+
+## README pictures, and a stray units file (#49, step 4), 2026-11-10
+
+- Shot on this machine with the shell in English (`desktop-shell restart` with `LC_MESSAGES` and `LC_TIME` set to `en_US.UTF-8`), the Tokyo Night theme, the cursor hidden (`cursor:inactive_timeout` 1 for the session) and the assistant console out of sight; afterwards the theme, the language, the cursor and the console were put back, and the sound unmuted.
+- `settings.webp`: one `grim` still per section (`qs ipc call desktop settings <section>`), put together with fixed durations. wf-recorder only writes a frame when the screen changes, so a recording of instant section changes came out shorter than it ran.
+- `radio.webp`: a wf-recorder take of the Radio panel: `dream` typed into the filter (no prefix of it matches a personal saved entry), cleared at once, then the video. The six seconds of `Loading the video…` before the picture are cut. Sound muted while recording.
+- `installer.webp` and `settings-profiles.webp`: the guided installer in kitty (`LC_ALL=en_US.UTF-8`, quit without changes) and the Profiles tab with the hardware and apps parts open (the starting `expanded` changed for the shot only, then restored).
+- Found while recording: with the Radio panel open, `desktop-radio video` closed it, since `ShellState.show()` toggles; fixed in #54 (`ShellState.open()`, also for the updates notification).
+- Found while recording: `~/.local/state/dotfiles/units` held only `core`, `plugins` and the plugin parts (written 00:45, while the record is still version 2), so Super + A, Super + M, the Assistant section and the radio button were gone. No test writes it now (each `scripts/tests/test_*.py` run against the file's mtime), so it most likely came from a test run in a worktree before the sandbox lines; removed, `hyprctl reload`, and the binds and the shell are back.
+- Settings → System → Plugins and the installer say the installed Hyprland (0.57.2-1.fc45; the session still runs 0.57.1) is not verified for the pins: until it is, the plugins stay off at the next login.
