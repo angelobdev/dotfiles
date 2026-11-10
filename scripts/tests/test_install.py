@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """install-desktop.py must preview without changing anything, repeat safely, and refuse what it does not know."""
 import atexit
+import contextlib
 import copy
 import hashlib
 import importlib.util
@@ -854,6 +855,39 @@ PROFILE_TABLE = {
                'firewall_zone': 'Zone'},
     'gaming.steam-hidpi': {'stow': ['steam-hidpi']},
 }
+
+
+class NextStepsTests(unittest.TestCase):
+    """What to do after an apply: a first install reboots, a change inside the desktop only when its steps need it."""
+
+    def said(self, applied, running, profiles=('core',)):
+        installer.APPLIED[:] = applied
+        out = io.StringIO()
+        with mock.patch.object(installer, 'hyprland_running', return_value=running), contextlib.redirect_stdout(out):
+            installer.next_steps(installer.Plan(fake_distro(), '45', {}, [], profiles), len(applied))
+        return out.getvalue().strip()
+
+    def tearDown(self):
+        installer.APPLIED.clear()
+
+    def test_inside_the_desktop_only_what_the_steps_need(self):
+        self.assertEqual(self.said(['packages', 'stow'], True), 'Done.')
+        self.assertIn('Reboot', self.said(['packages', 'firmware'], True))
+        self.assertIn('Log out and back in', self.said(['groups'], True))
+        self.assertEqual(installer.restart_needed(), 'login')
+
+    def test_a_first_install_reboots_to_the_login_screen(self):
+        self.assertEqual(self.said(['packages', 'boot'], False), 'Done. Reboot to reach the login screen.')
+        self.assertEqual(self.said([], True), 'Nothing to do.')
+
+    def test_run_steps_remembers_what_it_applied(self):
+        steps = (installer.Step('one', lambda plan: ['x'], lambda plan, items: None), installer.Step('two', lambda plan: [], None))
+        current = installer.Plan(fake_distro(), '45', {}, [], ('core',))
+        with mock.patch('builtins.print'):
+            installer.run_steps(current, False, steps)
+            self.assertEqual(installer.APPLIED, ['one'])
+            installer.run_steps(current, True, steps)
+        self.assertEqual(installer.APPLIED, [])
 
 
 class ProfileRemovalTests(unittest.TestCase):

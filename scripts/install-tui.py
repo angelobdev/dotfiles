@@ -1155,7 +1155,9 @@ def apply(plan):
         installer.after_uninstall(plan, done)
     else:
         installer.next_steps(plan, done)
-    if done and installer.booted() and confirm('Reboot now? [y/N] '):
+    # Inside the running desktop, only when the applied steps need it (firmware, the boot target).
+    reboot = not installer.hyprland_running() or installer.restart_needed() == 'reboot'
+    if done and installer.booted() and reboot and confirm('Reboot now? [y/N] '):
         subprocess.run(('sudo', 'systemctl', 'reboot'), check=True)
     return 0
 

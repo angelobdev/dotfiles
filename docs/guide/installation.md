@@ -84,7 +84,7 @@ After the reboot, sign in at GDM. A terminal opens by itself and runs `install-d
 3. **Vendor firmware**: only on a model whose firmware is still missing (see `--firmware` above). Type the directory with a copy (`Tab` completes it) or leave it empty to go on without.
 4. **Review**: the preview of every step, the warnings, and the equivalent `install-desktop.py` command. `Enter` opens a step's list, `r` checks again, `a` applies after a confirmation.
 
-Nothing changes before `a`. Then the installer leaves the screens and runs in the terminal: sudo asks for the password once and stays valid for the whole run, each step prints what it does, and at the end it offers to reboot. `--profiles` and `--firmware` preset the choices. Without a terminal, or on one that cannot draw, use `install-desktop.py`.
+Nothing changes before `a`. Then the installer leaves the screens and runs in the terminal: sudo asks for the password once and stays valid for the whole run, each step prints what it does, and at the end it offers to reboot. Inside the running desktop it says only what the applied steps need (a reboot for firmware, a new login for new groups or the login shell, otherwise just `Done.`), and offers to reboot only for firmware; Settings → System → Profiles ends its log the same way. `--profiles` and `--firmware` preset the choices. Without a terminal, or on one that cannot draw, use `install-desktop.py`.
 
 On Fedora Server the guided partitioning stops `/` at 15 GiB, which is not enough. Choose custom partitioning, or grow it afterwards: the installer warns under 30 GiB free and prints the command.
 
