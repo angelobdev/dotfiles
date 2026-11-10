@@ -340,6 +340,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #108: `architecture.md` listed an old module load order; it now names `machines`, `console`, the user's `settings.lua` and `hypr.lua`, and `displays.setup()` (2026-11-10).
   - [x] #109: the workspace pill (160 ms), the OSD (80 ms) and the Alt+Tab card (90 ms) hand-rolled their durations; they use `Theme.motionFast` (120 ms) now, a small visible change in speed (2026-11-10).
   - [x] #110: `displays.lua`'s `M.has_panel()` and `Radio.busy` had no users and went (2026-11-10).
+  - [x] #111: Night shift wrote `session.json` twice in a row for one change; it uses `SessionState.setMany` (2026-11-10).
 
 ### Backlog (reported 2026-11-03)
 

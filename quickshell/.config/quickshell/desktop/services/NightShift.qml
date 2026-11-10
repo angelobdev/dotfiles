@@ -30,8 +30,10 @@ Singleton {
         return NightShiftSchedule.nextBoundary(date, Config.nightShiftStart, Config.nightShiftEnd);
     }
     function setMode(value) {
-        SessionState.set("nightShiftOverrideUntil", 0);
-        SessionState.set("nightShiftMode", value);
+        SessionState.setMany({
+            nightShiftOverrideUntil: 0,
+            nightShiftMode: value
+        });
     }
     function setTemperature(value) {
         SessionState.set("nightShiftTemperature", Math.round(value / 100) * 100);
@@ -42,8 +44,10 @@ Singleton {
             setMode(mode === "on" ? "off" : "on");
             return;
         }
-        SessionState.set("nightShiftOverrideValue", !active);
-        SessionState.set("nightShiftOverrideUntil", nextBoundary(clock.date));
+        SessionState.setMany({
+            nightShiftOverrideValue: !active,
+            nightShiftOverrideUntil: nextBoundary(clock.date)
+        });
     }
     // IPC: "toggle", "on", "off" or "auto", with an OSD of the new state.
     function request(action) {
