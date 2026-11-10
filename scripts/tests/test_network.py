@@ -49,5 +49,24 @@ class ExtrasTests(unittest.TestCase):
         self.assertEqual(self.calls, [])
 
 
+
+class TimeoutTests(unittest.TestCase):
+    def test_a_command_that_takes_too_long_gives_a_translated_error(self):
+        with mock.patch.object(network.subprocess, 'run', side_effect=network.subprocess.TimeoutExpired('nmcli', 15)), \
+                mock.patch.object(network, 'tr', side_effect=lambda key, values=(): f'{key} {values}'):
+            with self.assertRaises(ValueError) as caught:
+                network.nmcli('device', 'status')
+        self.assertEqual(str(caught.exception), 'network.errors.noAnswer (15,)')
+
+    def test_activations_wait_as_long_as_nmcli_does(self):
+        with mock.patch.object(network.subprocess, 'run', return_value=mock.Mock(returncode=0, stdout='', stderr='')) as run, \
+                mock.patch.object(network.sys, 'argv', ['network.py', 'vpn-up', 'u-vpn']), \
+                mock.patch.object(network, 'vpns', return_value=[]), mock.patch('builtins.print'):
+            network.main()
+        self.assertEqual(run.call_args.args[0][-3:], ['connection', 'up', 'u-vpn'])
+        self.assertEqual(run.call_args.kwargs['timeout'], network.ACTIVATION_TIMEOUT)
+        self.assertGreater(network.ACTIVATION_TIMEOUT, 90)
+
+
 if __name__ == '__main__':
     unittest.main()

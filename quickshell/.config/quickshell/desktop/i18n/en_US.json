@@ -515,6 +515,7 @@
       "invalidPassword": "Wi-Fi passwords have 8–64 characters and no line breaks",
       "invalidSsid": "Enter a network name without line breaks",
       "networkNotFound": "Wi-Fi network could not be found",
+      "noAnswer": "NetworkManager did not finish within %1 seconds",
       "noSecret": "No saved password for this network",
       "noSecrets": "Secrets were required but not provided",
       "qrUnavailable": "Could not create the QR code",
