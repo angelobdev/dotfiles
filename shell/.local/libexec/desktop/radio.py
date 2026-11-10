@@ -134,6 +134,16 @@ def pid_alive(pid):
         return False
 
 
+def runs_mpv_on(pid, sock):
+    # The radio's own mpv, started with this socket: the pid in radio.json may belong to another program by now
+    # (mpv ends by itself at the end of a video, and the state says so only at the next look).
+    try:
+        arguments = Path(f'/proc/{pid}/cmdline').read_bytes().split(b'\0')
+    except OSError:
+        return False
+    return f'--input-ipc-server={sock}'.encode() in arguments
+
+
 def playable(url):
     return isinstance(url, str) and (url.startswith(SCHEMES) or (url.startswith('/') and Path(url).is_file()))
 
@@ -368,7 +378,7 @@ def stop_playback():
     sock = state.get('socket') or str(radio_socket_path())
     mpv_ipc(['quit'], socket_path=sock, timeout=0.5)
     pid = state.get('pid', 0)
-    if pid_alive(pid):
+    if pid_alive(pid) and runs_mpv_on(pid, sock):
         try:
             os.kill(pid, signal.SIGTERM)
         except OSError:
