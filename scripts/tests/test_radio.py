@@ -337,14 +337,23 @@ class OwnMpvTests(Sandbox):
         own = self.serve(self.runtime / 'radio-mpv.sock', {})
         other = self.serve(self.runtime / 'mpv-1234.sock', {})
         import subprocess
-        player = subprocess.Popen(['sleep', '30'])
+        sock = self.runtime / 'radio-mpv.sock'
+        player = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)', f'--input-ipc-server={sock}'])
         self.addCleanup(player.kill)
-        radio.write_state({'active': True, 'pid': player.pid, 'socket': str(self.runtime / 'radio-mpv.sock')})
+        radio.write_state({'active': True, 'pid': player.pid, 'socket': str(sock)})
         radio.stop_playback()
         self.assertIsNotNone(player.wait(timeout=5))
         self.assertEqual(own, [['quit']])
         self.assertEqual(other, [])
         self.assertFalse(radio.load_state()['active'])
+
+    def test_stop_leaves_a_process_that_took_over_the_pid_alone(self):
+        import subprocess
+        stranger = subprocess.Popen(['sleep', '30'])
+        self.addCleanup(stranger.kill)
+        radio.write_state({'active': True, 'pid': stranger.pid, 'socket': str(self.runtime / 'radio-mpv.sock')})
+        radio.stop_playback()
+        self.assertIsNone(stranger.poll())
 
     def test_live_title_and_pause(self):
         self.serve(self.runtime / 'radio-mpv.sock', {
