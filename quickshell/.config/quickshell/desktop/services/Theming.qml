@@ -3,10 +3,13 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Data and actions for the Theming panel, all through theme.py; queried only while the panel is open.
+// Data and actions for the Theming panel, all through theme.py: queried when the panel opens, and again when the theme
+// state changes once it has been, so a theme set elsewhere (desktop-theme, the bar) moves Current too.
 Singleton {
     id: root
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/theme.py"
+    // theme.py rewrites current.json with each theme and preferences.json with each window, glass or dynamic setting.
+    readonly property string stateDir: (Quickshell.env("XDG_STATE_HOME") || Quickshell.env("HOME") + "/.local/state") + "/desktop-theme"
     readonly property string wallpaperHelper: Quickshell.env("HOME") + "/.local/libexec/desktop/wallpaper.py"
     property var themes: []
     // Corner rounding, border width and gaps of windows, as Hyprland applies them now.
@@ -275,6 +278,29 @@ Singleton {
             }
         }
         onExited: root.refreshPack()
+    }
+    // Only after a first listing: before the panel has opened, nothing shows the list.
+    function stateChanged() {
+        if (themes.length > 0)
+            listing.request();
+    }
+    FileView {
+        path: root.stateDir + "/current.json"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: {
+            reload();
+            root.stateChanged();
+        }
+    }
+    FileView {
+        path: root.stateDir + "/preferences.json"
+        watchChanges: true
+        printErrors: false
+        onFileChanged: {
+            reload();
+            root.stateChanged();
+        }
     }
     CoalescedProcess {
         id: listing
