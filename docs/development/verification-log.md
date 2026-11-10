@@ -1070,7 +1070,7 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 ## Theme tab follows a theme set elsewhere (#58), 2026-11-10
 
 - `services/Theming.qml` watches `current.json` and `preferences.json` in the theme state directory, which `theme.py` rewrites with each theme and each window, glass or dynamic setting, and lists the themes again when either changes, once the panel has listed them a first time (before that, nothing shows the list).
-- Live, Italian shell: with Settings → Appearance → Theme open, `desktop-theme set catppuccin-mocha` and then `everforest` from a terminal moved **Attuale** to Catppuccin Mocha and then Everforest. The theme was put back to Gruvbox. Not tried: a window-style or dynamic-mode change from outside the panel (same path, through `preferences.json`).
+- Live, Italian shell: with Settings → Appearance → Theme open, `desktop-theme set catppuccin-mocha` and then `everforest` from a terminal moved **Attuale** to Catppuccin Mocha and then Everforest. The theme was put back to Gruvbox. A window-style and a dynamic-mode change from outside the panel (same path, through `preferences.json`) tried by the user afterwards.
 
 ## Hyprland 0.57.2-1 on Arch, 2026-11-10
 
@@ -1078,3 +1078,13 @@ Retaken on the live session with Tokyo Night and Omarchy's sunset-lake wallpaper
 - `install-container-arch.sh` with `COMPILE=1` in a fresh `archlinux:latest` (hyprland `0.57.2-1`), with `0.57.2-1` added to `VERIFIED`: install, `check.sh`, the four plugins compiled with `build.py` (Hyprspace, hyprgrass with its patch, hyprglass, HyprCapture) with no unresolved libraries, then the uninstall back to the packages from before. The only `error:` line is a pacman hook that needs systemd, which the container has no use for.
 - The first run stopped at HyprCapture's CMake configure: since #51 its build dependencies belong to the part `plugins.hyprcapture`, and the default profiles of both container scripts and of `install.yml` named `plugins` without its parts. They now list `plugins.hyprspace`, `plugins.hyprglass` and `plugins.hyprcapture`, so the CI install covers those packages too.
 - As for 0.57.1 on Arch, only compiled: not loaded in an Arch session. The same upstream release loads in a nested 0.57.2 on Fedora (above).
+
+## Tried by hand, 2026-11-10
+
+Reported by the user after the merges of the day:
+
+- Agent installs from Settings → Assistant (#37, step 4): tried by GBSpada; they work.
+- **Remove profiles** in the guided installer, with the fix of #62.
+- The Theme tab (#59): a window-style and a dynamic-mode change from outside the panel move the page too.
+- The glass settings page by hand, and Glass Light on screen.
+- Power Saver turning on by itself at 20% on a real discharge.
