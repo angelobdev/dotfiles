@@ -5,13 +5,13 @@
 #   git ls-files -co --exclude-standard -z | tar --null -T - -c | docker run -i --rm archlinux:latest \
 #       bash -c 'mkdir /src && tar -x -C /src && exec bash /src/scripts/tests/install-container-arch.sh'
 #
-# Environment: PROFILES (default core,hardware,hardware.intel,hardware.audio,hardware.camera,hardware.fingerprint,hardware.firmware,tablet,plugins,assistant,gaming.steam-hidpi,radio), COMPILE=1 also builds the plugins (slow). apps builds the
+# Environment: PROFILES (default core,hardware,hardware.intel,hardware.audio,hardware.camera,hardware.fingerprint,hardware.firmware,tablet,plugins,plugins.hyprspace,plugins.hyprglass,plugins.hyprcapture,assistant,gaming.steam-hidpi,radio), COMPILE=1 also builds the plugins (slow). apps builds the
 # AUR packages with makepkg and gaming enables multilib. The container runs no systemd, so the Flatpak and login
 # steps skip themselves: only a VM covers those.
 set -euo pipefail
 
 source=${1:-/src}
-profiles=${PROFILES:-core,hardware,hardware.intel,hardware.audio,hardware.camera,hardware.fingerprint,hardware.firmware,tablet,plugins,assistant,gaming.steam-hidpi,radio}
+profiles=${PROFILES:-core,hardware,hardware.intel,hardware.audio,hardware.camera,hardware.fingerprint,hardware.firmware,tablet,plugins,plugins.hyprspace,plugins.hyprglass,plugins.hyprcapture,assistant,gaming.steam-hidpi,radio}
 user=ci
 home=/home/$user
 repo=$home/.dotfiles

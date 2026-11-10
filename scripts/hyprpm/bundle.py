@@ -18,7 +18,7 @@ PACKAGING = Path(__file__).resolve().parent
 FILES = ('build.py', 'hyprpm.toml', 'hyprgrass-touch-as-pointer.patch')
 REPOSITORY = 'dotfiles-desktop'
 # Builds of Hyprland and its headers the pins in build.py were verified against: Fedora's RPM, Arch's package.
-VERIFIED = ('0.57.1-1.fc45.x86_64', '0.57.2-1.fc45.x86_64', '0.57.1-1')
+VERIFIED = ('0.57.1-1.fc45.x86_64', '0.57.2-1.fc45.x86_64', '0.57.1-1', '0.57.2-1')
 CACHE = Path('/var/cache/hyprpm') / getpass.getuser()
 STAMP = Path.home() / '.local/state/dotfiles/hypr-plugins.json'
 # The installer's record (install-desktop.py RECORD): its profiles say which plugins to build.
