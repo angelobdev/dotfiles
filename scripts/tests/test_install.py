@@ -1023,6 +1023,13 @@ class ProfileRemovalTests(unittest.TestCase):
         self.assertIn('apponly', installer.profile_record(current, record, ('apps',)).get('packages'))
         self.assertNotIn('apponly', installer.profile_record(current, record, ('apps',), keep=('assistant',))['packages'])
 
+    def test_an_install_says_which_units_the_record_names_from_now_on(self):
+        self.recorded()
+        current = installer.Plan(fake_distro(pending=False), '45', PROFILE_TABLE, [], ('core', 'apps', 'gaming', 'gaming.steam-hidpi', 'radio'))
+        self.assertEqual(installer.recording_notes(current), [f'{installer.RECORD} names radio from now on.'])
+        installer.RECORD.unlink()
+        self.assertEqual(installer.recording_notes(current), [])  # A first install: everything is new, nothing to say.
+
     def test_keep_goes_with_remove(self):
         for arguments in (['dry-run', '--keep', 'assistant'], ['dry-run', '--remove', 'apps', '--keep', 'nothing']):
             with mock.patch('sys.stderr'), self.assertRaises(SystemExit) as caught:

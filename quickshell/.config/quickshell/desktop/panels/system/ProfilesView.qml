@@ -47,12 +47,19 @@ ColumnLayout {
     // Parts: which profiles show theirs, and what is switched on or off before Apply, by unit.
     property var expanded: ({})
     property var staged: ({})
+    // With an install record, a part is on when the installer has it: one there without a record (installed by hand,
+    // or a removal that left its packages, which the installer did not install) is off, and switching it on records it.
+    // Without a record, what is on the system.
+    readonly property bool hasRecord: listed.some(profile => profile.name === "core" && profile.recorded)
+    function partWas(part) {
+        return hasRecord ? part.recorded : part.installed;
+    }
     function partOn(part) {
-        return staged[part.name] !== undefined ? staged[part.name] : part.recorded || part.installed;
+        return staged[part.name] !== undefined ? staged[part.name] : partWas(part);
     }
     function stage(part, on) {
         const next = Object.assign({}, staged);
-        if (on === (part.recorded || part.installed))
+        if (on === partWas(part))
             delete next[part.name];
         else
             next[part.name] = on;

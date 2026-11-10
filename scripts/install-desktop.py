@@ -1623,6 +1623,14 @@ def after_uninstall(plan, done):
     print(f'Left in place: your preferences in ~/.config/desktop, and this repository ({REPO}).')
 
 
+def recording_notes(plan):
+    # The units an install adds to the record: one already on the system (installed by hand) changes nothing else.
+    record = load_record()
+    recorded = record.get('profiles') if isinstance(record.get('profiles'), list) and not record.get('uninstalled') else None
+    new = [name for name in plan.profiles if recorded and name not in recorded]
+    return [f'{RECORD} names {", ".join(new)} from now on.'] if new else []
+
+
 def record_notes(plan):
     # What an uninstall without a record cannot know, said before it starts.
     notes = []
@@ -1966,6 +1974,8 @@ def main(argv=None):
     if args.action == 'post':
         post(plan)
         return 0
+    for note in recording_notes(plan):
+        print('Note: ' + note)
     done = run_steps(plan, args.action == 'dry-run')
     if args.action == 'apply':
         next_steps(plan, done)
