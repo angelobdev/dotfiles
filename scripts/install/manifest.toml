@@ -183,6 +183,8 @@ packages = ['libcamera', 'libcamera-ipa', 'pipewire-plugin-libcamera', 'intel-vs
 [fedora.hardware.parts.fingerprint]
 default = 'fingerprint'
 packages = ['fprintd', 'fprintd-pam']
+# authselect's with-fingerprint: GDM and sudo try the reader (Workstation has it on already, Server does not).
+auth = ['with-fingerprint']
 notes = ['Enroll your fingerprint: fprintd-enroll']
 
 [[fedora.hardware.parts.fingerprint.files]]
@@ -204,7 +206,8 @@ packages = ['bolt', 'fwupd']
 # this profile).
 [fedora.tablet]
 packages = ['iio-sensor-proxy', 'libwacom', 'fprintd', 'fprintd-pam']
-auth = true
+# The fingerprint as hardware.fingerprint has it, and the tablet sign-in on top (scripts/tablet-auth.sh).
+auth = ['with-fingerprint', 'custom/desktop-tablet']
 
 # The accelerometer behind screen rotation. linux-firmware has the HP blob for another SKU only.
 [[fedora.tablet.firmware]]

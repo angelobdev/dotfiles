@@ -43,7 +43,7 @@ Run it as your user: it asks sudo for each system change. Each step checks what 
 | Profile | Installs |
 | --- | --- |
 | `core` | Hyprland, Quickshell, GDM with the `hyprland-uwsm` session, portals, audio, network, fonts and everything the shell calls; zsh as your login shell, with its [plugins](../features/shell.md); the codecs: on Fedora from RPM Fusion, whose `ffmpeg` and `intel-media-driver` replace `ffmpeg-free` and `libva-intel-media-driver`, plus the GStreamer freeworld plugins, libav, OpenH264, HEIF and aptX |
-| `hardware` | Firewall zone and `sshd` off on Fedora, and these parts: `intel` (Wi-Fi and Bluetooth firmware, GPU and video decoding, NPU, thermald and intel-lpmd), `audio` (SOF and Cirrus firmware, ALSA UCM), `camera` (libcamera, the IPU's sensing controller firmware), `fingerprint` (fprintd and the [polkit prompt](integrations.md) that tries it first), `firmware` (fwupd, bolt) |
+| `hardware` | Firewall zone and `sshd` off on Fedora, and these parts: `intel` (Wi-Fi and Bluetooth firmware, GPU and video decoding, NPU, thermald and intel-lpmd), `audio` (SOF and Cirrus firmware, ALSA UCM), `camera` (libcamera, the IPU's sensing controller firmware), `fingerprint` (fprintd, authselect's `with-fingerprint` on Fedora for GDM and sudo, and the [polkit prompt](integrations.md) that tries it first), `firmware` (fwupd, bolt) |
 | `tablet` | A 2-in-1: the accelerometer (`iio-sensor-proxy`) and its sensor hub modules, the stylus (`libwacom`), [tablet sign-in](#tablet-mode-sign-in-without-the-fingerprint-reader), and the Hyprgrass touchscreen gestures, the only [plugin](plugins.md) built for this profile alone; on the OmniBook, HP's sensor hub firmware for rotation from `--firmware DIR` (see [Tablet and touch](../features/tablet-and-touch.md#tablet-mode-and-rotation)) |
 | `plugins` | The [Hyprland plugins](plugins.md), as parts: `hyprspace` (the overview), `hyprglass` (liquid glass), `hyprcapture` (screenshots, with the Qt, OpenCV, PipeWire and FFmpeg headers it alone needs), all checked; the profile itself has the build tools and Hyprland's headers |
 | `apps` | Desktop apps, as parts: `zen` (Zen Browser), `onepassword` (1Password, allowed to fill in Zen), `vscode`, and the GNOME viewers `loupe`, `papers` and `showtime` |
@@ -148,7 +148,7 @@ Removable drives use udiskie; iPhone access uses GVfs/AFC and usbmuxd. See [Remo
 
 ## Tablet mode sign-in without the fingerprint reader
 
-Folded into tablet mode, the OmniBook screen covers the fingerprint reader, and `pam_fprintd` (authselect `with-fingerprint`) makes sudo, polkit and the lock screen wait for it. This step, part of the `hardware` profile, makes PAM skip the reader while the desktop is in tablet mode and ask for the password at once (typed on the on-screen keyboard); elsewhere nothing changes. To run it by hand:
+Folded into tablet mode, the OmniBook screen covers the fingerprint reader, and `pam_fprintd` (authselect `with-fingerprint`) makes sudo, polkit and the lock screen wait for it. `with-fingerprint` itself comes with the `hardware.fingerprint` part, so GDM and sudo try the reader on any laptop (Fedora Workstation has it on already, Server does not). This step, part of the `tablet` profile, makes PAM skip the reader while the desktop is in tablet mode and ask for the password at once (typed on the on-screen keyboard); elsewhere nothing changes. To run it by hand:
 
 ```sh
 ./scripts/tablet-auth.sh install   # or: status, remove

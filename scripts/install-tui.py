@@ -34,7 +34,7 @@ DESCRIPTIONS = {
     'hardware.intel': 'Intel: Wi-Fi and Bluetooth firmware, GPU and video decoding, NPU, thermald and intel-lpmd.',
     'hardware.audio': 'Sound: SOF firmware of the Intel audio DSP, Cirrus amplifiers, ALSA use-case profiles.',
     'hardware.camera': 'The camera: libcamera for MIPI cameras (Intel IPU), with its sensing controller firmware.',
-    'hardware.fingerprint': 'The fingerprint reader (fprintd), and the polkit prompt that tries it first.',
+    'hardware.fingerprint': 'The fingerprint reader (fprintd): GDM, sudo and the polkit prompt try it first.',
     'hardware.firmware': 'Firmware updates (fwupd) and Thunderbolt devices (bolt).',
     'tablet': 'A 2-in-1: screen rotation, stylus, sign-in without the fingerprint reader while folded, touchscreen gestures (Hyprgrass).',
     'plugins': 'The Hyprland plugins, one by one, and the tools and headers building them needs.',

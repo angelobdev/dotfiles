@@ -39,7 +39,7 @@ TABLE = {
     'core': {'repos': ['one'], 'packages': ['a', 'b'], 'exclude': ['tour'], 'services': ['s.service'], 'user_services': ['u.service'],
              'disable': ['d.socket'], 'files': [{'path': '/etc/x', 'content': '\nx\n'}], 'groups': ['g'], 'notes': ['first'],
              'login_shell': '/usr/bin/zsh', 'clones': [{'repo': 'https://example.com/p.git', 'commit': 'c' * 40, 'path': '.local/p'}]},
-    'plugins': {'packages': ['b', 'c', 'old'], 'swaps': [['old', 'new']], 'stow': ['extra'], 'flatpaks': ['org.example.App'], 'firewall_zone': 'Zone', 'auth': True,
+    'plugins': {'packages': ['b', 'c', 'old'], 'swaps': [['old', 'new']], 'stow': ['extra'], 'flatpaks': ['org.example.App'], 'firewall_zone': 'Zone', 'auth': ['with-fingerprint', 'custom/desktop-tablet'],
                 'notes': ['second']},
 }
 
@@ -857,6 +857,37 @@ PROFILE_TABLE = {
 }
 
 
+class FingerprintAuthTests(unittest.TestCase):
+    """with-fingerprint comes with hardware.fingerprint; the tablet sign-in profile only with tablet."""
+    TABLE = {'core': {}, 'hardware': {}, 'hardware.fingerprint': {'auth': ['with-fingerprint']},
+             'tablet': {'auth': ['with-fingerprint', 'custom/desktop-tablet']}}
+
+    def setUp(self):
+        StepTests.setUp(self)
+
+    def test_the_fingerprint_part_alone_asks_for_the_feature_only(self):
+        distro = fake_distro()
+        installer.auth_pending(installer.Plan(distro, '45', self.TABLE, [], ('core', 'hardware', 'hardware.fingerprint')))
+        distro.auth_pending.assert_called_once_with(['with-fingerprint'])
+        distro.auth_pending.reset_mock()
+        self.assertEqual(installer.auth_pending(installer.Plan(distro, '45', self.TABLE, [], ('core', 'hardware'))), [])
+        distro.auth_pending.assert_not_called()
+
+    def test_removing_tablet_keeps_the_fingerprint_for_the_part_that_stays(self):
+        record = {'profiles': ['core', 'hardware', 'hardware.fingerprint', 'tablet'], 'auth': ['with-fingerprint', 'custom/desktop-tablet']}
+        installer.save_record(record)
+        current = installer.Plan(fake_distro(), '45', self.TABLE, [], ('core',))
+        self.assertEqual(installer.profile_record(current, record, ('tablet',))['auth'], ['custom/desktop-tablet'])
+        both = installer.profile_record(current, record, ('tablet', 'hardware.fingerprint'))
+        self.assertEqual(both['auth'], ['with-fingerprint', 'custom/desktop-tablet'])
+        self.assertNotIn('auth', installer.profile_record(current, record, ('hardware.fingerprint',)))
+
+    def test_the_fedora_manifest_splits_them(self):
+        table = installer.flatten_parts(MANIFEST['fedora'])
+        self.assertEqual(table['hardware.fingerprint']['auth'], ['with-fingerprint'])
+        self.assertEqual(table['tablet']['auth'], ['with-fingerprint', 'custom/desktop-tablet'])
+
+
 class NextStepsTests(unittest.TestCase):
     """What to do after an apply: a first install reboots, a change inside the desktop only when its steps need it."""
 
@@ -1658,6 +1689,12 @@ class FedoraTests(unittest.TestCase):
                                  ('custom/desktop-tablet with-fingerprint with-mdns4', []), ('', [fedora.AUTH_FEATURE, fedora.AUTH_PROFILE])):
             with mock.patch.object(fedora, 'query', return_value=reply(output)):
                 self.assertEqual(fedora.auth_pending(), expected)
+
+    def test_auth_reports_only_what_is_wanted(self):
+        # hardware.fingerprint alone: the feature, not the tablet profile.
+        for output, expected in (('local', [fedora.AUTH_FEATURE]), ('local with-fingerprint', [])):
+            with mock.patch.object(fedora, 'query', return_value=reply(output)):
+                self.assertEqual(fedora.auth_pending([fedora.AUTH_FEATURE]), expected)
 
     def test_firmware_keeps_the_selinux_label_and_reaches_every_initramfs(self):
         with mock.patch.object(fedora, 'sudo') as sudo:
