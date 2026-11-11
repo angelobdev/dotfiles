@@ -20,6 +20,7 @@ Match the surrounding code. Comments are sparse one-liners that explain *why* ("
 - Do not try to override an `Overlay` handler from a panel: QML runs both the base and the derived handler. For Escape, set `closeOnEscape: false` and handle it in the panel (see `PowerMenu`).
 - Models rebuilt from fresh JS arrays recreate every delegate; when delegates are heavy or animate, wrap the array in `ScriptModel { values: …; objectProp: "id" }` (delegates are reused and `modelData` is updated).
 - Side panels use `SidePanelCard` + `PanelHeader`; centred dialogs use `Card` + `Heading`.
+- A `highlighted` `ActionButton` says what the highlight stands for with `tone`: `"primary"` (the default) is the one action a view is about and fills with the accent; `"state"` is what is on or chosen (a tab, the current device, a toggle) and takes `Theme.active` with accent text; `"cursor"` is the keyboard selection of a list and takes `Theme.selection`. A `ListView.highlight` that follows the selection uses `Theme.selection` too.
 - A group of option rows on a tile (Settings, System) is a `GroupCard`: its children go in a padded column; set `verticalPadding`, `leftPadding` or `rightPadding` only where a group needs other padding.
 - JS libraries use `.pragma library`.
 - Avoid apostrophes in QML comments (`the dock window`, not `the dock's window`): `check-i18n.py` scans every quoted literal in QML, and two apostrophes form a bogus string.

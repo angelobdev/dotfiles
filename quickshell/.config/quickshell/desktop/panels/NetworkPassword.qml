@@ -56,6 +56,7 @@ ColumnLayout {
             iconName: "qr-code"
             iconSize: 18
             highlighted: root.showQr
+            tone: "state"
             tooltip: I18n.tr("network.shareQr")
             onClicked: {
                 root.showQr = !root.showQr;

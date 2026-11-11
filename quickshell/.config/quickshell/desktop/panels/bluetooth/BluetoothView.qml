@@ -57,6 +57,7 @@ ColumnLayout {
                         iconName: adapterGroup.modelData.discovering ? "stop" : "bluetooth"
                         enabled: adapterGroup.modelData.enabled && BluetoothAgent.registered
                         highlighted: adapterGroup.modelData.discovering
+                        tone: "state"
                         onClicked: adapterGroup.modelData.discovering = !adapterGroup.modelData.discovering
                     }
                     Text {
@@ -80,6 +81,7 @@ ColumnLayout {
                                 text: modelData.name
                                 tooltip: modelData.address
                                 highlighted: modelData.connected
+                                tone: "state"
                                 enabled: adapterGroup.modelData.enabled && !modelData.blocked && ![BluetoothDeviceState.Connecting, BluetoothDeviceState.Disconnecting].includes(modelData.state)
                                 onClicked: modelData.connected = !modelData.connected
                             }

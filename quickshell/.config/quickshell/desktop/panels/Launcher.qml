@@ -113,7 +113,7 @@ Overlay {
                 // The selection glides between rows instead of jumping.
                 highlight: Rectangle {
                     radius: Theme.corner(11)
-                    color: Theme.accent
+                    color: Theme.selection
                 }
                 highlightMoveDuration: Theme.motionNormal
                 highlightMoveVelocity: -1
@@ -137,6 +137,7 @@ Overlay {
                     text: modelData.kind === "calc" ? "= " + modelData.text : modelData.kind === "file" ? modelData.path.replace(Quickshell.env("HOME"), "~") : entry.name + (entry.runInTerminal ? I18n.tr("launcher.terminalSuffix") : "")
                     tooltip: modelData.kind === "calc" ? I18n.tr("launcher.copyResult") : modelData.kind === "file" ? I18n.tr("launcher.openFile") : ""
                     highlighted: apps.currentIndex === index
+                    tone: "cursor"
                     highlightBackground: false
                     onClicked: root.launch(modelData)
                     // A long press (touch) opens the pin menu like a right click; Button then skips the click.

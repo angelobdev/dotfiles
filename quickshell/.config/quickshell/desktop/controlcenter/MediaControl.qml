@@ -132,6 +132,7 @@ ControlTile {
                     alignLeft: true
                     text: modelData.identity
                     highlighted: root.player === modelData
+                    tone: "state"
                     onClicked: Media.select(modelData.dbusName)
                 }
             }

@@ -79,6 +79,7 @@ ColumnLayout {
             implicitHeight: 52
             alignLeft: true
             highlighted: selected
+            tone: "state"
             text: modelData.name
             rightPadding: 12 + samples.width
             onClicked: {

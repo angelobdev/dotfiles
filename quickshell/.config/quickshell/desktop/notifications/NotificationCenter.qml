@@ -29,6 +29,7 @@ Overlay {
                     iconName: Notices.quiet ? "bell-off" : "bell"
                     tooltip: I18n.tr("notifications.doNotDisturb")
                     highlighted: Notices.quiet
+                    tone: "state"
                     onClicked: Notices.setQuiet(!Notices.quiet)
                 }
                 PanelIconButton {

@@ -26,6 +26,10 @@ Singleton {
     readonly property color muted: colors.muted
     readonly property color accent: colors.accent
     readonly property color danger: colors.danger
+    // What is on or chosen (a tab, the current device, a switch tile) and where the keyboard selection is in a
+    // list: a tint of the accent and a neutral one, so neither reads as the accent-filled primary action.
+    readonly property color active: Qt.alpha(accent, 0.22)
+    readonly property color selection: Qt.alpha(text, 0.12)
     readonly property color scrim: colors.scrim
     readonly property color scrimModal: colors.scrimModal
     readonly property color scrimStrong: colors.scrimStrong

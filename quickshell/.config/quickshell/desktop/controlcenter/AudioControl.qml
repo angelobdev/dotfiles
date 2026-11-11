@@ -63,6 +63,7 @@ ControlTile {
                 tooltip: Audio.muted ? I18n.tr("audio.unmute") : I18n.tr("audio.mute")
                 enabled: !!Audio.sink
                 highlighted: Audio.muted
+                tone: "state"
                 onClicked: Audio.toggleMute()
             }
             ControlSlider {
@@ -97,6 +98,7 @@ ControlTile {
                     iconName: "volume-high"
                     iconSize: 16
                     highlighted: Audio.sink?.id === modelData.id
+                    tone: "state"
                     onClicked: Audio.selectOutput(modelData)
                 }
             }
@@ -121,6 +123,7 @@ ControlTile {
                     iconName: "microphone"
                     iconSize: 16
                     highlighted: Audio.source?.id === modelData.id
+                    tone: "state"
                     onClicked: Audio.selectInput(modelData)
                 }
             }
@@ -132,6 +135,7 @@ ControlTile {
                     tooltip: I18n.tr("audio.toggleMicrophone")
                     enabled: !!Audio.source
                     highlighted: Audio.source?.audio?.muted ?? false
+                    tone: "state"
                     onClicked: Audio.toggleMic()
                 }
                 ControlSlider {

@@ -22,7 +22,13 @@ Button {
     // Text and icon colour when neither destructive nor highlighted; the bar follows BarStyle.
     property color normalColor: Theme.text
     readonly property bool hasIcon: iconName !== "" || iconSource.toString() !== ""
-    readonly property color foreground: destructive ? Theme.danger : highlighted ? Theme.accentText : normalColor
+    // What highlighted stands for, so the three read differently: "primary" is the one action a view is about
+    // (accent fill), "state" is what is on or chosen (accent tint and text), "cursor" is where the keyboard
+    // selection is in a list (neutral fill).
+    property string tone: "primary"
+    readonly property bool filled: highlighted && tone === "primary"
+    readonly property color foreground: destructive ? Theme.danger : filled ? Theme.accentText : highlighted && tone === "state" ? Theme.accent : normalColor
+    readonly property color highlightColor: tone === "primary" ? Theme.accent : tone === "state" ? Theme.active : Theme.selection
     implicitHeight: Theme.hit(36)
     implicitWidth: Math.max(Theme.hit(36), label.implicitWidth + (hasIcon ? iconSize + (text ? 10 : 0) : 0) + leftPadding + rightPadding)
     leftPadding: compact ? 0 : 12
@@ -98,7 +104,7 @@ Button {
     }
     background: Rectangle {
         radius: Theme.corner(11)
-        color: root.highlighted ? (root.highlightBackground ? Theme.accent : "transparent") : root.down || root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
+        color: root.highlighted ? (root.highlightBackground ? root.highlightColor : "transparent") : root.down || root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
         Behavior on color {
             ColorAnimation {
                 duration: Theme.motionFast

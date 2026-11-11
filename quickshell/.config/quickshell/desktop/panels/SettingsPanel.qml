@@ -259,6 +259,7 @@ Overlay {
                             iconName: sidebarRow.modelData.icon ?? ""
                             text: I18n.tr(sidebarRow.modelData.labelKey)
                             highlighted: sidebarRow.modelData.name === root.section
+                            tone: "state"
                             onClicked: root.showSection(sidebarRow.modelData.name, "")
                         }
                     }

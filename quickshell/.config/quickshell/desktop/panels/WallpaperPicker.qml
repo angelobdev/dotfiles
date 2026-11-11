@@ -145,6 +145,7 @@ Overlay {
                         iconName: fileIsDir ? "folder" : "image"
                         alignLeft: true
                         highlighted: files.currentIndex === index
+                        tone: "cursor"
                         onClicked: {
                             // Focus first: opening a folder rebuilds the list and destroys this delegate.
                             files.currentIndex = index;
