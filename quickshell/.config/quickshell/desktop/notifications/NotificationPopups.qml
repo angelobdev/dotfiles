@@ -23,6 +23,9 @@ PanelWindow {
         right: 12
     }
     readonly property int count: Notices.popups.length
+    // Showing the window creates it, and Quickshell announces its screen again while visible is being set:
+    // read directly, that re-entered the visible binding (a binding loop). A string notifies only on a change.
+    readonly property string screenName: screen?.name ?? ""
     // Cards fading out: already out of the layout, so the others close the gap under them.
     property var leavingIds: []
     // The pointer, or a tap in tablet mode, holds the stack open: every card stops counting down, and
@@ -43,7 +46,7 @@ PanelWindow {
     implicitWidth: 380
     // Full available height so a deck opens without clipping; the input mask still covers only the stack.
     implicitHeight: (screen?.height ?? 900) - 100
-    visible: count > 0 && !Notices.quiet && ShellState.panel === "" && !Tablet.remaps(screen?.name ?? "")
+    visible: count > 0 && !Notices.quiet && ShellState.panel === "" && !Tablet.remaps(screenName)
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "desktop-notifications"
