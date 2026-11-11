@@ -34,9 +34,19 @@ qt=/usr/lib64/qt6/bin
 # Quickshell ships no qmltypes: skip type-resolution categories, keep syntax and QML errors.
 qmllint=$qt/qmllint
 if [[ -x $qmllint ]]; then
-    find "$repo/quickshell/.config/quickshell/desktop" -name '*.qml' -print0 |
+    lint=$(find "$repo/quickshell/.config/quickshell/desktop" -name '*.qml' -print0 |
         xargs -0 "$qmllint" --import disable --unqualified disable --unresolved-type disable \
-            --required disable --missing-property disable --incompatible-type disable --unused-imports disable
+            --required disable --missing-property disable --incompatible-type disable --unused-imports disable 2>&1) || {
+        printf '%s\n' "$lint"
+        exit 1
+    }
+    printf '%s\n' "$lint"
+    # qmllint only warns about these two, but Quickshell refuses the whole configuration: a property bound twice,
+    # and a property named as one of its base type (scale, border): the shell does not start with either.
+    if grep -qE '\[(duplicate-property-binding|property-override)\]' <<<"$lint"; then
+        echo 'qmllint: a duplicate binding or a property that overrides one of its base type stops the shell from loading.' >&2
+        exit 1
+    fi
 fi
 # Pure JS helpers of the shell (dock layout); offscreen, no compositor needed.
 qmltestrunner=$qt/qmltestrunner
