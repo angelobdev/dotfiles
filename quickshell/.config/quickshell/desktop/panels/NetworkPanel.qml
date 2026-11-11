@@ -21,6 +21,7 @@ Overlay {
             }
             spacing: 12
             PanelHeader {
+                settingsSection: "network"
                 Layout.fillWidth: true
                 title: view.title
                 showBack: true
@@ -33,13 +34,6 @@ Overlay {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 shown: root.visible
-            }
-            // The full section of Settings, in place of this panel.
-            ActionButton {
-                Layout.alignment: Qt.AlignRight
-                compact: true
-                text: I18n.tr("settings.open")
-                onClicked: ShellState.openSection("settings", "network", ShellState.activeScreen, false)
             }
         }
     }

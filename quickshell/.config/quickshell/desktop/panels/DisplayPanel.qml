@@ -24,19 +24,13 @@ Overlay {
             }
             spacing: 14
             PanelHeader {
+                settingsSection: "displays"
                 title: I18n.tr("displays.title")
                 Layout.fillWidth: true
             }
             DisplayView {
                 Layout.fillWidth: true
                 shown: root.visible
-            }
-            // The full section of Settings, in place of this panel.
-            ActionButton {
-                Layout.alignment: Qt.AlignRight
-                compact: true
-                text: I18n.tr("settings.open")
-                onClicked: ShellState.openSection("settings", "displays", ShellState.activeScreen, false)
             }
         }
     }

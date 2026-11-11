@@ -22,19 +22,13 @@ Overlay {
             }
             spacing: 14
             PanelHeader {
+                settingsSection: "assistant"
                 title: Agent.title
                 Layout.fillWidth: true
             }
             AgentView {
                 Layout.fillWidth: true
                 shown: root.visible
-            }
-            // The full section of Settings, in place of this panel.
-            ActionButton {
-                Layout.alignment: Qt.AlignRight
-                compact: true
-                text: I18n.tr("settings.open")
-                onClicked: ShellState.openSection("settings", "assistant", ShellState.activeScreen, false)
             }
         }
     }

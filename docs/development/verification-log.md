@@ -1165,3 +1165,9 @@ Reported by the user after the merges of the day:
 
 - `ControlSwitch` on is the accent tint with an accent knob, off is grey on grey; a checked `ToggleTile` keeps the tint and the accent icon without the accent border; the row with the keyboard in an options page is `Theme.selection` without a border. Seen live in Settings → Desktop, the Control Center and Network. Not seen: light themes, tablet sizes.
 - `check.sh` passes.
+
+## One panel header (#166), 2026-11-11
+
+- `PanelHeader` gained `settingsSection` / `showSettings`: the `Impostazioni…` link at the bottom of the Control Center, Network, Bluetooth, Agent, Updates and Displays is now a button in the header, next to close. Audio, Hints, the Wallpaper picker and the Calendar use `PanelHeader` too, so their `Chiudi` buttons at the bottom are gone and Audio goes back with the arrow at the top left like Network and Bluetooth.
+- Seen live on the external monitor: the ten panels above open, show the header, and close; `qs log` has no error. Not done here, still open in #166: Audio and Displays stay centred dialogs, and the panel widths are unchanged. Settings gets its close button with #214.
+- `check.sh` passes.

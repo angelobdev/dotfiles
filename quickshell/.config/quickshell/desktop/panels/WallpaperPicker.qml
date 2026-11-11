@@ -83,8 +83,9 @@ Overlay {
                 margins: Theme.dialogPadding
             }
             spacing: 12
-            Heading {
-                text: I18n.tr("wallpaper.title")
+            PanelHeader {
+                Layout.fillWidth: true
+                title: I18n.tr("wallpaper.title")
             }
             RowLayout {
                 ActionButton {
@@ -219,10 +220,6 @@ Overlay {
                     highlighted: true
                     enabled: !!root.selectedPath && !operation.running
                     onClicked: root.apply(false)
-                }
-                ActionButton {
-                    text: I18n.tr("common.close")
-                    onClicked: ShellState.close()
                 }
             }
         }
