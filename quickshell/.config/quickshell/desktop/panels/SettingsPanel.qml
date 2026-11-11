@@ -147,6 +147,10 @@ Overlay {
     }
     // Narrow screens show the sidebar or a section, not both; Back returns to the sidebar.
     readonly property bool compact: card.width < 820
+    // The widest a section of option rows and lists grows, so a label and its control stay within reach of each
+    // other; the sections that use the room (grids, the monitor list, tabs with logs) take the whole width.
+    readonly property int readableWidth: 720
+    readonly property var wideSections: ["appearance", "displays", "system"]
     property bool showingSidebar: false
     // The page of the Appearance section, for IPC (shell.qml theming()); set when it loads.
     property var appearance: null
@@ -288,6 +292,7 @@ Overlay {
                 }
                 StackLayout {
                     Layout.fillWidth: true
+                    Layout.maximumWidth: root.wideSections.includes(root.section) ? Number.POSITIVE_INFINITY : root.readableWidth
                     Layout.fillHeight: true
                     currentIndex: root.sectionNames.indexOf(root.section)
                     // One page per section, in sidebar order, built the first time it shows.
@@ -441,6 +446,7 @@ Overlay {
                                 SystemView {
                                     title: I18n.tr(page.modelData.labelKey)
                                     shown: page.shownHere
+                                    readableWidth: root.readableWidth
                                 }
                             }
                             // Keyboard: the on-screen keyboard options, then the layout and personal shortcuts.
