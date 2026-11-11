@@ -19,8 +19,12 @@ Overlay {
             "desktop-ai": "assistant",
             "desktop-radio": "radio"
         })
-    // Best match first, then by name (services/LauncherRank.js).
-    readonly property var appResults: Rank.rank(DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (!appUnits[e.id] || Installed.has(appUnits[e.id]))), search.text, {}, 0)
+    // The launch history (empty when Settings → Privacy turns it off) and the time it is scored at, both taken when
+    // the launcher opens: a launch from it does not reorder the rows while it fades out.
+    property var history: ({})
+    property real now: 0
+    // Best match first, then the apps used most lately, then by name (services/LauncherRank.js).
+    readonly property var appResults: Rank.rank(DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (!appUnits[e.id] || Installed.has(appUnits[e.id]))), search.text, history, now)
     // A calculation first (Enter copies it), then apps, then files (Enter opens one).
     // Each row has a key, so results that arrive later (files, a calculation) are inserted around the selected
     // row instead of rebuilding the list, which moved the selection to the first row.
@@ -38,6 +42,8 @@ Overlay {
                 path: path
             })))
     onOpened: {
+        history = Config.launcherHistory ? Apps.launches : {};
+        now = Date.now();
         closeMenu();
         search.clear();
         // A recreated panel starts with an empty field, so clear() emits no textChanged: reset the shared search too.

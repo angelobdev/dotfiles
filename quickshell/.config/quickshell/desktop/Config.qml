@@ -122,6 +122,8 @@ Singleton {
     readonly property bool barMedia: pick("barMedia", true)
     // Launcher: files in the home folder below the apps (fd, from three typed characters).
     readonly property bool launcherFiles: pick("launcherFiles", true)
+    // Launcher: apps opened from it or the dock come first, by how often and how lately (services/Apps.qml).
+    readonly property bool launcherHistory: pick("launcherHistory", true)
     readonly property var launcherHidden: pick("launcherHidden", ["org.gnome.Settings", "opencascade-draw", "uuctl"])
     // Dock: desktop-entry IDs pinned in this order, a reveal strip along the bottom edge (logical px) and its hover delay (ms).
     // An ID with no entry is skipped: Zen is zen-browser on Fedora, zen from the AUR on Arch.
