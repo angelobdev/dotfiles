@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Io
 import ".."
 import "../components"
+import "../services"
 import "../components/FileUrl.js" as FileUrl
 
 Overlay {
@@ -18,6 +19,14 @@ Overlay {
     property string selectedPath: ShellState.recall("wallpaper/selectedPath", "")
     onSelectedPathChanged: ShellState.remember("wallpaper/selectedPath", selectedPath)
     property string failure: ""
+    readonly property string collection: Quickshell.env("HOME") + "/.local/share/wallpapers"
+    // First opening: the folder of the current wallpaper when it is known, else the wallpapers collection.
+    // Later openings of the same shell session bring back the folder last browsed.
+    function startFolder() {
+        const current = DynamicTheme.wallpaper;
+        const slash = current.lastIndexOf("/");
+        return FileUrl.of(current.startsWith("/") && slash > 0 ? current.slice(0, slash) : collection);
+    }
     function navigate(url) {
         folder.folder = url;
         selectedUrl = "";
@@ -48,7 +57,7 @@ Overlay {
     }
     FolderListModel {
         id: folder
-        folder: ShellState.recall("wallpaper/folder", FileUrl.of(Quickshell.env("HOME")))
+        folder: ShellState.recall("wallpaper/folder", root.startFolder())
         onFolderChanged: ShellState.remember("wallpaper/folder", folder)
         nameFilters: ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.jxl", "*.avif", "*.bmp", "*.tif", "*.tiff"]
         caseSensitive: false
@@ -106,7 +115,7 @@ Overlay {
                     outlined: true
                     text: I18n.tr("wallpaper.collection")
                     enabled: !operation.running
-                    onClicked: root.navigate(FileUrl.of(Quickshell.env("HOME") + "/.local/share/wallpapers"))
+                    onClicked: root.navigate(FileUrl.of(root.collection))
                 }
                 InputField {
                     id: path
