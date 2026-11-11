@@ -88,6 +88,7 @@ To add text, add the same path to both files and use `I18n.tr("clipboard.deleteI
 - **`session.json`** `{"keepAwake", "quiet", "rotationLock", "oskFloating", "oskExtra", "oskTouch", "nightShiftMode", "nightShiftTemperature"}`: Keep awake, Do Not Disturb, rotation lock and the on-screen keyboard form (`services/SessionState.qml`). A missing file means all off.
 - **`notifications.json`** `{"entries": [...]}`: the notification history (app name and icon, summary, body, arrival time, and `live` for copies of notifications that were open). On load, live copies wait 1.5 s for the server to restore its notifications after a config reload: a copy that matches one (id, app, summary and body, as ids restart at 1 in every Quickshell process) is dropped and gives back its arrival time; one that does not was open in a process that has gone and joins the archive. Duplicates are dropped. It is rewritten 500 ms after a notification arrives or closes and after Delete or Clear all. Entries are capped at 50 and dropped after 7 days on load. Icons a notification served itself (`image://`) are not kept.
 - **`dock.json`**: dock pins.
+- **`launches.json`** `{"apps": {...}}`: when apps were opened from the launcher and the dock, for the launcher order ([launcher](#launcher)).
 - **`updates.json`**: the last update check (`updates.py check`, see integrations.md).
 - **`agent-usage.json`**: the assistant's model, context and subscription limits, written by its status line (`agent.py statusline`, see integrations.md); the live state is in `$XDG_RUNTIME_DIR/desktop-shell/agent.json`.
 
@@ -101,9 +102,15 @@ See [On-screen keyboard](../features/on-screen-keyboard.md#configuration).
 
 See [Tablet and touch](../features/tablet-and-touch.md#configuration).
 
-## Dock configuration
+## Launcher
 
 The launcher lists every desktop entry except those with `NoDisplay` and the IDs in `launcherHidden` of `Config.qml` (GNOME Settings, which GDM needs but runs only in GNOME, OpenCASCADE Draw from the plugin build dependencies, and uwsm's `uuctl`).
+
+Every app opened from the launcher or the dock (`services/Apps.qml`, both open apps through it) is remembered in `~/.local/state/desktop-shell/launches.json`: `{"apps": {"<desktop-entry ID>": [launch times in ms]}}`, written whole (atomic write) 2 s after the last launch. It holds the latest 10 launches of each app, forgets launches older than 90 days, and keeps the 100 apps with the highest scores. An app's score adds up its remembered launches by age: 100 points for one in the last day, 70 in the last week, 40 in the last month, 20 in the last 90 days. The launcher orders by how well the query matches first, then by that score, then by name (`services/LauncherRank.js`, tested by `scripts/tests/tst_launcher_rank.qml`); it reads the history when it opens, so a launch never reorders the rows under the pointer.
+
+**Settings → Privacy → Launcher** has **Remember the apps you open** (`launcherHistory: true` in `Config.qml`): off, nothing is recorded and the launcher orders alphabetically (matching stays fuzzy); the file is kept as it is, so turning it back on brings the order back. **Clear history** below it empties the file at once, on or off. Deleting the file while the shell runs does not clear the history in memory: the next launch writes it back.
+
+## Dock configuration
 
 In `Config.qml`: `dockEnabled: true`; `dockPinned`, the default pins as desktop-entry IDs (file names without `.desktop`): Kitty, Zen, Files, VS Code and Steam, with unknown IDs skipped; the AI assistant is never in the dock, as a pin or as a running window (`Dock.hiddenApps`), since its console has its own icon in the bar; `dockIconSize: 44` (logical px); `dockMagnification: 1.4`, the peak scale under the pointer (1 turns it off); `dockTriggerHeight: 3`, the height of the reveal strip (1 px can round away at fractional scales); `dockRevealDelay: 120` ms of hover before it slides up.
 
