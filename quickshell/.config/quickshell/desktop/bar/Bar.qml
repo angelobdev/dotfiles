@@ -213,8 +213,8 @@ PanelWindow {
                 required property var modelData
                 // Passive means nothing to show right now (udiskie with no removable device, for one).
                 visible: modelData.status !== Status.Passive
-                implicitWidth: Theme.hit(28)
-                implicitHeight: Theme.hit(28)
+                implicitWidth: Theme.hit(30)
+                implicitHeight: Theme.hit(30)
                 Accessible.role: Accessible.Button
                 Accessible.name: modelData.tooltipTitle || modelData.title || modelData.id
                 Image {
@@ -321,7 +321,8 @@ PanelWindow {
             Accessible.name: I18n.tr("battery.accessible", [text, profileLabel])
             contentItem: RowLayout {
                 id: batteryContent
-                spacing: 6
+                // The gap between icon and label of every other bar button.
+                spacing: 10
                 Icon {
                     visible: batteryButton.profileIcon !== ""
                     name: batteryButton.profileIcon
@@ -430,8 +431,6 @@ PanelWindow {
             text: I18n.locale.toString(clock.date, I18n.tr("bar.dateFormat") + "  " + I18n.timeFormat)
             tooltip: I18n.tr("calendar.title")
             onClicked: ShellState.toggle("calendar", bar.screen)
-            Layout.leftMargin: 3
-            Layout.rightMargin: 3
         }
         BarButton {
             iconName: "power"
