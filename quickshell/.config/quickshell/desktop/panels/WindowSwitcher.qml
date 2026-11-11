@@ -21,6 +21,9 @@ PanelWindow {
     // the Tab that opens the switcher: an end that comes first is kept for a moment and applied on opening.
     property string early: ""
     property real earlyAt: 0
+    // Showing the window creates it, and Quickshell announces its screen again while visible is being set:
+    // read directly, that re-entered the visible binding (a binding loop). A string notifies only on a change.
+    readonly property string screenName: screen?.name ?? ""
 
     function candidates() {
         const all = Hyprland.toplevels.values.filter(t => !(t.workspace?.name ?? "").startsWith("special:"));
@@ -87,7 +90,7 @@ PanelWindow {
         windows = [];
     }
 
-    visible: open && !Tablet.remaps(screen?.name ?? "")
+    visible: open && !Tablet.remaps(screenName)
     screen: Quickshell.screens[0]
     anchors {
         top: true
