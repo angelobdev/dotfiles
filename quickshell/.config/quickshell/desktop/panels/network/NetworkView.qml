@@ -219,23 +219,33 @@ ColumnLayout {
                 visible: root.detailsNetwork === null
                 Layout.fillWidth: true
                 spacing: 14
-                RowLayout {
-                    ActionButton {
-                        iconName: Networking.wifiEnabled ? "wifi" : "wifi-off"
-                        text: Networking.wifiEnabled ? I18n.tr("network.wifiOn") : I18n.tr("network.wifiOff")
-                        enabled: Networking.wifiHardwareEnabled
-                        highlighted: Networking.wifiEnabled
-                        tone: "state"
-                        onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
-                    }
-                    // Wi-Fi on the left, the connectivity on the right.
-                    Text {
-                        text: I18n.networkDescription(NetworkConnectivity.toString(Networking.connectivity))
-                        color: Theme.muted
-                        font.pixelSize: Theme.textSize(11)
+                // Each group is a card, as on the option pages. The rows nearly fill it, so their highlight reads
+                // as a row; plain text and switches keep in from its edges.
+                GroupCard {
+                    Layout.fillWidth: true
+                    verticalPadding: 6
+                    leftPadding: 6
+                    rightPadding: 6
+                    RowLayout {
                         Layout.fillWidth: true
-                        horizontalAlignment: Text.AlignRight
-                        elide: Text.ElideLeft
+                        Layout.rightMargin: 6
+                        ActionButton {
+                            iconName: Networking.wifiEnabled ? "wifi" : "wifi-off"
+                            text: Networking.wifiEnabled ? I18n.tr("network.wifiOn") : I18n.tr("network.wifiOff")
+                            enabled: Networking.wifiHardwareEnabled
+                            highlighted: Networking.wifiEnabled
+                            tone: "state"
+                            onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
+                        }
+                        // Wi-Fi on the left, the connectivity on the right.
+                        Text {
+                            text: I18n.networkDescription(NetworkConnectivity.toString(Networking.connectivity))
+                            color: Theme.muted
+                            font.pixelSize: Theme.textSize(11)
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                            elide: Text.ElideLeft
+                        }
                     }
                 }
                 ColumnLayout {
@@ -246,65 +256,73 @@ ColumnLayout {
                         text: I18n.tr("network.currentConnection")
                         section: true
                     }
-                    RowLayout {
+                    // The current connection is a row of its card: the card gives the tile, the row only the
+                    // hover and focus, as the rows of the list below.
+                    GroupCard {
                         Layout.fillWidth: true
-                        spacing: 2
-                        ActionButton {
-                            id: currentConnection
+                        verticalPadding: 6
+                        leftPadding: 6
+                        rightPadding: 6
+                        RowLayout {
                             Layout.fillWidth: true
-                            implicitHeight: 58
-                            text: root.activeNetwork?.name ?? ""
-                            tooltip: I18n.tr("network.details")
-                            onClicked: root.openDetails(root.activeNetwork)
-                            background: Rectangle {
-                                radius: Theme.corner(12)
-                                color: currentConnection.down || currentConnection.hovered || currentConnection.activeFocus ? Theme.raised : Theme.tile
-                            }
-                            contentItem: RowLayout {
-                                spacing: 12
-                                Icon {
-                                    name: NetworkInfo.icon(root.activeNetwork)
-                                    Layout.preferredWidth: 22
-                                    Layout.preferredHeight: 22
+                            spacing: 2
+                            ActionButton {
+                                id: currentConnection
+                                Layout.fillWidth: true
+                                implicitHeight: 58
+                                text: root.activeNetwork?.name ?? ""
+                                tooltip: I18n.tr("network.details")
+                                onClicked: root.openDetails(root.activeNetwork)
+                                background: Rectangle {
+                                    radius: Theme.corner(11)
+                                    color: currentConnection.down || currentConnection.hovered || currentConnection.activeFocus ? Theme.raised : "transparent"
                                 }
-                                ColumnLayout {
-                                    Layout.fillWidth: true
-                                    spacing: 2
-                                    Text {
-                                        Layout.fillWidth: true
-                                        text: currentConnection.text
-                                        color: Theme.text
-                                        font.family: Theme.font
-                                        font.pixelSize: Theme.textSize(14)
-                                        elide: Text.ElideRight
-                                        textFormat: Text.PlainText
+                                contentItem: RowLayout {
+                                    spacing: 12
+                                    Icon {
+                                        name: NetworkInfo.icon(root.activeNetwork)
+                                        Layout.preferredWidth: 22
+                                        Layout.preferredHeight: 22
                                     }
-                                    Text {
+                                    ColumnLayout {
                                         Layout.fillWidth: true
-                                        text: [(root.activeInfo?.ipv4 ?? []).map(a => a.split("/")[0])[0] ?? "", root.activeInfo?.frequency ? I18n.tr("network.band", [(root.activeInfo.frequency / 1000).toLocaleString(I18n.locale, "f", 1), root.activeInfo.channel]) : root.activeDevice?.type === DeviceType.Wired && root.activeDevice.linkSpeed > 0 ? I18n.tr("network.linkSpeedValue", [root.activeDevice.linkSpeed]) : ""].filter(part => part !== "").join(" · ")
+                                        spacing: 2
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: currentConnection.text
+                                            color: Theme.text
+                                            font.family: Theme.font
+                                            font.pixelSize: Theme.textSize(14)
+                                            elide: Text.ElideRight
+                                            textFormat: Text.PlainText
+                                        }
+                                        Text {
+                                            Layout.fillWidth: true
+                                            text: [(root.activeInfo?.ipv4 ?? []).map(a => a.split("/")[0])[0] ?? "", root.activeInfo?.frequency ? I18n.tr("network.band", [(root.activeInfo.frequency / 1000).toLocaleString(I18n.locale, "f", 1), root.activeInfo.channel]) : root.activeDevice?.type === DeviceType.Wired && root.activeDevice.linkSpeed > 0 ? I18n.tr("network.linkSpeedValue", [root.activeDevice.linkSpeed]) : ""].filter(part => part !== "").join(" · ")
+                                            color: Theme.muted
+                                            font.family: Theme.font
+                                            font.pixelSize: Theme.textSize(11)
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+                                    Icon {
+                                        name: "chevron-right"
                                         color: Theme.muted
-                                        font.family: Theme.font
-                                        font.pixelSize: Theme.textSize(11)
-                                        elide: Text.ElideRight
+                                        Layout.preferredWidth: 16
+                                        Layout.preferredHeight: 16
                                     }
                                 }
-                                Icon {
-                                    name: "chevron-right"
-                                    color: Theme.muted
-                                    Layout.preferredWidth: 16
-                                    Layout.preferredHeight: 16
-                                }
                             }
-                        }
-                        // The connected network is not in the list below: its disconnect lives here.
-                        CompactIconButton {
-                            iconName: "close"
-                            iconSize: 16
-                            tooltip: I18n.tr("network.disconnect")
-                            enabled: !root.activeNetwork?.stateChanging
-                            onClicked: {
-                                root.error = "";
-                                root.activeNetwork.disconnect();
+                            // The connected network is not in the list below: its disconnect lives here.
+                            CompactIconButton {
+                                iconName: "close"
+                                iconSize: 16
+                                tooltip: I18n.tr("network.disconnect")
+                                enabled: !root.activeNetwork?.stateChanging
+                                onClicked: {
+                                    root.error = "";
+                                    root.activeNetwork.disconnect();
+                                }
                             }
                         }
                     }
@@ -318,90 +336,100 @@ ColumnLayout {
                         // Wi-Fi or Ethernet; the interface name only tells apart several adapters of one kind.
                         readonly property string kind: wired ? I18n.tr("network.ethernet") : modelData.type === DeviceType.Wifi ? I18n.tr("network.wifi") : modelData.name
                         readonly property bool several: Networking.devices.values.filter(device => device.type === modelData.type).length > 1
+                        // Other network is offered: the card of a device shows while it has a row.
+                        readonly property bool other: !wired && search.text === "" && root.hiddenDevice === null
                         Layout.fillWidth: true
-                        Text {
+                        spacing: 6
+                        Heading {
                             text: [deviceRow.kind + (deviceRow.several && deviceRow.kind !== deviceRow.modelData.name ? " (" + deviceRow.modelData.name + ")" : ""), deviceRow.wired && !deviceRow.modelData.hasLink ? I18n.tr("network.cableUnplugged") : I18n.networkDescription(ConnectionState.toString(deviceRow.modelData.state))].join(" · ")
-                            color: Theme.muted
-                            textFormat: Text.PlainText
-                            font.pixelSize: Theme.textSize(11)
+                            section: true
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                         }
-                        // At most seven networks at a time; more scroll inside the list, and Other network stays
-                        // right below it.
-                        ListView {
-                            id: networkList
-                            readonly property int rowHeight: Theme.hit(36)
-                            readonly property int shownRows: Math.min(count, 7)
+                        // The list stays the element that scrolls; the card only draws the tile around it.
+                        GroupCard {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: shownRows * rowHeight + Math.max(0, shownRows - 1) * spacing
-                            visible: count > 0
+                            visible: networkList.count > 0 || deviceRow.other
+                            verticalPadding: 6
+                            leftPadding: 6
+                            rightPadding: 6
                             spacing: 2
-                            clip: true
-                            interactive: count > 7
-                            boundsBehavior: Flickable.StopAtBounds
-                            ScrollBar.vertical: ScrollBar {
-                                policy: networkList.count > 7 ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
-                            }
-                            // Rows follow their network: a reorder while scanning moves them instead of recreating
-                            // every row, which lost the keyboard focus and a press in progress.
-                            model: ScriptModel {
-                                values: deviceRow.modelData.networks.values.filter(n => n !== root.activeNetwork && n.name.toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
-                            }
-                            delegate: RowLayout {
-                                id: networkRow
-                                required property var modelData
-                                readonly property bool secured: !deviceRow.wired && modelData.security !== WifiSecurityType.Open && modelData.security !== WifiSecurityType.Owe
-                                width: networkList.width - (networkList.count > 7 ? 10 : 0)
-                                height: networkList.rowHeight
+                            // At most seven networks at a time; more scroll inside the list, and Other network stays
+                            // right below it.
+                            ListView {
+                                id: networkList
+                                readonly property int rowHeight: Theme.hit(36)
+                                readonly property int shownRows: Math.min(count, 7)
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: shownRows * rowHeight + Math.max(0, shownRows - 1) * spacing
+                                visible: count > 0
                                 spacing: 2
-                                ActionButton {
-                                    Layout.fillWidth: true
-                                    alignLeft: true
-                                    iconName: NetworkInfo.icon(networkRow.modelData)
-                                    text: networkRow.modelData.name + (networkRow.modelData.stateChanging ? " …" : "")
-                                    highlighted: networkRow.modelData.connected
-                                    tone: "state"
-                                    enabled: !networkRow.modelData.stateChanging
-                                    onClicked: {
-                                        root.error = "";
-                                        if (networkRow.modelData.connected) {
-                                            networkRow.modelData.disconnect();
-                                            return;
+                                clip: true
+                                interactive: count > 7
+                                boundsBehavior: Flickable.StopAtBounds
+                                ScrollBar.vertical: ScrollBar {
+                                    policy: networkList.count > 7 ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+                                }
+                                // Rows follow their network: a reorder while scanning moves them instead of recreating
+                                // every row, which lost the keyboard focus and a press in progress.
+                                model: ScriptModel {
+                                    values: deviceRow.modelData.networks.values.filter(n => n !== root.activeNetwork && n.name.toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
+                                }
+                                delegate: RowLayout {
+                                    id: networkRow
+                                    required property var modelData
+                                    readonly property bool secured: !deviceRow.wired && modelData.security !== WifiSecurityType.Open && modelData.security !== WifiSecurityType.Owe
+                                    width: networkList.width - (networkList.count > 7 ? 10 : 0)
+                                    height: networkList.rowHeight
+                                    spacing: 2
+                                    ActionButton {
+                                        Layout.fillWidth: true
+                                        alignLeft: true
+                                        iconName: NetworkInfo.icon(networkRow.modelData)
+                                        text: networkRow.modelData.name + (networkRow.modelData.stateChanging ? " …" : "")
+                                        highlighted: networkRow.modelData.connected
+                                        tone: "state"
+                                        enabled: !networkRow.modelData.stateChanging
+                                        onClicked: {
+                                            root.error = "";
+                                            if (networkRow.modelData.connected) {
+                                                networkRow.modelData.disconnect();
+                                                return;
+                                            }
+                                            if (networkRow.modelData.known || deviceRow.wired || !networkRow.secured)
+                                                root.connectTo(networkRow.modelData);
+                                            else if (root.personal(networkRow.modelData))
+                                                root.askPassword(networkRow.modelData);
+                                            else
+                                                root.error = I18n.tr("network.errors.enterpriseProfileRequired");
                                         }
-                                        if (networkRow.modelData.known || deviceRow.wired || !networkRow.secured)
-                                            root.connectTo(networkRow.modelData);
-                                        else if (root.personal(networkRow.modelData))
-                                            root.askPassword(networkRow.modelData);
-                                        else
-                                            root.error = I18n.tr("network.errors.enterpriseProfileRequired");
+                                    }
+                                    Icon {
+                                        visible: networkRow.secured && !networkRow.modelData.known
+                                        name: "lock"
+                                        color: Theme.muted
+                                        Layout.preferredWidth: 14
+                                        Layout.preferredHeight: 14
+                                        Layout.rightMargin: 7
+                                    }
+                                    CompactIconButton {
+                                        visible: networkRow.modelData.known
+                                        iconName: "chevron-right"
+                                        iconSize: 16
+                                        tooltip: I18n.tr("network.details")
+                                        onClicked: root.openDetails(networkRow.modelData)
                                     }
                                 }
-                                Icon {
-                                    visible: networkRow.secured && !networkRow.modelData.known
-                                    name: "lock"
-                                    color: Theme.muted
-                                    Layout.preferredWidth: 14
-                                    Layout.preferredHeight: 14
-                                    Layout.rightMargin: 7
-                                }
-                                CompactIconButton {
-                                    visible: networkRow.modelData.known
-                                    iconName: "chevron-right"
-                                    iconSize: 16
-                                    tooltip: I18n.tr("network.details")
-                                    onClicked: root.openDetails(networkRow.modelData)
-                                }
                             }
-                        }
-                        ActionButton {
-                            visible: !deviceRow.wired && search.text === "" && root.hiddenDevice === null
-                            Layout.fillWidth: true
-                            alignLeft: true
-                            // Line the label up with the network names next to their icons.
-                            leftPadding: 42
-                            text: I18n.tr("network.otherNetwork")
-                            onClicked: root.openHidden(deviceRow.modelData)
+                            ActionButton {
+                                visible: deviceRow.other
+                                Layout.fillWidth: true
+                                alignLeft: true
+                                // Line the label up with the network names next to their icons.
+                                leftPadding: 42
+                                text: I18n.tr("network.otherNetwork")
+                                onClicked: root.openHidden(deviceRow.modelData)
+                            }
                         }
                     }
                 }
