@@ -710,6 +710,7 @@
       "recording": "Registrazione schermo"
     },
     "hints": {
+      "workspaceNumbers": "Il numero del workspace dentro ogni pillola, al posto del punto.",
       "workspaceScroll": "Con la rotellina o il touchpad sulle pillole dei workspace.",
       "dockMagnification": "Quanto cresce l'icona sotto il puntatore; 1× lo disattiva.",
       "dockTriggerHeight": "Quanto vicino al bordo inferiore deve arrivare il puntatore.",
@@ -781,6 +782,7 @@
     "open": "Impostazioni…",
     "options": {
       "barMedia": "Mostra cosa è in riproduzione",
+      "workspaceNumbers": "Mostra i numeri dei workspace",
       "workspaceScroll": "Scorri sui workspace per cambiarli",
       "minimumWorkspaces": "Workspace sempre visibili",
       "dockEnabled": "Mostra il dock",

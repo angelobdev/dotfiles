@@ -710,6 +710,7 @@
       "recording": "Screen recording"
     },
     "hints": {
+      "workspaceNumbers": "Workspace number inside each pill, in place of the dot.",
       "workspaceScroll": "With the mouse wheel or the touchpad over the workspace pills.",
       "dockMagnification": "How much the icon under the pointer grows; 1× turns it off.",
       "dockTriggerHeight": "How close to the bottom edge the pointer must come.",
@@ -781,6 +782,7 @@
     "open": "Settings…",
     "options": {
       "barMedia": "Show what is playing",
+      "workspaceNumbers": "Show workspace numbers",
       "workspaceScroll": "Scroll over the workspaces to switch",
       "minimumWorkspaces": "Workspaces always shown",
       "dockEnabled": "Show the dock",

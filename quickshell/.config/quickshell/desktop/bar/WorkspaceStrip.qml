@@ -84,12 +84,36 @@ RowLayout {
                     width: workspace.active ? 28 : 8
                     height: 8
                     radius: 4
+                    visible: !Config.workspaceNumbers
                     color: workspace.active ? BarStyle.accent : workspace.modelData.urgent ? Theme.danger : BarStyle.muted
                     Behavior on width {
                         NumberAnimation {
                             duration: Theme.motionFast
                         }
                     }
+                }
+                // With numbers on, the active pill becomes a taller badge and the others the bare number.
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: workspace.active ? 28 : 0
+                    height: Theme.textSize(11) + 6
+                    radius: height / 2
+                    visible: Config.workspaceNumbers
+                    color: BarStyle.accent
+                    Behavior on width {
+                        NumberAnimation {
+                            duration: Theme.motionFast
+                        }
+                    }
+                }
+                Text {
+                    anchors.centerIn: parent
+                    visible: Config.workspaceNumbers
+                    text: workspace.modelData.id
+                    font.pixelSize: Theme.textSize(11)
+                    font.bold: workspace.active
+                    // The active number sits on the accent pill, so it takes the other bar text colour.
+                    color: workspace.active ? BarStyle.halo : workspace.modelData.urgent ? Theme.danger : BarStyle.muted
                 }
             }
             onClicked: root.activated(modelData.id)
