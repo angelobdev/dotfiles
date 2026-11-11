@@ -100,6 +100,7 @@ Overlay {
                             verticalAlignment: Text.AlignVCenter
                         }
                         highlighted: root.group === modelData
+                        tone: "state"
                         tooltip: modelData === -1 ? I18n.tr("emoji.recent") : root.groupLabel(Emoji.groups[modelData])
                         onClicked: {
                             root.group = modelData;

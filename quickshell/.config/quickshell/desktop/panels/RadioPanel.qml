@@ -106,6 +106,7 @@ Overlay {
                     iconName: "monitor"
                     enabled: Radio.hasVideo || Radio.videoOpen
                     highlighted: Radio.videoOpen
+                    tone: "state"
                     tooltip: Radio.videoOpen ? I18n.tr("radio.videoOff") : I18n.tr("radio.videoOn")
                     onClicked: root.toggleVideo()
                 }
@@ -282,6 +283,7 @@ Overlay {
                             implicitHeight: 48
                             alignLeft: true
                             highlighted: stationsList.currentIndex === index || delegateRow.isCurrent
+                            tone: delegateRow.isCurrent ? "state" : "cursor"
                             iconName: delegateRow.isCurrent ? (Radio.playing ? "volume-high" : "pause") : modelData.kind === "radio" ? "hotspot" : modelData.kind === "playlist" ? "folder" : "play"
                             text: root.detail(modelData) ? modelData.title + "  —  " + root.detail(modelData) : modelData.title
                             onClicked: root.activateItem(modelData)

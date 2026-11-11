@@ -413,6 +413,7 @@ PanelWindow {
             iconName: "controls"
             tooltip: I18n.tr("controlCenter.title")
             highlighted: ShellState.panel === "controls"
+            tone: "state"
             onClicked: ShellState.toggle("controls", bar.screen)
         }
         BarButton {

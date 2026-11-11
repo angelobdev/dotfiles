@@ -27,6 +27,7 @@ Item {
                     tooltip: I18n.tr("audio.toggleMute")
                     enabled: !!Audio.sink
                     highlighted: Audio.muted
+                    tone: "state"
                     onClicked: Audio.toggleMute()
                 }
                 ControlSlider {
@@ -53,6 +54,7 @@ Item {
                     textElide: Text.ElideMiddle
                     iconName: "volume-high"
                     highlighted: Audio.sink?.id === modelData.id
+                    tone: "state"
                     tooltip: modelData.name
                     onClicked: Audio.selectOutput(modelData)
                 }
@@ -92,6 +94,7 @@ Item {
                         iconName: stream.modelData.audio?.muted ? "volume-muted" : "volume-high"
                         tooltip: I18n.tr("audio.toggleApp", [stream.appName])
                         highlighted: stream.modelData.audio?.muted ?? false
+                        tone: "state"
                         onClicked: Audio.toggleStreamMute(stream.modelData)
                     }
                     ControlSlider {
@@ -117,6 +120,7 @@ Item {
                     tooltip: I18n.tr("audio.toggleMicrophone")
                     enabled: !!Audio.source
                     highlighted: Audio.source?.audio?.muted ?? false
+                    tone: "state"
                     onClicked: Audio.toggleMic()
                 }
                 ControlSlider {
@@ -143,6 +147,7 @@ Item {
                     textElide: Text.ElideMiddle
                     iconName: "microphone"
                     highlighted: Audio.source?.id === modelData.id
+                    tone: "state"
                     tooltip: modelData.name
                     onClicked: Audio.selectInput(modelData)
                 }

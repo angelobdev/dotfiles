@@ -230,6 +230,7 @@ Overlay {
                             implicitHeight: Theme.hit(40)
                             text: modelData.getDate()
                             highlighted: root.sameDay(modelData, root.selected)
+                            tone: "cursor"
                             opacity: modelData.getMonth() === root.month ? 1 : 0.4
                             tooltip: root.locale.toString(modelData, I18n.tr("calendar.longDateFormat")) + (root.sameDay(modelData, clock.date) ? I18n.tr("calendar.todaySuffix") : "")
                             onClicked: {
@@ -243,7 +244,7 @@ Overlay {
                                 width: 4
                                 height: 4
                                 radius: 2
-                                color: parent.highlighted ? Theme.accentText : Theme.accent
+                                color: Theme.accent
                                 visible: root.sameDay(parent.modelData, clock.date) || Calendar.hasEvents(parent.modelData)
                             }
                         }

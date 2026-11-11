@@ -98,6 +98,7 @@ Overlay {
                         iconName: modelData.image ? "image" : "clipboard"
                         alignLeft: true
                         highlighted: clips.currentIndex === index
+                        tone: "cursor"
                         enabled: !Clipboard.busy
                         onClicked: Clipboard.act("copy", modelData.id)
                     }

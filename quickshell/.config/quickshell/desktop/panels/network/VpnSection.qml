@@ -63,6 +63,7 @@ ColumnLayout {
             iconName: "vpn"
             text: modelData.name
             highlighted: modelData.active
+            tone: "state"
             enabled: !NetworkInfo.busy
             onClicked: NetworkInfo.run(modelData.active ? "vpn-down" : "vpn-up", [modelData.uuid])
         }

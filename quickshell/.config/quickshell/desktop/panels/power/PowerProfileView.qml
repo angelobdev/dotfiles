@@ -20,6 +20,7 @@ ColumnLayout {
             iconName: "leaf"
             tooltip: I18n.tr("battery.profiles.powerSaver")
             highlighted: PowerProfiles.profile === PowerProfile.PowerSaver
+            tone: "state"
             onClicked: PowerProfiles.profile = PowerProfile.PowerSaver
         }
         ActionButton {
@@ -27,6 +28,7 @@ ColumnLayout {
             iconName: "balanced"
             tooltip: I18n.tr("battery.profiles.balanced")
             highlighted: PowerProfiles.profile === PowerProfile.Balanced
+            tone: "state"
             onClicked: PowerProfiles.profile = PowerProfile.Balanced
         }
         ActionButton {
@@ -35,6 +37,7 @@ ColumnLayout {
             tooltip: I18n.tr("battery.profiles.performance")
             enabled: PowerProfiles.hasPerformanceProfile
             highlighted: PowerProfiles.profile === PowerProfile.Performance
+            tone: "state"
             onClicked: PowerProfiles.profile = PowerProfile.Performance
         }
     }

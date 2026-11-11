@@ -300,6 +300,7 @@ Overlay {
                                         text: modelData.label
                                         tooltip: modelData.tooltip
                                         highlighted: root.refreshSelected(refreshRow.modelData.source, modelData)
+                                        tone: "state"
                                         onClicked: root.chooseRefresh(refreshRow.modelData.source, modelData.value)
                                     }
                                 }

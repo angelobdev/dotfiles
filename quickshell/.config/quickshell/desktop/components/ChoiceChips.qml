@@ -31,9 +31,10 @@ Flow {
             text: modelData.label
             font.pixelSize: Theme.textSize(12)
             highlighted: root.current === modelData.name
+            tone: "state"
             background: Rectangle {
                 radius: Theme.corner(15)
-                color: chip.highlighted ? Theme.accent : chip.down || chip.hovered || chip.activeFocus ? Theme.raised : Theme.tile
+                color: chip.highlighted ? Theme.active : chip.down || chip.hovered || chip.activeFocus ? Theme.raised : Theme.tile
             }
             onClicked: root.chosen(modelData.name)
         }

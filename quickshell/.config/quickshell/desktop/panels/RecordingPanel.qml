@@ -34,11 +34,13 @@ Overlay {
                 ActionButton {
                     text: I18n.tr("recording.display")
                     highlighted: !root.area
+                    tone: "state"
                     onClicked: root.area = false
                 }
                 ActionButton {
                     text: I18n.tr("recording.area")
                     highlighted: root.area
+                    tone: "state"
                     onClicked: root.area = true
                 }
             }
@@ -52,6 +54,7 @@ Overlay {
                         required property var modelData
                         text: modelData.name
                         highlighted: root.monitor === modelData.name
+                        tone: "state"
                         onClicked: root.monitor = modelData.name
                     }
                 }
@@ -67,16 +70,19 @@ Overlay {
                 ActionButton {
                     text: I18n.tr("recording.noAudio")
                     highlighted: root.audioMode === "none"
+                    tone: "state"
                     onClicked: root.audioMode = "none"
                 }
                 ActionButton {
                     text: I18n.tr("audio.speaker")
                     highlighted: root.audioMode === "output"
+                    tone: "state"
                     onClicked: root.audioMode = "output"
                 }
                 ActionButton {
                     text: I18n.tr("audio.microphone")
                     highlighted: root.audioMode === "input"
+                    tone: "state"
                     onClicked: root.audioMode = "input"
                 }
             }

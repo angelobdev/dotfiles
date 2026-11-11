@@ -80,6 +80,7 @@ ColumnLayout {
             implicitHeight: Math.max(52, page.size + 20)
             alignLeft: true
             highlighted: selected
+            tone: "state"
             text: modelData.name
             rightPadding: 12 + samples.width
             onClicked: {

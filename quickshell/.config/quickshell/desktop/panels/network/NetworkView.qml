@@ -225,6 +225,7 @@ ColumnLayout {
                         text: Networking.wifiEnabled ? I18n.tr("network.wifiOn") : I18n.tr("network.wifiOff")
                         enabled: Networking.wifiHardwareEnabled
                         highlighted: Networking.wifiEnabled
+                        tone: "state"
                         onClicked: Networking.wifiEnabled = !Networking.wifiEnabled
                     }
                     // Wi-Fi on the left, the connectivity on the right.
@@ -343,6 +344,7 @@ ColumnLayout {
                                     iconName: NetworkInfo.icon(networkRow.modelData)
                                     text: networkRow.modelData.name + (networkRow.modelData.stateChanging ? " …" : "")
                                     highlighted: networkRow.modelData.connected
+                                    tone: "state"
                                     enabled: !networkRow.modelData.stateChanging
                                     onClicked: {
                                         root.error = "";

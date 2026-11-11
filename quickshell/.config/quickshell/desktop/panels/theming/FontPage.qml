@@ -89,6 +89,7 @@ ColumnLayout {
                         font.family: modelData === "" ? fontColumn.themeFamily : modelData
                         font.pixelSize: Theme.textSize(14)
                         highlighted: selected
+                        tone: "state"
                         onClicked: {
                             fontList.currentIndex = index;
                             Theming.setFont(fontColumn.modelData.kind, modelData);

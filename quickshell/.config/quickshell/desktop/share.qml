@@ -77,11 +77,13 @@ ShellRoot {
                     ActionButton {
                         text: I18n.tr("recording.display")
                         highlighted: !root.windowTab
+                        tone: "state"
                         onClicked: root.showTab(false)
                     }
                     ActionButton {
                         text: I18n.tr("hints.categories.windows")
                         highlighted: root.windowTab
+                        tone: "state"
                         onClicked: root.showTab(true)
                     }
                 }
@@ -122,6 +124,7 @@ ShellRoot {
                         iconSource: modelData.app ? Quickshell.iconPath(modelData.app, "application-x-executable") : ""
                         iconName: modelData.kind === "screen" ? "monitor" : ""
                         highlighted: choices.currentIndex === index
+                        tone: "cursor"
                         onClicked: choices.currentIndex = index
                     }
                     ScrollBar.vertical: ScrollBar {}
