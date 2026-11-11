@@ -233,7 +233,8 @@ Overlay {
                             highlighted: root.sameDay(modelData, root.selected)
                             tone: "cursor"
                             opacity: modelData.getMonth() === root.month ? 1 : 0.4
-                            tooltip: root.locale.toString(modelData, I18n.tr("calendar.longDateFormat")) + (root.sameDay(modelData, clock.date) ? I18n.tr("calendar.todaySuffix") : "")
+                            // The date is printed under the grid; the tooltip only says which cell is today.
+                            tooltip: root.sameDay(modelData, clock.date) ? I18n.tr("calendar.today") : ""
                             onClicked: {
                                 root.selected = modelData;
                                 keyboard.forceActiveFocus();

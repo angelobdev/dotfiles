@@ -311,7 +311,6 @@
     "timeFormat": "HH:mm",
     "title": "Calendario",
     "today": "Oggi",
-    "todaySuffix": " · Oggi",
     "untitledEvent": "Senza titolo"
   },
   "capture": {
