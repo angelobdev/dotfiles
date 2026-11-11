@@ -91,6 +91,11 @@ Overlay {
                     required property var modelData
                     required property int index
                     width: clips.width
+                    // The delete icon shows on the selected or hovered row only (always in tablet mode); its slot stays.
+                    readonly property bool showDelete: Tablet.active || clips.currentIndex === index || rowHover.hovered || trash.hovered
+                    HoverHandler {
+                        id: rowHover
+                    }
                     ActionButton {
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
@@ -104,9 +109,11 @@ Overlay {
                         onClicked: Clipboard.act("copy", modelData.id)
                     }
                     PanelIconButton {
+                        id: trash
                         iconName: "trash"
                         tooltip: I18n.tr("clipboard.deleteItem")
-                        enabled: !Clipboard.busy
+                        opacity: showDelete ? 1 : 0
+                        enabled: showDelete && !Clipboard.busy
                         onClicked: Clipboard.act("delete", modelData.id)
                     }
                 }
