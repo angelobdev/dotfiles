@@ -833,6 +833,35 @@
     },
     "reset": "Ripristina",
     "resetHint": "Torna al predefinito (%1)",
+    "search": {
+      "keywords": {
+        "appearance": {
+          "cursors": "cursore, cursor, puntatore, puntatore del mouse, dimensione del cursore, tema del cursore",
+          "font": "font, carattere, caratteri, dimensione del testo, monospace, font dell’interfaccia",
+          "icons": "tema di icone, pacchetto di icone, icone della shell, icone del desktop",
+          "layout": "angoli delle finestre, arrotondamento, raggio, bordo, spazi, margine dello schermo",
+          "theme": "colori, scuro, chiaro, dinamico, matugen, stile della barra, trasparente, effetti, vetro liquido",
+          "wallpaper": "wallpaper, sfondo, immagine, foto, scarica sfondi"
+        },
+        "assistant": "ia, ai, agente, agenti di programmazione, claude, codex, console, agente principale, lingua, dettatura, voce, utilizzo, limiti",
+        "bluetooth": "dispositivi, associa, associazione, cerca, cuffie, auricolari, altoparlante, controller",
+        "displays": "monitor, schermo, display, risoluzione, frequenza di aggiornamento, hz, scala, scale, ridimensionamento, posizione, duplica, estendi, esterno, portatile",
+        "keyboard": "layout, disposizione, mappa dei tasti, variante, tastiera fisica, scorciatoie, combinazioni di tasti, tasti rapidi, tasti",
+        "network": "wifi, wireless, senza fili, ethernet, cavo, internet, vpn, hotspot, tailscale, dns, indirizzo ip, password",
+        "power": "profilo energetico, prestazioni, bilanciato, risparmio energetico, energia",
+        "sound": "volume, microfono, altoparlante, altoparlanti, cuffie, uscita, ingresso, audio, muto, applicazioni",
+        "system": {
+          "about": "versione, computer, hardware, modello, processore, cpu, memoria, ram, kernel, distribuzione, hyprland, quickshell, repository",
+          "advanced": "configurazione, errori di configurazione, impostazioni personali, hypr.lua, shell.json, cartella, file, ripristina, predefiniti",
+          "plugins": "plugin, plugin di hyprland, hyprspace, hyprgrass, hyprglass, hyprcapture, ricompila, cache di compilazione",
+          "profiles": "installer, installa, rimuovi, pacchetti, app, gaming, giochi, componenti",
+          "updates": "update, aggiorna, aggiornamento, pacchetti, flatpak, software, cerca aggiornamenti"
+        }
+      },
+      "noResults": "Nessuna impostazione corrisponde a “%1”",
+      "placeholder": "Cerca nelle impostazioni…",
+      "results": "Risultati della ricerca"
+    },
     "sections": {
       "appearance": "Aspetto",
       "assistant": "Assistente",

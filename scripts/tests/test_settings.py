@@ -91,5 +91,62 @@ class SchemaTests(unittest.TestCase):
         self.assertLessEqual({option['section'] for option in self.options}, sidebar)
 
 
+class SearchTests(unittest.TestCase):
+    """panels/settings/SettingsSearch.js: its catalog keys and tabs; the matching itself is tst_settings_search.qml."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.search = (SHELL / 'panels/settings/SettingsSearch.js').read_text(encoding='utf-8')
+        cls.catalogs = {name: json.loads((SHELL / f'i18n/{name}.json').read_text(encoding='utf-8')) for name in ('en_US', 'it_IT')}
+
+    def test_every_key_is_in_both_catalogs(self):
+        keys = re.findall(r'"((?:settings|theming)\.[a-zA-Z.]+)"', self.search)
+        self.assertGreater(len(keys), 20)
+        for name, catalog in self.catalogs.items():
+            for key in keys:
+                self.assertIsInstance(lookup(catalog, key), str, f'{name}: {key}')
+        # No keyword list that the index does not read.
+        for name, catalog in self.catalogs.items():
+            listed = set()
+
+            def visit(branch, prefix):
+                for part, value in branch.items():
+                    if isinstance(value, dict):
+                        visit(value, f'{prefix}.{part}')
+                    else:
+                        listed.add(f'{prefix}.{part}')
+            visit(catalog['settings']['search']['keywords'], 'settings.search.keywords')
+            self.assertEqual(listed, {key for key in keys if key.startswith('settings.search.keywords.')}, name)
+
+    def test_tabs_match_their_views(self):
+        tabs = {}
+        for section, body in re.findall(r'\n    (\w+): \[\n(.*?)\n    \]', self.search, re.S):
+            tabs[section] = re.findall(r'name: "(\w+)"', body)
+        system = (SHELL / 'panels/system/SystemView.qml').read_text(encoding='utf-8')
+        theming = (SHELL / 'panels/theming/ThemingView.qml').read_text(encoding='utf-8')
+        self.assertEqual(tabs['system'], json.loads(re.search(r'property var tabs: (\[.*?\])', system)[1]))
+        self.assertEqual(tabs['appearance'], json.loads(re.search(r'property var cycle: (\[.*?\])', theming)[1]))
+
+    def test_common_words_find_a_page_in_both_languages(self):
+        # Words the issue (#213) asks to find, typed in either language: each starts a word of a keyword list or
+        # of a section or tab title.
+        for name, catalog in self.catalogs.items():
+            settings = catalog['settings']
+            texts = list(settings['sections'].values()) + list(catalog['theming']['tabs'].values())
+            texts += [settings['system'][tab] for tab in ('about', 'updates', 'profiles', 'plugins', 'advanced')]
+
+            def collect(branch):
+                for value in branch.values():
+                    if isinstance(value, dict):
+                        collect(value)
+                    else:
+                        texts.append(value)
+            collect(settings['search']['keywords'])
+            words = set(re.findall(r'\w+', ' '.join(texts).lower()))
+            for wanted in ('wifi', 'font', 'cursor', 'wallpaper', 'plugin', 'update', 'monitor', 'scale', 'volume'):
+                with self.subTest(language=name, word=wanted):
+                    self.assertTrue(any(word.startswith(wanted) for word in words), wanted)
+
+
 if __name__ == '__main__':
     unittest.main()

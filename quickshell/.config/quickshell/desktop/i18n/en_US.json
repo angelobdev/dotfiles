@@ -833,6 +833,35 @@
     },
     "reset": "Reset",
     "resetHint": "Back to the default (%1)",
+    "search": {
+      "keywords": {
+        "appearance": {
+          "cursors": "cursor, mouse pointer, pointer, cursor size, cursor theme",
+          "font": "fonts, typeface, text size, monospace, interface font",
+          "icons": "icon theme, icon pack, shell icons, desktop icons",
+          "layout": "window corners, rounding, radius, border, gaps, screen margin",
+          "theme": "colours, colors, dark, light, dynamic, matugen, bar style, transparent, effects, liquid glass",
+          "wallpaper": "background, image, picture, download wallpapers"
+        },
+        "assistant": "ai, agent, coding agents, claude, codex, console, primary agent, language, dictation, voice, usage, limits",
+        "bluetooth": "devices, pair, pairing, scan, headphones, earbuds, speaker, controller",
+        "displays": "monitor, screen, resolution, refresh rate, hz, scale, scaling, position, mirror, extend, external, laptop",
+        "keyboard": "layout, keymap, variant, physical keyboard, shortcuts, keybindings, binds, hotkeys, keys",
+        "network": "wifi, wireless, ethernet, cable, internet, vpn, hotspot, tailscale, dns, ip address, password",
+        "power": "power profile, performance, balanced, power saver, energy",
+        "sound": "volume, microphone, speaker, speakers, headphones, output, input, audio, mute, applications",
+        "system": {
+          "about": "version, computer, hardware, model, processor, cpu, memory, ram, kernel, distribution, hyprland, quickshell, repository",
+          "advanced": "configuration, config errors, own settings, hypr.lua, shell.json, folder, files, reset, defaults",
+          "plugins": "plugin, hyprland plugins, hyprspace, hyprgrass, hyprglass, hyprcapture, rebuild, build cache",
+          "profiles": "installer, install, remove, packages, apps, gaming, components",
+          "updates": "update, upgrade, packages, flatpak, software, check for updates"
+        }
+      },
+      "noResults": "No setting matches “%1”",
+      "placeholder": "Search settings…",
+      "results": "Search results"
+    },
     "sections": {
       "appearance": "Appearance",
       "assistant": "Assistant",
