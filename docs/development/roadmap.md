@@ -96,6 +96,7 @@ Completed items indicate features present in the code; outstanding hardware chec
 - [x] Matching Kitty theme, Adwaita Mono, translucent background, and ANSI palette.
 - [x] Neutral primary and borderless Hyprland windows, inactive opacity, and blur.
 - [x] Electron Wayland environment and explicit Wayland/X11 wrapper; VS Code verified on both backends with temporary profiles, existing Zen window identified as native Wayland.
+- [x] VS Code keyring under Hyprland (#161): `--password-store=gnome-libsecret` in `electron-flags.conf` sends secrets to oo7, which the GDM sign-in unlocks; VS Code no longer offers weaker encryption.
 - [x] XDG portals: Hyprland/GTK routing, environment import before startup, and a custom Quickshell sharing picker.
 - [x] Screen sharing through ScreenCast/PipeWire and monitor/area recording through wf-recorder, with QML panel, audio selection, bar indicator, and video saving; real portal test and recording of a dedicated window, with the specific web app test still outstanding.
 - [x] Concise README and separate `.claude/docs/` guides for installation, interface/shortcuts, configuration, integrations, and troubleshooting; updated for pairing, MPRIS, calendars, and DDC/CI results.
