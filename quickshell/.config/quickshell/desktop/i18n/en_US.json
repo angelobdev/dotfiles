@@ -709,7 +709,7 @@
       "assistantLanguage": "Dictation and replies",
       "assistantLanguageHint": "Close the assistant window once for a new session to take it.",
       "bindsGroup": "Your shortcuts",
-      "bindsHint": "Keys as SUPER + SHIFT + B and a command to run. A shortcut is saved once both are valid; hypr.lua can still bind anything else.",
+      "bindsHint": "Type the keys with the literal Hyprland names, for example “SUPER + SHIFT + B” (not the labels the Hints panel shows), and a command to run. A shortcut is saved once both are valid; hypr.lua can still bind anything else.",
       "command": "Command",
       "description": "Description",
       "keys": "Keys",

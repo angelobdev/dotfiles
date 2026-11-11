@@ -709,7 +709,7 @@
       "assistantLanguage": "Dettatura e risposte",
       "assistantLanguageHint": "Chiudi una volta la finestra dell'assistente perché una nuova sessione la usi.",
       "bindsGroup": "Le tue scorciatoie",
-      "bindsHint": "Tasti come SUPER + SHIFT + B e un comando da eseguire. Una scorciatoia viene salvata quando entrambi sono validi; hypr.lua può ancora assegnare qualunque altra cosa.",
+      "bindsHint": "Scrivi i tasti con i nomi letterali di Hyprland, per esempio “SUPER + SHIFT + B” (non le etichette del pannello Suggerimenti, come Maiusc), e un comando da eseguire. Una scorciatoia viene salvata quando entrambi sono validi; hypr.lua può ancora assegnare qualunque altra cosa.",
       "command": "Comando",
       "description": "Descrizione",
       "keys": "Tasti",
