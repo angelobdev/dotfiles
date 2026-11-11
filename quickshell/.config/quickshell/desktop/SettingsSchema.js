@@ -51,6 +51,7 @@ const options = [
     // Privacy
     { key: "clipboardEnabled", section: "privacy", group: "clipboard", type: "bool", fallback: true, hint: true },
     { key: "clipboardMaxItems", section: "privacy", group: "clipboard", type: "number", fallback: 200, min: 20, max: 1000, step: 20 },
+    { key: "launcherHistory", section: "privacy", group: "launcher", type: "bool", fallback: true, hint: true },
     { key: "recordingFramerate", section: "privacy", group: "recording", type: "choice", fallback: 30, options: [24, 30, 60], unit: "fps" }
 ];
 

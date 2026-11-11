@@ -724,7 +724,8 @@
       "oskLearning": "Single words with a count, kept on this computer, for the suggestions.",
       "oskTouchStats": "Only totals of how far touches land from each key, never which key or when.",
       "touchScale": "In tablet mode the bar, buttons, rows and dock icons grow by this much.",
-      "clipboardEnabled": "Text and images you copy, kept on this computer."
+      "clipboardEnabled": "Text and images you copy, kept on this computer.",
+      "launcherHistory": "From the launcher and the dock, kept on this computer, so the launcher lists them first."
     },
     "hypr": {
       "add": "Add a shortcut",
@@ -756,6 +757,14 @@
       "taken": "Already taken by: %1. Both would run.",
       "twice": "Also used by another of your shortcuts.",
       "variant": "Variant"
+    },
+    "launchHistory": {
+      "clear": "Clear history",
+      "count": {
+        "one": "%1 app remembered",
+        "other": "%1 apps remembered"
+      },
+      "none": "No apps remembered yet"
     },
     "monitors": {
       "apply": "Apply",
@@ -816,6 +825,7 @@
       "assistLongPress": "Long press on the assist button",
       "clipboardEnabled": "Keep a clipboard history",
       "clipboardMaxItems": "Items kept",
+      "launcherHistory": "Remember the apps you open",
       "recordingFramerate": "Frame rate"
     },
     "placeholders": {

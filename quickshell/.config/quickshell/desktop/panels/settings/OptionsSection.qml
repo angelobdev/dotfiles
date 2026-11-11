@@ -19,6 +19,8 @@ ColumnLayout {
     property var rows: ({})
     // More groups of a section, below those of the schema (Keyboard: layout and shortcuts).
     default property alias extra: extraColumn.data
+    // A row a section adds at the end of the card of one of its groups, by group name (Privacy → Launcher: Clear).
+    property var groupRows: ({})
     spacing: 14
     function move(step) {
         current = Math.max(0, Math.min(flat.length - 1, current + step));
@@ -110,6 +112,12 @@ ColumnLayout {
                                 keyTarget: scroll
                                 Component.onCompleted: root.rows[modelData.key] = this
                             }
+                        }
+                        Loader {
+                            Layout.fillWidth: true
+                            active: !!root.groupRows[group.modelData.name]
+                            visible: active
+                            sourceComponent: root.groupRows[group.modelData.name] ?? null
                         }
                     }
                 }
