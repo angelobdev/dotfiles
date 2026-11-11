@@ -251,13 +251,18 @@ ColumnLayout {
         color: Theme.danger
         font.pixelSize: Theme.textSize(12)
     }
+    // While a change is applied, that in place of the keys; tablet mode shows neither.
     Text {
-        // Wraps instead of widening the layout past the panel (wide theme fonts, long translations).
+        visible: Theming.busy
         Layout.fillWidth: true
         wrapMode: Text.WordWrap
-        text: Theming.busy ? I18n.tr("theming.working") : Tablet.active ? "" : I18n.tr("theming.navigationHint")
+        text: I18n.tr("theming.working")
         color: Theme.muted
         font.family: Theme.font
         font.pixelSize: Theme.textSize(12)
+    }
+    KeyHints {
+        visible: !Theming.busy && !Tablet.active
+        hints: I18n.tr("theming.navigationHint")
     }
 }

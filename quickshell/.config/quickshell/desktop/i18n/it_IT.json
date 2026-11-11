@@ -312,7 +312,7 @@
     "loading": "Lettura calendari…",
     "longDateFormat": "dddd d MMMM yyyy",
     "monthFormat": "MMMM yyyy",
-    "navigationHint": "←→↑↓ giorno · PgUp/PgDn mese · Home oggi",
+    "navigationHint": "←→↑↓|giorno; PgUp,PgDn|mese; Home|oggi",
     "nextMonth": "Mese successivo",
     "noCalendars": "Nessun calendario disponibile negli Account online",
     "noEvents": "Nessun evento per questo giorno",
@@ -341,10 +341,11 @@
       "invalidId": "Identificatore clipboard non valido",
       "operationFailed": "Operazione clipboard non riuscita. Verifica cliphist e wl-clipboard."
     },
+    "historyNote": "Lo storico è salvato sul disco.",
     "historyTitle": "Clipboard · Storico",
     "image": "Immagine · %1×%2 · %3",
     "imageSize": "Immagine · %1",
-    "navigationHint": "↑↓ seleziona · Invio copia · Esc chiudi. Lo storico è salvato sul disco.",
+    "navigationHint": "↑↓|seleziona; Invio|copia; Esc|chiudi",
     "pause": "Sospendi storico",
     "paused": "Raccolta sospesa. Lo storico rimane disponibile.",
     "resume": "Riprendi storico",
@@ -510,7 +511,7 @@
   },
   "launcher": {
     "empty": "Nessuna applicazione",
-    "navigationHint": "↑↓ seleziona · Invio apri · Ctrl+P o tasto destro fissa nella dock · Esc chiudi",
+    "navigationHint": "↑↓|seleziona; Invio|apri; Ctrl+P,Tasto destro|fissa nella dock; Esc|chiudi",
     "searchPlaceholder": "Cerca un’applicazione…",
     "terminalSuffix": "  [terminale]",
     "title": "Applicazioni",
@@ -736,7 +737,7 @@
     "lock": "Blocca schermo",
     "logout": "Esci…",
     "menuTitle": "Menu sessione",
-    "navigationHint": "↑↓ o Tab seleziona · Invio o Spazio attiva · Lettera scorciatoia · Esc annulla o chiudi",
+    "navigationHint": "↑↓,Tab|seleziona; Invio,Spazio|attiva; Lettera|scorciatoia; Esc|annulla o chiudi",
     "noActions": "Nessuna azione disponibile",
     "operationFailed": "Operazione non riuscita (%1).",
     "powerOff": "Spegni…",
@@ -839,7 +840,7 @@
       "scale": "Scala",
       "title": "Monitor"
     },
-    "navigationHint": "↑↓ seleziona · Spazio o Invio cambia · ←→ regola · Esc chiudi",
+    "navigationHint": "↑↓|seleziona; Spazio,Invio|cambia; ←→|regola; Ctrl+F|cerca nelle impostazioni; Esc|chiudi",
     "open": "Impostazioni…",
     "options": {
       "barMedia": "Mostra cosa è in riproduzione",
@@ -880,6 +881,8 @@
       "launcherHistory": "Ricorda le app che apri",
       "recordingFramerate": "Fotogrammi al secondo"
     },
+    "pageDetailsHint": "Ctrl+F|cerca nelle impostazioni; Esc|indietro",
+    "pageHint": "Ctrl+F|cerca nelle impostazioni; Esc|chiudi",
     "placeholders": {
       "weatherCity": "Automatica"
     },
@@ -1134,7 +1137,7 @@
     },
     "interfaceFont": "Interfaccia",
     "monospaceFont": "Monospace",
-    "navigationHint": "Ctrl+Tab scheda successiva · ←→↑↓ seleziona · Invio applica · Esc chiudi",
+    "navigationHint": "Ctrl+Tab|scheda successiva; ←→↑↓|seleziona; Invio|applica; Ctrl+F|cerca nelle impostazioni; Esc|chiudi",
     "notDownloaded": "Non ancora scaricato",
     "openCursors": "Apri la cartella dei cursori",
     "openFonts": "Apri la cartella dei font",
@@ -1584,7 +1587,7 @@
     "empty": "Nessuna stazione trovata",
     "savedEmpty": "Nessuna stazione o playlist salvata. Fissa un risultato YouTube per salvarlo qui.",
     "youtubeEmpty": "Scrivi una ricerca e premi Invio o clicca YouTube per cercare mix e playlist.",
-    "hint": "↑↓ seleziona · Invio riproduci o cerca su YouTube · Super+M apri o chiudi",
+    "hint": "↑↓|seleziona; Invio|riproduci o cerca su YouTube; Super+M|apri o chiudi",
     "videoOn": "Mostra il video qui",
     "videoOff": "Nascondi il video: l’audio continua",
     "saveItem": "Salva nella libreria",

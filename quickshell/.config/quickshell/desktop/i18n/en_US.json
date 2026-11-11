@@ -312,7 +312,7 @@
     "loading": "Loading calendars…",
     "longDateFormat": "dddd, MMMM d, yyyy",
     "monthFormat": "MMMM yyyy",
-    "navigationHint": "←→↑↓ day · PgUp/PgDn month · Home today",
+    "navigationHint": "←→↑↓|day; PgUp,PgDn|month; Home|today",
     "nextMonth": "Next month",
     "noCalendars": "No calendars available in Online Accounts",
     "noEvents": "No events for this day",
@@ -341,10 +341,11 @@
       "invalidId": "Invalid clipboard ID",
       "operationFailed": "Clipboard operation failed. Check cliphist and wl-clipboard."
     },
+    "historyNote": "History is saved to disk.",
     "historyTitle": "Clipboard · History",
     "image": "Image · %1×%2 · %3",
     "imageSize": "Image · %1",
-    "navigationHint": "↑↓ select · Enter copy · Esc close. History is saved to disk.",
+    "navigationHint": "↑↓|select; Enter|copy; Esc|close",
     "pause": "Pause history",
     "paused": "Collection paused. Existing history remains available.",
     "resume": "Resume history",
@@ -510,7 +511,7 @@
   },
   "launcher": {
     "empty": "No applications",
-    "navigationHint": "↑↓ select · Enter open · Ctrl+P or right click pin to dock · Esc close",
+    "navigationHint": "↑↓|select; Enter|open; Ctrl+P,Right click|pin to dock; Esc|close",
     "searchPlaceholder": "Search applications…",
     "terminalSuffix": "  [terminal]",
     "title": "Applications",
@@ -736,7 +737,7 @@
     "lock": "Lock screen",
     "logout": "Log out…",
     "menuTitle": "Session menu",
-    "navigationHint": "↑↓ or Tab select · Enter or Space activate · Letter shortcut · Esc cancel or close",
+    "navigationHint": "↑↓,Tab|select; Enter,Space|activate; Letter|shortcut; Esc|cancel or close",
     "noActions": "No actions available",
     "operationFailed": "Operation failed (%1).",
     "powerOff": "Shut down…",
@@ -839,7 +840,7 @@
       "scale": "Scale",
       "title": "Monitor"
     },
-    "navigationHint": "↑↓ select · Space or Enter change · ←→ adjust · Esc close",
+    "navigationHint": "↑↓|select; Space,Enter|change; ←→|adjust; Ctrl+F|search settings; Esc|close",
     "open": "Settings…",
     "options": {
       "barMedia": "Show what is playing",
@@ -880,6 +881,8 @@
       "launcherHistory": "Remember the apps you open",
       "recordingFramerate": "Frame rate"
     },
+    "pageDetailsHint": "Ctrl+F|search settings; Esc|back",
+    "pageHint": "Ctrl+F|search settings; Esc|close",
     "placeholders": {
       "weatherCity": "Automatic"
     },
@@ -1134,7 +1137,7 @@
     },
     "interfaceFont": "Interface",
     "monospaceFont": "Monospace",
-    "navigationHint": "Ctrl+Tab next tab · ←→↑↓ select · Enter apply · Esc close",
+    "navigationHint": "Ctrl+Tab|next tab; ←→↑↓|select; Enter|apply; Ctrl+F|search settings; Esc|close",
     "notDownloaded": "Not downloaded yet",
     "openCursors": "Open cursors folder",
     "openFonts": "Open fonts folder",
@@ -1584,7 +1587,7 @@
     "empty": "No matching stations",
     "savedEmpty": "No saved stations or playlists yet. Pin any YouTube result to save it here.",
     "youtubeEmpty": "Type a query and press Enter or click YouTube to search mixes and playlists.",
-    "hint": "↑↓ select · Enter play or search YouTube · Super+M open or close",
+    "hint": "↑↓|select; Enter|play or search YouTube; Super+M|open or close",
     "videoOn": "Show the video here",
     "videoOff": "Hide the video: the sound goes on",
     "saveItem": "Save to library",

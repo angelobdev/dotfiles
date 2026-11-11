@@ -440,15 +440,20 @@ Overlay {
                 }
             }
 
-            // Footer: the legend, or what went wrong.
+            // Footer: the keys, or what went wrong, or the search running.
             Text {
+                visible: text !== ""
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
-                text: Radio.error || (Radio.searching ? I18n.tr("radio.searching") : I18n.tr("radio.hint"))
+                text: Radio.error || (Radio.searching ? I18n.tr("radio.searching") : "")
                 color: Radio.error ? Theme.danger : Theme.muted
                 font.family: Theme.font
                 font.pixelSize: Theme.textSize(12)
                 textFormat: Text.PlainText
+            }
+            KeyHints {
+                visible: !Radio.error && !Radio.searching
+                hints: I18n.tr("radio.hint")
             }
         }
     }

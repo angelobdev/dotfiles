@@ -155,6 +155,9 @@ Overlay {
     // other; the sections that use the room (grids, the monitor list, tabs with logs) take the whole width.
     readonly property int readableWidth: 720
     readonly property var wideSections: ["appearance", "displays", "system"]
+    // Sections that show a view without a key footer (no keys of their own beyond Tab): the panel adds one with
+    // the keys it handles there.
+    readonly property var viewSections: ["network", "bluetooth", "displays", "sound", "assistant", "system"]
     property bool showingSidebar: false
     // The page of the Appearance section, for IPC (shell.qml theming()); set when it loads.
     property var appearance: null
@@ -507,6 +510,7 @@ Overlay {
                                 id: networkView
                                 ColumnLayout {
                                     readonly property Item focusItem: network.focusItem
+                                    readonly property bool inDetails: network.inDetails
                                     function goBack() {
                                         return network.goBack();
                                     }
@@ -677,6 +681,14 @@ Overlay {
                             }
                         }
                     }
+                }
+                // The keys the panel handles on the sections that show a view with none of its own (the option pages
+                // and Appearance list these with theirs). Esc goes back from the details of a network first.
+                KeyHints {
+                    visible: !Tablet.active && root.viewSections.includes(root.section)
+                    Layout.maximumWidth: root.wideSections.includes(root.section) ? Number.POSITIVE_INFINITY : root.readableWidth
+                    // pages.count: the binding runs again once the pages exist, and then follows the network page.
+                    hints: root.section === "network" && pages.count > 0 && (pages.itemAt(root.sectionNames.indexOf("network"))?.item?.inDetails ?? false) ? I18n.tr("settings.pageDetailsHint") : I18n.tr("settings.pageHint")
                 }
             }
         }

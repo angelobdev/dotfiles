@@ -133,13 +133,20 @@ Overlay {
                     color: Theme.muted
                 }
             }
+            // What went wrong or why nothing is collected, in place of the keys.
             Text {
+                visible: text !== ""
                 Layout.fillWidth: true
                 wrapMode: Text.Wrap
-                text: Clipboard.error || (!Config.clipboardEnabled ? I18n.tr("clipboard.disabled") : Clipboard.paused ? I18n.tr("clipboard.paused") : I18n.tr("clipboard.navigationHint"))
+                text: Clipboard.error || (!Config.clipboardEnabled ? I18n.tr("clipboard.disabled") : Clipboard.paused ? I18n.tr("clipboard.paused") : "")
                 color: Clipboard.error ? Theme.danger : Theme.muted
                 font.pixelSize: Theme.textSize(12)
                 textFormat: Text.PlainText
+            }
+            KeyHints {
+                visible: !Clipboard.error && Config.clipboardEnabled && !Clipboard.paused
+                hints: I18n.tr("clipboard.navigationHint")
+                note: I18n.tr("clipboard.historyNote")
             }
         }
     }
