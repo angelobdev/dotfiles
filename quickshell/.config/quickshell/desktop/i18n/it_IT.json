@@ -101,7 +101,7 @@
     "outputsHeading": "USCITE",
     "panelTitle": "Volume e dispositivi",
     "panelTooltip": "Volume e dispositivi audio",
-    "routingHint": "Seleziona il dispositivo predefinito. Il routing degli stream è gestito da WirePlumber.",
+    "routingHint": "Seleziona il dispositivo predefinito.",
     "sound": "Suono",
     "speaker": "Altoparlante",
     "title": "Audio",

@@ -101,7 +101,7 @@
     "outputsHeading": "OUTPUTS",
     "panelTitle": "Sound & devices",
     "panelTooltip": "Sound & audio devices",
-    "routingHint": "Select the default device. WirePlumber handles stream routing.",
+    "routingHint": "Select the default device.",
     "sound": "Sound",
     "speaker": "Speaker",
     "title": "Audio",
