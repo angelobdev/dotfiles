@@ -160,8 +160,11 @@ Overlay {
     property var appearance: null
     // A tab asked for before its section page existed.
     property string requestedTab: ""
-    // Sections shown at least once: their pages stay loaded.
+    // Sections shown at least once: their pages stay loaded. The one it opens on counts too: onSectionChanged does
+    // not run for the initial value, and its page would be rebuilt after the first switch. Written here and in
+    // onSectionChanged, never from a Loader, so the active bindings below do not loop.
     property var visited: []
+    Component.onCompleted: visited = [section]
     // The search: while it has text, the sidebar shows what matches (SettingsSearch.js), in the language shown and
     // among the sections shown.
     readonly property string query: searchField.text
