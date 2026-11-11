@@ -95,9 +95,18 @@
     "microphone": "Microfono",
     "mute": "Disattiva audio",
     "muted": "Disattivato",
+    "names": {
+      "hdmi": "HDMI / DisplayPort",
+      "hdmiNumber": "HDMI / DisplayPort %1",
+      "headphones": "Cuffie",
+      "headsetMicrophone": "Microfono delle cuffie",
+      "microphone": "Microfono",
+      "speakers": "Altoparlanti"
+    },
     "noInputs": "Nessun ingresso audio disponibile",
     "noOutput": "Nessuna uscita",
     "noOutputs": "Nessuna uscita audio disponibile",
+    "notConnected": "Nessun dispositivo collegato",
     "openPanel": "Pannello audio ›",
     "output": "Uscita",
     "outputVolume": "Volume uscita",

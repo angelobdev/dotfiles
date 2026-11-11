@@ -48,7 +48,7 @@ ControlTile {
             }
         }
         Text {
-            text: Audio.sink?.description || I18n.tr("audio.noOutput")
+            text: Audio.sink ? Audio.deviceName(Audio.sink) : I18n.tr("audio.noOutput")
             Layout.fillWidth: true
             elide: Text.ElideRight
             color: Theme.muted
@@ -92,11 +92,12 @@ ControlTile {
                     alignLeft: true
                     implicitHeight: Theme.hit(34)
                     font.pixelSize: Theme.textSize(12)
-                    text: modelData.description || modelData.name
+                    text: Audio.deviceName(modelData)
                     textElide: Text.ElideMiddle
-                    tooltip: text
+                    tooltip: Audio.deviceDetails(modelData)
                     iconName: "volume-high"
                     iconSize: 16
+                    normalColor: Audio.absent(modelData) ? Theme.muted : Theme.text
                     highlighted: Audio.sink?.id === modelData.id
                     tone: "state"
                     onClicked: Audio.selectOutput(modelData)
@@ -117,9 +118,9 @@ ControlTile {
                     alignLeft: true
                     implicitHeight: Theme.hit(34)
                     font.pixelSize: Theme.textSize(12)
-                    text: modelData.description || modelData.name
+                    text: Audio.deviceName(modelData)
                     textElide: Text.ElideMiddle
-                    tooltip: text
+                    tooltip: Audio.deviceDetails(modelData)
                     iconName: "microphone"
                     iconSize: 16
                     highlighted: Audio.source?.id === modelData.id
