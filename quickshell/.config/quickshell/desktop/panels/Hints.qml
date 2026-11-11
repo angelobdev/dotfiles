@@ -6,6 +6,7 @@ import Quickshell.Hyprland
 import ".."
 import "../services"
 import "../components"
+import "../services/BindKeys.js" as BindKeys
 
 Overlay {
     id: root
@@ -98,19 +99,7 @@ Overlay {
         for (const [mask, label] of [[64, I18n.tr("hints.keys.super")], [4, I18n.tr("hints.keys.ctrl")], [1, I18n.tr("hints.keys.shift")], [8, I18n.tr("hints.keys.alt")], [128, I18n.tr("hints.keys.altgr")]])
             if ((bind.modmask & mask) !== 0)
                 parts.push(label);
-        const names = {
-            Return: I18n.tr("keys.enter"),
-            Print: I18n.tr("keys.print"),
-            Space: I18n.tr("keys.space"),
-            space: I18n.tr("keys.space"),
-            left: "←",
-            right: "→",
-            up: "↑",
-            down: "↓",
-            "mouse:272": I18n.tr("keys.leftMouse"),
-            "mouse:273": I18n.tr("keys.rightMouse")
-        };
-        parts.push(names[bind.key] || bind.key || ("code:" + bind.keycode));
+        parts.push(bind.key ? BindKeys.keyName(bind.key, (key, args) => I18n.tr(key, args)) : "code:" + bind.keycode);
         return parts.join(" + ");
     }
     function refreshBindings() {

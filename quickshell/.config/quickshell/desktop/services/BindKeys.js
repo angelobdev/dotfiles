@@ -37,3 +37,86 @@ function takenBy(taken, text, own) {
         return true;
     }).map(bind => bind.description);
 }
+
+// Keysyms as Hints shows them, by lowercase name: a catalog key under keys., translated with tr, or a symbol that
+// reads the same in every language. Any other key keeps its name (F5, A).
+const KEY_NAMES = {
+    "return": "keys.enter",
+    "kp_enter": "keys.enter",
+    "space": "keys.space",
+    "print": "keys.print",
+    "escape": "keys.escape",
+    "tab": "keys.tab",
+    "backspace": "keys.backspace",
+    "delete": "keys.delete",
+    "insert": "keys.insert",
+    "home": "keys.home",
+    "end": "keys.end",
+    "prior": "keys.pageUp",
+    "page_up": "keys.pageUp",
+    "next": "keys.pageDown",
+    "page_down": "keys.pageDown",
+    "caps_lock": "keys.capsLock",
+    "menu": "keys.menu",
+    "mouse:272": "keys.leftMouse",
+    "mouse:273": "keys.rightMouse",
+    "mouse:274": "keys.middleMouse",
+    "mouse_up": "keys.scrollUp",
+    "mouse_down": "keys.scrollDown",
+    "xf86audioraisevolume": "keys.volumeUp",
+    "xf86audiolowervolume": "keys.volumeDown",
+    "xf86audiomute": "keys.mute",
+    "xf86audiomicmute": "keys.microphoneMute",
+    "xf86audioplay": "keys.play",
+    "xf86audiopause": "keys.pause",
+    "xf86audiostop": "keys.stop",
+    "xf86audionext": "keys.nextTrack",
+    "xf86audioprev": "keys.previousTrack",
+    "xf86monbrightnessup": "keys.brightnessUp",
+    "xf86monbrightnessdown": "keys.brightnessDown",
+    "xf86kbdbrightnessup": "keys.keyboardLightUp",
+    "xf86kbdbrightnessdown": "keys.keyboardLightDown",
+    "xf86kbdlightonoff": "keys.keyboardLight",
+    "xf86calculator": "keys.calculator",
+    "xf86sleep": "keys.sleep",
+    "xf86poweroff": "keys.power",
+    "xf86search": "keys.search",
+    "xf86mail": "keys.mail",
+    "xf86www": "keys.browser",
+    "xf86homepage": "keys.browser",
+    "xf86explorer": "keys.files",
+    "xf86mycomputer": "keys.files",
+    "xf86touchpadtoggle": "keys.touchpad",
+    "xf86wlan": "keys.wifi",
+    "xf86rfkill": "keys.airplaneMode",
+    "xf86display": "keys.display",
+    "xf86screensaver": "keys.lock"
+};
+const KEY_SYMBOLS = {
+    "period": ".",
+    "comma": ",",
+    "minus": "-",
+    "plus": "+",
+    "equal": "=",
+    "slash": "/",
+    "backslash": "\\",
+    "semicolon": ";",
+    "apostrophe": "'",
+    "grave": "`",
+    "bracketleft": "[",
+    "bracketright": "]",
+    "left": "←",
+    "right": "→",
+    "up": "↑",
+    "down": "↓"
+};
+
+function keyName(key, tr) {
+    const text = String(key ?? "");
+    const lower = text.toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(KEY_SYMBOLS, lower))
+        return KEY_SYMBOLS[lower];
+    if (Object.prototype.hasOwnProperty.call(KEY_NAMES, lower))
+        return tr(KEY_NAMES[lower]);
+    return text;
+}
