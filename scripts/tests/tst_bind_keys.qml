@@ -56,6 +56,29 @@ TestCase {
         compare(BindKeys.takenBy(taken, "nonsense +", "x"), []);
     }
 
+    function test_keysHaveReadableNames() {
+        const tr = key => "<" + key + ">";
+        compare(BindKeys.keyName("XF86Calculator", tr), "<keys.calculator>");
+        compare(BindKeys.keyName("XF86AudioRaiseVolume", tr), "<keys.volumeUp>");
+        compare(BindKeys.keyName("XF86MonBrightnessDown", tr), "<keys.brightnessDown>");
+        compare(BindKeys.keyName("XF86AudioPrev", tr), "<keys.previousTrack>");
+        compare(BindKeys.keyName("Return", tr), "<keys.enter>");
+        compare(BindKeys.keyName("Print", tr), "<keys.print>");
+        compare(BindKeys.keyName("space", tr), "<keys.space>");
+        compare(BindKeys.keyName("mouse:272", tr), "<keys.leftMouse>");
+        compare(BindKeys.keyName("period", tr), ".");
+        compare(BindKeys.keyName("comma", tr), ",");
+        compare(BindKeys.keyName("Left", tr), "←");
+    }
+
+    function test_unknownKeysKeepTheirName() {
+        const tr = key => "<" + key + ">";
+        compare(BindKeys.keyName("F5", tr), "F5");
+        compare(BindKeys.keyName("XF86Launch9", tr), "XF86Launch9");
+        compare(BindKeys.keyName("constructor", tr), "constructor");
+        compare(BindKeys.keyName(undefined, tr), "");
+    }
+
     function test_theRowsOwnBindIsNotAConflict() {
         // The bind this row saved carries its description: not reported against itself.
         compare(BindKeys.takenBy(taken, "SUPER + F12", "My test"), []);
