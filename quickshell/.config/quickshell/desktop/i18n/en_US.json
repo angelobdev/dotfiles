@@ -722,10 +722,11 @@
         "portuguese": "Portuguese"
       },
       "layout": "Layout",
+      "layoutDefault": "System (%1)",
       "layoutGroup": "Physical keyboard",
-      "layoutHint": "One or more XKB layouts, as us or us,it. Empty: the system's.",
+      "layoutHint": "Used here instead of the system's layout. Pick the first entry to follow the system again.",
       "layoutInvalid": "A layout is two to eight lowercase letters, several separated by commas (us,it); a variant likewise, or empty.",
-      "layoutSystem": "The system's, now %1 (localectl set-x11-keymap). Type one to use another here.",
+      "layoutSystem": "The system's, now %1. Choose one to use another here.",
       "remove": "Remove",
       "skipped": "Left out as not valid: %1",
       "taken": "Already taken by: %1. Both would run.",

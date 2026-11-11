@@ -722,10 +722,11 @@
         "portuguese": "Portoghese"
       },
       "layout": "Layout",
+      "layoutDefault": "Di sistema (%1)",
       "layoutGroup": "Tastiera fisica",
-      "layoutHint": "Uno o più layout XKB, come us o us,it. Vuoto: quello di sistema.",
+      "layoutHint": "Usato qui al posto del layout di sistema. Scegli la prima voce per seguire di nuovo il sistema.",
       "layoutInvalid": "Un layout è di due-otto lettere minuscole, più layout separati da virgole (us,it); una variante allo stesso modo, oppure vuota.",
-      "layoutSystem": "Quello di sistema, ora %1 (localectl set-x11-keymap). Scrivine uno per usarne un altro qui.",
+      "layoutSystem": "Quello di sistema, ora %1. Sceglierne uno per usarne un altro qui.",
       "remove": "Rimuovi",
       "skipped": "Lasciato fuori perché non valido: %1",
       "taken": "Già usata da: %1. Partirebbero entrambe.",
