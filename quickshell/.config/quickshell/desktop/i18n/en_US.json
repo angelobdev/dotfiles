@@ -309,7 +309,6 @@
     "timeFormat": "h:mm AP",
     "title": "Calendar",
     "today": "Today",
-    "todaySuffix": " · Today",
     "untitledEvent": "Untitled"
   },
   "capture": {
