@@ -1010,8 +1010,8 @@
       "iconsMissing": "No installed icon theme is called “%1”.",
       "cursorMissing": "%1 is not an installed cursor theme."
     },
-    "interfaceFont": "INTERFACE",
-    "monospaceFont": "MONOSPACE",
+    "interfaceFont": "Interface",
+    "monospaceFont": "Monospace",
     "navigationHint": "Ctrl+Tab next tab · ←→↑↓ select · Enter apply · Esc close",
     "notDownloaded": "Not downloaded yet",
     "openCursors": "Open cursors folder",

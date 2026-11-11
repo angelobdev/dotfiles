@@ -242,10 +242,9 @@ ColumnLayout {
                     visible: root.activeNetwork !== null
                     Layout.fillWidth: true
                     spacing: 6
-                    Text {
+                    Heading {
                         text: I18n.tr("network.currentConnection")
-                        color: Theme.muted
-                        font.pixelSize: Theme.textSize(11)
+                        section: true
                     }
                     ActionButton {
                         id: currentConnection

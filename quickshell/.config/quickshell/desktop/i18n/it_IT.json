@@ -1010,8 +1010,8 @@
       "iconsMissing": "Nessun tema di icone installato si chiama “%1”.",
       "cursorMissing": "%1 non è un tema cursore installato."
     },
-    "interfaceFont": "INTERFACCIA",
-    "monospaceFont": "MONOSPACE",
+    "interfaceFont": "Interfaccia",
+    "monospaceFont": "Monospace",
     "navigationHint": "Ctrl+Tab scheda successiva · ←→↑↓ seleziona · Invio applica · Esc chiudi",
     "notDownloaded": "Non ancora scaricato",
     "openCursors": "Apri la cartella dei cursori",

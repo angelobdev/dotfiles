@@ -20,6 +20,7 @@ Item {
             spacing: 12
             Heading {
                 text: I18n.tr("audio.output")
+                section: true
             }
             RowLayout {
                 ActionButton {
@@ -67,6 +68,7 @@ Item {
             Heading {
                 visible: Audio.streams.length > 0
                 text: I18n.tr("audio.applications")
+                section: true
                 Layout.topMargin: 12
             }
             Repeater {
@@ -112,6 +114,7 @@ Item {
             }
             Heading {
                 text: I18n.tr("audio.input")
+                section: true
                 Layout.topMargin: 12
             }
             RowLayout {

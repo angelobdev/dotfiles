@@ -223,7 +223,7 @@ ColumnLayout {
     Heading {
         visible: root.claudeShown
         text: Agent.plan !== "" ? I18n.tr("assistant.usage.titlePlan", [Agent.plan]) : I18n.tr("assistant.usage.title")
-        font.pixelSize: Theme.textSize(14)
+        section: true
         Layout.topMargin: 4
     }
     Meter {

@@ -223,7 +223,7 @@ Overlay {
                     Heading {
                         visible: Battery.peripherals.length > 0
                         text: I18n.tr("battery.devices")
-                        font.pixelSize: Theme.textSize(14)
+                        section: true
                         Layout.topMargin: 6
                     }
                     Repeater {
@@ -255,7 +255,7 @@ Overlay {
                     }
                     Heading {
                         text: I18n.tr("battery.profile")
-                        font.pixelSize: Theme.textSize(14)
+                        section: true
                         Layout.topMargin: 6
                     }
                     PowerProfileView {
@@ -265,7 +265,7 @@ Overlay {
                     Heading {
                         visible: root.refreshOptions.length > 0
                         text: I18n.tr("battery.display.title")
-                        font.pixelSize: Theme.textSize(14)
+                        section: true
                         Layout.topMargin: 6
                     }
                     Repeater {
