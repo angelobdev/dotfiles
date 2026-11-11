@@ -77,11 +77,11 @@ ColumnLayout {
         // stacked ones. Hyprland puts gaps_in on every side of a window, so windows are 2 x gaps_in apart.
         Rectangle {
             id: preview
-            readonly property real scale: 1 / 6
+            readonly property real ratio: 1 / 6
             readonly property real barHeight: 7
-            readonly property real edge: page.gapsOut * scale
-            readonly property real between: 2 * page.gapsIn * scale
-            readonly property real border: page.borderSize > 0 ? Math.max(1, page.borderSize * scale) : 0
+            readonly property real edge: page.gapsOut * ratio
+            readonly property real between: 2 * page.gapsIn * ratio
+            readonly property real frame: page.borderSize > 0 ? Math.max(1, page.borderSize * ratio) : 0
             readonly property real columnWidth: (width - 2 * edge - between) / 2
             readonly property real areaHeight: height - barHeight - 2 * edge
             readonly property real rowHeight: (areaHeight - between) / 2
@@ -131,8 +131,8 @@ ColumnLayout {
                     width: modelData.w
                     height: modelData.h
                     color: Theme.tile
-                    radius: Math.min(page.rounding * preview.scale, Math.min(width, height) / 2)
-                    border.width: preview.border
+                    radius: Math.min(page.rounding * preview.ratio, Math.min(width, height) / 2)
+                    border.width: preview.frame
                     border.color: modelData.active ? Theme.frameActive : Theme.frameInactive
                 }
             }
