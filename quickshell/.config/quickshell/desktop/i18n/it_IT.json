@@ -531,6 +531,8 @@
     "hidePassword": "Nascondi password",
     "hotspot": "Hotspot personale",
     "hotspotHint": "Condivide la connessione di questo computer. Il Wi-Fi si spegne finché è attivo.",
+    "hotspotName": "Hotspot Wi-Fi",
+    "hotspotOff": "Spento",
     "hotspotOn": "Attivo · %1",
     "info": "Informazioni connessione",
     "ipAddress": "Indirizzo IP",

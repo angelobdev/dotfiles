@@ -30,14 +30,33 @@ ColumnLayout {
             Layout.preferredWidth: 20
             Layout.preferredHeight: 20
         }
-        Text {
+        ColumnLayout {
             Layout.fillWidth: true
-            text: NetworkInfo.hotspot.active ? I18n.tr("network.hotspotOn", [NetworkInfo.hotspot.ssid]) : I18n.tr("network.hotspotHint")
-            color: NetworkInfo.hotspot.active ? Theme.text : Theme.muted
-            font.family: Theme.font
-            font.pixelSize: Theme.textSize(NetworkInfo.hotspot.active ? 13 : 11)
-            wrapMode: Text.Wrap
-            textFormat: Text.PlainText
+            spacing: 2
+            Text {
+                text: I18n.tr("network.hotspotName")
+                color: Theme.text
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(13)
+            }
+            Text {
+                Layout.fillWidth: true
+                text: NetworkInfo.hotspot.active ? I18n.tr("network.hotspotOn", [NetworkInfo.hotspot.ssid]) : I18n.tr("network.hotspotOff")
+                color: Theme.muted
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(11)
+                elide: Text.ElideRight
+                textFormat: Text.PlainText
+            }
+            Text {
+                Layout.fillWidth: true
+                text: I18n.tr("network.hotspotHint")
+                color: Theme.muted
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(11)
+                wrapMode: Text.Wrap
+                textFormat: Text.PlainText
+            }
         }
         ControlSwitch {
             enabled: !NetworkInfo.busy
