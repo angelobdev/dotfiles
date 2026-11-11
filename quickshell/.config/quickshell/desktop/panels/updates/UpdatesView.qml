@@ -83,7 +83,7 @@ ColumnLayout {
         Heading {
             id: heading
             Layout.fillWidth: true
-            font.pixelSize: Theme.textSize(13)
+            section: true
         }
         ControlSwitch {
             visible: parent.switchable
@@ -144,40 +144,54 @@ ColumnLayout {
             id: list
             width: scroll.availableWidth
             spacing: 6
+            // Each section is its heading and switch over a card of its entries, as on the option pages; the
+            // scroll view around them stays the one element that scrolls.
             Section {
                 visible: Updates.packages.length > 0
                 text: I18n.tr("updates.packagesHeading")
                 key: "system"
             }
-            // The first ones only: a release upgrade lists a thousand packages and more, each one a row built at
-            // once in this column. The count of the rest follows, as for the commits.
-            Repeater {
-                model: Updates.packages.slice(0, root.packageRows)
-                Entry {
-                    required property var modelData
-                    name: modelData.name
-                    version: modelData.version
+            GroupCard {
+                Layout.fillWidth: true
+                visible: Updates.packages.length > 0
+                verticalPadding: 10
+                spacing: 6
+                // The first ones only: a release upgrade lists a thousand packages and more, each one a row built
+                // at once in this column. The count of the rest follows, as for the commits.
+                Repeater {
+                    model: Updates.packages.slice(0, root.packageRows)
+                    Entry {
+                        required property var modelData
+                        name: modelData.name
+                        version: modelData.version
+                    }
                 }
-            }
-            Text {
-                visible: Updates.packages.length > root.packageRows
-                text: I18n.tr("updates.packagesMore", [Updates.packages.length - root.packageRows])
-                color: Theme.muted
-                font.family: Theme.font
-                font.pixelSize: Theme.textSize(11)
+                Text {
+                    visible: Updates.packages.length > root.packageRows
+                    text: I18n.tr("updates.packagesMore", [Updates.packages.length - root.packageRows])
+                    color: Theme.muted
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(11)
+                }
             }
             Section {
                 visible: Updates.flatpaks.length > 0
                 text: I18n.tr("updates.flatpaksHeading")
                 key: "flatpak"
-                Layout.topMargin: 6
+                Layout.topMargin: 12
             }
-            Repeater {
-                model: Updates.flatpaks
-                Entry {
-                    required property var modelData
-                    name: modelData.id
-                    version: modelData.version
+            GroupCard {
+                Layout.fillWidth: true
+                visible: Updates.flatpaks.length > 0
+                verticalPadding: 10
+                spacing: 6
+                Repeater {
+                    model: Updates.flatpaks
+                    Entry {
+                        required property var modelData
+                        name: modelData.id
+                        version: modelData.version
+                    }
                 }
             }
             Section {
@@ -185,32 +199,39 @@ ColumnLayout {
                 text: I18n.tr("updates.repositoryHeading", [Updates.repository.upstream ?? ""])
                 key: "repository"
                 switchable: Updates.pullable
-                Layout.topMargin: 6
+                Layout.topMargin: 12
             }
-            // What stops the fast-forward of the updates screen, as found at the check.
-            Text {
+            GroupCard {
                 Layout.fillWidth: true
-                visible: Updates.behind > 0 && (Updates.repository.ahead > 0 || Updates.repository.dirty === true)
-                text: I18n.tr(Updates.repository.ahead > 0 ? "updates.repositoryAhead" : "updates.repositoryDirty")
-                color: Theme.muted
-                font.family: Theme.font
-                font.pixelSize: Theme.textSize(11)
-                wrapMode: Text.Wrap
-            }
-            Repeater {
-                model: Updates.behind > 0 ? Updates.commits : []
-                Entry {
-                    required property var modelData
-                    name: modelData.subject
-                    version: modelData.hash
+                // Not an empty tile when the check found no commit subjects to list.
+                visible: Updates.behind > 0 && (Updates.commits.length > 0 || Updates.repository.ahead > 0 || Updates.repository.dirty === true)
+                verticalPadding: 10
+                spacing: 6
+                // What stops the fast-forward of the updates screen, as found at the check.
+                Text {
+                    Layout.fillWidth: true
+                    visible: Updates.repository.ahead > 0 || Updates.repository.dirty === true
+                    text: I18n.tr(Updates.repository.ahead > 0 ? "updates.repositoryAhead" : "updates.repositoryDirty")
+                    color: Theme.muted
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(11)
+                    wrapMode: Text.Wrap
                 }
-            }
-            Text {
-                visible: Updates.behind > Updates.commits.length && Updates.commits.length > 0
-                text: I18n.tr("updates.repositoryMore", [Updates.behind - Updates.commits.length])
-                color: Theme.muted
-                font.family: Theme.font
-                font.pixelSize: Theme.textSize(11)
+                Repeater {
+                    model: Updates.behind > 0 ? Updates.commits : []
+                    Entry {
+                        required property var modelData
+                        name: modelData.subject
+                        version: modelData.hash
+                    }
+                }
+                Text {
+                    visible: Updates.behind > Updates.commits.length && Updates.commits.length > 0
+                    text: I18n.tr("updates.repositoryMore", [Updates.behind - Updates.commits.length])
+                    color: Theme.muted
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(11)
+                }
             }
         }
     }
