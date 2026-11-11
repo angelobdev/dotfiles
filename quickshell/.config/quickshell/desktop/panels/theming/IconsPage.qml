@@ -100,7 +100,8 @@ ColumnLayout {
                 }
                 spacing: 10
                 Repeater {
-                    model: iconRow.modelData.samples
+                    // A pack without one of the sample icons lists it empty; skipped so the strip has no hole.
+                    model: iconRow.modelData.samples.filter(sample => sample !== "")
                     Image {
                         required property string modelData
                         width: 28
