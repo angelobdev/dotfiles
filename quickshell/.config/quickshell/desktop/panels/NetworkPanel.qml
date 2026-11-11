@@ -13,6 +13,10 @@ Overlay {
         if (!view.goBack())
             ShellState.close();
     }
+    // Overlay focuses its content item when it opens, after the view asked for the search field: the field would
+    // stay unfocused (no accent outline) in the side panel, unlike in Settings. In tablet mode it waits for a tap.
+    onOpened: if (!Tablet.active)
+        Qt.callLater(() => view.focusItem.forceActiveFocus())
     SidePanelCard {
         ColumnLayout {
             anchors {
