@@ -530,6 +530,8 @@
     "hidePassword": "Hide password",
     "hotspot": "Personal hotspot",
     "hotspotHint": "Shares this computer's connection. Wi-Fi turns off while it is on.",
+    "hotspotName": "Wi-Fi hotspot",
+    "hotspotOff": "Off",
     "hotspotOn": "On · %1",
     "info": "Connection info",
     "ipAddress": "IP address",
