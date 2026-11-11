@@ -15,6 +15,9 @@ Singleton {
     readonly property color foreground: darkText ? Theme.accentText : Theme.text
     readonly property color muted: darkText ? Qt.alpha(Theme.accentText, 0.72) : Theme.muted
     readonly property color accent: darkText ? Theme.accentText : Theme.accent
+    // The other text colour, as a soft halo behind text and icons on a transparent bar: the choice above fits
+    // the strip on average, and the halo keeps them readable where one side differs (a bright sky on the left).
+    readonly property color halo: darkText ? Theme.text : Theme.accentText
     // A wallpaper change during a measurement is measured again after it (two quick Next wallpaper).
     function measure() {
         if (transparent)

@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
@@ -140,6 +141,15 @@ PanelWindow {
             rightMargin: 8
         }
         spacing: 5
+        // Transparent, everything on the bar gets a soft halo in the other text colour. Over a dark or a light
+        // backdrop it barely shows; over a part of the wallpaper unlike the strip average it keeps the outline.
+        layer.enabled: BarStyle.transparent
+        layer.effect: MultiEffect {
+            shadowEnabled: true
+            shadowColor: BarStyle.halo
+            shadowBlur: 0.5
+            blurMax: 8
+        }
         BarButton {
             iconSource: bar.logo
             iconSize: 18
