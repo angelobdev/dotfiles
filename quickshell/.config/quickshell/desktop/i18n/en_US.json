@@ -59,6 +59,8 @@
       "modelContext": "%1 · context %2%",
       "resetsAt": "Resets at %1",
       "resetsOn": "Resets %1",
+      "staleAt": "Last read at %1. Send a message in the console to read them again",
+      "staleOn": "Last read %1. Send a message in the console to read them again",
       "updatedAt": "Updated at %1",
       "updatedOn": "Updated %1"
     },
