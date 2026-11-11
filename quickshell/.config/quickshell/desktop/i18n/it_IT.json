@@ -59,8 +59,8 @@
       "modelContext": "%1 · contesto %2%",
       "resetsAt": "Si azzera alle %1",
       "resetsOn": "Si azzera %1",
-      "staleAt": "Ultima lettura alle %1, senza limiti attuali. Invia un messaggio nella console per leggerli",
-      "staleOn": "Ultima lettura %1, senza limiti attuali. Invia un messaggio nella console per leggerli",
+      "staleAt": "Ultima lettura alle %1. Invia un messaggio nella console per rileggerli",
+      "staleOn": "Ultima lettura %1. Invia un messaggio nella console per rileggerli",
       "updatedAt": "Aggiornato alle %1",
       "updatedOn": "Aggiornato %1"
     },

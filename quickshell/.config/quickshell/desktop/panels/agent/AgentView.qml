@@ -17,11 +17,12 @@ ColumnLayout {
     readonly property bool claudeShown: Agent.herdr ? Agent.agents.some(agent => agent.app === "claude-code") : Agent.claude
     onShownChanged: if (shown)
         now = new Date()
-    // A window is current while its reset time is ahead; with none current the figures are old, not live.
+    // A window is current while its reset time is ahead; once one has lapsed nothing has read the limits since,
+    // so the footer says when they were last read and how to read them again.
     function windowCurrent(window) {
         return !!window && (window.resets === null || window.resets * 1000 > now.getTime());
     }
-    readonly property bool limitsStale: !windowCurrent(Agent.usage.fiveHour) && !windowCurrent(Agent.usage.sevenDay)
+    readonly property bool limitsStale: !windowCurrent(Agent.usage.fiveHour) || !windowCurrent(Agent.usage.sevenDay)
     function stateText() {
         if (!Agent.available)
             return I18n.tr("assistant.states.missing");
