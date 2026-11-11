@@ -1215,3 +1215,10 @@ Reported by the user after the merges of the day:
 
 - `services/LauncherRank.js` holds the match tiers (name prefix, word starts and initials, substring, letters in order, generic name or keywords), the use score (each of the last 10 launches adds 100, 70, 40 or 20 points by age: a day, a week, a month, 90 days) and the history trimming (90 days, 100 apps); `scripts/tests/tst_launcher_rank.qml` covers them with qmltestrunner, accents (`Café`) included.
 - Written in a worktree, not seen live: no shell was run from it. The new files need `stow.py apply` before the shell restarts. `check.sh` passes.
+
+## Friendly names (#165, #177), 2026-11-11
+
+- Sound: `DeviceNames.audioName` run over a read-only `pactl -f json list` of the laptop (C locale) gives the monitor name for the HDMI output with the TV on it (the ELD name PipeWire puts on the card port), `HDMI / DisplayPort 2` and `3`, both absent, for the empty ports, Speakers, Microphone (the digital array) and Headset microphone (the jack, `availability_group` `Mic`); without the port the HDMI outputs read only by number. The same against made-up fixtures in `scripts/tests/tst_device_names.qml`.
+- Displays: `hyprctl monitors -j` reports the panel with a bare product code as its model and the TV with its name: the names come out as Built-in display and the TV model; `tst_device_names.qml` covers the code-only and empty models.
+- Hints key names and the clipboard helper: `tst_bind_keys.qml` and `test_clipboard.py`; `clipboard.py thumbnails` and `list` run against a fake cliphist and a generated 2448×1600 PNG in a temporary runtime folder (a 96×63 PNG, 0600 in a 0700 folder, pruned by the next listing).
+- Written in a worktree, not seen live. `check.sh` passes.
