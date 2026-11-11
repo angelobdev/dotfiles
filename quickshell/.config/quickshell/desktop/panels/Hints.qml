@@ -231,11 +231,13 @@ Overlay {
                 }
                 delegate: Rectangle {
                     required property var modelData
-                    required property int index
                     width: list.width
                     height: Math.max(40, description.implicitHeight + 16)
                     radius: Theme.corner(9)
-                    color: index % 2 === 0 ? Theme.raised : "transparent"
+                    color: rowHover.hovered ? Theme.raised : "transparent"
+                    HoverHandler {
+                        id: rowHover
+                    }
                     RowLayout {
                         anchors {
                             fill: parent
