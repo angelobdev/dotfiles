@@ -240,10 +240,15 @@ ColumnLayout {
         now: root.now
         resets: window?.resets ? root.when(window.resets, "assistant.usage.resetsAt", "assistant.usage.resetsOn") : ""
     }
+    // The model in use (while an agent runs) with the context it has filled, labelled.
+    readonly property string modelText: !(Agent.running && (Agent.usage.model ?? "") !== "") ? "" : Agent.usage.context !== null && Agent.usage.context !== undefined ? I18n.tr("assistant.usage.modelContext", [Agent.usage.model, Math.round(Agent.usage.context)]) : I18n.tr("assistant.usage.model", [Agent.usage.model])
+    // Fresh limits: when they were read and the model share one line. Lapsed ones keep their long "Last read …"
+    // sentence, and the model goes below it.
     Text {
         Layout.fillWidth: true
         visible: root.claudeShown
-        text: !Agent.usage.limitsUpdated ? I18n.tr("assistant.usage.empty") : root.limitsStale ? root.when(Agent.usage.limitsUpdated, "assistant.usage.staleAt", "assistant.usage.staleOn") : root.when(Agent.usage.limitsUpdated, "assistant.usage.updatedAt", "assistant.usage.updatedOn")
+        text: !Agent.usage.limitsUpdated ? I18n.tr("assistant.usage.empty") : root.limitsStale ? root.when(Agent.usage.limitsUpdated, "assistant.usage.staleAt", "assistant.usage.staleOn") : [root.when(Agent.usage.limitsUpdated, "assistant.usage.updatedAt", "assistant.usage.updatedOn"), root.modelText].filter(part => part !== "").join(" · ")
+        textFormat: Text.PlainText
         color: Theme.muted
         font.family: Theme.font
         font.pixelSize: Theme.textSize(11)
@@ -251,12 +256,13 @@ ColumnLayout {
     }
     Text {
         Layout.fillWidth: true
-        visible: root.claudeShown && Agent.running && (Agent.usage.model ?? "") !== ""
-        text: Agent.usage.context !== null && Agent.usage.context !== undefined ? I18n.tr("assistant.usage.modelContext", [Agent.usage.model, Math.round(Agent.usage.context)]) : Agent.usage.model ?? ""
+        visible: root.claudeShown && root.modelText !== "" && (!Agent.usage.limitsUpdated || root.limitsStale)
+        text: root.modelText
         textFormat: Text.PlainText
         color: Theme.muted
         font.family: Theme.font
         font.pixelSize: Theme.textSize(11)
+        wrapMode: Text.Wrap
     }
     ActionButton {
         Layout.fillWidth: true
