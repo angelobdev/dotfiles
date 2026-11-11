@@ -70,6 +70,17 @@ Overlay {
             Radio.openVideo();
     }
 
+    // The strip repeats the title unless the station or subtitle adds something to it.
+    function secondLine() {
+        const norm = t => (t || "").toLowerCase().replace(/[\s\-‐-―·.,:;!?\u0027\u0022()\[\]{}|\/\\&_]+/g, " ").trim();
+        const title = norm(Radio.title);
+        const parts = [Radio.stationTitle, Radio.subtitle].filter(p => {
+            const n = norm(p);
+            return n !== "" && !(title !== "" && (n === title || title.includes(n)));
+        });
+        return parts.join(" · ");
+    }
+
     function activateItem(item) {
         if (!item)
             return;
@@ -394,7 +405,7 @@ Overlay {
                         Text {
                             Layout.fillWidth: true
                             visible: Radio.active && text !== ""
-                            text: Radio.stationTitle && Radio.stationTitle !== Radio.title ? Radio.stationTitle + (Radio.subtitle ? " · " + Radio.subtitle : "") : Radio.subtitle
+                            text: root.secondLine()
                             color: Theme.muted
                             font.family: Theme.font
                             font.pixelSize: Theme.textSize(11)
