@@ -1392,7 +1392,12 @@
     "off": "Off",
     "details": "%1×%2 · %3 Hz · %4%",
     "mirroring": "mirroring the laptop",
-    "hint": "Laptop only turns the other monitors off; External only turns the laptop panel off until the other monitor is unplugged.",
+    "hints": {
+      "extend": "The other monitors continue the desktop beside the laptop panel.",
+      "mirror": "The other monitors show the same picture as the laptop panel.",
+      "external": "The laptop panel turns off until the last other monitor is unplugged.",
+      "internal": "Only the laptop panel stays on; the other monitors turn off."
+    },
     "single": "Connect another monitor to choose how they share the desktop.",
     "noPanel": "These modes arrange other monitors around a laptop panel, and this computer has none: set your monitors in ~/.config/desktop/hypr.lua.",
     "modes": {

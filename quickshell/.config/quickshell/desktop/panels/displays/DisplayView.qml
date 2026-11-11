@@ -112,10 +112,15 @@ ColumnLayout {
         current: root.mode
         onChosen: name => root.choose(name)
     }
+    // What the chosen mode does.
     Text {
         Layout.fillWidth: true
         wrapMode: Text.WordWrap
-        text: !root.laptop ? I18n.tr("displays.noPanel") : root.several ? I18n.tr("displays.hint") : I18n.tr("displays.single")
+        text: !root.laptop ? I18n.tr("displays.noPanel") : !root.several ? I18n.tr("displays.single") : I18n.tr({
+            "mirror": "displays.hints.mirror",
+            "external": "displays.hints.external",
+            "internal": "displays.hints.internal"
+        }[root.mode] ?? "displays.hints.extend")
         color: Theme.muted
         font.pixelSize: Theme.textSize(12)
     }
