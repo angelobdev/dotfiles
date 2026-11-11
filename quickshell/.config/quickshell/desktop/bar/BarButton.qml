@@ -10,8 +10,10 @@ ActionButton {
     iconSize: Theme.hit(16)
     topPadding: 0
     bottomPadding: 0
-    leftPadding: 4
-    rightPadding: 4
+    // The inset of a 16 px icon in a 30 px button, so a label or a group of icons sits as far from its neighbours
+    // as a lone icon does.
+    leftPadding: Theme.hit(7)
+    rightPadding: Theme.hit(7)
     implicitWidth: Math.max(Theme.hit(30), contentItem.implicitWidth + leftPadding + rightPadding)
     font.pixelSize: Theme.textSize(12)
 }

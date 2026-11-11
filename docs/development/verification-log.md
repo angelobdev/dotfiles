@@ -262,6 +262,11 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 - The transparent bar row now has a soft halo in the other text colour (`MultiEffect` shadow, no offset, `blurMax` 8); the Shaded bar is unchanged.
 - Checked with `check.sh` (qmllint) only; the look over that wallpaper is still to be confirmed on the live session.
 
+**Bar spacing (#173, 2026-11-11)**
+- Measured from the code: a lone icon sat 7 px inside its 30 px button, a tray icon 6 px inside 28 px, and a label or icon group (media, privacy, battery, updates, focus) 4 px inside, so the glyph gaps on the right ranged from 13 to 19 px. Bar buttons now pad 7 px (`Theme.hit(7)`), tray slots are 30 px, the clock lost its extra 3 px margins (same footprint) and the battery icons sit 10 px from the percentage like every other icon and label: every gap is 19 px.
+- The faint square beside the media title is the privacy indicator: a screenshot is a screencopy client, Hyprland sends `screencast` for it, and the screen-sharing glyph (`monitor`, a filled rounded rectangle in the theme accent) shows until 1.5 s after the last copied frame, so a capture can catch it, and the next one in a series does. Not a shell bug.
+- Checked with `check.sh` only; the look is still to be confirmed on the live session.
+
 ## Shell state persistence verification
 
 **Keep awake and Do Not Disturb**
