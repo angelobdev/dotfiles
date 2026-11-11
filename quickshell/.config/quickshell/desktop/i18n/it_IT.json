@@ -992,6 +992,18 @@
       "errors": {
         "name": "Non è il nome di un profilo: %1"
       },
+      "names": {
+        "core": "Desktop",
+        "hardware": "Hardware del portatile",
+        "tablet": "Tablet (2 in 1)",
+        "plugins": "Plugin di Hyprland",
+        "apps": "App desktop",
+        "utils": "Strumenti da riga di comando",
+        "assistant": "Assistente AI",
+        "containers": "Docker",
+        "radio": "Radio",
+        "gaming": "Giochi"
+      },
       "descriptions": {
         "core": "Hyprland, Quickshell, GDM con la sessione hyprland-uwsm, portali, audio, rete, font, zsh e i codec (da RPM Fusion su Fedora): il desktop stesso.",
         "hardware": "Un portatile, a parti spuntate dove l’hardware c’è: Intel, audio, fotocamera, lettore di impronte, aggiornamenti firmware.",
