@@ -250,7 +250,8 @@ Overlay {
                                 bottom: parent.bottom
                                 bottomMargin: 6
                             }
-                            text: sidebarRow.modelData.label
+                            // Only group rows have a label; section rows draw their ActionButton instead.
+                            text: sidebarRow.modelData.label ?? ""
                             color: Theme.muted
                             font.family: Theme.font
                             font.pixelSize: Theme.textSize(11)
