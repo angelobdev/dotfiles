@@ -596,15 +596,24 @@ Overlay {
                                         Layout.fillWidth: true
                                         text: I18n.tr(page.modelData.labelKey)
                                     }
-                                    AgentView {
-                                        id: assistant
+                                    // Taller than the panel with every agent listed: it scrolls, clear of the key footer.
+                                    ScrollView {
+                                        id: assistantScroll
                                         Layout.fillWidth: true
-                                        shown: page.shownHere
-                                    }
-                                    AgentsGroup {}
-                                    AssistantLanguage {}
-                                    Item {
                                         Layout.fillHeight: true
+                                        clip: true
+                                        contentWidth: availableWidth
+                                        ColumnLayout {
+                                            width: assistantScroll.availableWidth
+                                            spacing: 14
+                                            AgentView {
+                                                id: assistant
+                                                Layout.fillWidth: true
+                                                shown: page.shownHere
+                                            }
+                                            AgentsGroup {}
+                                            AssistantLanguage {}
+                                        }
                                     }
                                 }
                             }
