@@ -1182,3 +1182,9 @@ Reported by the user after the merges of the day:
 - `ActionButton` gained `outlined` (a 1 px `Theme.stroke` border at rest, kept when disabled); 56 standalone text buttons set it: the actions of Settings (System, Appearance, Keyboard, Displays, Assistant), the Wallpaper picker, Calendar, Network, Clipboard, notification actions and the Cancel / Close buttons of the dialogs. List rows, tabs, chips and icon buttons are unchanged.
 - Seen live: System → Advanced, Profiles, Plugins, Appearance → Cursors and Font, Keyboard, Calendar, the Wallpaper picker. Not seen: the authentication and pairing dialogs, Network details, notification actions.
 - `check.sh` passes.
+
+## One section heading (#169), 2026-11-11
+
+- `Heading` gained `section`: muted, 12 px, demi-bold, the look the option pages already had for their groups. Audio (`Uscita`, `Applicazioni`, `Ingresso`), Battery, the usage title of the assistant, the two Font lists (no longer uppercase, in both catalogs) and the Network labels (`Connessione attuale`, `VPN`, `Hotspot personale`) use it.
+- Seen live: Settings → Sound, Network, Assistant and the Battery panel. Not captured: Appearance → Font. Still open in #169: which pages group their rows in cards.
+- `check.sh` passes. `qs log` repeats one warning that predates this work, `SettingsPanel.qml[249:29]: Unable to assign [undefined] to QString` (the sidebar rows that are sections have no `label`).

@@ -17,10 +17,9 @@ ColumnLayout {
     visible: section.panel.wifiDevices.length > 0
     Layout.fillWidth: true
     spacing: 8
-    Text {
+    Heading {
         text: I18n.tr("network.hotspot")
-        color: Theme.muted
-        font.pixelSize: Theme.textSize(11)
+        section: true
     }
     RowLayout {
         Layout.fillWidth: true

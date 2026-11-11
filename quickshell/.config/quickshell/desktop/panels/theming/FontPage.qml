@@ -55,12 +55,9 @@ ColumnLayout {
                 enabled: usable
                 opacity: usable ? 1 : 0.45
                 spacing: 6
-                Text {
+                Heading {
                     text: fontColumn.modelData.label
-                    color: Theme.muted
-                    font.family: Theme.font
-                    font.pixelSize: Theme.textSize(12)
-                    font.bold: true
+                    section: true
                 }
                 ListView {
                     id: fontList

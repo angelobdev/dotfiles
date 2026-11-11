@@ -11,10 +11,9 @@ ColumnLayout {
     required property var panel
     visible: NetworkInfo.vpns.length > 0 || NetworkInfo.tailscale.installed === true
     Layout.fillWidth: true
-    Text {
+    Heading {
         text: I18n.tr("network.vpn")
-        color: Theme.muted
-        font.pixelSize: Theme.textSize(11)
+        section: true
     }
     RowLayout {
         visible: NetworkInfo.tailscale.installed === true
