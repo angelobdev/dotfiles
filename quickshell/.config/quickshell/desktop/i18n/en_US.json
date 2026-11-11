@@ -1272,7 +1272,7 @@
       "done": "The updates are installed.",
       "doneCompositor": "The updates are installed. Hyprland was among them: log out and back in, and the plugins are rebuilt at that login.",
       "failed": "The update did not finish: %1 The log is in the updates panel.",
-      "lastDone": "Updated at %1.",
+      "lastDone": "Updated at %1",
       "lastDoneCompositor": "Updated at %1. Hyprland was among them: log out and back in, and the plugins are rebuilt at that login.",
       "lastFailed": "The last update did not finish (status %1): see its log below, then Update again.",
       "stopped": "The last update stopped before it finished: Update again."

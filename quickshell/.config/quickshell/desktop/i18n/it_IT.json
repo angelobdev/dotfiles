@@ -1272,7 +1272,7 @@
       "done": "Gli aggiornamenti sono installati.",
       "doneCompositor": "Gli aggiornamenti sono installati. Tra questi c’era Hyprland: esci e rientra, e i plugin vengono ricompilati a quel login.",
       "failed": "L’aggiornamento non è finito: %1 Il log è nel pannello degli aggiornamenti.",
-      "lastDone": "Aggiornato alle %1.",
+      "lastDone": "Aggiornato alle %1",
       "lastDoneCompositor": "Aggiornato alle %1. Tra gli aggiornamenti c’era Hyprland: esci e rientra, e i plugin vengono ricompilati a quel login.",
       "lastFailed": "L’ultimo aggiornamento non è finito (stato %1): guarda il log qui sotto, poi premi di nuovo Aggiorna.",
       "stopped": "L’ultimo aggiornamento si è fermato prima di finire: premi di nuovo Aggiorna."
