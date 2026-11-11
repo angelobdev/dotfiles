@@ -261,6 +261,7 @@ ColumnLayout {
                         }
                         // Install while something of it is missing (Complete when part is there), Remove while the installer has a record of it.
                         ActionButton {
+                            outlined: true
                             visible: !profileRow.modelData.installed
                             enabled: !root.busy
                             text: I18n.tr(profileRow.modelData.done > 0 ? "settings.profiles.complete" : "settings.profiles.install")
@@ -378,6 +379,7 @@ ColumnLayout {
                 onClicked: root.apply()
             }
             ActionButton {
+                outlined: true
                 text: I18n.tr("common.cancel")
                 enabled: !planner.running
                 onClicked: root.review = null
@@ -427,11 +429,13 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
         ActionButton {
+            outlined: true
             text: reader.running ? I18n.tr("settings.profiles.checking") : I18n.tr("settings.profiles.checkAgain")
             enabled: !reader.running && !job.running
             onClicked: root.refresh()
         }
         ActionButton {
+            outlined: true
             text: I18n.tr("settings.profiles.openManager")
             enabled: !root.busy
             onClicked: Quickshell.execDetached(["kitty", "--class", "desktop-updates", "--title", I18n.tr("settings.profiles.managerTitle"), Quickshell.env("HOME") + "/.local/bin/desktop-manager"])

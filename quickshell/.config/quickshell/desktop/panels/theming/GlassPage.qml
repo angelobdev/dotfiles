@@ -32,6 +32,7 @@ ColumnLayout {
             font.bold: true
         }
         ActionButton {
+            outlined: true
             text: I18n.tr("theming.glassReset")
             enabled: (Theming.glass ?? []).some(entry => entry.value !== entry.default)
             onClicked: Theming.resetGlass()

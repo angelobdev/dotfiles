@@ -120,10 +120,12 @@ PanelWindow {
                 }
                 ActionButton {
                     id: reject
+                    outlined: true
                     text: I18n.tr("common.cancel")
                     onClicked: BluetoothAgent.reply(false)
                 }
                 ActionButton {
+                    outlined: true
                     visible: !root.displayOnly
                     text: root.inputRequired ? I18n.tr("bluetooth.submit") : I18n.tr("common.confirm")
                     enabled: !root.inputRequired || root.valid

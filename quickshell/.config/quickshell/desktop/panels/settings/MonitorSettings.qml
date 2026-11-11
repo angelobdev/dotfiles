@@ -200,6 +200,7 @@ ColumnLayout {
                 onClicked: root.apply()
             }
             ActionButton {
+                outlined: true
                 visible: root.saved !== null
                 text: I18n.tr("settings.monitors.reset")
                 onClicked: root.reset()
@@ -224,6 +225,7 @@ ColumnLayout {
                 onClicked: HyprSettings.keepMonitors()
             }
             ActionButton {
+                outlined: true
                 text: I18n.tr("settings.monitors.revert")
                 onClicked: HyprSettings.revertMonitors()
             }

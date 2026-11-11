@@ -434,6 +434,7 @@ ColumnLayout {
                     RowLayout {
                         ActionButton {
                             id: joinButton
+                            outlined: true
                             text: NetworkInfo.joining ? I18n.tr("network.joining") : I18n.tr("network.join")
                             enabled: !NetworkInfo.busy && hiddenSsid.text.trim() !== "" && (!root.hiddenSecure || hiddenPassword.text.length >= 8)
                             onClicked: if (enabled) {
@@ -443,6 +444,7 @@ ColumnLayout {
                             }
                         }
                         ActionButton {
+                            outlined: true
                             text: I18n.tr("common.cancel")
                             enabled: !NetworkInfo.joining
                             onClicked: root.cancelHidden()
@@ -472,6 +474,7 @@ ColumnLayout {
                     RowLayout {
                         ActionButton {
                             id: connectButton
+                            outlined: true
                             text: I18n.tr("network.connect")
                             enabled: !!root.passwordNetwork && password.text.length > 0
                             onClicked: if (enabled) {
@@ -482,6 +485,7 @@ ColumnLayout {
                             }
                         }
                         ActionButton {
+                            outlined: true
                             text: I18n.tr("common.cancel")
                             onClicked: root.cancelPassword()
                         }

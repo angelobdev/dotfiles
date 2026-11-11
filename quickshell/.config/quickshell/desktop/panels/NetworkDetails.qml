@@ -176,6 +176,7 @@ ColumnLayout {
                 }
                 ActionButton {
                     id: applyIp
+                    outlined: true
                     text: I18n.tr("network.apply")
                     enabled: !NetworkInfo.busy && addressField.text.trim() !== ""
                     onClicked: if (enabled) {
@@ -247,6 +248,7 @@ ColumnLayout {
             }
             ActionButton {
                 id: applyDns
+                outlined: true
                 text: I18n.tr("network.apply")
                 enabled: !NetworkInfo.busy && dnsField.text.trim() !== ""
                 onClicked: if (enabled) {
@@ -341,6 +343,7 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
         ActionButton {
+            outlined: true
             text: root.network?.connected ? I18n.tr("network.disconnect") : I18n.tr("network.connect")
             enabled: !(root.network?.stateChanging ?? true)
             onClicked: {

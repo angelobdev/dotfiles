@@ -153,6 +153,7 @@ ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 10
                 ActionButton {
+                    outlined: true
                     text: Plugins.running ? I18n.tr("settings.plugins.rebuilding") : I18n.tr("settings.plugins.rebuild")
                     enabled: !Plugins.running && !Plugins.cleaning && root.needed && !root.atLogin && !["unverified", "mismatched"].includes(root.status.state)
                     onClicked: Plugins.startRebuild()
@@ -204,6 +205,7 @@ ColumnLayout {
             RowLayout {
                 spacing: 8
                 ActionButton {
+                    outlined: true
                     text: I18n.tr("settings.plugins.clearOld")
                     enabled: root.oldBytes > 0 && !Plugins.running && !Plugins.cleaning
                     onClicked: Plugins.clearCache("old")
@@ -222,6 +224,7 @@ ColumnLayout {
                     }
                 }
                 ActionButton {
+                    outlined: true
                     visible: root.confirmClear
                     text: I18n.tr("common.cancel")
                     onClicked: root.confirmClear = false
@@ -232,6 +235,7 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         ActionButton {
+            outlined: true
             text: I18n.tr("settings.system.checkAgain")
             enabled: !Plugins.reading
             onClicked: Plugins.refresh()

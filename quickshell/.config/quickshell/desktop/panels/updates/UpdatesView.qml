@@ -270,6 +270,7 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: 8
         ActionButton {
+            outlined: true
             Layout.fillWidth: true
             text: I18n.tr("updates.checkNow")
             enabled: !Updates.checking

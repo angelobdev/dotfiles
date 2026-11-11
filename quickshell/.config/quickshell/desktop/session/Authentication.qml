@@ -202,16 +202,19 @@ Scope {
                 }
                 RowLayout {
                     ActionButton {
+                        outlined: true
                         text: I18n.tr("authentication.authenticate")
                         enabled: response.enabled
                         onClicked: root.submit()
                     }
                     ActionButton {
+                        outlined: true
                         visible: root.readerWaiting
                         text: I18n.tr("authentication.usePassword")
                         onClicked: root.usePassword()
                     }
                     ActionButton {
+                        outlined: true
                         text: I18n.tr("common.cancel")
                         onClicked: agent.flow?.cancelAuthenticationRequest()
                     }

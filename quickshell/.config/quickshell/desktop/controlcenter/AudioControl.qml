@@ -152,6 +152,7 @@ ControlTile {
                 }
             }
             ActionButton {
+                outlined: true
                 text: I18n.tr("audio.openPanel")
                 font.pixelSize: Theme.textSize(12)
                 onClicked: ShellState.push("audio")

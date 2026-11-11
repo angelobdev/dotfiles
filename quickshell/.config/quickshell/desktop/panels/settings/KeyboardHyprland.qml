@@ -221,6 +221,7 @@ ColumnLayout {
                 }
             }
             ActionButton {
+                outlined: true
                 text: I18n.tr("settings.hypr.add")
                 onClicked: bindModel.append({
                     keys: "",

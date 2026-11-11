@@ -226,15 +226,18 @@ ColumnLayout {
                         Layout.fillWidth: true
                         spacing: 8
                         ActionButton {
+                            outlined: true
                             text: I18n.tr("settings.system.openFolder")
                             onClicked: root.openPath(root.directory)
                         }
                         ActionButton {
+                            outlined: true
                             visible: root.ownFiles.includes("hypr.lua")
                             text: I18n.tr("settings.system.openFile", ["hypr.lua"])
                             onClicked: root.openPath(root.directory + "/hypr.lua")
                         }
                         ActionButton {
+                            outlined: true
                             visible: root.ownFiles.includes("shell.json")
                             text: I18n.tr("settings.system.openFile", ["shell.json"])
                             onClicked: root.openPath(root.directory + "/shell.json")
@@ -261,6 +264,7 @@ ColumnLayout {
                         font.pixelSize: Theme.textSize(12)
                     }
                     ActionButton {
+                        outlined: true
                         text: I18n.tr("settings.system.checkAgain")
                         enabled: !errors.running
                         onClicked: errors.running = true
@@ -288,6 +292,7 @@ ColumnLayout {
                     RowLayout {
                         spacing: 8
                         ActionButton {
+                            outlined: true
                             destructive: root.confirmReset
                             enabled: !Config.unreadable && Schema.options.some(option => Config.isSet(option.key))
                             text: root.confirmReset ? I18n.tr("settings.system.resetConfirm") : I18n.tr("settings.system.reset")
@@ -301,6 +306,7 @@ ColumnLayout {
                             }
                         }
                         ActionButton {
+                            outlined: true
                             visible: root.confirmReset
                             text: I18n.tr("common.cancel")
                             onClicked: root.confirmReset = false

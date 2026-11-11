@@ -61,6 +61,7 @@ Overlay {
                     }
                 }
                 ActionButton {
+                    outlined: true
                     text: I18n.tr("common.cancel")
                     onClicked: root.confirmClear = false
                 }

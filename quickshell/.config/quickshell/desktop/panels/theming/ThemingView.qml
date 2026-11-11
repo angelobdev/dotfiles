@@ -239,6 +239,7 @@ ColumnLayout {
                 font.pixelSize: Theme.textSize(12)
             }
             ActionButton {
+                outlined: true
                 text: I18n.tr("theming.restart")
                 onClicked: Theming.restartShell()
             }
