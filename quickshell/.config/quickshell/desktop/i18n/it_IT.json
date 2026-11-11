@@ -342,6 +342,8 @@
       "operationFailed": "Operazione clipboard non riuscita. Verifica cliphist e wl-clipboard."
     },
     "historyTitle": "Clipboard · Storico",
+    "image": "Immagine · %1×%2 · %3",
+    "imageSize": "Immagine · %1",
     "navigationHint": "↑↓ seleziona · Invio copia · Esc chiudi. Lo storico è salvato sul disco.",
     "pause": "Sospendi storico",
     "paused": "Raccolta sospesa. Lo storico rimane disponibile.",
