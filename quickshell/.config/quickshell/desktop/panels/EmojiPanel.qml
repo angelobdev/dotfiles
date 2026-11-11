@@ -109,6 +109,13 @@ Overlay {
                     }
                 }
             }
+            Heading {
+                section: true
+                Layout.fillWidth: true
+                visible: root.query === ""
+                text: root.group === -1 ? I18n.tr("emoji.recent") : root.groupLabel(Emoji.groups[root.group])
+                elide: Text.ElideRight
+            }
             GridView {
                 id: grid
                 Layout.fillWidth: true
