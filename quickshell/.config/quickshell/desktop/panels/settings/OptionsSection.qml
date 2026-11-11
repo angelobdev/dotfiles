@@ -17,6 +17,8 @@ ColumnLayout {
     readonly property var flat: Schema.forSection(section)
     property int current: 0
     property var rows: ({})
+    // The option reveal() centers once more at the next frame, "" when none.
+    property string revealing: ""
     // More groups of a section, below those of the schema (Keyboard: layout and shortcuts).
     default property alias extra: extraColumn.data
     // A row a section adds at the end of the card of one of its groups, by group name (Privacy → Launcher: Clear).
@@ -38,6 +40,36 @@ ColumnLayout {
     }
     function currentRow() {
         return rows[flat[current]?.key] ?? null;
+    }
+    // An option found by the search of the sidebar (SettingsPanel): its row becomes the current one, highlighted,
+    // in the middle of the view.
+    function reveal(key) {
+        const at = flat.findIndex(option => option.key === key);
+        if (at < 0)
+            return;
+        current = at;
+        scroll.forceActiveFocus();
+        center(key);
+        // A page built or shown just now places its rows with the next frame: center again once they are placed.
+        revealing = key;
+    }
+    function center(key) {
+        const item = rows[key];
+        if (!item)
+            return;
+        const flick = scroll.contentItem;
+        const middle = item.mapToItem(column, 0, 0).y + item.height / 2 - flick.height / 2;
+        flick.contentY = Math.max(0, Math.min(flick.contentHeight - flick.height, middle));
+    }
+    // The layouts are placed before the scene is synchronized, so the row is where it will be drawn by then (it
+    // is not yet right after the page was built, or in the narrow layout right after the page was shown).
+    Connections {
+        target: root.revealing === "" ? null : root.Window.window
+        function onBeforeSynchronizing() {
+            const key = root.revealing;
+            root.revealing = "";
+            root.center(key);
+        }
     }
     Heading {
         Layout.fillWidth: true
