@@ -277,6 +277,8 @@ ColumnLayout {
             onClicked: Updates.check()
         }
         ActionButton {
+            // Nothing to install: only "Check now" remains (the installing state stays visible while it runs).
+            visible: Updates.count > 0 || Updates.applying
             Layout.fillWidth: true
             highlighted: true
             iconName: "update"
