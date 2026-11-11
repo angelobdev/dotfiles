@@ -6,9 +6,11 @@ import "../.."
 import "../../components"
 import "../../services"
 import "../theming"
+import "../displays/MonitorMap.js" as MonitorMap
 
-// Settings → Displays, below the monitors and their mode: resolution and refresh of one monitor (only the modes
-// it reports: custom ones crashed Hyprland 0.57.1), position and scale. Nothing changes until Apply, and then
+// Settings → Displays, below the monitors and their mode: a map of where they sit, then resolution and refresh of
+// one monitor (only the modes it reports: custom ones crashed Hyprland 0.57.1), position and scale. Nothing
+// changes until Apply, and then
 // only for 15 seconds unless kept: without Keep, or with Revert, the previous settings come back (a screen
 // left black can still be recovered). On the laptop panel only scale and position count: its refresh is the
 // one chosen per power source in the battery panel (config/displays.lua).
@@ -123,6 +125,45 @@ ColumnLayout {
     GroupCard {
         Layout.fillWidth: true
         spacing: 10
+        // Where the monitors in use sit, as Hyprland places them, the one being set tinted. Read only: Position moves it.
+        Item {
+            id: map
+            readonly property var boxes: MonitorMap.boxes(root.monitors, width, height)
+            Layout.fillWidth: true
+            Layout.preferredHeight: 96
+            visible: root.monitors.some(entry => !entry.disabled)
+            Repeater {
+                model: map.boxes
+                Rectangle {
+                    id: box
+                    required property var modelData
+                    readonly property bool chosen: modelData.names.includes(root.selected)
+                    // A gap between neighbours.
+                    x: modelData.x + 2
+                    y: modelData.y + 2
+                    width: Math.max(0, modelData.width - 4)
+                    height: Math.max(0, modelData.height - 4)
+                    radius: Theme.corner(6)
+                    color: chosen ? Theme.active : "transparent"
+                    border.width: 1
+                    border.color: chosen ? Theme.accent : Theme.muted
+                    Text {
+                        anchors {
+                            fill: parent
+                            margins: 4
+                        }
+                        text: box.modelData.names.join(" = ")
+                        textFormat: Text.PlainText
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                        color: box.chosen ? Theme.accent : Theme.muted
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(11)
+                    }
+                }
+            }
+        }
         ChoiceChips {
             visible: root.monitors.length > 1
             enabled: !HyprSettings.trying
