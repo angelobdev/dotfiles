@@ -1122,7 +1122,6 @@
   },
   "tablet": {
     "rotationLock": "Rotation lock",
-    "rotatesInTablet": "Rotates in tablet mode",
     "rotatesAutomatically": "Follows the device",
     "locked": "Locked"
   },
