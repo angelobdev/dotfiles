@@ -17,8 +17,11 @@ PanelWindow {
     readonly property bool specialFocused: Hyprland.activeToplevel?.activated === true && Hyprland.activeToplevel.monitor === monitor && (Hyprland.activeToplevel.workspace?.name ?? "").startsWith("special:")
     readonly property bool emptyWorkspace: workspace !== null && workspace.toplevels.values.length === 0 && !specialFocused
     readonly property var request: Dock.requested[screen.name]
+    // Mapping the window creates it, and Quickshell announces its screen again while visible is being set:
+    // read directly, that re-entered the visible binding (a binding loop). A string notifies only on a change.
+    readonly property string screenName: screen.name
     // Mapped again after a rotation (services/Tablet.qml).
-    visible: !Tablet.remaps(screen.name)
+    visible: !Tablet.remaps(screenName)
     property bool hovered: false
     // Set once the pointer is over the dock, so leaving it ends a shortcut request too.
     property bool visited: false
