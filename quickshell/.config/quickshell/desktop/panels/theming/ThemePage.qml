@@ -18,20 +18,33 @@ ColumnLayout {
     Flow {
         Layout.fillWidth: true
         spacing: 16
-        Setting {
-            label: I18n.tr("theming.bar")
-            options: [
-                {
-                    name: "shade",
-                    label: I18n.tr("theming.barShaded")
-                },
-                {
-                    name: "transparent",
-                    label: I18n.tr("theming.barTransparent")
-                }
-            ]
-            current: Theme.barStyle
-            onChosen: name => Theming.setBarStyle(name)
+        // The bar style and the hint about its double-click shortcut (bar/Bar.qml), kept together.
+        Column {
+            spacing: 4
+            Setting {
+                id: barSetting
+                label: I18n.tr("theming.bar")
+                options: [
+                    {
+                        name: "shade",
+                        label: I18n.tr("theming.barShaded")
+                    },
+                    {
+                        name: "transparent",
+                        label: I18n.tr("theming.barTransparent")
+                    }
+                ]
+                current: Theme.barStyle
+                onChosen: name => Theming.setBarStyle(name)
+            }
+            Text {
+                width: Math.max(160, barSetting.implicitWidth)
+                text: I18n.tr("theming.barHint")
+                wrapMode: Text.WordWrap
+                color: Theme.muted
+                font.family: Theme.font
+                font.pixelSize: Theme.textSize(11)
+            }
         }
         // Reduced: no animations, blur, shadows or glass, for less powerful machines (theme.py reduce-effects).
         Setting {
@@ -70,14 +83,6 @@ ColumnLayout {
             current: Theming.dynamic.mode
             onChosen: name => Theming.setDynamic("mode", name)
         }
-    }
-    Text {
-        Layout.fillWidth: true
-        text: I18n.tr("theming.barHint")
-        elide: Text.ElideRight
-        color: Theme.muted
-        font.family: Theme.font
-        font.pixelSize: Theme.textSize(11)
     }
     GridView {
         id: themeGrid
@@ -124,7 +129,7 @@ ColumnLayout {
                     margins: 6
                 }
                 radius: Theme.corner(14)
-                color: themeMouse.containsMouse || themeGrid.currentIndex === themeCell.index && themeGrid.activeFocus ? Theme.raised : Theme.tile
+                color: themeCell.active ? Theme.active : themeMouse.containsMouse || themeGrid.currentIndex === themeCell.index && themeGrid.activeFocus ? Theme.raised : Theme.tile
                 border.width: themeCell.active ? 2 : 1
                 border.color: themeCell.active ? Theme.accent : Theme.stroke
                 ColumnLayout {
@@ -261,7 +266,8 @@ ColumnLayout {
                             text: I18n.tr("theming.current")
                             color: Theme.accent
                             font.family: Theme.font
-                            font.pixelSize: Theme.textSize(11)
+                            font.pixelSize: Theme.textSize(12)
+                            font.bold: true
                         }
                         // Opens the glass page; the MouseArea of the card lies beneath it.
                         CompactIconButton {
