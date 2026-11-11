@@ -17,7 +17,7 @@ The list:
 
 - **Categories:** **All**, **Web radio** (streams only), one chip per category of the stations, **Saved** and **YouTube**. The text field filters the stations as you type.
 - **Playing:** Enter or a click plays the highlighted item. On the item that is playing, it pauses or resumes.
-- **YouTube:** **YouTube**, or Enter when no station matches, searches YouTube with `ytfzf`, or with `yt-dlp` when `ytfzf` finds nothing or is missing. The chips under it pick all results, playlists only, or mixes and videos.
+- **YouTube:** **Search YouTube** (the button beside the field), or Enter when no station matches, searches YouTube with `ytfzf`, or with `yt-dlp` when `ytfzf` finds nothing or is missing. The chips under it pick all results, playlists only, or mixes and videos.
 - **Saved:** the pin on a result saves it; the trash icon removes a saved item.
 
 **Video.** The monitor button is on for a YouTube item or a file, never for a web radio, which has no picture. It puts the video in place of the list, and search is off meanwhile.

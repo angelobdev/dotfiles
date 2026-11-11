@@ -1451,7 +1451,7 @@
   "radio": {
     "title": "Radio e musica",
     "searchPlaceholder": "Filtra le stazioni o cerca mix e playlist su YouTube…",
-    "searchYoutube": "YouTube",
+    "searchYoutube": "Cerca su YouTube",
     "searching": "Ricerca su YouTube con ytfzf…",
     "empty": "Nessuna stazione trovata",
     "savedEmpty": "Nessuna stazione o playlist salvata. Fissa un risultato YouTube per salvarlo qui.",
