@@ -31,4 +31,14 @@ TestCase {
         const body = "x".repeat(NotificationText.MAX_LENGTH + 100);
         compare(NotificationText.styled(body).length, NotificationText.MAX_LENGTH + 1);
     }
+
+    // "Updates" / "Updates": the app line goes when it only repeats the title, whatever the case or spaces.
+    function test_app_line_left_out_when_it_repeats_the_title() {
+        verify(NotificationText.repeatsTitle("Aggiornamenti", "Aggiornamenti"));
+        verify(NotificationText.repeatsTitle(" updates", "Updates "));
+        verify(!NotificationText.repeatsTitle("Mail", "New message"));
+        // An empty title repeats nothing, so the app line stays.
+        verify(!NotificationText.repeatsTitle("", ""));
+        verify(!NotificationText.repeatsTitle("Mail", "  "));
+    }
 }

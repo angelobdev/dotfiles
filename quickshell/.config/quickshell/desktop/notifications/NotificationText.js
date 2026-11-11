@@ -21,3 +21,9 @@ function styled(body) {
     return name === "br" ? "<br>" : "<" + match[1] + name + ">";
   });
 }
+
+// The app line is left out when it only repeats the title ("Updates" / "Updates").
+function repeatsTitle(app, summary) {
+  var title = String(summary || "").trim().toLowerCase();
+  return title !== "" && String(app || "").trim().toLowerCase() === title;
+}

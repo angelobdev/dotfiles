@@ -26,6 +26,8 @@ Rectangle {
     readonly property bool archived: notification?.archived === true
     readonly property var defaultAction: notification?.actions.find(a => a.identifier === "default") ?? null
     readonly property var buttons: notification?.actions.filter(a => !popup || a.identifier !== "default") ?? []
+    readonly property string appLabel: notification?.appName || I18n.tr("notifications.fallbackTitle")
+    readonly property bool titleLeads: NotificationText.repeatsTitle(appLabel, notification?.summary)
     readonly property string appIcon: {
         const icon = notification?.appIcon || notification?.desktopEntry || "";
         if (icon.startsWith("/") || icon.startsWith("file:") || icon.startsWith("image:"))
@@ -144,11 +146,15 @@ Rectangle {
                     visible: appImage.status !== Image.Ready
                 }
             }
+            // The app name, or the title in its place when the two are the same.
             Text {
-                text: root.notification?.appName || I18n.tr("notifications.fallbackTitle")
-                color: Theme.muted
-                font.pixelSize: Theme.textSize(11)
+                text: root.titleLeads ? root.notification?.summary ?? "" : root.appLabel
+                color: root.titleLeads ? Theme.text : Theme.muted
+                font.bold: root.titleLeads
+                font.pixelSize: Theme.textSize(root.titleLeads ? 13 : 11)
                 textFormat: Text.PlainText
+                wrapMode: root.titleLeads ? Text.Wrap : Text.NoWrap
+                maximumLineCount: root.titleLeads && root.popup ? 3 : 2147483647
                 elide: Text.ElideRight
                 Layout.fillWidth: true
             }
@@ -179,6 +185,7 @@ Rectangle {
             }
         }
         Text {
+            visible: !root.titleLeads
             text: root.notification?.summary ?? ""
             color: Theme.text
             font.bold: true
