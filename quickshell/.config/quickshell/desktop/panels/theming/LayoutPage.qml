@@ -24,7 +24,7 @@ ColumnLayout {
             label: I18n.tr("theming.windowRounding")
             options: [0, 4, 8, 12, 16, 20, 24].map(value => ({
                         name: String(value),
-                        label: String(value)
+                        label: I18n.tr("theming.pixels", [value])
                     }))
             current: String(Theming.windows.rounding)
             onChosen: name => Theming.setWindowStyle("rounding", Number(name))
@@ -34,7 +34,7 @@ ColumnLayout {
             label: I18n.tr("theming.windowBorder")
             options: [0, 1, 2, 3, 4].map(value => ({
                         name: String(value),
-                        label: value === 0 ? I18n.tr("theming.windowBorderNone") : String(value)
+                        label: value === 0 ? I18n.tr("theming.windowBorderNone") : I18n.tr("theming.pixels", [value])
                     }))
             current: String(Theming.windows.borderSize)
             onChosen: name => Theming.setWindowStyle("border", Number(name))
@@ -45,7 +45,7 @@ ColumnLayout {
             label: I18n.tr("theming.windowGapsIn")
             options: [0, 2, 4, 6, 8, 12, 16].map(value => ({
                         name: String(value),
-                        label: String(value)
+                        label: I18n.tr("theming.pixels", [value])
                     }))
             current: String(Theming.windows.gapsIn)
             onChosen: name => Theming.setWindowStyle("gapsIn", Number(name))
@@ -55,7 +55,7 @@ ColumnLayout {
             label: I18n.tr("theming.windowGapsOut")
             options: [0, 4, 8, 12, 16, 24, 32].map(value => ({
                         name: String(value),
-                        label: String(value)
+                        label: I18n.tr("theming.pixels", [value])
                     }))
             current: String(Theming.windows.gapsOut)
             onChosen: name => Theming.setWindowStyle("gapsOut", Number(name))
