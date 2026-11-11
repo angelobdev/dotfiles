@@ -82,7 +82,10 @@ Scope {
     }
     PanelWindow {
         id: prompt
-        visible: agent.isActive && !Tablet.remaps(screen?.name ?? "")
+        // Showing the window creates it, and Quickshell announces its screen again while visible is being set:
+        // read directly, that re-entered the visible binding (a binding loop). A string notifies only on a change.
+        readonly property string screenName: screen?.name ?? ""
+        visible: agent.isActive && !Tablet.remaps(screenName)
         screen: root.promptScreen || Quickshell.screens[0]
         anchors {
             top: true
