@@ -181,8 +181,9 @@ Overlay {
                 margins: Theme.dialogPadding
             }
             spacing: 14
-            Heading {
-                text: Tablet.active ? I18n.tr("hints.titleTablet") : I18n.tr("hints.title")
+            PanelHeader {
+                Layout.fillWidth: true
+                title: Tablet.active ? I18n.tr("hints.titleTablet") : I18n.tr("hints.title")
             }
             InputField {
                 id: search
@@ -273,19 +274,10 @@ Overlay {
                 text: I18n.tr("hints.empty")
                 color: Theme.muted
             }
-            RowLayout {
-                Text {
-                    text: I18n.plural("hints.shortcutCount.one", "hints.shortcutCount.other", root.bindings.length)
-                    color: Theme.muted
-                    font.pixelSize: Theme.textSize(12)
-                }
-                Item {
-                    Layout.fillWidth: true
-                }
-                ActionButton {
-                    text: I18n.tr("common.close")
-                    onClicked: ShellState.close()
-                }
+            Text {
+                text: I18n.plural("hints.shortcutCount.one", "hints.shortcutCount.other", root.bindings.length)
+                color: Theme.muted
+                font.pixelSize: Theme.textSize(12)
             }
         }
     }

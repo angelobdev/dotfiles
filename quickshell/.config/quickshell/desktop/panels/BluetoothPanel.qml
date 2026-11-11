@@ -16,6 +16,7 @@ Overlay {
             }
             spacing: 12
             PanelHeader {
+                settingsSection: "bluetooth"
                 Layout.fillWidth: true
                 title: I18n.tr("bluetooth.title")
                 showBack: true
@@ -24,13 +25,6 @@ Overlay {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 shown: root.visible
-            }
-            // The full section of Settings, in place of this panel.
-            ActionButton {
-                Layout.alignment: Qt.AlignRight
-                compact: true
-                text: I18n.tr("settings.open")
-                onClicked: ShellState.openSection("settings", "bluetooth", ShellState.activeScreen, false)
             }
         }
     }

@@ -19,6 +19,7 @@ Overlay {
             anchors.margins: Theme.panelPadding
             spacing: 12
             PanelHeader {
+                settingsSection: "updates"
                 title: I18n.tr("updates.title")
                 Layout.fillWidth: true
             }
@@ -26,13 +27,6 @@ Overlay {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 shown: root.visible
-            }
-            // The full section of Settings, in place of this panel.
-            ActionButton {
-                Layout.alignment: Qt.AlignRight
-                compact: true
-                text: I18n.tr("settings.open")
-                onClicked: ShellState.openSection("settings", "updates", ShellState.activeScreen, false)
             }
         }
     }

@@ -98,8 +98,9 @@ Overlay {
                     bottom: parent.bottom
                 }
                 spacing: 14
-                Heading {
-                    text: I18n.tr("calendar.title")
+                PanelHeader {
+                    Layout.fillWidth: true
+                    title: I18n.tr("calendar.title")
                 }
                 // Weather: now, then every two hours; the place and the time of the reading below.
                 ColumnLayout {
@@ -355,13 +356,6 @@ Overlay {
                         text: I18n.tr("common.refresh")
                         enabled: !Calendar.busy
                         onClicked: root.loadEvents()
-                    }
-                    Item {
-                        Layout.fillWidth: true
-                    }
-                    ActionButton {
-                        text: I18n.tr("common.close")
-                        onClicked: ShellState.close()
                     }
                 }
                 Text {
