@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell.Io
 import "../.."
 import "../../components"
 import "../../services"
@@ -63,9 +64,34 @@ ColumnLayout {
         }
         return count;
     }
+    // The layouts the system knows, read once when the page is shown (read-only).
+    property var layouts: []
+    // Default first, then the layouts; a layout set by hand (us,it) that is not in the list stays selectable.
+    readonly property var layoutOptions: {
+        const names = layouts.slice();
+        if (HyprSettings.layout !== "" && !names.includes(HyprSettings.layout))
+            names.unshift(HyprSettings.layout);
+        return [
+            {
+                name: "",
+                label: I18n.tr("settings.hypr.layoutDefault", [HyprSettings.active || "—"])
+            }
+        ].concat(names.map(name => ({
+                    name: name,
+                    label: name
+                })));
+    }
     Component.onCompleted: {
         load();
         HyprSettings.readActive();
+        layoutReader.running = true;
+    }
+    Process {
+        id: layoutReader
+        command: ["localectl", "list-x11-keymap-layouts"]
+        stdout: StdioCollector {
+            onStreamFinished: root.layouts = text.split("\n").map(line => line.trim()).filter(line => HyprSettings.validLayout(line))
+        }
     }
     // Reloaded only when shell.json says something else than these rows (a hand edit), never after a save.
     Connections {
@@ -115,8 +141,18 @@ ColumnLayout {
                         text: HyprSettings.layout === "" ? I18n.tr("settings.hypr.layoutSystem", [HyprSettings.active || "—"]) : I18n.tr("settings.hypr.layoutHint")
                     }
                 }
+                ChoiceCombo {
+                    visible: root.layouts.length > 0
+                    options: root.layoutOptions
+                    current: HyprSettings.layout
+                    Accessible.name: I18n.tr("settings.hypr.layout")
+                    // A variant belongs to one layout, so it is cleared with the layout.
+                    onChosen: name => HyprSettings.setKeyboard(name, "")
+                }
+                // Without the system list (no localectl) the layout is typed, as before.
                 InputField {
                     id: layoutField
+                    visible: root.layouts.length === 0
                     implicitWidth: 120
                     text: HyprSettings.layout
                     placeholderText: HyprSettings.active
@@ -129,15 +165,15 @@ ColumnLayout {
                     implicitWidth: 120
                     text: HyprSettings.variant
                     placeholderText: I18n.tr("settings.hypr.variant")
-                    enabled: layoutField.text.trim() !== ""
+                    enabled: HyprSettings.layout !== "" || layoutField.text.trim() !== ""
                     Accessible.name: I18n.tr("settings.hypr.variant")
                     onEditingFinished: if (text.trim() !== HyprSettings.variant && HyprSettings.validVariant(text.trim()))
-                        HyprSettings.setKeyboard(layoutField.text, text)
+                        HyprSettings.setKeyboard(layoutField.visible ? layoutField.text : HyprSettings.layout, text)
                 }
             }
             Text {
                 Layout.fillWidth: true
-                visible: (layoutField.text.trim() !== "" && !HyprSettings.validLayout(layoutField.text.trim())) || !HyprSettings.validVariant(variantField.text.trim())
+                visible: (layoutField.visible && layoutField.text.trim() !== "" && !HyprSettings.validLayout(layoutField.text.trim())) || !HyprSettings.validVariant(variantField.text.trim())
                 text: I18n.tr("settings.hypr.layoutInvalid")
                 color: Theme.danger
                 wrapMode: Text.WordWrap
