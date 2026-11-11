@@ -1188,3 +1188,8 @@ Reported by the user after the merges of the day:
 - `Heading` gained `section`: muted, 12 px, demi-bold, the look the option pages already had for their groups. Audio (`Uscita`, `Applicazioni`, `Ingresso`), Battery, the usage title of the assistant, the two Font lists (no longer uppercase, in both catalogs) and the Network labels (`Connessione attuale`, `VPN`, `Hotspot personale`) use it.
 - Seen live: Settings → Sound, Network, Assistant and the Battery panel. Not captured: Appearance → Font. Still open in #169: which pages group their rows in cards.
 - `check.sh` passes. `qs log` repeats one warning that predates this work, `SettingsPanel.qml[249:29]: Unable to assign [undefined] to QString` (the sidebar rows that are sections have no `label`).
+
+## Settings close, tabs, width, About and Profiles (#214, #215, #170, #229, #228), 2026-11-11
+
+- Settings has a close button (`PanelIconButton`, `close`) anchored to the top right of its card, over the sidebar (compact) and every section. The tabs of Appearance and System are on their own row under the section title, left-aligned. `SettingsPanel.readableWidth` (720 px) caps the sections of option rows and lists (left-aligned); Appearance, Displays and System → Profiles and Plugins keep the whole width. System → About has **Copy** (`wl-copy`, one `label: value` line per row) and opens the repository folder from its path. Profiles draws **Remove** as an outlined button; the danger colour stays on the Apply of a removal plan. The sidebar warning `SettingsPanel.qml[249:29]` is gone from the code (group label bound with `?? ""`).
+- Written in a worktree, not seen live. `check.sh` passes.
