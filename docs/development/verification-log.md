@@ -1267,3 +1267,10 @@ Reported by the user after the merges of the day:
 
 - Of the 27 icons imported into the Figma pack as they were, eleven were still outline drawings and were redrawn there, first as proposals with a current/proposed comparison, then, once approved, inside the original components: `backspace`, `dock`, `help`, `palette`, `split` and `window` as solid shapes with knockouts; `overview` as one large and two small solid windows (a filled 2×2 grid would repeat `apps`); `pip` as a solid screen with the small window set off by a knocked-out gap; `screenshot` with a solid centre; `rotate` and `rotate-lock` as a pair, one circular arrow with a solid device or a solid padlock inside. The other sixteen already followed the style (solid, or arrows drawn as lines; `shift` stays an outline as the off state of `shift-lock`).
 - The eleven SVGs were downloaded from Figma, reduced to the icon group (ids removed, `#F0F0F2` to `white`, one line per file) and written to `assets/icons/`. A strip rendered from the repository files, old above new, matches the Figma comparison; the shell reloaded with them ("Configuration Loaded"). Not checked in place: each icon where the shell uses it (the on-screen keyboard, the assist menu, the Control Center rotation tile, Settings).
+
+## Three small reports (#276, #277, #278), 2026-11-11
+
+- #276: the hour label of each forecast entry fills its cell, so the six columns can stretch; seen on the laptop panel, the hours run from one edge of the weather block to the other, each above its icon and temperature.
+- #277: the 720 px cap of #252 is gone; Assistant, Desktop and System → About were seen at the same width as Appearance. The rows of option pages are again as wide as the panel, which is what #170 had noted; the user preferred one width.
+- #278: Settings → Assistant sits in a `ScrollView`; with three agents listed the language group is cut at the bottom of the page area and the key footer under it is clear. Scrolling with the wheel was not exercised.
+- `check.sh` passes; `qs log` shows "Configuration Loaded" after each edit and no binding loop.
