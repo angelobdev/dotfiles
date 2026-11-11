@@ -193,6 +193,7 @@
     "mute": "Muto",
     "resizeWindow": "Ridimensiona finestra",
     "restartShell": "Riavvia Quickshell",
+    "suspend": "Sospendi",
     "toggleFloating": "Finestra flottante",
     "togglePseudotiling": "Pseudo tiling",
     "toggleSplit": "Cambia orientamento split",
@@ -353,13 +354,9 @@
   },
   "desktopMenu": {
     "launcher": "Applicazioni",
-    "logout": "Esci…",
     "open": "Apri",
-    "powerOff": "Spegni…",
-    "reboot": "Riavvia…",
     "session": "Sessione",
-    "settings": "Impostazioni",
-    "suspend": "Sospendi…"
+    "settings": "Impostazioni"
   },
   "directions": {
     "down": "in basso",
@@ -660,14 +657,14 @@
       "waylandRequired": "Sessione Wayland richiesta"
     },
     "lock": "Blocca schermo",
-    "logout": "Esci da Hyprland",
+    "logout": "Esci…",
     "menuTitle": "Menu sessione",
     "navigationHint": "↑ ↓ / Tab: seleziona · Invio / Spazio: attiva · Esc: annulla o chiudi",
     "noActions": "Nessuna azione disponibile",
     "operationFailed": "Operazione non riuscita (%1).",
-    "powerOff": "Spegni il computer",
-    "reboot": "Riavvia il computer",
-    "suspend": "Sospendi",
+    "powerOff": "Spegni…",
+    "reboot": "Riavvia…",
+    "suspend": "Sospendi…",
     "title": "Sessione"
   },
   "settings": {

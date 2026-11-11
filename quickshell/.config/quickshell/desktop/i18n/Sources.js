@@ -65,7 +65,7 @@ var bindKeys = {
     "Brightness up": "bindings.brightnessUp",
     "Brightness down": "bindings.brightnessDown",
     "Lock screen": "session.lock",
-    "Suspend": "session.suspend"
+    "Suspend": "bindings.suspend"
 };
 
 var networkKeys = {

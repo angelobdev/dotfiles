@@ -76,24 +76,24 @@ MenuLayer {
                 action: () => root.session("lock")
             },
             {
-                text: I18n.tr("desktopMenu.suspend"),
+                text: I18n.tr("session.suspend"),
                 glyph: "suspend",
                 action: () => root.session("suspend")
             },
             {
-                text: I18n.tr("desktopMenu.logout"),
+                text: I18n.tr("session.logout"),
                 glyph: "logout",
                 destructive: true,
                 action: () => root.session("logout")
             },
             {
-                text: I18n.tr("desktopMenu.reboot"),
+                text: I18n.tr("session.reboot"),
                 glyph: "reboot",
                 destructive: true,
                 action: () => root.session("reboot")
             },
             {
-                text: I18n.tr("desktopMenu.powerOff"),
+                text: I18n.tr("session.powerOff"),
                 glyph: "power",
                 destructive: true,
                 action: () => root.session("poweroff")
