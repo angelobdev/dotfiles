@@ -47,8 +47,11 @@ PanelWindow {
     // The screen it opened on, kept while it closes: show() moves activeScreen first, also when it closes this
     // panel from another monitor, and the fading panel would be rebuilt there. A screen that went away is not kept.
     property var shownOn: null
+    // Showing the window creates it, and Quickshell announces its screen again while visible is being set:
+    // read directly, that re-entered the visible binding (a binding loop). A string notifies only on a change.
+    readonly property string screenName: screen?.name ?? ""
     screen: (Quickshell.screens.includes(shownOn) ? shownOn : ShellState.activeScreen) || Quickshell.screens[0]
-    visible: (open || reveal > 0) && !Tablet.remaps(screen?.name ?? "")
+    visible: (open || reveal > 0) && !Tablet.remaps(screenName)
     anchors {
         top: true
         bottom: true
