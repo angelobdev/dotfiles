@@ -5,6 +5,7 @@ import Quickshell
 import ".."
 import "../components"
 import "../services"
+import "../services/LauncherRank.js" as Rank
 
 Overlay {
     id: root
@@ -18,7 +19,8 @@ Overlay {
             "desktop-ai": "assistant",
             "desktop-radio": "radio"
         })
-    readonly property var appResults: DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (!appUnits[e.id] || Installed.has(appUnits[e.id])) && (e.name + " " + e.genericName + " " + e.keywords.join(" ")).toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => a.name.localeCompare(b.name))
+    // Best match first, then by name (services/LauncherRank.js).
+    readonly property var appResults: Rank.rank(DesktopEntries.applications.values.filter(e => !e.noDisplay && !Config.launcherHidden.includes(e.id) && (!appUnits[e.id] || Installed.has(appUnits[e.id]))), search.text, {}, 0)
     // A calculation first (Enter copies it), then apps, then files (Enter opens one).
     // Each row has a key, so results that arrive later (files, a calculation) are inserted around the selected
     // row instead of rebuilding the list, which moved the selection to the first row.
