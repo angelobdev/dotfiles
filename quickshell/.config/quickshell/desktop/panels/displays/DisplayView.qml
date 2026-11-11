@@ -72,14 +72,16 @@ ColumnLayout {
                 spacing: 2
                 Text {
                     Layout.fillWidth: true
-                    text: modelData.name + (modelData.model ? " · " + modelData.model : "")
+                    text: HyprSettings.displayName(modelData.name)
                     textFormat: Text.PlainText
                     color: Theme.text
                     elide: Text.ElideRight
                 }
                 Text {
                     Layout.fillWidth: true
-                    text: modelData.disabled ? I18n.tr("displays.off") : I18n.tr("displays.details", [modelData.width, modelData.height, Math.round(modelData.refreshRate), Math.round(modelData.scale * 100)]) + (modelData.mirrorOf && modelData.mirrorOf !== "none" ? " · " + I18n.tr("displays.mirroring") : "")
+                    // The connector, then the mode.
+                    text: modelData.name + " · " + (modelData.disabled ? I18n.tr("displays.off") : I18n.tr("displays.details", [modelData.width, modelData.height, Math.round(modelData.refreshRate), Math.round(modelData.scale * 100)]) + (modelData.mirrorOf && modelData.mirrorOf !== "none" ? " · " + I18n.tr("displays.mirroring") : ""))
+                    textFormat: Text.PlainText
                     color: Theme.muted
                     font.pixelSize: Theme.textSize(12)
                     elide: Text.ElideRight

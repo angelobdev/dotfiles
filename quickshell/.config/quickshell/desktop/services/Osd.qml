@@ -115,7 +115,7 @@ Singleton {
     Connections {
         target: Brightness
         function onBrightnessChanged(monitorName, percent) {
-            root.show("brightness", percent, false, monitorName, monitorName);
+            root.show("brightness", percent, false, HyprSettings.displayName(monitorName), monitorName);
         }
     }
     Connections {

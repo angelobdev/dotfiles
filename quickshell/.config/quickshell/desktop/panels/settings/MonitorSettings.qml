@@ -21,6 +21,8 @@ ColumnLayout {
     property bool shown: false
     spacing: 6
     readonly property var monitors: HyprSettings.monitorList.filter(entry => entry.name !== "FALLBACK")
+    // Each monitor by connector, named as a person would (the connector is in the Displays list above).
+    readonly property var names: HyprSettings.displayNames(monitors.map(entry => entry.name))
     property string selected: ""
     readonly property var monitor: monitors.find(entry => entry.name === selected) ?? null
     readonly property bool panel: HyprSettings.isPanel(selected)
@@ -152,7 +154,7 @@ ColumnLayout {
                             fill: parent
                             margins: 4
                         }
-                        text: box.modelData.names.join(" = ")
+                        text: box.modelData.names.map(name => root.names[name] ?? name).join(" = ")
                         textFormat: Text.PlainText
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -169,7 +171,7 @@ ColumnLayout {
             enabled: !HyprSettings.trying
             options: root.monitors.map(entry => ({
                         name: entry.name,
-                        label: entry.name
+                        label: root.names[entry.name] ?? entry.name
                     }))
             current: root.selected
             onChosen: name => root.selected = name

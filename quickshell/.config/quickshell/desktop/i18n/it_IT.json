@@ -1467,6 +1467,7 @@
     "reset": "Annulla lo zoom"
   },
   "displays": {
+    "builtIn": "Schermo integrato",
     "title": "Schermi",
     "off": "Spento",
     "details": "%1×%2 · %3 Hz · %4%",
