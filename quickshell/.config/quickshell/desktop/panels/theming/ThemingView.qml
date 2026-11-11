@@ -9,7 +9,7 @@ import "../../services"
 // banner. Settings shows it as a section (panels/SettingsPanel.qml); its pages call back through `panel`.
 ColumnLayout {
     id: root
-    // The section title, shown left of the tab chips.
+    // The section title, shown above the tab chips.
     property string title: ""
     // The section is on screen: Ctrl+Tab and the Theming refresh are for it only.
     property bool active: false
@@ -103,43 +103,40 @@ ColumnLayout {
         sequences: ["Ctrl+Shift+Tab", "Ctrl+PgUp"]
         onActivated: root.cycleTab(-1)
     }
-    RowLayout {
+    Heading {
         Layout.fillWidth: true
-        Heading {
-            Layout.fillWidth: true
-            text: root.title
-        }
-        ChoiceChips {
-            Layout.fillWidth: false
-            options: [
-                {
-                    name: "theme",
-                    label: I18n.tr("theming.tabs.theme")
-                },
-                {
-                    name: "layout",
-                    label: I18n.tr("theming.tabs.layout")
-                },
-                {
-                    name: "wallpaper",
-                    label: I18n.tr("theming.tabs.wallpaper")
-                },
-                {
-                    name: "font",
-                    label: I18n.tr("theming.tabs.font")
-                },
-                {
-                    name: "icons",
-                    label: I18n.tr("theming.tabs.icons")
-                },
-                {
-                    name: "cursors",
-                    label: I18n.tr("theming.tabs.cursors")
-                }
-            ]
-            current: root.shownTab
-            onChosen: name => root.showTab(name)
-        }
+        text: root.title
+    }
+    // The tabs, left-aligned under the title (as in System), wrapping on a narrow panel.
+    ChoiceChips {
+        options: [
+            {
+                name: "theme",
+                label: I18n.tr("theming.tabs.theme")
+            },
+            {
+                name: "layout",
+                label: I18n.tr("theming.tabs.layout")
+            },
+            {
+                name: "wallpaper",
+                label: I18n.tr("theming.tabs.wallpaper")
+            },
+            {
+                name: "font",
+                label: I18n.tr("theming.tabs.font")
+            },
+            {
+                name: "icons",
+                label: I18n.tr("theming.tabs.icons")
+            },
+            {
+                name: "cursors",
+                label: I18n.tr("theming.tabs.cursors")
+            }
+        ]
+        current: root.shownTab
+        onChosen: name => root.showTab(name)
     }
     StackLayout {
         Layout.fillWidth: true
