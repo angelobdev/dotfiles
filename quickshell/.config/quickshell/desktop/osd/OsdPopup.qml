@@ -8,6 +8,9 @@ import "../services"
 
 PanelWindow {
     id: root
+    // Showing the window creates it, and Quickshell announces its screen again while visible is being set:
+    // read directly, that re-entered the visible binding (a binding loop). A string notifies only on a change.
+    readonly property string screenName: screen?.name ?? ""
     screen: Osd.targetScreen || Quickshell.screens[0]
     anchors.bottom: true
     // 8 px of room below the card for its rise; the card itself stays where the margin puts it.
@@ -15,7 +18,7 @@ PanelWindow {
     implicitWidth: Math.min(Math.max(240, Config.osdWidth), (screen?.width ?? 800) - 24)
     implicitHeight: 104
     color: "transparent"
-    visible: (Osd.visible || card.opacity > 0) && !Tablet.remaps(screen?.name ?? "")
+    visible: (Osd.visible || card.opacity > 0) && !Tablet.remaps(screenName)
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.namespace: "desktop-osd"
     WlrLayershell.layer: WlrLayer.Overlay
