@@ -102,7 +102,7 @@ Media keys call Quickshell through `desktop-shell media ACTION`, using the same 
 
 The bar shows occupied/active workspaces and at least two pills per monitor. Empty slots are placeholders: a workspace is created only when clicked or reached by scrolling, or by scrolling past the last pill. IDs are assigned globally without reusing another monitor's workspaces; special workspaces are excluded. Clicking first focuses the bar's monitor. Scrolling or a vertical touchpad gesture over the workspace area moves to the previous/next workspace, stopping at the first one. Scrolling past the last one opens a new workspace on that monitor, with the first free ID above it, if the last one has windows; an empty last workspace stops the scroll, since Hyprland removes an empty workspace once you leave it. Touchpad deltas accumulate to prevent accidental switches; the area responds over the entire bar height.
 
-In `Config.qml`: `minimumWorkspaces: 2` (minimum 2, maximum 10) and `workspaceScroll: true`.
+In `Config.qml`: `minimumWorkspaces: 2` (minimum 2, maximum 10), `workspaceScroll: true` and `workspaceNumbers: false`. Turning `workspaceNumbers` on (Settings → Desktop → Bar, "Show workspace numbers") draws each workspace's number inside the active pill and in place of the other dots; the bar height does not change.
 
 ## Dock
 

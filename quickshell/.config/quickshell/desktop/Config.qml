@@ -105,6 +105,8 @@ Singleton {
     // The coding agent Super + A opens (an id of agents.py, Settings → Assistant); "" picks the first installed.
     readonly property string aiPrimary: pick("aiPrimary", "")
     readonly property bool workspaceScroll: pick("workspaceScroll", true)
+    // Numbers in the workspace pills of the bar instead of bare dots.
+    readonly property bool workspaceNumbers: pick("workspaceNumbers", false)
     // Turns the shell's own animations off (Hyprland's live in hypr/config/appearance.lua).
     readonly property bool reduceMotion: pick("reduceMotion", false)
     readonly property bool clipboardEnabled: pick("clipboardEnabled", true)

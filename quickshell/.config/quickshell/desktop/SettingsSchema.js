@@ -13,6 +13,7 @@ const options = [
     // Desktop
     { key: "barMedia", section: "desktop", group: "bar", type: "bool", fallback: true },
     { key: "workspaceScroll", section: "desktop", group: "bar", type: "bool", fallback: true, hint: true },
+    { key: "workspaceNumbers", section: "desktop", group: "bar", type: "bool", fallback: false, hint: true },
     { key: "minimumWorkspaces", section: "desktop", group: "bar", type: "number", fallback: 2, min: 1, max: 10, step: 1 },
     { key: "dockEnabled", section: "desktop", group: "dock", type: "bool", fallback: true },
     { key: "dockIconSize", section: "desktop", group: "dock", type: "number", fallback: 44, min: 32, max: 64, step: 2, unit: "px" },
