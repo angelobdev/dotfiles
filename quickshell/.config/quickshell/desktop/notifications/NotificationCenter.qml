@@ -47,6 +47,10 @@ Overlay {
                     enabled: Notices.entries.length > 0
                     onClicked: Notices.clear()
                 }
+                // Room between Clear all and close, so neither is hit for the other.
+                Item {
+                    implicitWidth: 12
+                }
             }
             ListView {
                 id: list
