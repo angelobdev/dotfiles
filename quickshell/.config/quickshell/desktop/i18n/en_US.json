@@ -1462,7 +1462,7 @@
   "radio": {
     "title": "Radio & music",
     "searchPlaceholder": "Filter stations or search YouTube mixes and playlists…",
-    "searchYoutube": "YouTube",
+    "searchYoutube": "Search YouTube",
     "searching": "Searching YouTube with ytfzf…",
     "empty": "No matching stations",
     "savedEmpty": "No saved stations or playlists yet. Pin any YouTube result to save it here.",

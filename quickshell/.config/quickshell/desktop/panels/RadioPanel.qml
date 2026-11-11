@@ -199,36 +199,55 @@ Overlay {
                     }
                 }
 
-                ChoiceChips {
+                // One row of chips that scrolls sideways when they do not fit.
+                Flickable {
+                    id: chipsFlick
                     Layout.fillWidth: true
-                    current: root.category
-                    options: [
-                        {
-                            name: "all",
-                            label: I18n.tr("radio.categories.all")
-                        },
-                        {
-                            name: "radio",
-                            label: I18n.tr("radio.categories.webRadio")
+                    Layout.preferredHeight: categoryChips.height
+                    contentWidth: categoryChips.width
+                    contentHeight: categoryChips.height
+                    flickableDirection: Flickable.HorizontalFlick
+                    boundsBehavior: Flickable.StopAtBounds
+                    clip: true
+                    WheelHandler {
+                        acceptedDevices: PointerDevice.Mouse
+                        onWheel: event => {
+                            const max = Math.max(0, chipsFlick.contentWidth - chipsFlick.width);
+                            chipsFlick.contentX = Math.max(0, Math.min(max, chipsFlick.contentX - event.angleDelta.y / 2));
                         }
-                    ].concat(Radio.categories.map(name => ({
-                                name: name,
-                                label: root.categoryLabel(name)
-                            })), [
-                        {
-                            name: "saved",
-                            label: I18n.tr("radio.categories.saved")
-                        },
-                        {
-                            name: "youtube",
-                            label: I18n.tr("radio.categories.youtube")
+                    }
+                    ChoiceChips {
+                        id: categoryChips
+                        width: naturalWidth
+                        current: root.category
+                        options: [
+                            {
+                                name: "all",
+                                label: I18n.tr("radio.categories.all")
+                            },
+                            {
+                                name: "radio",
+                                label: I18n.tr("radio.categories.webRadio")
+                            }
+                        ].concat(Radio.categories.map(name => ({
+                                    name: name,
+                                    label: root.categoryLabel(name)
+                                })), [
+                            {
+                                name: "saved",
+                                label: I18n.tr("radio.categories.saved")
+                            },
+                            {
+                                name: "youtube",
+                                label: I18n.tr("radio.categories.youtube")
+                            }
+                        ])
+                        onChosen: name => {
+                            root.category = name;
+                            stationsList.currentIndex = 0;
+                            if (name === "youtube" && Radio.results.length === 0 && search.text.trim() !== "")
+                                root.runYoutubeSearch();
                         }
-                    ])
-                    onChosen: name => {
-                        root.category = name;
-                        stationsList.currentIndex = 0;
-                        if (name === "youtube" && Radio.results.length === 0 && search.text.trim() !== "")
-                            root.runYoutubeSearch();
                     }
                 }
 
