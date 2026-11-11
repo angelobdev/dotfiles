@@ -21,6 +21,8 @@ Rectangle {
     // In the center: how many entries a closed stack stands for, and whether this one heads an open stack.
     property int stackCount: 1
     property bool stackOpen: false
+    // In the center: the time the age of the entry is counted to; popups leave it at 0 and show no age.
+    property real now: 0
     // Restored from before a shell restart: readable and removable, with no actions left.
     // The notification goes null for a moment when it closes, before this delegate does.
     readonly property bool archived: notification?.archived === true
@@ -28,6 +30,24 @@ Rectangle {
     readonly property var buttons: notification?.actions.filter(a => !popup || a.identifier !== "default") ?? []
     readonly property string appLabel: notification?.appName || I18n.tr("notifications.fallbackTitle")
     readonly property bool titleLeads: NotificationText.repeatsTitle(appLabel, notification?.summary)
+    // How long ago it arrived, against now.
+    readonly property string age: {
+        const elapsed = now > 0 ? NotificationText.age(Notices.arrivalOf(notification), now) : null;
+        switch (elapsed?.unit) {
+        case "now":
+            return I18n.tr("notifications.age.now");
+        case "minutes":
+            return I18n.plural("notifications.age.minutes.one", "notifications.age.minutes.other", elapsed.count);
+        case "hours":
+            return I18n.plural("notifications.age.hours.one", "notifications.age.hours.other", elapsed.count);
+        case "yesterday":
+            return I18n.tr("notifications.age.yesterday");
+        case "date":
+            return I18n.locale.toString(new Date(Notices.arrivalOf(notification)), I18n.tr("notifications.age.dateFormat"));
+        default:
+            return "";
+        }
+    }
     readonly property string appIcon: {
         const icon = notification?.appIcon || notification?.desktopEntry || "";
         if (icon.startsWith("/") || icon.startsWith("file:") || icon.startsWith("image:"))
@@ -164,6 +184,12 @@ Rectangle {
                 color: Theme.muted
                 font.pixelSize: Theme.textSize(11)
                 font.italic: true
+            }
+            Text {
+                visible: text !== ""
+                text: root.age
+                color: Theme.muted
+                font.pixelSize: Theme.textSize(11)
             }
             // Quiet, and shown on the hovered or focused card only (it keeps its place, so nothing moves);
             // tablet mode has no hover, so there it stays.

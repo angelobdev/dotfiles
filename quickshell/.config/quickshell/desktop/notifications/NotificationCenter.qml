@@ -13,7 +13,16 @@ Overlay {
     property var openStacks: ShellState.recall("notifications/openStacks", [])
     onOpenStacksChanged: ShellState.remember("notifications/openStacks", openStacks)
     readonly property var stacks: NotificationDeck.collapse(Notices.entries, openStacks)
+    // The ages on the cards count to this; it moves only while the center is open.
+    property real now: Date.now()
     panelName: "notifications"
+    Timer {
+        interval: 30000
+        repeat: true
+        running: root.open
+        triggeredOnStart: true
+        onTriggered: root.now = Date.now()
+    }
     SidePanelCard {
         height: Math.min(600, parent.height - Theme.panelClearance)
         ColumnLayout {
@@ -97,6 +106,7 @@ Overlay {
                     readonly property string stackKey: root.stacks.keys[modelData?.id] ?? ""
                     width: list.width
                     notification: modelData
+                    now: root.now
                     stackCount: root.stacks.counts[modelData?.id] ?? 1
                     stackOpen: stackCount > 1 && root.openStacks.includes(stackKey)
                     onStackToggled: root.openStacks = stackOpen ? root.openStacks.filter(key => key !== stackKey) : root.openStacks.concat(stackKey)

@@ -35,6 +35,10 @@ Singleton {
         Osd.showState(quiet ? "bell-off" : "bell", I18n.tr("notifications.doNotDisturb"), I18n.tr(quiet ? "common.on" : "common.off"));
         return true;
     }
+    // When an entry of entries arrived (ms), or undefined for a live one restored without a saved copy.
+    function arrivalOf(entry) {
+        return entry?.archived ? entry.time : arrived[entry?.id];
+    }
     function hidePopup(id) {
         popupIds = popupIds.filter(value => value !== id);
     }
