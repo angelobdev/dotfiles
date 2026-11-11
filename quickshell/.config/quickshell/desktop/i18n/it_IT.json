@@ -836,6 +836,8 @@
       "commit": "%1 del %2",
       "commitChanged": "%1 del %2, con modifiche locali",
       "configErrors": "Configurazione di Hyprland",
+      "copied": "Copiato",
+      "copy": "Copia",
       "desktop": "Desktop",
       "distribution": "Distribuzione",
       "kernel": "Kernel",

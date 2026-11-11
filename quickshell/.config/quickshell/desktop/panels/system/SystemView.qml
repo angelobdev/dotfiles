@@ -26,6 +26,53 @@ ColumnLayout {
     onTabChanged: ShellState.remember("settings/system", tab)
     readonly property var tabs: ["about", "updates", "profiles", "plugins", "advanced"]
     property var about: ({})
+    // The rows of About, as shown and as Copy puts them on the clipboard; folder: the row opens its value.
+    readonly property var facts: {
+        const about = root.about;
+        const processor = about.processor?.name ?? "";
+        const commit = about.repository?.commit ?? "";
+        return [
+            {
+                label: I18n.tr("settings.system.distribution"),
+                value: about.distribution ?? ""
+            },
+            {
+                label: I18n.tr("settings.system.model"),
+                value: about.model ?? ""
+            },
+            {
+                label: I18n.tr("settings.system.processor"),
+                value: processor === "" ? "" : about.processor.threads > 1 ? I18n.tr("settings.system.threads", [processor, about.processor.threads]) : processor
+            },
+            {
+                label: I18n.tr("settings.system.memory"),
+                value: about.memory ?? ""
+            },
+            {
+                label: I18n.tr("settings.system.kernel"),
+                value: about.kernel ?? ""
+            },
+            {
+                label: "Hyprland",
+                value: about.hyprland ?? ""
+            },
+            {
+                label: "Quickshell",
+                value: about.quickshell ?? ""
+            },
+            {
+                label: I18n.tr("settings.system.desktop"),
+                value: commit === "" ? "" : I18n.tr(about.repository.changed ? "settings.system.commitChanged" : "settings.system.commit", [commit, about.repository.date])
+            },
+            {
+                label: I18n.tr("settings.system.repository"),
+                value: about.repository?.path ?? "",
+                folder: true
+            }
+        ].filter(fact => fact.value !== "");
+    }
+    // Copy was pressed a moment ago: its label says so.
+    property bool copied: false
     property string configErrors: ""
     property var ownFiles: []
     property bool confirmReset: false
@@ -51,6 +98,17 @@ ColumnLayout {
         refresh()
     function openPath(path) {
         Quickshell.execDetached(["sh", "-c", "mkdir -p \"$1\" && exec xdg-open \"$2\"", "sh", directory, path]);
+    }
+    // The About table as plain text, one "label: value" line per row, for a bug report.
+    function copyAbout() {
+        Quickshell.execDetached(["wl-copy", "--", root.facts.map(fact => fact.label + ": " + fact.value).join("\n")]);
+        root.copied = true;
+        copiedTimer.restart();
+    }
+    Timer {
+        id: copiedTimer
+        interval: 2000
+        onTriggered: root.copied = false
     }
     Process {
         id: reader
@@ -81,26 +139,44 @@ ColumnLayout {
         }
     }
     component Fact: RowLayout {
+        id: fact
         property string label
         property string value
+        // The value is a folder: a button that opens it, its text in line with the other values.
+        property bool folder: false
+        signal openFolder
         Layout.fillWidth: true
         visible: value !== ""
-        spacing: 14
+        spacing: folder ? 14 - folderButton.leftPadding : 14
         Text {
             Layout.preferredWidth: 180
-            text: parent.label
+            text: fact.label
             color: Theme.muted
             font.family: Theme.font
             font.pixelSize: Theme.textSize(13)
         }
         Text {
             Layout.fillWidth: true
-            text: parent.value
+            visible: !fact.folder
+            text: fact.value
             textFormat: Text.PlainText
             wrapMode: Text.WrapAnywhere
             color: Theme.text
             font.family: Theme.font
             font.pixelSize: Theme.textSize(13)
+        }
+        ActionButton {
+            id: folderButton
+            visible: fact.folder
+            implicitHeight: Theme.hit(28)
+            text: fact.value
+            normalColor: Theme.accent
+            tooltip: I18n.tr("settings.system.openFolder")
+            onClicked: fact.openFolder()
+        }
+        Item {
+            visible: fact.folder
+            Layout.fillWidth: true
         }
     }
     Heading {
@@ -146,42 +222,22 @@ ColumnLayout {
                 Layout.fillWidth: true
                 rightPadding: 12
                 spacing: 10
-                Fact {
-                    label: I18n.tr("settings.system.distribution")
-                    value: root.about.distribution ?? ""
+                Repeater {
+                    model: root.facts
+                    Fact {
+                        required property var modelData
+                        label: modelData.label
+                        value: modelData.value
+                        folder: modelData.folder === true
+                        onOpenFolder: root.openPath(modelData.value)
+                    }
                 }
-                Fact {
-                    label: I18n.tr("settings.system.model")
-                    value: root.about.model ?? ""
-                }
-                Fact {
-                    label: I18n.tr("settings.system.processor")
-                    value: (root.about.processor?.name ?? "") === "" ? "" : root.about.processor.threads > 1 ? I18n.tr("settings.system.threads", [root.about.processor.name, root.about.processor.threads]) : root.about.processor.name
-                }
-                Fact {
-                    label: I18n.tr("settings.system.memory")
-                    value: root.about.memory ?? ""
-                }
-                Fact {
-                    label: I18n.tr("settings.system.kernel")
-                    value: root.about.kernel ?? ""
-                }
-                Fact {
-                    label: "Hyprland"
-                    value: root.about.hyprland ?? ""
-                }
-                Fact {
-                    label: "Quickshell"
-                    value: root.about.quickshell ?? ""
-                }
-                Fact {
-                    label: I18n.tr("settings.system.desktop")
-                    value: (root.about.repository?.commit ?? "") === "" ? "" : I18n.tr(root.about.repository.changed ? "settings.system.commitChanged" : "settings.system.commit", [root.about.repository.commit, root.about.repository.date])
-                }
-                Fact {
-                    label: I18n.tr("settings.system.repository")
-                    value: root.about.repository?.path ?? ""
-                }
+            }
+            ActionButton {
+                outlined: true
+                visible: root.facts.length > 0
+                text: root.copied ? I18n.tr("settings.system.copied") : I18n.tr("settings.system.copy")
+                onClicked: root.copyAbout()
             }
             Item {
                 Layout.fillHeight: true
