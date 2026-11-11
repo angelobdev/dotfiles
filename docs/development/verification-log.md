@@ -1176,3 +1176,9 @@ Reported by the user after the merges of the day:
 
 - The six footers (Launcher, Clipboard, Radio, Calendar, power menu, Appearance) follow the one the option pages had: `KEY action · KEY action`, arrows as `↑↓` and `←→`, in both catalogs. Seen live in it_IT for five of them; the Calendar one was not in the capture. Still open in #167: keys drawn as keycaps, and a footer on the pages that have none.
 - `check-i18n.py` passes.
+
+## Text buttons have a shape (#168), 2026-11-11
+
+- `ActionButton` gained `outlined` (a 1 px `Theme.stroke` border at rest, kept when disabled); 56 standalone text buttons set it: the actions of Settings (System, Appearance, Keyboard, Displays, Assistant), the Wallpaper picker, Calendar, Network, Clipboard, notification actions and the Cancel / Close buttons of the dialogs. List rows, tabs, chips and icon buttons are unchanged.
+- Seen live: System → Advanced, Profiles, Plugins, Appearance → Cursors and Font, Keyboard, Calendar, the Wallpaper picker. Not seen: the authentication and pairing dialogs, Network details, notification actions.
+- `check.sh` passes.

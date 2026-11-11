@@ -80,6 +80,7 @@ ColumnLayout {
                     }
                 }
                 ActionButton {
+                    outlined: true
                     visible: agentRow.modelData.path === "" && agentRow.modelData.install !== ""
                     enabled: !Agent.installing && agentRow.modelData.missing.length === 0
                     text: Agent.installing ? I18n.tr("assistant.installing") : I18n.tr("assistant.installAction")

@@ -191,6 +191,7 @@ Overlay {
                         }
                     }
                     ActionButton {
+                        outlined: true
                         iconName: "zoom"
                         text: I18n.tr("radio.searchYoutube")
                         enabled: !Radio.searching && search.text.trim().length > 0

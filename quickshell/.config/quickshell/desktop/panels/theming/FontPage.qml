@@ -134,10 +134,12 @@ ColumnLayout {
             Layout.fillWidth: true
         }
         ActionButton {
+            outlined: true
             text: I18n.tr("theming.openFonts")
             onClicked: Theming.openFolder("fonts")
         }
         ActionButton {
+            outlined: true
             text: I18n.tr("theming.rescan")
             onClicked: Theming.rescan("fonts")
         }

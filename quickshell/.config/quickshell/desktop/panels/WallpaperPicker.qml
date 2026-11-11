@@ -89,6 +89,7 @@ Overlay {
             }
             RowLayout {
                 ActionButton {
+                    outlined: true
                     text: "↑"
                     tooltip: I18n.tr("wallpaper.parentFolder")
                     Accessible.name: I18n.tr("wallpaper.parentFolder")
@@ -96,11 +97,13 @@ Overlay {
                     onClicked: root.navigate(folder.parentFolder)
                 }
                 ActionButton {
+                    outlined: true
                     text: I18n.tr("wallpaper.home")
                     enabled: !operation.running
                     onClicked: root.navigate(FileUrl.of(Quickshell.env("HOME")))
                 }
                 ActionButton {
+                    outlined: true
                     text: I18n.tr("wallpaper.collection")
                     enabled: !operation.running
                     onClicked: root.navigate(FileUrl.of(Quickshell.env("HOME") + "/.local/share/wallpapers"))
@@ -208,6 +211,7 @@ Overlay {
             }
             RowLayout {
                 ActionButton {
+                    outlined: true
                     text: I18n.tr("wallpaper.restoreDefault")
                     enabled: !operation.running
                     onClicked: root.apply(true)

@@ -346,6 +346,7 @@ Overlay {
                 }
                 RowLayout {
                     ActionButton {
+                        outlined: true
                         text: I18n.tr("calendar.today")
                         onClicked: {
                             root.today();
@@ -353,6 +354,7 @@ Overlay {
                         }
                     }
                     ActionButton {
+                        outlined: true
                         text: I18n.tr("common.refresh")
                         enabled: !Calendar.busy
                         onClicked: root.loadEvents()

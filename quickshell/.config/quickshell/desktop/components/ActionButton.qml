@@ -19,6 +19,9 @@ Button {
     property string tooltip: ""
     // Lists with a moving selection (ListView.highlight) draw the highlighted background themselves.
     property bool highlightBackground: true
+    // A text button that stands by itself (not a list row, a tab or a bar control) keeps a thin outline at rest,
+    // so it reads as a button next to plain text, enabled or not.
+    property bool outlined: false
     // Text and icon colour when neither destructive nor highlighted; the bar follows BarStyle.
     property color normalColor: Theme.text
     readonly property bool hasIcon: iconName !== "" || iconSource.toString() !== ""
@@ -104,6 +107,8 @@ Button {
     }
     background: Rectangle {
         radius: Theme.corner(11)
+        border.width: root.outlined && !root.highlighted ? 1 : 0
+        border.color: Theme.stroke
         color: root.highlighted ? (root.highlightBackground ? root.highlightColor : "transparent") : root.down || root.hovered || (root.keyboardFocusOnly ? root.visualFocus : root.activeFocus) ? Theme.raised : "transparent"
         Behavior on color {
             ColorAnimation {

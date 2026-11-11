@@ -23,6 +23,7 @@ ColumnLayout {
             onAccepted: Theming.applyCustom(entry.kind, text)
         }
         ActionButton {
+            outlined: true
             text: I18n.tr("theming.useCustom")
             enabled: field.text.trim() !== ""
             onClicked: Theming.applyCustom(entry.kind, field.text)

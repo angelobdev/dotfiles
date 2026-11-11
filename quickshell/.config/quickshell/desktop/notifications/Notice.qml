@@ -202,6 +202,7 @@ Rectangle {
             Repeater {
                 model: root.buttons
                 ActionButton {
+                    outlined: true
                     required property var modelData
                     text: modelData.text
                     onClicked: modelData.invoke()

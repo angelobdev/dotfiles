@@ -172,6 +172,7 @@ Overlay {
                 }
                 ActionButton {
                     id: cancel
+                    outlined: true
                     text: I18n.tr("common.cancel")
                     enabled: !operation.running
                     Keys.onReturnPressed: clicked()
@@ -193,6 +194,7 @@ Overlay {
             }
             ActionButton {
                 id: closeButton
+                outlined: true
                 text: I18n.tr("common.close")
                 Layout.fillWidth: true
                 Keys.onReturnPressed: clicked()

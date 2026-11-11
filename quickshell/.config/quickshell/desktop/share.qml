@@ -153,6 +153,7 @@ ShellRoot {
                         Layout.fillWidth: true
                     }
                     ActionButton {
+                        outlined: true
                         text: I18n.tr("common.cancel")
                         onClicked: Qt.quit()
                     }

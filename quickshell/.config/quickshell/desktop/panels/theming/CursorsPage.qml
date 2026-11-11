@@ -37,14 +37,17 @@ ColumnLayout {
             Layout.fillWidth: true
         }
         ActionButton {
+            outlined: true
             text: I18n.tr("store.getMore")
             onClicked: page.panel.openStore("cursors")
         }
         ActionButton {
+            outlined: true
             text: I18n.tr("theming.openCursors")
             onClicked: Theming.openFolder("icons")
         }
         ActionButton {
+            outlined: true
             text: I18n.tr("theming.rescan")
             onClicked: Theming.rescan("icons")
         }
