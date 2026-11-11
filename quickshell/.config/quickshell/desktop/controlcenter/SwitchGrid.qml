@@ -5,7 +5,7 @@ import "../components"
 import "../services"
 
 // The Control Center switches in a 2x2 grid: Do Not Disturb, Keep awake, Rotation lock (only with an
-// accelerometer) and Night shift. The mode and temperature of Night shift, and the focus sessions of Do Not
+// accelerometer, in tablet mode) and Night shift. The mode and temperature of Night shift, and the focus sessions of Do Not
 // Disturb, open below the grid, one at a time.
 ColumnLayout {
     id: root
@@ -14,6 +14,8 @@ ColumnLayout {
     property bool focusDetails: ShellState.recall("controls/focusDetails", false)
     onFocusDetailsChanged: ShellState.remember("controls/focusDetails", focusDetails)
     spacing: 10
+    // The lock does nothing in laptop mode, so the tile appears only in tablet mode.
+    readonly property bool showRotation: Tablet.available && Tablet.active
     function nightStatus() {
         if (!NightShift.available)
             return I18n.tr("nightShift.missing");
@@ -55,16 +57,18 @@ ColumnLayout {
         ToggleTile {
             Layout.fillWidth: true
             Layout.preferredWidth: 1
-            visible: Tablet.available
+            visible: root.showRotation
             icon: Tablet.locked ? "rotate-lock" : "rotate"
             title: I18n.tr("tablet.rotationLock")
-            status: Tablet.locked ? I18n.tr("tablet.locked") : Tablet.active ? I18n.tr("tablet.rotatesAutomatically") : I18n.tr("tablet.rotatesInTablet")
+            status: Tablet.locked ? I18n.tr("tablet.locked") : I18n.tr("tablet.rotatesAutomatically")
             checked: Tablet.locked
             onToggled: Tablet.setLocked(!Tablet.locked)
         }
         ToggleTile {
             Layout.fillWidth: true
             Layout.preferredWidth: 1
+            // Alone on the last row without the rotation tile: take its full width.
+            Layout.columnSpan: root.showRotation ? 1 : 2
             icon: "night"
             title: I18n.tr("nightShift.title")
             status: root.nightStatus()
