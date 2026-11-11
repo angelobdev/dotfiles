@@ -32,6 +32,8 @@ Rectangle {
             entry.action();
         triggered(entry);
     }
+    // A menu with a checkable item reserves the leading column on every item, so the labels line up.
+    readonly property bool hasCheck: entries.some(entry => entry.checked !== undefined)
     implicitWidth: 252
     implicitHeight: list.contentHeight + 12
     radius: Theme.radius
@@ -106,7 +108,7 @@ Rectangle {
                 Item {
                     Layout.preferredWidth: 16
                     Layout.preferredHeight: 16
-                    visible: row.kind === "item" && (row.modelData.checked !== undefined || !!row.modelData.icon || !!row.modelData.glyph)
+                    visible: row.kind === "item" && (root.hasCheck || row.modelData.checked !== undefined || !!row.modelData.icon || !!row.modelData.glyph)
                     Icon {
                         anchors.fill: parent
                         visible: row.modelData.checked === undefined && !!row.modelData.glyph
