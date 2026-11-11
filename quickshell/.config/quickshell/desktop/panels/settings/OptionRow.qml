@@ -161,11 +161,17 @@ Item {
         InputField {
             implicitWidth: row.option.type === "time" ? 90 : 220
             text: String(row.value)
-            placeholderText: row.option.type === "time" ? I18n.tr("settings.timePlaceholder") : ""
+            placeholderText: row.option.type === "time" ? I18n.tr("settings.timePlaceholder") : row.option.placeholder === true ? I18n.tr(Schema.placeholderKey(row.option)) : ""
             validator: RegularExpressionValidator {
                 regularExpression: row.option.type === "time" ? /^([01][0-9]|2[0-3]):[0-5][0-9]$/ : /.*/
             }
             Accessible.name: I18n.tr(Schema.labelKey(row.option))
+            // The shared field draws its outline in Theme.raised, which is lost on the group tile.
+            background: Rectangle {
+                radius: Theme.corner(8)
+                color: Theme.background
+                border.color: activeFocus ? Theme.accent : Theme.stroke
+            }
             onEditingFinished: {
                 if (acceptableInput && text.trim() !== String(row.value))
                     row.apply(text.trim());
