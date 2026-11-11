@@ -593,6 +593,7 @@
     "title": "Network & Wi-Fi",
     "tooltip": "Networks & Wi-Fi",
     "vpn": "VPN",
+    "wifi": "Wi-Fi",
     "wifiOff": "Wi-Fi off",
     "wifiOn": "Wi-Fi on",
     "connectionFailed": "Connection failed: %1",
