@@ -51,9 +51,7 @@ Item {
         width: row.width + 16
         height: row.height + 8
         radius: Theme.corner(8)
-        color: Theme.raised
-        border.width: 1
-        border.color: Theme.frameActive
+        color: Theme.selection
     }
     function decimals() {
         return (String(option.step ?? 1).split(".")[1] || "").length;
