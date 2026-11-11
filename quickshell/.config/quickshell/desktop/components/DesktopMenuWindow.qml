@@ -83,19 +83,16 @@ MenuLayer {
             {
                 text: I18n.tr("session.logout"),
                 glyph: "logout",
-                destructive: true,
                 action: () => root.session("logout")
             },
             {
                 text: I18n.tr("session.reboot"),
                 glyph: "reboot",
-                destructive: true,
                 action: () => root.session("reboot")
             },
             {
                 text: I18n.tr("session.powerOff"),
                 glyph: "power",
-                destructive: true,
                 action: () => root.session("poweroff")
             }
         ]
