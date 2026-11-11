@@ -315,9 +315,12 @@ ColumnLayout {
                         id: deviceRow
                         required property var modelData
                         readonly property bool wired: modelData.type === DeviceType.Wired
+                        // Wi-Fi or Ethernet; the interface name only tells apart several adapters of one kind.
+                        readonly property string kind: wired ? I18n.tr("network.ethernet") : modelData.type === DeviceType.Wifi ? I18n.tr("network.wifi") : modelData.name
+                        readonly property bool several: Networking.devices.values.filter(device => device.type === modelData.type).length > 1
                         Layout.fillWidth: true
                         Text {
-                            text: [deviceRow.wired ? I18n.tr("network.ethernet") + " (" + deviceRow.modelData.name + ")" : deviceRow.modelData.name, deviceRow.wired && !deviceRow.modelData.hasLink ? I18n.tr("network.cableUnplugged") : I18n.networkDescription(ConnectionState.toString(deviceRow.modelData.state))].join(" · ")
+                            text: [deviceRow.kind + (deviceRow.several && deviceRow.kind !== deviceRow.modelData.name ? " (" + deviceRow.modelData.name + ")" : ""), deviceRow.wired && !deviceRow.modelData.hasLink ? I18n.tr("network.cableUnplugged") : I18n.networkDescription(ConnectionState.toString(deviceRow.modelData.state))].join(" · ")
                             color: Theme.muted
                             textFormat: Text.PlainText
                             font.pixelSize: Theme.textSize(11)
