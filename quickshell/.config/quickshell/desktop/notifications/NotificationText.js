@@ -27,3 +27,18 @@ function repeatsTitle(app, summary) {
   var title = String(summary || "").trim().toLowerCase();
   return title !== "" && String(app || "").trim().toLowerCase() === title;
 }
+
+// How long ago a notification arrived, as a unit and a count: "now" under a minute, then minutes, hours
+// while it is still the same day, "yesterday", and a "date" before that. Unknown times give null.
+function age(then, now) {
+  if (typeof then !== "number" || !isFinite(then)) return null;
+  var minutes = Math.floor(Math.max(0, now - then) / 60000);
+  if (minutes < 1) return { unit: "now", count: 0 };
+  if (minutes < 60) return { unit: "minutes", count: minutes };
+  var day = new Date(now);
+  day.setHours(0, 0, 0, 0);
+  if (then >= day.getTime()) return { unit: "hours", count: Math.floor(minutes / 60) };
+  day.setDate(day.getDate() - 1);
+  if (then >= day.getTime()) return { unit: "yesterday", count: 0 };
+  return { unit: "date", count: 0 };
+}

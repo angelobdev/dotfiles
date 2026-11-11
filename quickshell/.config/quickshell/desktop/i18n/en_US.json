@@ -590,6 +590,19 @@
     "passwordFor": "Password for %1"
   },
   "notifications": {
+    "age": {
+      "dateFormat": "MMM d",
+      "hours": {
+        "one": "%1 h",
+        "other": "%1 h"
+      },
+      "minutes": {
+        "one": "%1 min",
+        "other": "%1 min"
+      },
+      "now": "Now",
+      "yesterday": "Yesterday"
+    },
     "archived": "Archived",
     "clearAll": "Clear all",
     "doNotDisturb": "Do Not Disturb",

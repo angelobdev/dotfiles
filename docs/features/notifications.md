@@ -11,4 +11,4 @@ Popups stack in decks per app, or per site for browsers, and a notification cent
 
 ## History
 
-The notification center keeps up to 50 notifications from the last 7 days across shell restarts. Those from before a restart are marked **Archived**: they can be read and deleted, but their action buttons are gone, because the sending application bound them to the previous notification server. **Clear all** removes live and archived ones.
+The notification center keeps up to 50 notifications from the last 7 days across shell restarts. Those from before a restart are marked **Archived**: they can be read and deleted, but their action buttons are gone, because the sending application bound them to the previous notification server. **Clear all** removes live and archived ones. Each card says how long ago it arrived: **Now**, then minutes, hours while it is still the same day, **Yesterday**, and the date before that; a closed stack shows the time of its newest entry. The times move every 30 seconds while the center is open, and not at all while it is closed.

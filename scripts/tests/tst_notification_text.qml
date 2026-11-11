@@ -32,6 +32,43 @@ TestCase {
         compare(NotificationText.styled(body).length, NotificationText.MAX_LENGTH + 1);
     }
 
+    function test_age_counts_minutes_then_hours_of_the_same_day() {
+        const now = new Date(2026, 10, 11, 15, 0).getTime();
+        compare(NotificationText.age(now - 30 * 1000, now), {
+            unit: "now",
+            count: 0
+        });
+        // A clock that ran ahead still reads as now.
+        compare(NotificationText.age(now + 5000, now).unit, "now");
+        compare(NotificationText.age(now - 60 * 1000, now), {
+            unit: "minutes",
+            count: 1
+        });
+        compare(NotificationText.age(now - 59 * 60 * 1000, now).count, 59);
+        compare(NotificationText.age(now - 60 * 60 * 1000, now), {
+            unit: "hours",
+            count: 1
+        });
+        compare(NotificationText.age(new Date(2026, 10, 11, 0, 5).getTime(), now), {
+            unit: "hours",
+            count: 14
+        });
+    }
+
+    function test_age_names_yesterday_then_a_date() {
+        const now = new Date(2026, 10, 11, 0, 30).getTime();
+        // Under an hour stays in minutes across midnight; past it, the day before is yesterday.
+        compare(NotificationText.age(new Date(2026, 10, 10, 23, 50).getTime(), now).unit, "minutes");
+        compare(NotificationText.age(new Date(2026, 10, 10, 23, 0).getTime(), now).unit, "yesterday");
+        compare(NotificationText.age(new Date(2026, 10, 10, 0, 0).getTime(), now).unit, "yesterday");
+        compare(NotificationText.age(new Date(2026, 10, 9, 23, 59).getTime(), now).unit, "date");
+    }
+
+    function test_age_of_an_unknown_time_is_null() {
+        compare(NotificationText.age(undefined, Date.now()), null);
+        compare(NotificationText.age(NaN, Date.now()), null);
+    }
+
     // "Updates" / "Updates": the app line goes when it only repeats the title, whatever the case or spaces.
     function test_app_line_left_out_when_it_repeats_the_title() {
         verify(NotificationText.repeatsTitle("Aggiornamenti", "Aggiornamenti"));
