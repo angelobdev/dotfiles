@@ -324,7 +324,8 @@ Overlay {
                                     assistant: assistantView,
                                     system: systemView,
                                     keyboard: keyboardView,
-                                    power: powerView
+                                    power: powerView,
+                                    privacy: privacyView
                                 })[modelData.name] ?? optionsView
                             // Appearance: the theme, wallpaper, font, icons and cursors (panels/theming).
                             Component {
@@ -466,6 +467,38 @@ Overlay {
                                     section: page.modelData.name
                                     title: I18n.tr(page.modelData.labelKey)
                                     PowerProfileGroup {}
+                                }
+                            }
+                            // Privacy: the schema options, with how many apps the launch history holds and its Clear
+                            // in the Launcher card.
+                            Component {
+                                id: privacyView
+                                OptionsSection {
+                                    section: page.modelData.name
+                                    title: I18n.tr(page.modelData.labelKey)
+                                    groupRows: ({
+                                            launcher: launchHistoryRow
+                                        })
+                                }
+                            }
+                            Component {
+                                id: launchHistoryRow
+                                RowLayout {
+                                    spacing: 14
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: Apps.remembered > 0 ? I18n.plural("settings.launchHistory.count.one", "settings.launchHistory.count.other", Apps.remembered) : I18n.tr("settings.launchHistory.none")
+                                        wrapMode: Text.WordWrap
+                                        color: Theme.muted
+                                        font.family: Theme.font
+                                        font.pixelSize: Theme.textSize(12)
+                                    }
+                                    ActionButton {
+                                        outlined: true
+                                        enabled: Apps.remembered > 0
+                                        text: I18n.tr("settings.launchHistory.clear")
+                                        onClicked: Apps.clearHistory()
+                                    }
                                 }
                             }
                             Component {

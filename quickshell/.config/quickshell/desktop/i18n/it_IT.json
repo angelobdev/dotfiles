@@ -723,7 +723,8 @@
       "oskLearning": "Parole singole con un conteggio, tenute su questo computer, per i suggerimenti.",
       "oskTouchStats": "Solo i totali di quanto i tocchi cadono lontano da ogni tasto, mai quale tasto o quando.",
       "touchScale": "In modalità tablet barra, pulsanti, righe e icone del dock crescono di tanto.",
-      "clipboardEnabled": "Testi e immagini che copi, tenuti su questo computer."
+      "clipboardEnabled": "Testi e immagini che copi, tenuti su questo computer.",
+      "launcherHistory": "Dal launcher e dal dock, tenute su questo computer, perché il launcher le mostri per prime."
     },
     "hypr": {
       "add": "Aggiungi una scorciatoia",
@@ -755,6 +756,14 @@
       "taken": "Già usata da: %1. Partirebbero entrambe.",
       "twice": "Usata anche da un'altra delle tue scorciatoie.",
       "variant": "Variante"
+    },
+    "launchHistory": {
+      "clear": "Svuota la cronologia",
+      "count": {
+        "one": "%1 app ricordata",
+        "other": "%1 app ricordate"
+      },
+      "none": "Ancora nessuna app ricordata"
     },
     "monitors": {
       "apply": "Applica",
@@ -814,6 +823,7 @@
       "assistLongPress": "Pressione lunga sul pulsante assist",
       "clipboardEnabled": "Tieni una cronologia della clipboard",
       "clipboardMaxItems": "Elementi conservati",
+      "launcherHistory": "Ricorda le app che apri",
       "recordingFramerate": "Fotogrammi al secondo"
     },
     "placeholders": {
