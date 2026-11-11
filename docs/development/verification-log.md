@@ -257,6 +257,11 @@ After stowing, the live shell loaded the dock (`Configuration Loaded`). A first 
 **Restart**
 - The automatic restart after font and icon changes was removed at the user's request. The panel shows the restart banner instead, and its button still reopens the panel on the same tab.
 
+**Halo (#171, 2026-11-11)**
+- On a 1920×1080 monitor with the Dynamic theme, a bright sky on the left of the strip and a darker right half averaged to light text, and the logo, workspace strip and window title almost disappeared.
+- The transparent bar row now has a soft halo in the other text colour (`MultiEffect` shadow, no offset, `blurMax` 8); the Shaded bar is unchanged.
+- Checked with `check.sh` (qmllint) only; the look over that wallpaper is still to be confirmed on the live session.
+
 ## Shell state persistence verification
 
 **Keep awake and Do Not Disturb**
