@@ -658,10 +658,17 @@
       "usage": "Usage: desktop-power {lock|suspend|logout|reboot|poweroff}",
       "waylandRequired": "A Wayland session is required"
     },
+    "keys": {
+      "lock": "L",
+      "logout": "O",
+      "poweroff": "P",
+      "reboot": "R",
+      "suspend": "S"
+    },
     "lock": "Lock screen",
     "logout": "Log out…",
     "menuTitle": "Session menu",
-    "navigationHint": "↑↓ or Tab select · Enter or Space activate · Esc cancel or close",
+    "navigationHint": "↑↓ or Tab select · Enter or Space activate · Letter shortcut · Esc cancel or close",
     "noActions": "No actions available",
     "operationFailed": "Operation failed (%1).",
     "powerOff": "Shut down…",
