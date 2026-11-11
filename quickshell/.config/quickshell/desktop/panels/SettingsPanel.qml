@@ -151,10 +151,6 @@ Overlay {
     }
     // Narrow screens show the sidebar or a section, not both; Back returns to the sidebar.
     readonly property bool compact: card.width < 820
-    // The widest a section of option rows and lists grows, so a label and its control stay within reach of each
-    // other; the sections that use the room (grids, the monitor list, tabs with logs) take the whole width.
-    readonly property int readableWidth: 720
-    readonly property var wideSections: ["appearance", "displays", "system"]
     // Sections that show a view without a key footer (no keys of their own beyond Tab): the panel adds one with
     // the keys it handles there.
     readonly property var viewSections: ["network", "bluetooth", "displays", "sound", "assistant", "system"]
@@ -463,7 +459,6 @@ Overlay {
                 }
                 StackLayout {
                     Layout.fillWidth: true
-                    Layout.maximumWidth: root.wideSections.includes(root.section) ? Number.POSITIVE_INFINITY : root.readableWidth
                     Layout.fillHeight: true
                     currentIndex: root.sectionNames.indexOf(root.section)
                     // One page per section, in sidebar order, built the first time it shows.
@@ -619,7 +614,6 @@ Overlay {
                                 SystemView {
                                     title: I18n.tr(page.modelData.labelKey)
                                     shown: page.shownHere
-                                    readableWidth: root.readableWidth
                                 }
                             }
                             // Keyboard: the on-screen keyboard options, then the layout and personal shortcuts.
@@ -686,7 +680,6 @@ Overlay {
                 // and Appearance list these with theirs). Esc goes back from the details of a network first.
                 KeyHints {
                     visible: !Tablet.active && root.viewSections.includes(root.section)
-                    Layout.maximumWidth: root.wideSections.includes(root.section) ? Number.POSITIVE_INFINITY : root.readableWidth
                     // pages.count: the binding runs again once the pages exist, and then follows the network page.
                     hints: root.section === "network" && pages.count > 0 && (pages.itemAt(root.sectionNames.indexOf("network"))?.item?.inDetails ?? false) ? I18n.tr("settings.pageDetailsHint") : I18n.tr("settings.pageHint")
                 }

@@ -19,9 +19,6 @@ ColumnLayout {
     // On screen: About and the config errors are read again each time it shows.
     property bool shown: false
     readonly property Item focusItem: root
-    // The widest About, Updates and Advanced grow (SettingsPanel.readableWidth); Profiles and Plugins, with their
-    // logs, take the whole width.
-    property real readableWidth: Number.POSITIVE_INFINITY
     property string tab: ShellState.recall("settings/system", "about")
     onTabChanged: ShellState.remember("settings/system", tab)
     readonly property var tabs: ["about", "updates", "profiles", "plugins", "advanced"]
@@ -212,7 +209,6 @@ ColumnLayout {
     }
     StackLayout {
         Layout.fillWidth: true
-        Layout.maximumWidth: root.tab === "profiles" || root.tab === "plugins" ? Number.POSITIVE_INFINITY : root.readableWidth
         Layout.fillHeight: true
         currentIndex: root.tabs.indexOf(root.tab)
         // About
