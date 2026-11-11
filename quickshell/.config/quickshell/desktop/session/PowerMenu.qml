@@ -19,30 +19,35 @@ Overlay {
         {
             label: I18n.tr("session.lock"),
             action: "lock",
+            key: I18n.tr("session.keys.lock"),
             icon: "lock",
             confirm: false
         },
         {
             label: I18n.tr("session.suspend"),
             action: "suspend",
+            key: I18n.tr("session.keys.suspend"),
             icon: "suspend",
             confirm: true
         },
         {
             label: I18n.tr("session.logout"),
             action: "logout",
+            key: I18n.tr("session.keys.logout"),
             icon: "logout",
             confirm: true
         },
         {
             label: I18n.tr("session.reboot"),
             action: "reboot",
+            key: I18n.tr("session.keys.reboot"),
             icon: "reboot",
             confirm: true
         },
         {
             label: I18n.tr("session.powerOff"),
             action: "poweroff",
+            key: I18n.tr("session.keys.poweroff"),
             icon: "power",
             confirm: true
         }
@@ -83,6 +88,16 @@ Overlay {
             Qt.callLater(() => choose(index));
         else
             Qt.callLater(() => focusAction(0));
+    }
+    // One letter per action, from the catalogs; the same as activating the row, so it still asks first.
+    contentItem.Keys.onPressed: event => {
+        if (pending !== "" || operation.running || event.modifiers & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier) || event.text === "")
+            return;
+        const index = actions.findIndex(entry => entry.key.toLowerCase() === event.text.toLowerCase());
+        if (index >= 0) {
+            event.accepted = true;
+            choose(index);
+        }
     }
     contentItem.Keys.onEscapePressed: {
         if (pending !== "")
@@ -139,7 +154,6 @@ Overlay {
                     text: modelData.label
                     iconName: modelData.icon
                     alignLeft: true
-                    destructive: ["logout", "reboot", "poweroff"].includes(modelData.action)
                     enabled: !operation.running && root.pending === ""
                     Keys.onReturnPressed: clicked()
                     Keys.onEnterPressed: clicked()
@@ -148,6 +162,17 @@ Overlay {
                     Keys.onTabPressed: event => root.focusAction(index + ((event.modifiers & Qt.ShiftModifier) ? -1 : 1))
                     Keys.onBacktabPressed: root.focusAction(index - 1)
                     onClicked: root.choose(index)
+                    Text {
+                        anchors {
+                            right: parent.right
+                            rightMargin: 12
+                            verticalCenter: parent.verticalCenter
+                        }
+                        text: modelData.key
+                        color: Theme.muted
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(12)
+                    }
                 }
             }
             Text {
@@ -161,7 +186,9 @@ Overlay {
                     id: confirm
                     text: I18n.tr("common.confirm")
                     enabled: !operation.running
-                    highlighted: true
+                    // The one place the danger colour belongs: the step that carries the action out.
+                    destructive: true
+                    outlined: true
                     Keys.onReturnPressed: clicked()
                     Keys.onEnterPressed: clicked()
                     Keys.onLeftPressed: cancel.forceActiveFocus()

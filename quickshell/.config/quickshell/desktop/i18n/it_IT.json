@@ -658,10 +658,17 @@
       "usage": "Uso: desktop-power {lock|suspend|logout|reboot|poweroff}",
       "waylandRequired": "Sessione Wayland richiesta"
     },
+    "keys": {
+      "lock": "L",
+      "logout": "E",
+      "poweroff": "G",
+      "reboot": "R",
+      "suspend": "S"
+    },
     "lock": "Blocca schermo",
     "logout": "Esci…",
     "menuTitle": "Menu sessione",
-    "navigationHint": "↑↓ o Tab seleziona · Invio o Spazio attiva · Esc annulla o chiudi",
+    "navigationHint": "↑↓ o Tab seleziona · Invio o Spazio attiva · Lettera scorciatoia · Esc annulla o chiudi",
     "noActions": "Nessuna azione disponibile",
     "operationFailed": "Operazione non riuscita (%1).",
     "powerOff": "Spegni…",
