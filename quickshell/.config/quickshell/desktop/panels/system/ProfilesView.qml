@@ -267,10 +267,11 @@ ColumnLayout {
                             text: I18n.tr(profileRow.modelData.done > 0 ? "settings.profiles.complete" : "settings.profiles.install")
                             onClicked: root.plan("install", profileRow.modelData.name)
                         }
+                        // A plain outlined button: the danger colour is on the Apply of its plan, the step that removes.
                         ActionButton {
+                            outlined: true
                             visible: !profileRow.core && profileRow.modelData.recorded
                             enabled: !root.busy
-                            destructive: true
                             text: I18n.tr("settings.profiles.remove")
                             onClicked: root.plan("remove", profileRow.modelData.name)
                         }
