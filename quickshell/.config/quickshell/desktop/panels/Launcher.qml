@@ -183,14 +183,19 @@ Overlay {
                     color: Theme.muted
                 }
             }
+            // Touch has no arrows, Enter or Ctrl+P: the gestures instead. Both wrap, so a wide theme font (Fira Code)
+            // or a long translation does not run past the card.
             Text {
-                // Touch has no arrows, Enter or Ctrl+P. Wraps: a wide theme font (Fira Code) or a long
-                // translation would otherwise run past the card.
+                visible: Tablet.active
                 Layout.fillWidth: true
                 wrapMode: Text.WordWrap
-                text: Tablet.active ? I18n.tr("launcher.touchHint") : I18n.tr("launcher.navigationHint")
+                text: I18n.tr("launcher.touchHint")
                 color: Theme.muted
                 font.pixelSize: Theme.textSize(12)
+            }
+            KeyHints {
+                visible: !Tablet.active
+                hints: I18n.tr("launcher.navigationHint")
             }
         }
     }

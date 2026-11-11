@@ -232,14 +232,10 @@ Overlay {
                 Keys.onBacktabPressed: root.focusAction(buttons.count - 1)
                 onClicked: ShellState.close()
             }
-            Text {
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
+            KeyHints {
                 // Keys only; a finger needs no hint to tap a button.
                 visible: !Tablet.active
-                text: I18n.tr("session.navigationHint")
-                font.pixelSize: Theme.textSize(11)
-                color: Theme.muted
+                hints: I18n.tr("session.navigationHint")
             }
         }
     }

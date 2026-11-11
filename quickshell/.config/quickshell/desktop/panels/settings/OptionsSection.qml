@@ -161,13 +161,8 @@ ColumnLayout {
             }
         }
     }
-    Text {
-        Layout.fillWidth: true
+    KeyHints {
         visible: !Tablet.active
-        wrapMode: Text.WordWrap
-        text: I18n.tr("settings.navigationHint")
-        color: Theme.muted
-        font.family: Theme.font
-        font.pixelSize: Theme.textSize(12)
+        hints: I18n.tr("settings.navigationHint")
     }
 }

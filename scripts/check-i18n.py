@@ -75,6 +75,30 @@ class TranslationTests(unittest.TestCase):
                 placeholders = lambda text: sorted(re.findall(r'%[1-9][0-9]*', text))
                 self.assertEqual(placeholders(italian[key]), placeholders(english[key]))
 
+    def test_key_hints_split(self):
+        # components/KeyHints.qml draws "KEYS|action; KEYS|action" (keys that do the same split on ","): every
+        # string a QML hints: binding names must split that way, into as many entries in both languages.
+        catalogs = {lang: self.flattened_catalog(lang) for lang in ('en_US', 'it_IT')}
+        keys = set()
+        for path in DESKTOP.rglob('*.qml'):
+            for line in path.read_text().splitlines():
+                match = re.match(r'\s*hints\s*:(.*)$', line)
+                if match:
+                    keys.update(re.findall(r'I18n\.tr\(\s*"([^"]+)"', match[1]))
+        self.assertTrue(keys, 'No KeyHints strings found')
+        for key in sorted(keys):
+            counts = set()
+            for lang, catalog in catalogs.items():
+                with self.subTest(key=key, language=lang):
+                    entries = [part.strip() for part in catalog[key].split(';') if part.strip()]
+                    for entry in entries:
+                        self.assertEqual(entry.count('|'), 1, entry)
+                        names, action = entry.split('|')
+                        self.assertTrue(all(name.strip() for name in names.split(',')), entry)
+                        self.assertTrue(action.strip(), entry)
+                    counts.add(len(entries))
+            self.assertEqual(len(counts), 1, 'Different number of entries: ' + key)
+
     def test_helper_uses_shared_catalogs(self):
         config = ROOT / 'quickshell/.config'
         for lang in ('it_IT', 'en_US'):

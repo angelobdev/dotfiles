@@ -363,13 +363,8 @@ Overlay {
                         onClicked: root.loadEvents()
                     }
                 }
-                Text {
-                    // Wraps instead of widening the layout past the panel (wide theme fonts, long translations).
-                    Layout.fillWidth: true
-                    wrapMode: Text.WordWrap
-                    text: I18n.tr("calendar.navigationHint")
-                    color: Theme.muted
-                    font.pixelSize: Theme.textSize(11)
+                KeyHints {
+                    hints: I18n.tr("calendar.navigationHint")
                 }
             }
         }
