@@ -661,6 +661,7 @@
     "empty": "Nessuna notifica",
     "enabled": "Notifiche attive",
     "fallbackTitle": "Notifica",
+    "hidePopup": "Nascondi (resta nel centro notifiche)",
     "less": "Mostra meno",
     "more": {
       "one": "%1 altra",
