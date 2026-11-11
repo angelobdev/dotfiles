@@ -1171,3 +1171,8 @@ Reported by the user after the merges of the day:
 - `PanelHeader` gained `settingsSection` / `showSettings`: the `Impostazioni…` link at the bottom of the Control Center, Network, Bluetooth, Agent, Updates and Displays is now a button in the header, next to close. Audio, Hints, the Wallpaper picker and the Calendar use `PanelHeader` too, so their `Chiudi` buttons at the bottom are gone and Audio goes back with the arrow at the top left like Network and Bluetooth.
 - Seen live on the external monitor: the ten panels above open, show the header, and close; `qs log` has no error. Not done here, still open in #166: Audio and Displays stay centred dialogs, and the panel widths are unchanged. Settings gets its close button with #214.
 - `check.sh` passes.
+
+## Key hints in one wording (#167), 2026-11-11
+
+- The six footers (Launcher, Clipboard, Radio, Calendar, power menu, Appearance) follow the one the option pages had: `KEY action · KEY action`, arrows as `↑↓` and `←→`, in both catalogs. Seen live in it_IT for five of them; the Calendar one was not in the capture. Still open in #167: keys drawn as keycaps, and a footer on the pages that have none.
+- `check-i18n.py` passes.
