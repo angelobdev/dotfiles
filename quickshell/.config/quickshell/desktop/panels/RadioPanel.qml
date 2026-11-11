@@ -298,6 +298,7 @@ Overlay {
                         readonly property bool isCurrent: Radio.active && ((normRadioUrl !== "" && normRadioUrl === normItemUrl) || (modelData.id && Radio.stationId === modelData.id))
                         readonly property bool savedEntry: Boolean(modelData.saved) || Radio.isSaved(modelData.url)
                         ActionButton {
+                            id: rowButton
                             Layout.fillWidth: true
                             Layout.minimumWidth: 0
                             implicitHeight: 48
@@ -305,8 +306,37 @@ Overlay {
                             highlighted: stationsList.currentIndex === index || delegateRow.isCurrent
                             tone: delegateRow.isCurrent ? "state" : "cursor"
                             iconName: delegateRow.isCurrent ? (Radio.playing ? "volume-high" : "pause") : modelData.kind === "radio" ? "hotspot" : modelData.kind === "playlist" ? "folder" : "play"
-                            text: root.detail(modelData) ? modelData.title + "  —  " + root.detail(modelData) : modelData.title
+                            text: modelData.title
                             onClicked: root.activateItem(modelData)
+                            contentItem: RowLayout {
+                                spacing: 10
+                                Icon {
+                                    name: rowButton.iconName
+                                    color: rowButton.foreground
+                                    Layout.preferredWidth: rowButton.iconSize
+                                    Layout.preferredHeight: rowButton.iconSize
+                                }
+                                Text {
+                                    text: rowButton.text
+                                    font: rowButton.font
+                                    color: rowButton.foreground
+                                    elide: Text.ElideRight
+                                    textFormat: Text.PlainText
+                                    Layout.fillWidth: !detailText.visible
+                                    Layout.maximumWidth: detailText.visible ? parent.width * 0.7 : Infinity
+                                }
+                                Text {
+                                    id: detailText
+                                    visible: text !== ""
+                                    text: root.detail(modelData)
+                                    font: rowButton.font
+                                    color: Theme.muted
+                                    elide: Text.ElideRight
+                                    textFormat: Text.PlainText
+                                    Layout.fillWidth: true
+                                    Layout.minimumWidth: 0
+                                }
+                            }
                         }
                         PanelIconButton {
                             visible: root.category === "youtube" || root.category === "saved" || delegateRow.savedEntry
