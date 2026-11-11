@@ -822,6 +822,8 @@
       "commit": "%1 of %2",
       "commitChanged": "%1 of %2, with local changes",
       "configErrors": "Hyprland configuration",
+      "copied": "Copied",
+      "copy": "Copy",
       "desktop": "Desktop",
       "distribution": "Distribution",
       "kernel": "Kernel",
