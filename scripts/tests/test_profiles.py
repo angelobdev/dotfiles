@@ -144,6 +144,23 @@ class ProfilesTests(unittest.TestCase):
             with self.assertRaises(ValueError), contextlib.redirect_stdout(io.StringIO()):
                 profiles.main(['plan', *arguments])
 
+    def test_every_profile_and_part_has_a_name_in_both_catalogs(self):
+        # Settings → System → Profiles titles each profile by settings.profiles.names.<id> and each part by
+        # settings.profiles.partNames.<profile>.<part> (no dash in a key): a manifest entry without one shows its bare id.
+        def camel(name):
+            head, *rest = name.split('-')
+            return head + ''.join(word.capitalize() for word in rest)
+        for language in ('en_US', 'it_IT'):
+            catalog = json.loads((REPO / f'quickshell/.config/quickshell/desktop/i18n/{language}.json').read_text())['settings']['profiles']
+            for distro in ('fedora', 'arch'):
+                for profile in install_paths.PROFILES:
+                    with self.subTest(language=language, distro=distro, profile=profile):
+                        self.assertIn(profile, MANIFEST[distro], 'profile missing from the manifest')
+                        self.assertTrue(catalog['names'].get(profile, '').strip(), f'no name for {profile}')
+                        for part in MANIFEST[distro][profile].get('parts', {}):
+                            self.assertTrue(catalog['partNames'].get(profile, {}).get(camel(part), '').strip(),
+                                            f'no name for {profile}.{part}')
+
     def test_the_real_installer_loads(self):
         # The helper reads install-tui.py from the repository it is linked from.
         tui = profiles.installer_screens()

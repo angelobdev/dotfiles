@@ -988,6 +988,18 @@
       "errors": {
         "name": "Not a profile name: %1"
       },
+      "names": {
+        "core": "Desktop",
+        "hardware": "Laptop hardware",
+        "tablet": "Tablet (2-in-1)",
+        "plugins": "Hyprland plugins",
+        "apps": "Desktop apps",
+        "utils": "Command-line tools",
+        "assistant": "AI Assistant",
+        "containers": "Docker",
+        "radio": "Radio",
+        "gaming": "Gaming"
+      },
       "descriptions": {
         "core": "Hyprland, Quickshell, GDM with the hyprland-uwsm session, portals, audio, network, fonts, zsh and the codecs (from RPM Fusion on Fedora): the desktop itself.",
         "hardware": "A laptop, in parts checked where the hardware is found: Intel, sound, camera, fingerprint reader, firmware updates.",

@@ -92,6 +92,12 @@ ColumnLayout {
     function title(action, name) {
         return I18n.tr(action === "install" ? "settings.profiles.installTitle" : action === "change" ? "settings.profiles.reviewChange" : "settings.profiles.removeTitle", [name]);
     }
+    // The readable name of a profile: settings.profiles.names.<id>, the id itself while it has none.
+    function profileName(name) {
+        const key = "settings.profiles.names." + name;
+        const text = I18n.tr(key);
+        return text === key ? name : text;
+    }
     // A catalog key holds no dash: steam-hidpi is steamHidpi.
     function described(name) {
         const key = "settings.profiles.descriptions." + name.replace(/-(\w)/g, (match, letter) => letter.toUpperCase());
@@ -235,12 +241,22 @@ ColumnLayout {
                             spacing: 2
                             Text {
                                 Layout.fillWidth: true
-                                text: profileRow.modelData.name +(profileRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
+                                text: root.profileName(profileRow.modelData.name) + (profileRow.modelData.default ? " · " + I18n.tr("settings.profiles.default") : "")
                                 textFormat: Text.PlainText
                                 color: Theme.text
                                 font.family: Theme.font
                                 font.pixelSize: Theme.textSize(13)
                                 font.weight: Font.DemiBold
+                            }
+                            // The id, as install-desktop.py --profiles takes it.
+                            Text {
+                                Layout.fillWidth: true
+                                visible: root.profileName(profileRow.modelData.name) !== profileRow.modelData.name
+                                text: profileRow.modelData.name
+                                textFormat: Text.PlainText
+                                color: Theme.muted
+                                font.family: "monospace"
+                                font.pixelSize: Theme.textSize(10)
                             }
                             Text {
                                 Layout.fillWidth: true
