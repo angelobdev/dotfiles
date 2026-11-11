@@ -246,50 +246,65 @@ ColumnLayout {
                         text: I18n.tr("network.currentConnection")
                         section: true
                     }
-                    ActionButton {
-                        id: currentConnection
+                    RowLayout {
                         Layout.fillWidth: true
-                        implicitHeight: 58
-                        text: root.activeNetwork?.name ?? ""
-                        tooltip: I18n.tr("network.details")
-                        onClicked: root.openDetails(root.activeNetwork)
-                        background: Rectangle {
-                            radius: Theme.corner(12)
-                            color: currentConnection.down || currentConnection.hovered || currentConnection.activeFocus ? Theme.raised : Theme.tile
-                        }
-                        contentItem: RowLayout {
-                            spacing: 12
-                            Icon {
-                                name: NetworkInfo.icon(root.activeNetwork)
-                                Layout.preferredWidth: 22
-                                Layout.preferredHeight: 22
+                        spacing: 2
+                        ActionButton {
+                            id: currentConnection
+                            Layout.fillWidth: true
+                            implicitHeight: 58
+                            text: root.activeNetwork?.name ?? ""
+                            tooltip: I18n.tr("network.details")
+                            onClicked: root.openDetails(root.activeNetwork)
+                            background: Rectangle {
+                                radius: Theme.corner(12)
+                                color: currentConnection.down || currentConnection.hovered || currentConnection.activeFocus ? Theme.raised : Theme.tile
                             }
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: currentConnection.text
-                                    color: Theme.text
-                                    font.family: Theme.font
-                                    font.pixelSize: Theme.textSize(14)
-                                    elide: Text.ElideRight
-                                    textFormat: Text.PlainText
+                            contentItem: RowLayout {
+                                spacing: 12
+                                Icon {
+                                    name: NetworkInfo.icon(root.activeNetwork)
+                                    Layout.preferredWidth: 22
+                                    Layout.preferredHeight: 22
                                 }
-                                Text {
+                                ColumnLayout {
                                     Layout.fillWidth: true
-                                    text: [(root.activeInfo?.ipv4 ?? []).map(a => a.split("/")[0])[0] ?? "", root.activeInfo?.frequency ? I18n.tr("network.band", [(root.activeInfo.frequency / 1000).toLocaleString(I18n.locale, "f", 1), root.activeInfo.channel]) : root.activeDevice?.type === DeviceType.Wired && root.activeDevice.linkSpeed > 0 ? I18n.tr("network.linkSpeedValue", [root.activeDevice.linkSpeed]) : ""].filter(part => part !== "").join(" · ")
+                                    spacing: 2
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: currentConnection.text
+                                        color: Theme.text
+                                        font.family: Theme.font
+                                        font.pixelSize: Theme.textSize(14)
+                                        elide: Text.ElideRight
+                                        textFormat: Text.PlainText
+                                    }
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: [(root.activeInfo?.ipv4 ?? []).map(a => a.split("/")[0])[0] ?? "", root.activeInfo?.frequency ? I18n.tr("network.band", [(root.activeInfo.frequency / 1000).toLocaleString(I18n.locale, "f", 1), root.activeInfo.channel]) : root.activeDevice?.type === DeviceType.Wired && root.activeDevice.linkSpeed > 0 ? I18n.tr("network.linkSpeedValue", [root.activeDevice.linkSpeed]) : ""].filter(part => part !== "").join(" · ")
+                                        color: Theme.muted
+                                        font.family: Theme.font
+                                        font.pixelSize: Theme.textSize(11)
+                                        elide: Text.ElideRight
+                                    }
+                                }
+                                Icon {
+                                    name: "chevron-right"
                                     color: Theme.muted
-                                    font.family: Theme.font
-                                    font.pixelSize: Theme.textSize(11)
-                                    elide: Text.ElideRight
+                                    Layout.preferredWidth: 16
+                                    Layout.preferredHeight: 16
                                 }
                             }
-                            Icon {
-                                name: "chevron-right"
-                                color: Theme.muted
-                                Layout.preferredWidth: 16
-                                Layout.preferredHeight: 16
+                        }
+                        // The connected network is not in the list below: its disconnect lives here.
+                        CompactIconButton {
+                            iconName: "close"
+                            iconSize: 16
+                            tooltip: I18n.tr("network.disconnect")
+                            enabled: !root.activeNetwork?.stateChanging
+                            onClicked: {
+                                root.error = "";
+                                root.activeNetwork.disconnect();
                             }
                         }
                     }
@@ -328,7 +343,7 @@ ColumnLayout {
                             // Rows follow their network: a reorder while scanning moves them instead of recreating
                             // every row, which lost the keyboard focus and a press in progress.
                             model: ScriptModel {
-                                values: deviceRow.modelData.networks.values.filter(n => n.name.toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
+                                values: deviceRow.modelData.networks.values.filter(n => n !== root.activeNetwork && n.name.toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
                             }
                             delegate: RowLayout {
                                 id: networkRow
