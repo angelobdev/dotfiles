@@ -153,8 +153,11 @@ Overlay {
                                 Layout.fillWidth: true
                                 Layout.preferredWidth: 0
                                 spacing: 2
+                                // Filling the cell lets the column stretch: a layout is no wider than its widest child
+                                // unless one of them fills, and the six entries then stay packed at the left.
                                 Text {
-                                    Layout.alignment: Qt.AlignHCenter
+                                    Layout.fillWidth: true
+                                    horizontalAlignment: Text.AlignHCenter
                                     text: modelData.time
                                     color: Theme.muted
                                     font.pixelSize: Theme.textSize(11)
