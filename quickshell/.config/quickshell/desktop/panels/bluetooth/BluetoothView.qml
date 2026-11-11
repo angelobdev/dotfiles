@@ -53,6 +53,7 @@ ColumnLayout {
                     }
                     ActionButton {
                         Layout.fillWidth: true
+                        alignLeft: true
                         text: adapterGroup.modelData.discovering ? I18n.tr("bluetooth.stopScan") : I18n.tr("bluetooth.scan")
                         iconName: adapterGroup.modelData.discovering ? "stop" : "bluetooth"
                         enabled: adapterGroup.modelData.enabled && BluetoothAgent.registered
@@ -89,7 +90,8 @@ ColumnLayout {
                                 text: (modelData.state === BluetoothDeviceState.Connected ? I18n.tr("bluetooth.connected") : modelData.state === BluetoothDeviceState.Connecting ? I18n.tr("bluetooth.connecting") : modelData.state === BluetoothDeviceState.Disconnecting ? I18n.tr("bluetooth.disconnecting") : I18n.tr("bluetooth.disconnected")) + (modelData.batteryAvailable ? " · " + Math.round(modelData.battery * 100) + "%" : "")
                                 color: Theme.muted
                                 font.pixelSize: Theme.textSize(11)
-                                Layout.leftMargin: 12
+                                // Under the device name: 12 padding + 20 icon + 10 spacing of the row above.
+                                Layout.leftMargin: 42
                             }
                         }
                     }
