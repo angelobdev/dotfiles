@@ -17,6 +17,11 @@ ColumnLayout {
     readonly property bool claudeShown: Agent.herdr ? Agent.agents.some(agent => agent.app === "claude-code") : Agent.claude
     onShownChanged: if (shown)
         now = new Date()
+    // A window is current while its reset time is ahead; with none current the figures are old, not live.
+    function windowCurrent(window) {
+        return !!window && (window.resets === null || window.resets * 1000 > now.getTime());
+    }
+    readonly property bool limitsStale: !windowCurrent(Agent.usage.fiveHour) && !windowCurrent(Agent.usage.sevenDay)
     function stateText() {
         if (!Agent.available)
             return I18n.tr("assistant.states.missing");
@@ -237,7 +242,7 @@ ColumnLayout {
     Text {
         Layout.fillWidth: true
         visible: root.claudeShown
-        text: Agent.usage.limitsUpdated ? root.when(Agent.usage.limitsUpdated, "assistant.usage.updatedAt", "assistant.usage.updatedOn") : I18n.tr("assistant.usage.empty")
+        text: !Agent.usage.limitsUpdated ? I18n.tr("assistant.usage.empty") : root.limitsStale ? root.when(Agent.usage.limitsUpdated, "assistant.usage.staleAt", "assistant.usage.staleOn") : root.when(Agent.usage.limitsUpdated, "assistant.usage.updatedAt", "assistant.usage.updatedOn")
         color: Theme.muted
         font.family: Theme.font
         font.pixelSize: Theme.textSize(11)
