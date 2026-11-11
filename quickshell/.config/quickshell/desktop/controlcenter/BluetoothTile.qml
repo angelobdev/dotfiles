@@ -5,6 +5,7 @@ import ".."
 import "../components"
 
 ControlTile {
+    implicitHeight: Theme.hit(84)
     readonly property int connected: Bluetooth.devices.values.filter(d => d.connected).length
     ColumnLayout {
         anchors {
