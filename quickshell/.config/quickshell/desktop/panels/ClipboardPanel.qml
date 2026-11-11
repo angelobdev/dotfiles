@@ -11,7 +11,9 @@ Overlay {
     panelName: "clipboard"
     dialog: true
     property bool confirmClear: false
-    readonly property var shown: Clipboard.entries.filter(e => e.preview.toLowerCase().includes(search.text.toLowerCase()))
+    readonly property var shown: Clipboard.entries.filter(e => (e.preview + "\n" + Clipboard.label(e)).toLowerCase().includes(search.text.toLowerCase()))
+    // With an image on screen, text rows leave its thumbnail room, so every label starts at one edge.
+    readonly property bool images: shown.some(e => e.image)
     onOpened: {
         confirmClear = false;
         search.clear();
@@ -97,16 +99,22 @@ Overlay {
                         id: rowHover
                     }
                     ActionButton {
+                        readonly property string thumbnail: modelData.image ? Clipboard.thumbnails[modelData.id] ?? "" : ""
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         implicitHeight: 46
-                        text: modelData.preview
-                        iconName: modelData.image ? "image" : "clipboard"
+                        text: Clipboard.label(modelData)
+                        iconName: thumbnail !== "" ? "" : modelData.image ? "image" : "clipboard"
+                        iconSource: thumbnail
+                        iconSize: modelData.image ? 32 : 20
+                        leftPadding: root.images && !modelData.image ? 24 : 12
                         alignLeft: true
                         highlighted: clips.currentIndex === index
                         tone: "cursor"
                         enabled: !Clipboard.busy
                         onClicked: Clipboard.act("copy", modelData.id)
+                        Component.onCompleted: if (modelData.image)
+                            Clipboard.requestThumbnail(modelData.id)
                     }
                     PanelIconButton {
                         id: trash

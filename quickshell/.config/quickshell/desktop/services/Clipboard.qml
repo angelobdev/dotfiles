@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import ".."
+import "../components/FileUrl.js" as FileUrl
 
 Singleton {
     id: root
@@ -15,10 +16,34 @@ Singleton {
     readonly property string database: (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/cliphist/db"
     // The output of the last listing: the same one again changes nothing (the panel filters every entry anew).
     property string listed: ""
+    // Thumbnails of image entries by id: a file URL, or "" when the entry has none. Made by clipboard.py when a row
+    // showing the entry asks (rows on screen only), never for text; the helper removes those of entries gone.
+    property var thumbnails: ({})
+    property var thumbnailsWanted: []
     function refresh() {
         if (operation.running)
             return;
         listing.request();
+    }
+    function requestThumbnail(id) {
+        if (thumbnails[id] !== undefined || thumbnailsWanted.includes(id))
+            return;
+        thumbnailsWanted = thumbnailsWanted.concat([id]);
+        Qt.callLater(makeThumbnails);
+    }
+    function makeThumbnails() {
+        if (thumbnailer.running || thumbnailsWanted.length === 0)
+            return;
+        thumbnailer.asked = thumbnailsWanted;
+        thumbnailsWanted = [];
+        thumbnailer.command = ["python3", helper, "thumbnails"].concat(thumbnailer.asked);
+        thumbnailer.running = true;
+    }
+    // An image entry as a person reads it: "Image · 2448×1600 · 745 KiB".
+    function label(entry) {
+        if (!entry.image || !entry.size)
+            return entry.preview;
+        return entry.width ? I18n.tr("clipboard.image", [entry.width, entry.height, entry.size]) : I18n.tr("clipboard.imageSize", [entry.size]);
     }
     function act(action, id) {
         if (operation.running)
@@ -60,11 +85,35 @@ Singleton {
                     root.entries = JSON.parse(data.text);
                     root.listed = data.text;
                     root.error = "";
+                    // Only the thumbnails of entries still listed; the helper has removed the files of the others.
+                    const kept = {};
+                    for (const entry of root.entries)
+                        if (root.thumbnails[entry.id] !== undefined)
+                            kept[entry.id] = root.thumbnails[entry.id];
+                    root.thumbnails = kept;
                 } catch (e) {
                     root.error = I18n.tr("clipboard.errors.historyUnavailable");
                 }
             } else
                 root.error = listingErrors.text.trim();
+        }
+    }
+    Process {
+        id: thumbnailer
+        property var asked: []
+        stdout: StdioCollector {
+            id: thumbnailData
+        }
+        onExited: (code, status) => {
+            let made = {};
+            try {
+                made = code === 0 ? JSON.parse(thumbnailData.text) : {};
+            } catch (error) {}
+            const next = Object.assign({}, root.thumbnails);
+            for (const id of asked)
+                next[id] = made[id] ? FileUrl.of(made[id]) : "";
+            root.thumbnails = next;
+            root.makeThumbnails();
         }
     }
     Process {

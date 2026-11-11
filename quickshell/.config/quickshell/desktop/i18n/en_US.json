@@ -342,6 +342,8 @@
       "operationFailed": "Clipboard operation failed. Check cliphist and wl-clipboard."
     },
     "historyTitle": "Clipboard · History",
+    "image": "Image · %1×%2 · %3",
+    "imageSize": "Image · %1",
     "navigationHint": "↑↓ select · Enter copy · Esc close. History is saved to disk.",
     "pause": "Pause history",
     "paused": "Collection paused. Existing history remains available.",
