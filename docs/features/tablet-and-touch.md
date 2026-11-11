@@ -39,7 +39,7 @@ The OmniBook's accelerometer sits behind the Intel Sensor Hub (ISH), which needs
 
 It looks for the file by its sha256 (in the SoftPaq it is `Driver/IshHeciExtension/FWImage/0003/ishC_0207.bin`), installs it as `/usr/lib/firmware/intel/ish/ish_lnlm_12128606.bin`, and rebuilds every initramfs with dracut, since the ISH loader runs from the initramfs before the root file system is mounted. Without `--firmware` the installer only warns that rotation will be missing. After a reboot, `journalctl -k -b | grep 'ISH loader'` shows `load firmware: intel/ish/ish_lnlm_12128606.bin`; with the generic `ish_lnlm.bin` and `cmd 2 failed 10` there is no accelerometer and no rotation lock.
 
-**Rotation lock** in the Control Center (shown only on machines with an accelerometer) keeps the current orientation; `desktop-shell rotation-lock toggle|on|off` sets it with an OSD. It is remembered across restarts and logins. `desktop-shell tablet on|off|toggle` sets the posture by hand, for instance to try it without folding the screen.
+**Rotation lock** in the Control Center (shown only in tablet mode on machines with an accelerometer) keeps the current orientation; `desktop-shell rotation-lock toggle|on|off` sets it with an OSD. It is remembered across restarts and logins. `desktop-shell tablet on|off|toggle` sets the posture by hand, for instance to try it without folding the screen.
 
 ## Assist button
 
