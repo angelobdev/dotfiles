@@ -662,6 +662,7 @@
     "empty": "No notifications",
     "enabled": "Notifications enabled",
     "fallbackTitle": "Notification",
+    "hidePopup": "Hide (stays in the notification center)",
     "less": "Show less",
     "more": {
       "one": "%1 more",

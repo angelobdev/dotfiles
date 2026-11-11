@@ -18,6 +18,9 @@ Rectangle {
     property bool contentHidden: false
     // A closed deck of popups in tablet mode opens with a tap, as there is no hover to open it.
     property bool opensDeck: false
+    // The close button works on the cards of the center and on the front card of a popup deck, except where
+    // a tap opens the deck; elsewhere it stays out of the way and out of the clicks.
+    readonly property bool dismissible: !popup || !contentHidden && !opensDeck
     // In the center: how many entries a closed stack stands for, and whether this one heads an open stack.
     property int stackCount: 1
     property bool stackOpen: false
@@ -89,7 +92,6 @@ Rectangle {
     }
     HoverHandler {
         id: hover
-        enabled: !root.popup
     }
     // Clicks act only on popups, but the area always holds the swipe handler: a handler of the item sees the
     // press before the item, so it can take a drag over from it (a handler on the parent would never see it).
@@ -192,16 +194,16 @@ Rectangle {
                 font.pixelSize: Theme.textSize(11)
             }
             // Quiet, and shown on the hovered or focused card only (it keeps its place, so nothing moves);
-            // tablet mode has no hover, so there it stays.
+            // tablet mode has no hover, so there it stays. On a popup it hides it, like a right click.
             CompactIconButton {
-                visible: !root.popup
+                enabled: root.dismissible
                 implicitWidth: Theme.hit(24)
                 implicitHeight: Theme.hit(24)
                 iconName: "close"
                 iconSize: 14
                 normalColor: Theme.muted
-                tooltip: I18n.tr("common.delete")
-                opacity: hover.hovered || activeFocus || Tablet.active ? 1 : 0
+                tooltip: root.popup ? I18n.tr("notifications.hidePopup") : I18n.tr("common.delete")
+                opacity: root.dismissible && (hover.hovered || activeFocus || Tablet.active) ? 1 : 0
                 Behavior on opacity {
                     NumberAnimation {
                         duration: Theme.motionFast
