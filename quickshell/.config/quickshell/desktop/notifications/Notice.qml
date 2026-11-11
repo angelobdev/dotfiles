@@ -246,10 +246,14 @@ Rectangle {
                 }
             }
         }
+        // A button that reads as one, with the chevron of the way it goes.
         ActionButton {
             visible: root.stackCount > 1 || root.stackOpen
             Layout.alignment: Qt.AlignRight
-            compact: true
+            outlined: true
+            iconName: root.stackOpen ? "chevron-up" : "chevron-down"
+            iconSize: 16
+            iconAfterText: true
             text: root.stackOpen ? I18n.tr("notifications.less") : I18n.plural("notifications.more.one", "notifications.more.other", root.stackCount - 1)
             onClicked: root.stackToggled()
         }
