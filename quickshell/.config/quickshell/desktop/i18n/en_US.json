@@ -1015,6 +1015,7 @@
     "monospaceFont": "MONOSPACE",
     "navigationHint": "Ctrl+Tab next tab · Arrows select · Enter apply · Esc close",
     "notDownloaded": "Not downloaded yet",
+    "openCursors": "Open cursors folder",
     "openFonts": "Open fonts folder",
     "openIcons": "Open icons folder",
     "otherFont": "Other installed family…",

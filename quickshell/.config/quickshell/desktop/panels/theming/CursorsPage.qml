@@ -41,7 +41,7 @@ ColumnLayout {
             onClicked: page.panel.openStore("cursors")
         }
         ActionButton {
-            text: I18n.tr("theming.openIcons")
+            text: I18n.tr("theming.openCursors")
             onClicked: Theming.openFolder("icons")
         }
         ActionButton {
