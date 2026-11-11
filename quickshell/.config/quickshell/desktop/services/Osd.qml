@@ -77,7 +77,7 @@ Singleton {
         if (!armed || !next || !previous || next.node !== previous.node)
             return;
         if (next.percent !== previous.percent || next.muted !== previous.muted)
-            show(input ? "microphone" : "volume", next.percent, next.muted, next.node.description, "");
+            show(input ? "microphone" : "volume", next.percent, next.muted, Audio.deviceName(next.node), "");
     }
     Connections {
         target: Audio

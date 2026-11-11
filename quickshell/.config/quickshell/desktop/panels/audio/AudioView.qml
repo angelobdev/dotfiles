@@ -51,12 +51,14 @@ Item {
                     Layout.fillWidth: true
                     alignLeft: true
                     implicitHeight: Theme.hit(42)
-                    text: modelData.description || modelData.name
+                    text: Audio.deviceName(modelData)
                     textElide: Text.ElideMiddle
                     iconName: "volume-high"
+                    // An HDMI or DisplayPort output with nothing plugged in.
+                    normalColor: Audio.absent(modelData) ? Theme.muted : Theme.text
                     highlighted: Audio.sink?.id === modelData.id
                     tone: "state"
-                    tooltip: modelData.name
+                    tooltip: Audio.deviceDetails(modelData)
                     onClicked: Audio.selectOutput(modelData)
                 }
             }
@@ -146,12 +148,12 @@ Item {
                     Layout.fillWidth: true
                     alignLeft: true
                     implicitHeight: Theme.hit(42)
-                    text: modelData.description || modelData.name
+                    text: Audio.deviceName(modelData)
                     textElide: Text.ElideMiddle
                     iconName: "microphone"
                     highlighted: Audio.source?.id === modelData.id
                     tone: "state"
-                    tooltip: modelData.name
+                    tooltip: Audio.deviceDetails(modelData)
                     onClicked: Audio.selectInput(modelData)
                 }
             }
