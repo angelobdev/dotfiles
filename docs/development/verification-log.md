@@ -1235,3 +1235,9 @@ Reported by the user after the merges of the day:
 - #261: the six forecast entries of the Calendar are equal columns with a gap; seen on the external monitor in it_IT, the hours read `22:00 00:00 02:00 …`, each above its icon and temperature. Not seen: an entry with a rain percentage, text at 150 %.
 - #262: `visible` in `Overlay`, `DockWindow` and `NotificationPopups` reads a `screenName` string and no longer the window's own `screen`. After a shell restart, opening and closing Audio, Clipboard, the Control Center, Displays, Network, the Calendar and the Launcher, one popup notification and the dock left no "Binding loop" line in `qs log`; before, the dock alone logged two at startup. The external monitor had been disconnected by then, so this ran with one screen and the two-monitor paths were not exercised. #259 stays open for the OSD, the window switcher, the authentication dialogs and the `Loader` loops of Settings.
 - `check.sh` passes; the tree of `main` after the two merges is the one that was checked.
+
+## The rest of the binding loops (#259), 2026-11-11
+
+- #264: `OsdPopup`, `WindowSwitcher`, the polkit prompt of `Authentication` and `BluetoothAuthentication` read `screenName` in `visible`, as #262 did for `Overlay`. The `Loader` loops of Settings and Appearance needed nothing: they were fixed on 2026-11-06 (58cb378, 6cf2995) and no log since has one.
+- After a shell restart, on the laptop panel alone: zoom in and reset (for the OSD), the window switcher shown and cancelled, twelve Settings sections and tabs including every Appearance tab, and the Control Center left no "Binding loop" line in `qs log`. No screenshot was taken, so that the OSD and the switcher actually appeared was not confirmed by eye. Not exercised: the polkit prompt, Bluetooth pairing, two monitors.
+- `check.sh` passes; the tree of `main` after the merge is the one that was checked. Found on the way: #265.
