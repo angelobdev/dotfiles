@@ -12,10 +12,12 @@ import "displays"
 import "audio"
 import "agent"
 import "system"
+import "settings/SettingsSearch.js" as Search
 
 // Settings: one entry point for configuring the desktop, after GNOME Settings. A sidebar of sections on the
 // left, the chosen section on the right; on a narrow screen one of the two at a time, with Back. Sections are
-// built the first time they show, then kept while the panel is loaded (components/LazyPanel.qml).
+// built the first time they show, then kept while the panel is loaded (components/LazyPanel.qml). A search
+// field tops the sidebar: while it has text, the sidebar lists the matching sections, tabs and options.
 Overlay {
     id: root
     panelName: "settings"
@@ -130,14 +132,16 @@ Overlay {
         }
         return rows;
     }
-    // Up and down in the sidebar skip the labels.
+    // Up and down in the sidebar skip the labels; false at either end.
     function sidebarStep(step) {
         let index = sidebarRows.findIndex(row => !row.heading && row.name === section);
         do
             index += step;
         while (index >= 0 && index < sidebarRows.length && sidebarRows[index].heading);
-        if (index >= 0 && index < sidebarRows.length)
-            showSection(sidebarRows[index].name, "");
+        if (index < 0 || index >= sidebarRows.length)
+            return false;
+        showSection(sidebarRows[index].name, "");
+        return true;
     }
     property string section: ShellState.recall("settings/section", "appearance")
     onSectionChanged: {
@@ -158,6 +162,52 @@ Overlay {
     property string requestedTab: ""
     // Sections shown at least once: their pages stay loaded.
     property var visited: []
+    // The search: while it has text, the sidebar shows what matches (SettingsSearch.js), in the language shown and
+    // among the sections shown.
+    readonly property string query: searchField.text
+    readonly property bool searching: query.trim() !== ""
+    readonly property var searchResults: searching ? Search.find(Search.entries(key => I18n.tr(key), sidebarRows.filter(row => !row.heading)), query) : []
+    // The result Up and Down are on, which Enter opens.
+    property int searchCurrent: 0
+    onQueryChanged: searchCurrent = 0
+
+    // Ctrl+F, or / on the sidebar: the search field, its text selected to type over; on a narrow screen the
+    // sidebar shows first.
+    function focusSearch() {
+        if (compact)
+            showingSidebar = true;
+        searchField.forceActiveFocus();
+        searchField.selectAll();
+    }
+    function searchStep(step) {
+        if (searchResults.length === 0)
+            return;
+        searchCurrent = Math.max(0, Math.min(searchResults.length - 1, searchCurrent + step));
+        results.positionViewAtIndex(searchCurrent, ListView.Contain);
+    }
+    // A result: its section, with its tab, and for an option its row, scrolled to and made the current one. The
+    // results stay, to try the next one; Esc clears them.
+    function openResult(entry) {
+        if (!entry)
+            return;
+        searchCurrent = Math.max(0, searchResults.indexOf(entry));
+        showSection(entry.section, entry.tab);
+        const page = pages.itemAt(sectionNames.indexOf(entry.section))?.item;
+        if (entry.key !== "")
+            page?.reveal?.(entry.key);
+        else if (entry.section === "system")
+            Qt.callLater(() => page?.focusItem?.forceActiveFocus());
+    }
+    // Esc clears the search first, then goes back inside a section (the details of a network), then closes.
+    function escapePressed() {
+        if (searchField.text !== "") {
+            searchField.clear();
+            return;
+        }
+        const page = pages.itemAt(sectionNames.indexOf(section))?.item;
+        if (!(page?.goBack?.() ?? false))
+            ShellState.close();
+    }
 
     // A section by name, an unknown one falls back to the first. tab: a tab inside it (Appearance), "" for the
     // one it remembers.
@@ -183,21 +233,26 @@ Overlay {
         else
             Qt.callLater(() => pages.itemAt(sectionNames.indexOf(section))?.item?.focusItem?.forceActiveFocus());
     }
-    // ShellState.openSection keeps the section asked for; another one asked while open moves there.
-    onOpened: showSection(ShellState.recall("settings/section", section), "")
-    // Esc goes back inside a section first (the details of a network), then closes.
-    closeOnEscape: false
-    contentItem.Keys.onEscapePressed: {
-        const page = pages.itemAt(sectionNames.indexOf(section))?.item;
-        if (!(page?.goBack?.() ?? false))
-            ShellState.close();
+    // ShellState.openSection keeps the section asked for; another one asked while open moves there. A search left
+    // from the last time is gone.
+    onOpened: {
+        searchField.clear();
+        showSection(ShellState.recall("settings/section", section), "");
     }
+    closeOnEscape: false
+    contentItem.Keys.onEscapePressed: root.escapePressed()
     Connections {
         target: ShellState
         function onSectionRequested(name, section) {
             if (name === root.panelName)
                 root.showSection(section, "");
         }
+    }
+    // Ctrl+F: the search, from anywhere in the panel (text fields of the pages have no use for it).
+    Shortcut {
+        enabled: root.open
+        sequence: "Ctrl+F"
+        onActivated: root.focusSearch()
     }
     Card {
         id: card
@@ -210,7 +265,7 @@ Overlay {
                 margins: Theme.dialogPadding
             }
             spacing: Theme.dialogPadding
-            // Sidebar: the panel title and one row per section.
+            // Sidebar: the panel title, the search, and one row per section, or the results while searching.
             ColumnLayout {
                 visible: !root.compact || root.showingSidebar
                 Layout.fillHeight: true
@@ -221,8 +276,25 @@ Overlay {
                     Layout.fillWidth: true
                     text: I18n.tr("settings.title")
                 }
+                InputField {
+                    id: searchField
+                    Layout.fillWidth: true
+                    placeholderText: I18n.tr("settings.search.placeholder")
+                    Accessible.name: I18n.tr("settings.search.placeholder")
+                    // Up and down pick a result; with nothing typed, down goes to the sections.
+                    Keys.onUpPressed: root.searchStep(-1)
+                    Keys.onDownPressed: {
+                        if (root.searching)
+                            root.searchStep(1);
+                        else
+                            sidebar.forceActiveFocus();
+                    }
+                    Keys.onEscapePressed: root.escapePressed()
+                    onAccepted: root.openResult(root.searchResults[root.searchCurrent])
+                }
                 ListView {
                     id: sidebar
+                    visible: !root.searching
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     clip: true
@@ -233,8 +305,19 @@ Overlay {
                     highlightMoveDuration: Theme.motionNormal
                     Accessible.role: Accessible.List
                     Accessible.name: I18n.tr("settings.title")
-                    Keys.onUpPressed: root.sidebarStep(-1)
+                    // Up from the first section goes to the search.
+                    Keys.onUpPressed: {
+                        if (!root.sidebarStep(-1))
+                            searchField.forceActiveFocus();
+                    }
                     Keys.onDownPressed: root.sidebarStep(1)
+                    // "/" starts a search; other keys stay with the list.
+                    Keys.onPressed: event => {
+                        if (event.text === "/") {
+                            root.focusSearch();
+                            event.accepted = true;
+                        }
+                    }
                     // A group label, or a section.
                     delegate: Item {
                         id: sidebarRow
@@ -269,6 +352,87 @@ Overlay {
                         }
                     }
                 }
+                // The results: "Section › Group › Option" (or "Section › Tab"), the group and the separators muted,
+                // wrapping on the narrow sidebar.
+                ListView {
+                    id: results
+                    visible: root.searching && root.searchResults.length > 0
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    clip: true
+                    spacing: 2
+                    model: root.searchResults
+                    currentIndex: root.searchCurrent
+                    keyNavigationEnabled: false
+                    Accessible.role: Accessible.List
+                    Accessible.name: I18n.tr("settings.search.results")
+                    Keys.onUpPressed: root.searchStep(-1)
+                    Keys.onDownPressed: root.searchStep(1)
+                    delegate: ActionButton {
+                        id: result
+                        required property var modelData
+                        required property int index
+                        width: results.width
+                        implicitWidth: results.width
+                        implicitHeight: Math.max(Theme.hit(38), resultPath.implicitHeight + topPadding + bottomPadding)
+                        alignLeft: true
+                        text: modelData.path.join(" › ")
+                        highlighted: index === root.searchCurrent
+                        tone: "cursor"
+                        onClicked: root.openResult(modelData)
+                        contentItem: Item {
+                            implicitHeight: resultPath.implicitHeight
+                            Flow {
+                                id: resultPath
+                                anchors {
+                                    left: parent.left
+                                    right: parent.right
+                                    verticalCenter: parent.verticalCenter
+                                }
+                                Repeater {
+                                    model: result.modelData.path
+                                    // One part of the path, and the separator after it but the last.
+                                    Row {
+                                        id: part
+                                        required property string modelData
+                                        required property int index
+                                        readonly property bool last: index === result.modelData.path.length - 1
+                                        Text {
+                                            width: Math.min(implicitWidth, resultPath.width - (part.last ? 0 : separator.implicitWidth))
+                                            text: part.modelData
+                                            wrapMode: Text.Wrap
+                                            color: part.index === 0 || part.last ? result.foreground : Theme.muted
+                                            font: result.font
+                                            textFormat: Text.PlainText
+                                        }
+                                        Text {
+                                            id: separator
+                                            visible: !part.last
+                                            text: " › "
+                                            color: Theme.muted
+                                            font: result.font
+                                            textFormat: Text.PlainText
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Text {
+                    visible: root.searching && root.searchResults.length === 0
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    leftPadding: 10
+                    rightPadding: 10
+                    verticalAlignment: Text.AlignTop
+                    text: I18n.tr("settings.search.noResults", [root.query.trim()])
+                    wrapMode: Text.Wrap
+                    color: Theme.muted
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(12)
+                    textFormat: Text.PlainText
+                }
             }
             Rectangle {
                 visible: !root.compact
@@ -288,7 +452,7 @@ Overlay {
                     text: I18n.tr("settings.title")
                     onClicked: {
                         root.showingSidebar = true;
-                        sidebar.forceActiveFocus();
+                        (root.searching ? searchField : sidebar).forceActiveFocus();
                     }
                 }
                 StackLayout {
