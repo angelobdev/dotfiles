@@ -328,7 +328,7 @@ Overlay {
                         }
                         Text {
                             visible: root.selectedEvents.length === 0
-                            text: Calendar.busy ? I18n.tr("calendar.loading") : Calendar.sources.length ? I18n.tr("calendar.noEvents") : I18n.tr("calendar.noCalendars")
+                            text: Calendar.busy && Calendar.sources.length === 0 ? I18n.tr("calendar.loading") : Calendar.sources.length ? I18n.tr("calendar.noEvents") : I18n.tr("calendar.noCalendars")
                             Layout.fillWidth: true
                             wrapMode: Text.Wrap
                             color: Theme.muted
@@ -355,7 +355,7 @@ Overlay {
                     }
                     ActionButton {
                         outlined: true
-                        text: I18n.tr("common.refresh")
+                        text: Calendar.busy ? I18n.tr("common.loading") : I18n.tr("common.refresh")
                         enabled: !Calendar.busy
                         onClicked: root.loadEvents()
                     }
