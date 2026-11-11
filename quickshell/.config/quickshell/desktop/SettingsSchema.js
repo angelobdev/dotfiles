@@ -3,7 +3,8 @@
 // The shell options Settings shows (panels/settings/OptionsSection.qml), by section and group. Each names a
 // property of Config.qml and carries the same default (scripts/tests/test_settings.py checks they agree),
 // the control it gets and its limits. Labels are settings.options.<key> and settings.groups.<group> in the
-// catalogs; settings.hints.<key> adds a line under the label when it exists (hint: true).
+// catalogs; settings.hints.<key> adds a line under the label when it exists (hint: true), and
+// settings.placeholders.<key> is the text of an empty text field (placeholder: true).
 // type: bool (switch), number (slider: min, max, step, unit), choice (options; labels from the assist
 // catalog with assist: true), text, time (HH:MM).
 // Options left out are lists and maps (dock pins, Control Center modules, DNS presets, assist pages…),
@@ -31,7 +32,7 @@ const options = [
     { key: "nightShiftStart", section: "desktop", group: "nightShift", type: "time", fallback: "20:00" },
     { key: "nightShiftEnd", section: "desktop", group: "nightShift", type: "time", fallback: "07:00" },
     { key: "weatherEnabled", section: "desktop", group: "weather", type: "bool", fallback: true },
-    { key: "weatherCity", section: "desktop", group: "weather", type: "text", fallback: "", hint: true },
+    { key: "weatherCity", section: "desktop", group: "weather", type: "text", fallback: "", hint: true, placeholder: true },
     { key: "reduceMotion", section: "desktop", group: "motion", type: "bool", fallback: false, hint: true },
     // Power
     { key: "batteryLow", section: "power", group: "battery", type: "number", fallback: 20, min: 5, max: 50, step: 1, unit: "%", hint: true },
@@ -58,6 +59,9 @@ function labelKey(option) {
 }
 function hintKey(option) {
     return "settings.hints." + option.key;
+}
+function placeholderKey(option) {
+    return "settings.placeholders." + option.key;
 }
 function groupKey(group) {
     return "settings.groups." + group;

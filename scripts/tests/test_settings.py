@@ -75,6 +75,8 @@ class SchemaTests(unittest.TestCase):
             keys |= {f'settings.options.{option["key"]}', f'settings.groups.{option["group"]}', f'settings.sections.{option["section"]}'}
             if option.get('hint'):
                 keys.add(f'settings.hints.{option["key"]}')
+            if option.get('placeholder'):
+                keys.add(f'settings.placeholders.{option["key"]}')
         for name, catalog in self.catalogs.items():
             for key in sorted(keys):
                 self.assertIsInstance(lookup(catalog, key), str, f'{name}: {key}')

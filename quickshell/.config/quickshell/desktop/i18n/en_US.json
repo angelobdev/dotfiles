@@ -800,6 +800,9 @@
       "clipboardMaxItems": "Items kept",
       "recordingFramerate": "Frame rate"
     },
+    "placeholders": {
+      "weatherCity": "Automatic"
+    },
     "reset": "Reset",
     "resetHint": "Back to the default (%1)",
     "sections": {

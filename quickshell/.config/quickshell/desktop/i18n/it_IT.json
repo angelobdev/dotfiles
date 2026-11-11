@@ -800,6 +800,9 @@
       "clipboardMaxItems": "Elementi conservati",
       "recordingFramerate": "Fotogrammi al secondo"
     },
+    "placeholders": {
+      "weatherCity": "Automatica"
+    },
     "reset": "Ripristina",
     "resetHint": "Torna al predefinito (%1)",
     "sections": {
