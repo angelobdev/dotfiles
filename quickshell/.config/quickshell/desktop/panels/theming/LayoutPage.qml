@@ -29,7 +29,6 @@ ColumnLayout {
             id: options
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
-            Layout.fillWidth: true
             spacing: 10
             // Windows: corner rounding and border width; the border colours come from the theme.
             Setting {
