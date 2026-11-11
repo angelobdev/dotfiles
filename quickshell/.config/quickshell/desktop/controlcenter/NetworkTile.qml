@@ -7,6 +7,7 @@ import "../services"
 
 ControlTile {
     id: root
+    implicitHeight: Theme.hit(84)
     readonly property var device: Networking.devices.values.find(d => d.connected)
     readonly property var network: device?.networks.values.find(n => n.connected)
     ColumnLayout {
