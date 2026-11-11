@@ -1467,6 +1467,7 @@
     "reset": "Reset zoom"
   },
   "displays": {
+    "builtIn": "Built-in display",
     "title": "Displays",
     "off": "Off",
     "details": "%1×%2 · %3 Hz · %4%",

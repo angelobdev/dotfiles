@@ -50,7 +50,8 @@ ControlTile {
         }
         Text {
             // The slider moves this screen, which is not always the one the panel is open on.
-            text: !Brightness.primary ? I18n.tr("brightness.noDisplay") : Brightness.primary.name !== ShellState.activeScreen?.name ? I18n.tr("brightness.otherScreen", [Brightness.primary.name]) : Brightness.primary.name
+            text: !Brightness.primary ? I18n.tr("brightness.noDisplay") : Brightness.primary.name !== ShellState.activeScreen?.name ? I18n.tr("brightness.otherScreen", [HyprSettings.displayName(Brightness.primary.name)]) : HyprSettings.displayName(Brightness.primary.name)
+            textFormat: Text.PlainText
             color: Theme.muted
             font.pixelSize: Theme.textSize(11)
         }
@@ -92,10 +93,12 @@ ControlTile {
                     id: monitorRow
                     required property string modelData
                     readonly property var monitor: Brightness.monitors.find(m => m.name === modelData)
+                    readonly property string label: HyprSettings.displayName(modelData)
                     Layout.fillWidth: true
                     spacing: 3
                     Text {
-                        text: monitorRow.modelData + ((monitorRow.monitor?.available ?? false) ? " · " + Brightness.displayPercent(monitorRow.monitor) + "%" : "")
+                        text: monitorRow.label + ((monitorRow.monitor?.available ?? false) ? " · " + Brightness.displayPercent(monitorRow.monitor) + "%" : "")
+                        textFormat: Text.PlainText
                         color: Theme.muted
                         font.pixelSize: Theme.textSize(11)
                     }
@@ -107,7 +110,7 @@ ControlTile {
                         stepSize: 1
                         enabled: monitorRow.monitor?.available ?? false
                         onMoved: Brightness.setBrightness(monitorRow.monitor, value)
-                        Accessible.name: I18n.tr("osd.brightness", [monitorRow.modelData])
+                        Accessible.name: I18n.tr("osd.brightness", [monitorRow.label])
                         Binding on value {
                             when: !otherSlider.pressed
                             value: Brightness.displayPercent(monitorRow.monitor)

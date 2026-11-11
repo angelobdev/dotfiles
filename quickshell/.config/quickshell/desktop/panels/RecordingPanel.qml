@@ -52,7 +52,8 @@ Overlay {
                     model: Quickshell.screens
                     ActionButton {
                         required property var modelData
-                        text: modelData.name
+                        text: HyprSettings.displayName(modelData.name)
+                        tooltip: modelData.name
                         highlighted: root.monitor === modelData.name
                         tone: "state"
                         onClicked: root.monitor = modelData.name

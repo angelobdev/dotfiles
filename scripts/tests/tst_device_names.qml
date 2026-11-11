@@ -180,6 +180,21 @@ TestCase {
         compare(DeviceNames.audioName(node("bare.node", ""), undefined, tr), "bare.node");
     }
 
+    function test_theLaptopPanelIsTheBuiltInDisplay() {
+        for (const name of ["eDP-1", "LVDS-1", "DSI-1"])
+            compare(DeviceNames.displayName(name, "0x1234", tr), "displays.builtIn");
+        verify(DeviceNames.isPanel("eDP-2"));
+        verify(!DeviceNames.isPanel("DP-1"));
+        verify(!DeviceNames.isPanel(undefined));
+    }
+
+    function test_anotherMonitorIsItsModelElseItsConnector() {
+        compare(DeviceNames.displayName("DP-1", "ACME VIEW 27", tr), "ACME VIEW 27");
+        compare(DeviceNames.displayName("HDMI-A-1", " ", tr), "HDMI-A-1");
+        compare(DeviceNames.displayName("HDMI-A-1", undefined, tr), "HDMI-A-1");
+        compare(DeviceNames.displayName("DP-2", "0x0ABC", tr), "DP-2");
+    }
+
     function test_labelsThatReadTheSameAreToldApart() {
         const names = DeviceNames.distinct([
             {

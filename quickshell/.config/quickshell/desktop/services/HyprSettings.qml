@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import ".."
 import "BindKeys.js" as BindKeys
+import "DeviceNames.js" as DeviceNames
 
 // Hyprland settings chosen in Settings: the keyboard layout, personal shortcuts and the language of the assistant.
 // They are kept under "hyprland" in ~/.config/desktop/shell.json (Config.set) and rendered into
@@ -105,7 +106,21 @@ Singleton {
     }
     // The internal panel of a laptop, by the names config/displays.lua looks for.
     function isPanel(name) {
-        return /^(eDP|LVDS|DSI)-/.test(name ?? "");
+        return DeviceNames.isPanel(name);
+    }
+    // A monitor by connector as a person would name it (DeviceNames.displayName): the model from the listing, else
+    // from the screen, which every view has without asking for a listing.
+    function displayName(name) {
+        const model = monitorList.find(entry => entry.name === name)?.model ?? Quickshell.screens.find(screen => screen.name === name)?.model ?? "";
+        return DeviceNames.displayName(name, model, (key, args) => I18n.tr(key, args));
+    }
+    // The names of these connectors, by connector: two monitors of the same model are told apart by it.
+    function displayNames(names) {
+        return DeviceNames.distinct(names.map(name => ({
+                    key: name,
+                    label: displayName(name),
+                    detail: name
+                })));
     }
     // Settings → Displays applies a monitor for 15 seconds unless kept; then, or on Revert, the monitors from before
     // come back. Kept here rather than in the panel, which can be dropped while the countdown runs.

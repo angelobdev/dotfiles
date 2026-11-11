@@ -3,6 +3,20 @@
 // Names a person would use for devices the system knows by identifiers. tr is I18n.tr (key, args), passed in so
 // this stays testable; the raw identifiers stay for tooltips.
 
+// The internal panel of a laptop, by the connector names config/displays.lua looks for.
+function isPanel(name) {
+    return /^(eDP|LVDS|DSI)-/.test(name ?? "");
+}
+
+// The internal panel is the built-in display; another monitor is its model, unless Hyprland only has a product code
+// for it (0x41AA), then its connector.
+function displayName(name, model, tr) {
+    if (isPanel(name))
+        return tr("displays.builtIn");
+    const text = String(model ?? "").trim();
+    return text !== "" && !/^0x[0-9a-f]+$/i.test(text) ? text : String(name ?? "");
+}
+
 // The active port of each sink and source, by node name, from `pactl -f json list` run in the C locale:
 // { type, available (true, false or null when unknown), product (the monitor behind an HDMI port, from its
 // ELD), jack (its presence is detected), description }. The port properties are only listed with the card.
