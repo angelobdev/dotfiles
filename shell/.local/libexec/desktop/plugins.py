@@ -8,12 +8,13 @@ plugins.py rebuild       Rebuild in the background with one pkexec prompt (privi
 plugins.py clear-cache old|all
                          Remove build cache entries no plugin would reuse, or all of them.
 """
-from common import last_lines, lock_held, read_json, write_atomic
+from common import lock_held, read_json, write_atomic
 from i18n import tr
 import fcntl
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -32,6 +33,8 @@ REBUILD = STATE / 'plugin-rebuild.json'
 LOG = STATE / 'plugin-rebuild.log'
 LOCK = STATE / 'plugin-rebuild.lock'
 LOG_LINES = 60
+# Terminal control sequences of hyprpm's progress output: CSI (colors, erase line) and OSC.
+ANSI = re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]')
 
 
 def output(*args):
@@ -128,8 +131,21 @@ def last_line():
     return lines[-1] if lines else ''
 
 
+def clean_log(text):
+    """A terminal log as plain lines: no escape sequences, and a line redrawn with a carriage return keeps its last draw."""
+    lines = []
+    for line in ANSI.sub('', text).split('\n'):
+        draws = [draw for draw in line.split('\r') if draw.strip()]
+        if draws:
+            lines.append(draws[-1])
+    return lines
+
+
 def log_tail(count=LOG_LINES):
-    return last_lines(LOG, count)
+    try:
+        return clean_log(LOG.read_bytes().decode('utf-8', errors='replace'))[-count:]
+    except OSError:
+        return []
 
 
 def loaded():

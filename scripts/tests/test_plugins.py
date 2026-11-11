@@ -526,5 +526,25 @@ class CacheCleanupTests(StateDirectory):
         self.assertTrue(self.current.exists())
 
 
+class Log(unittest.TestCase):
+    def test_escape_sequences_and_redraws_are_gone(self):
+        raw = '\x1b[2K\r\x1b[32mBuilding 10%\x1b[0m\r\x1b[2K\x1b[32mBuilding 100%\x1b[0m\n\n\x1b]0;title\x07done\r\n'
+        self.assertEqual(plugins.clean_log(raw), ['Building 100%', 'done'])
+
+    def test_plain_lines_stay(self):
+        self.assertEqual(plugins.clean_log('one\ntwo\n'), ['one', 'two'])
+
+    # Bytes, not text mode: universal newlines would turn each carriage return into a line.
+    def test_tail_reads_the_cleaned_log(self):
+        with tempfile.TemporaryDirectory() as folder:
+            log = Path(folder) / 'rebuild.log'
+            log.write_text('\x1b[31ma\x1b[0m\nb\rc\n', encoding='utf-8')
+            with mock.patch.object(plugins, 'LOG', log):
+                self.assertEqual(plugins.log_tail(), ['a', 'c'])
+                self.assertEqual(plugins.log_tail(1), ['c'])
+            with mock.patch.object(plugins, 'LOG', Path(folder) / 'missing.log'):
+                self.assertEqual(plugins.log_tail(), [])
+
+
 if __name__ == '__main__':
     unittest.main()
