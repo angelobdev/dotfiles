@@ -473,5 +473,18 @@ Overlay {
                 }
             }
         }
+        // Close, at the top right on every section and on the sidebar alone (compact): the titles and Back are at the
+        // left, and the tabs of Appearance and System on the row below their title. Offset by its own padding, so the
+        // glyph lines up with the content edge and the section title.
+        PanelIconButton {
+            anchors {
+                top: parent.top
+                right: parent.right
+                margins: Theme.dialogPadding - 7
+            }
+            iconName: "close"
+            tooltip: I18n.tr("common.close")
+            onClicked: ShellState.close()
+        }
     }
 }
