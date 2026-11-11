@@ -49,7 +49,8 @@ ControlTile {
             }
         }
         Text {
-            text: Brightness.primary?.name || I18n.tr("brightness.noDisplay")
+            // The slider moves this screen, which is not always the one the panel is open on.
+            text: !Brightness.primary ? I18n.tr("brightness.noDisplay") : Brightness.primary.name !== ShellState.activeScreen?.name ? I18n.tr("brightness.otherScreen", [Brightness.primary.name]) : Brightness.primary.name
             color: Theme.muted
             font.pixelSize: Theme.textSize(11)
         }

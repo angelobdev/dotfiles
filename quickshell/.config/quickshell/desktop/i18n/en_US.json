@@ -286,6 +286,7 @@
     },
     "noDisplay": "No display",
     "otherDisplays": "Other displays",
+    "otherScreen": "%1 (not this screen)",
     "primaryDisplay": "Main display brightness",
     "title": "Brightness"
   },
