@@ -1147,4 +1147,4 @@ Reported by the user after the merges of the day:
 
 - Reported: VS Code 1.146 under Hyprland showed *An OS keyring couldn't be identified* and offered weaker encryption. `oo7-daemon` owned `org.freedesktop.secrets`, the `default` alias pointed to `collection/login`, and its `Locked` property was `false` after the GDM sign-in.
 - `electron.py apply` rewrote `~/.local/share/applications/com.microsoft.VSCode.desktop`: both `Exec` lines now carry `--password-store=gnome-libsecret` after the Wayland and IME flags, and `electron.py status` reports the entry current. `"password-store": "gnome-libsecret"` was also added to the user's `~/.vscode/argv.json`, outside the repository.
-- `check.sh` passes (including `test_electron.py`). The prompt disappearing after a full VS Code restart is for the user to confirm.
+- `check.sh` passes (including `test_electron.py`). After a full VS Code restart from the launcher the user confirmed the keyring dialog no longer appears.
