@@ -127,6 +127,22 @@ ColumnLayout {
             current: String(Theming.fonts.effective?.size ?? "")
             onChosen: name => Theming.setSize(Number(name))
         }
+        // The shell's own text (bar, panels, notifications), applied at once; apps follow the size on the left.
+        Text {
+            text: I18n.tr("theming.shellText")
+            color: Theme.muted
+            font.family: Theme.font
+            font.pixelSize: Theme.textSize(12)
+        }
+        ChoiceCombo {
+            Accessible.name: I18n.tr("theming.shellText")
+            options: [1, 1.15, 1.3, 1.5].map(scale => ({
+                        name: String(scale),
+                        label: Math.round(scale * 100) + "%"
+                    }))
+            current: String(Theme.textScale)
+            onChosen: name => Theming.setTextScale(Number(name))
+        }
         Item {
             Layout.fillWidth: true
         }
@@ -139,29 +155,6 @@ ColumnLayout {
             outlined: true
             text: I18n.tr("theming.rescan")
             onClicked: Theming.rescan("fonts")
-        }
-    }
-    // The shell's own text (bar, panels, notifications), applied at once; apps follow the size above.
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: 10
-        Text {
-            text: I18n.tr("theming.shellText")
-            color: Theme.muted
-            font.family: Theme.font
-            font.pixelSize: Theme.textSize(12)
-        }
-        ChoiceChips {
-            Accessible.name: I18n.tr("theming.shellText")
-            options: [1, 1.15, 1.3, 1.5].map(scale => ({
-                        name: String(scale),
-                        label: Math.round(scale * 100) + "%"
-                    }))
-            current: String(Theme.textScale)
-            onChosen: name => Theming.setTextScale(Number(name))
-        }
-        Item {
-            Layout.fillWidth: true
         }
     }
     Rectangle {
