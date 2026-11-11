@@ -123,7 +123,7 @@ Scope {
         }
         Card {
             anchors.centerIn: parent
-            width: Math.min(520, parent.width - 48)
+            width: Math.min(Theme.dialogNarrow, parent.width - 48)
             height: content.implicitHeight + 48
             ColumnLayout {
                 id: content

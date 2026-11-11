@@ -1241,3 +1241,8 @@ Reported by the user after the merges of the day:
 - #264: `OsdPopup`, `WindowSwitcher`, the polkit prompt of `Authentication` and `BluetoothAuthentication` read `screenName` in `visible`, as #262 did for `Overlay`. The `Loader` loops of Settings and Appearance needed nothing: they were fixed on 2026-11-06 (58cb378, 6cf2995) and no log since has one.
 - After a shell restart, on the laptop panel alone: zoom in and reset (for the OSD), the window switcher shown and cancelled, twelve Settings sections and tabs including every Appearance tab, and the Control Center left no "Binding loop" line in `qs log`. No screenshot was taken, so that the OSD and the switcher actually appeared was not confirmed by eye. Not exercised: the polkit prompt, Bluetooth pairing, two monitors.
 - `check.sh` passes; the tree of `main` after the merge is the one that was checked. Found on the way: #265.
+
+## Panel chrome: Sound side panel, dialog widths, keycaps (#166, #167, #265), 2026-11-11
+
+- #265: Settings records the section it opens on as visited (`Component.onCompleted: visited = [section]`), so its page is kept on the first switch away.
+- #166: Sound is a side panel (`SidePanelCard`, `Config.controlCenterWidth`) pushed from the Control Center like Network and Bluetooth; Displays (`Super + P`) stays a centred dialog. Centred dialogs take `Theme.dialogNarrow` (480), `dialogMedium` (620), `dialogWide` (860) or `dialogSettings` (1240): power menu 440 → 480, Bluetooth pairing 460 → 480, polkit and Displays 520 → 480, Emoji 560 → 620, Launcher 600 → 620, Radio 680 → 620, Hints 820 → 860, Wallpaper picker 900 → 860; Calendar, Clipboard, the share picker and Settings keep theirs.

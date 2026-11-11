@@ -65,6 +65,14 @@ Singleton {
     readonly property color frameInactive: borderSize > 0 ? colors.inactiveBorder : stroke
     readonly property int panelPadding: 16
     readonly property int dialogPadding: 22
+    // Widths of centred dialogs, each the most a dialog takes (narrower screens get less): narrow for a prompt or
+    // a short list (power menu, calendar, displays, authentication), medium for a search over a list (launcher,
+    // clipboard, emoji, radio, share picker), wide for two columns (hints, wallpaper picker), and Settings with
+    // its sidebar. Side panels take Config.controlCenterWidth (components/SidePanelCard.qml).
+    readonly property int dialogNarrow: 480
+    readonly property int dialogMedium: 620
+    readonly property int dialogWide: 860
+    readonly property int dialogSettings: 1240
     // The height a side panel or dialog leaves free: the bar above it and a margin below.
     readonly property int panelClearance: 76
     // Motion shared with Hyprland's "out" and "accel" curves in appearance.lua.

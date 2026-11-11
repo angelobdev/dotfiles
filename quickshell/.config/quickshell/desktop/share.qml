@@ -57,7 +57,7 @@ ShellRoot {
         contentItem.Keys.onEscapePressed: Qt.quit()
         Card {
             anchors.centerIn: parent
-            width: Math.min(620, parent.width - 32)
+            width: Math.min(Theme.dialogMedium, parent.width - 32)
             height: Math.min(580, parent.height - Theme.panelClearance)
             ColumnLayout {
                 anchors.fill: parent

@@ -48,7 +48,7 @@ PanelWindow {
     contentItem.Keys.onEscapePressed: BluetoothAgent.reply(false)
     Card {
         anchors.centerIn: parent
-        width: Math.min(460, parent.width - 48)
+        width: Math.min(Theme.dialogNarrow, parent.width - 48)
         height: content.implicitHeight + 40
         ColumnLayout {
             id: content

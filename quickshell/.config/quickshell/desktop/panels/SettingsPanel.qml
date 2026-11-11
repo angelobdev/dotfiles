@@ -260,7 +260,7 @@ Overlay {
     Card {
         id: card
         anchors.centerIn: parent
-        width: Math.min(1240, parent.width - 48)
+        width: Math.min(Theme.dialogSettings, parent.width - 48)
         height: Math.min(760, parent.height - 96)
         RowLayout {
             anchors {

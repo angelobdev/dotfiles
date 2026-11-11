@@ -84,7 +84,7 @@ Overlay {
     }
     Card {
         anchors.centerIn: parent
-        width: Math.min(900, parent.width - 48)
+        width: Math.min(Theme.dialogWide, parent.width - 48)
         height: Math.min(650, parent.height - 96)
         ColumnLayout {
             anchors {

@@ -5,19 +5,16 @@ import "../components"
 import "../services"
 import "audio"
 
+// Sound: a side panel under the bar like its siblings Network and Bluetooth, pushed from the Control Center.
 Overlay {
     panelName: "audio"
-    dialog: true
-    Card {
-        anchors.centerIn: parent
-        width: Math.min(620, parent.width - 48)
-        height: Math.min(640, parent.height - 96)
+    SidePanelCard {
         ColumnLayout {
             anchors {
                 fill: parent
-                margins: Theme.dialogPadding
+                margins: Theme.panelPadding
             }
-            spacing: 14
+            spacing: 12
             PanelHeader {
                 Layout.fillWidth: true
                 title: I18n.tr("audio.panelTitle")
