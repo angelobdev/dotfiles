@@ -144,12 +144,14 @@ Overlay {
                     RowLayout {
                         Layout.fillWidth: true
                         visible: Weather.ready
-                        spacing: 0
+                        spacing: 4
+                        uniformCellSizes: true
                         Repeater {
                             model: Weather.data.hours ?? []
                             ColumnLayout {
                                 required property var modelData
                                 Layout.fillWidth: true
+                                Layout.preferredWidth: 0
                                 spacing: 2
                                 Text {
                                     Layout.alignment: Qt.AlignHCenter
