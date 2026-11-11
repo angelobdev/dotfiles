@@ -81,9 +81,6 @@ Overlay {
                 margins: Theme.dialogPadding
             }
             spacing: 14
-            Heading {
-                text: I18n.tr("launcher.title")
-            }
             InputField {
                 id: search
                 Layout.fillWidth: true
@@ -128,10 +125,10 @@ Overlay {
                     required property int index
                     width: apps.width
                     rightPadding: 40
-                    implicitHeight: Theme.hit(52)
+                    implicitHeight: Theme.hit(40)
                     readonly property var entry: modelData.entry ?? null
                     iconSource: modelData.kind === "calc" ? Quickshell.iconPath("accessories-calculator", "application-x-executable") : modelData.kind === "file" ? Quickshell.iconPath("text-x-generic", "application-x-executable") : Quickshell.iconPath(entry.icon, "application-x-executable")
-                    iconSize: 30
+                    iconSize: 24
                     alignLeft: true
                     textElide: Text.ElideMiddle
                     text: modelData.kind === "calc" ? "= " + modelData.text : modelData.kind === "file" ? modelData.path.replace(Quickshell.env("HOME"), "~") : entry.name + (entry.runInTerminal ? I18n.tr("launcher.terminalSuffix") : "")
