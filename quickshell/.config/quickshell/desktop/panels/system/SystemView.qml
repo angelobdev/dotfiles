@@ -100,39 +100,36 @@ ColumnLayout {
             font.pixelSize: Theme.textSize(13)
         }
     }
-    RowLayout {
+    Heading {
         Layout.fillWidth: true
-        Heading {
-            Layout.fillWidth: true
-            text: root.title
-        }
-        ChoiceChips {
-            Layout.fillWidth: false
-            options: [
-                {
-                    name: "about",
-                    label: I18n.tr("settings.system.about")
-                },
-                {
-                    name: "updates",
-                    label: I18n.tr("settings.system.updates")
-                },
-                {
-                    name: "profiles",
-                    label: I18n.tr("settings.system.profiles")
-                },
-                {
-                    name: "plugins",
-                    label: I18n.tr("settings.system.plugins")
-                },
-                {
-                    name: "advanced",
-                    label: I18n.tr("settings.system.advanced")
-                }
-            ]
-            current: root.tab
-            onChosen: name => root.open(name)
-        }
+        text: root.title
+    }
+    // The tabs, left-aligned under the title (as in Appearance), wrapping on a narrow panel.
+    ChoiceChips {
+        options: [
+            {
+                name: "about",
+                label: I18n.tr("settings.system.about")
+            },
+            {
+                name: "updates",
+                label: I18n.tr("settings.system.updates")
+            },
+            {
+                name: "profiles",
+                label: I18n.tr("settings.system.profiles")
+            },
+            {
+                name: "plugins",
+                label: I18n.tr("settings.system.plugins")
+            },
+            {
+                name: "advanced",
+                label: I18n.tr("settings.system.advanced")
+            }
+        ]
+        current: root.tab
+        onChosen: name => root.open(name)
     }
     StackLayout {
         Layout.fillWidth: true
