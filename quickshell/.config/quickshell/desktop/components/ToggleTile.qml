@@ -19,7 +19,7 @@ Rectangle {
     radius: Theme.corner(14)
     color: checked ? Theme.active : Theme.tile
     // Keyboard focus shows as a thicker outline.
-    border.color: activeFocus ? Theme.handleFocus : checked ? Theme.accent : Theme.stroke
+    border.color: activeFocus ? Theme.handleFocus : Theme.stroke
     border.width: activeFocus ? 2 : 1
     opacity: available ? 1 : 0.55
     activeFocusOnTab: true

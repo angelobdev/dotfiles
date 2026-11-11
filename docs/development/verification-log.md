@@ -1154,3 +1154,14 @@ Reported by the user after the merges of the day:
 - `ActionButton` gained `tone` and `Theme` the derived `active` (accent at 22 %) and `selection` (text at 12 %). The 45 `highlighted` uses that were a keyboard selection or a state now say so; the 11 primary actions keep the accent fill. `ChoiceChips`, `ToggleTile` and the Launcher highlight use the same tokens. No behaviour changed.
 - Seen on the external monitor (theme Dynamic, it_IT) after the live reload: Launcher, Clipboard, Radio and Calendar show a neutral selection; the Control Center, Network, Battery, Settings → Sound, Power and Appearance (Theme, Font) show tabs, sidebar row, current device and chosen font as an accent tint with accent text; `Apri console`, `Applica` and `Aggiorna` are the only accent fills. Not seen: the light themes, Recording, the share picker, Bluetooth with a connected device.
 - `check.sh` passes.
+
+## UI review, first fixes (#227, #201, #205, #193, #199, #226, #216, #183), 2026-11-11
+
+- After the merges and a shell restart through Hyprland (`NoNewPrivs: 0`, "Configuration Loaded"), seen on the external monitor in it_IT: Settings → System → Plugins shows the rebuild log with no escape sequences and one line per step; the usage footer reads `Ultima lettura sab 16:10. Invia un messaggio nella console per rileggerli` while the 5-hour window has lapsed; Updates shows `Aggiornato alle 18:37` without the stop; Hints is titled `Suggerimenti · Scorciatoie da tastiera`; the power menu and the desktop menu both read `Sospendi… / Esci… / Riavvia… / Spegni…`; the Cursors tab offers `Apri la cartella dei cursori`; the Sound footer is one sentence; the shortcuts help quotes the literal key syntax.
+- #203 was closed as not a bug: both places render `AgentView` from `Agent.consoleOpen`.
+- `check.sh` passes on the merged `main`.
+
+## One look for what is on (#164), 2026-11-11
+
+- `ControlSwitch` on is the accent tint with an accent knob, off is grey on grey; a checked `ToggleTile` keeps the tint and the accent icon without the accent border; the row with the keyboard in an options page is `Theme.selection` without a border. Seen live in Settings → Desktop, the Control Center and Network. Not seen: light themes, tablet sizes.
+- `check.sh` passes.

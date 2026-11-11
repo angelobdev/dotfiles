@@ -18,7 +18,8 @@ Switch {
         width: Theme.hit(40)
         height: Theme.hit(24)
         radius: Theme.corner(Theme.hit(12))
-        color: root.checked ? Theme.accent : Theme.track
+        // On is the accent tint with an accent knob, as every other chosen state; off is grey on grey.
+        color: root.checked ? Theme.active : Theme.track
         border.width: root.activeFocus ? 1 : 0
         border.color: Theme.text
         Rectangle {
@@ -27,7 +28,7 @@ Switch {
             width: Theme.hit(18)
             height: Theme.hit(18)
             radius: Theme.corner(Theme.hit(9))
-            color: root.checked ? Theme.accentText : Theme.text
+            color: root.checked ? Theme.accent : Theme.muted
             Behavior on x {
                 NumberAnimation {
                     duration: Theme.motionFast
