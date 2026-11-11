@@ -65,6 +65,10 @@ Rectangle {
                 root.dismiss();
         }
     }
+    HoverHandler {
+        id: hover
+        enabled: !root.popup
+    }
     // Clicks act only on popups, but the area always holds the swipe handler: a handler of the item sees the
     // press before the item, so it can take a drag over from it (a handler on the parent would never see it).
     MouseArea {
@@ -155,35 +159,35 @@ Rectangle {
                 font.pixelSize: Theme.textSize(11)
                 font.italic: true
             }
-        }
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 8
-            Text {
-                id: summary
-                text: root.notification?.summary ?? ""
-                color: Theme.text
-                font.bold: true
-                font.pixelSize: Theme.textSize(13)
-                Layout.fillWidth: true
-                wrapMode: Text.Wrap
-                maximumLineCount: root.popup ? 3 : 2147483647
-                elide: Text.ElideRight
-                textFormat: Text.PlainText
-            }
-            ActionButton {
+            // Quiet, and shown on the hovered or focused card only (it keeps its place, so nothing moves);
+            // tablet mode has no hover, so there it stays.
+            CompactIconButton {
                 visible: !root.popup
-                Layout.alignment: Qt.AlignTop
-                implicitHeight: Math.max(Theme.hit(24), summary.font.pixelSize + 8)
-                topPadding: 0
-                bottomPadding: 0
-                compact: true
-                destructive: true
-                text: I18n.tr("common.delete")
-                font.pixelSize: summary.font.pixelSize
-                font.bold: summary.font.bold
+                implicitWidth: Theme.hit(24)
+                implicitHeight: Theme.hit(24)
+                iconName: "close"
+                iconSize: 14
+                normalColor: Theme.muted
+                tooltip: I18n.tr("common.delete")
+                opacity: hover.hovered || activeFocus || Tablet.active ? 1 : 0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: Theme.motionFast
+                    }
+                }
                 onClicked: root.dismiss()
             }
+        }
+        Text {
+            text: root.notification?.summary ?? ""
+            color: Theme.text
+            font.bold: true
+            font.pixelSize: Theme.textSize(13)
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+            maximumLineCount: root.popup ? 3 : 2147483647
+            elide: Text.ElideRight
+            textFormat: Text.PlainText
         }
         Text {
             text: NotificationText.styled(root.notification?.body ?? "")
