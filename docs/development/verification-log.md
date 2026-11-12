@@ -1274,3 +1274,8 @@ Reported by the user after the merges of the day:
 - #277: the 720 px cap of #252 is gone; Assistant, Desktop and System → About were seen at the same width as Appearance. The rows of option pages are again as wide as the panel, which is what #170 had noted; the user preferred one width.
 - #278: Settings → Assistant sits in a `ScrollView`; with three agents listed the language group is cut at the bottom of the page area and the key footer under it is clear. Scrolling with the wheel was not exercised.
 - `check.sh` passes; `qs log` shows "Configuration Loaded" after each edit and no binding loop.
+
+## The Check workflow on main (launcher order under the C locale), 2026-11-12
+
+- `Check` had failed on `main` since the launcher ranking (#256, 2026-11-11): `tst_launcher_rank.qml` expects the names in alphabetical order whatever their case, `LauncherRank.rank` sorted them with `localeCompare`, and in the C locale of the containers that puts `kitty` after every capitalised name. It passed on the desktop, where the locale is it_IT, and the runs on GitHub were not looked at after the merges.
+- `rank` now orders by the folded name (lower case, no accents) with plain comparisons, the same under every locale. `qmltestrunner` reproduced the failure with `LC_ALL=C` before the change and passes with `C`, `it_IT.UTF-8` and `en_US.UTF-8` after it (149 tests). `check.sh` runs the QML tests with `LC_ALL=C`, as the workflow does.
