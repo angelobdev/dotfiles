@@ -47,6 +47,16 @@ function fold(text) {
     return typeof lower.normalize === "function" ? lower.normalize("NFD").replace(/[̀-ͯ]/g, "") : lower;
 }
 
+// Alphabetical order on the folded names, so it is the same under every locale: localeCompare follows the locale
+// of the process, and the C locale (a session without one, the test container) puts every capital before "a".
+function byName(a, b) {
+    const left = fold(a);
+    const right = fold(b);
+    if (left !== right)
+        return left < right ? -1 : 1;
+    return String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0;
+}
+
 // The words of a name, split at spaces and punctuation and where a lower case letter meets an upper case one
 // ("LibreOffice" -> libre, office).
 function words(name) {
@@ -122,7 +132,7 @@ function rank(entries, query, history, now) {
                 score: score(history?.[entry.id], now)
             });
     }
-    found.sort((a, b) => a.tier - b.tier || b.score - a.score || String(a.entry.name).localeCompare(String(b.entry.name)));
+    found.sort((a, b) => a.tier - b.tier || b.score - a.score || byName(a.entry.name, b.entry.name));
     return found.map(item => item.entry);
 }
 

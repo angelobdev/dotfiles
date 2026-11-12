@@ -51,7 +51,9 @@ fi
 # Pure JS helpers of the shell (dock layout); offscreen, no compositor needed.
 qmltestrunner=$qt/qmltestrunner
 if [[ -x $qmltestrunner ]]; then
-    QT_QPA_PLATFORM=offscreen "$qmltestrunner" -silent -input "$repo/scripts/tests"
+    # In the C locale, as the containers of the workflow run it: an order or a format that follows the locale of
+    # the desktop passes here and fails there.
+    LC_ALL=C QT_QPA_PLATFORM=offscreen "$qmltestrunner" -silent -input "$repo/scripts/tests"
 fi
 # The hyprctl eval entry points of config/displays.lua, tablet.lua and console.lua, which --verify-config never runs: a stub of hl, a temporary state.
 if command -v lua >/dev/null; then
