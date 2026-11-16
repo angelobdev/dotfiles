@@ -145,6 +145,22 @@ GVfs volumes use `afc://` URIs and appear in Files rather than `/run/media`. Use
 
 References: [udiskie usage](https://github.com/coldfix/udiskie/wiki/Usage), [libimobiledevice](https://github.com/libimobiledevice/libimobiledevice), [GVfs AFC backend](https://gitlab.gnome.org/GNOME/gvfs/-/tree/master/daemon).
 
+## Microsoft fonts
+
+Documents written with Microsoft Office ask for Calibri, Cambria, Segoe UI, Consolas, Arial and Times New Roman. They are licensed with Windows and no package holds the current ones, so the desktop downloads none of them: `desktop-msfonts` copies them from your own copy of Windows 10 or 11.
+
+```sh
+desktop-msfonts install ~/Downloads/Win11_25H2_English_x64.iso   # a Windows ISO from microsoft.com/software-download
+desktop-msfonts install /run/media/$USER/Windows                 # a mounted Windows partition, or its Fonts folder
+desktop-msfonts install install.wim                              # the image of an ISO (or install.esd), already at hand
+desktop-msfonts status                                           # how many fonts, and their families
+desktop-msfonts remove
+```
+
+The fonts (`.ttf`, `.ttc`, `.otf`) go to `~/.local/share/fonts/microsoft`, for this user only, and `fc-cache` runs after it; apps see them once reopened. Segoe UI Emoji is left out, so Noto Color Emoji stays the emoji font; `--emoji` installs it too. `remove` deletes the fonts and leaves anything else in that folder.
+
+An ISO or an image is read with `7z`: the `utils.msfonts` part of the [installer](installation.md) installs it (`7zip`); a folder needs nothing. From an ISO, the Windows image (5 GiB or more) is unpacked into `~/.cache/desktop` first and deleted afterwards, also when the command fails or is interrupted; it refuses to start without that much free space. Removing the part removes `7zip`, not the fonts.
+
 ## Weather and location
 
 The calendar weather asks GeoClue for the computer's position at city accuracy (`weather.py`, as the client `desktop-weather`; Fedora's GeoClue answers it without an agent, from its IP and Wi-Fi sources), names the place through OpenStreetMap's Nominatim, and fetches the forecast from Open-Meteo. Each request carries only the coordinates and the generic client name `desktop-weather/1.0`. The place is kept 6 hours and the forecast 30 minutes in `~/.cache/desktop/`; `Config.weatherCity` replaces the position with a city looked up through Open-Meteo, and `Config.weatherEnabled: false` stops all of it.

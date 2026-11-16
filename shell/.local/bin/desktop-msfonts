@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# install SOURCE: Microsoft's fonts from a Windows ISO, install.wim / install.esd or Fonts folder; status; remove.
+exec python3 "$HOME/.local/libexec/desktop/msfonts.py" "$@"

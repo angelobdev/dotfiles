@@ -1010,7 +1010,7 @@
         "tablet": "Un 2 in 1: rotazione dello schermo, penna, accesso senza lettore di impronte da piegato, gesti sul touchscreen (Hyprgrass).",
         "plugins": "I plugin di Hyprland, uno per uno: Hyprspace (panoramica), Hyprglass (vetro liquido), HyprCapture (screenshot), con gli strumenti e gli header che servono per compilarli.",
         "apps": "App desktop, una per una: Zen Browser, 1Password, VS Code, e Loupe, Papers e Showtime per immagini, PDF e video.",
-        "utils": "Strumenti da riga di comando, uno per uno: Neovim, gcc, xclip, unrar, FUSE, gh, glab, uv, wev e Tailscale.",
+        "utils": "Strumenti da riga di comando, uno per uno: Neovim, gcc, xclip, unrar, FUSE, gh, glab, uv, wev, Tailscale e lo strumento che installa i font Microsoft dalla tua ISO di Windows.",
         "assistant": "L’assistente AI: Super + A, la sua icona nella barra e la sua sezione qui, con l’app Herdr e herdr-core in ~/.local, che si aggiornano da sole.",
         "containers": "Docker (moby-engine, docker-compose, il gruppo docker).",
         "radio": "Il pannello Radio (Super + M): mpv con mpv-mpris, yt-dlp, e Qt Multimedia per il suo video.",
@@ -1051,7 +1051,8 @@
           "glab": "glab (GitLab)",
           "uv": "uv (Python)",
           "wev": "wev (eventi di input)",
-          "tailscale": "Tailscale"
+          "tailscale": "Tailscale",
+          "msfonts": "Font Microsoft (dalla tua ISO di Windows)"
         },
         "gaming": {
           "steam": "Steam",
@@ -1245,6 +1246,33 @@
     "windowCount": {
       "one": "Workspace %2 · %1 finestra",
       "other": "Workspace %2 · %1 finestre"
+    }
+  },
+  "msfonts": {
+    "help": {
+      "description": "I font Microsoft (Segoe UI, Calibri, Cambria, Consolas, Arial, Times New Roman…) per questo utente, dalla tua copia di Windows 10 o 11. Sono concessi in licenza con Windows: non viene scaricato nulla.",
+      "install": "Installa i font da una sorgente",
+      "source": "Una ISO di Windows, un install.wim o install.esd, una partizione Windows montata o una cartella Fonts",
+      "emoji": "Installa anche Segoe UI Emoji (può prendere il posto di Noto Color Emoji)",
+      "status": "Mostra i font installati (predefinito)",
+      "remove": "Rimuove i font installati"
+    },
+    "unpackingImage": "Estrazione dell’immagine di Windows dalla ISO (%1 GiB): ci vuole qualche minuto…",
+    "extractingFonts": "Estrazione dei font dall’immagine di Windows…",
+    "installed": "Font installati: %1, in %2",
+    "emojiSkipped": "Segoe UI Emoji è stato lasciato fuori, così Noto Color Emoji resta il font delle emoji (--emoji lo installa).",
+    "none": "Nessun font Microsoft installato. Installali con: desktop-msfonts install WINDOWS.iso",
+    "status": "Font Microsoft installati: %1, in %2",
+    "families": "Famiglie: %1",
+    "removed": "Font rimossi: %1, da %2",
+    "errors": {
+      "no7z": "Manca 7z: installa il pacchetto 7zip (la parte utils.msfonts dell’installer).",
+      "noSource": "%1 non esiste",
+      "unknownSource": "%1 non è una ISO di Windows, un install.wim o install.esd, una partizione Windows o una cartella di font",
+      "noImage": "Nessun sources/install.wim o sources/install.esd in %1: è una ISO di Windows?",
+      "noSpace": "L’estrazione dell’immagine di Windows occupa %1 GiB in %2, e ce ne sono %3 liberi",
+      "extract": "7z non è riuscito a leggere %1: %2",
+      "noFonts": "Nessun font trovato in %1"
     }
   },
   "xwayland": {
