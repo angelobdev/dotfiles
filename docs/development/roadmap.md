@@ -326,7 +326,7 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 
 ### Microsoft fonts (#281, 2026-11-16)
 
-- [x] `desktop-msfonts install SOURCE` (`msfonts.py`): the fonts of the user's own Windows ISO, `install.wim` / `install.esd`, Windows partition or Fonts folder, into `~/.local/share/fonts/microsoft`, without Segoe UI Emoji unless `--emoji`; `status` and `remove`. Opt-in part `utils.msfonts` (`7zip`) on Fedora and Arch. Open: a run against a real Windows ISO (tried with a WIM made by `7z`, see the verification log).
+- [x] `desktop-msfonts install SOURCE` (`msfonts.py`): the fonts of the user's own Windows ISO, `install.wim` / `install.esd`, Windows partition or Fonts folder, into `~/.local/share/fonts/microsoft`, without Segoe UI Emoji unless `--emoji`; `status` and `remove`. Opt-in part `utils.msfonts` (`7zip`) on Fedora and Arch. Run against a real Windows 11 ISO on 2026-11-16: 142 fonts.
 
 ### Backlog (reported 2026-11-03)
 
