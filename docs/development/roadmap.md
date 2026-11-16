@@ -324,6 +324,10 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #112: tests for the helpers that had none, all without hardware: `brightness.py` (backends, DDC/CI readings, the panel found without a mapping), the Bluetooth agent's replies (only the pending request, PIN and passkey limits), `recording.py` (areas in logical pixels, rotated displays), `xwayland.py`, `clipboard.py` and `bar_visibility.py` (2026-11-10).
   - [x] #143 (found in the live log during the review): the zoom keys showed the OSD but never zoomed, since `hl.config` went through `Hyprland.dispatch`, which wraps it in `hl.dispatch()`; it goes through `hyprctl eval` now (2026-11-10).
 
+### Microsoft fonts (#281, 2026-11-16)
+
+- [x] `desktop-msfonts install SOURCE` (`msfonts.py`): the fonts of the user's own Windows ISO, `install.wim` / `install.esd`, Windows partition or Fonts folder, into `~/.local/share/fonts/microsoft`, without Segoe UI Emoji unless `--emoji`; `status` and `remove`. Opt-in part `utils.msfonts` (`7zip`) on Fedora and Arch. Open: a run against a real Windows ISO (tried with a WIM made by `7z`, see the verification log).
+
 ### Backlog (reported 2026-11-03)
 
 - [x] Light GTK dialogs with the dark theme (file chooser, keyring unlock): GTK 3 asked for `Adwaita-dark`, which Fedora 44 no longer ships (`gnome-themes-extra` is gone), and fell back to light Adwaita. Themes now name `adw-gtk3-dark`/`adw-gtk3` (`adw-gtk3-theme` in the manifest), which also takes the theme palette from `gtk.css`. The portal file chooser floats centered at 50%×60% of the monitor instead of tiling to full height (`portal-file-chooser` rule).

@@ -342,6 +342,11 @@ services = ['tailscaled.service']
 user_services = ['tailscale-systray.service']
 notes = ['Connect Tailscale: sudo tailscale up']
 
+# desktop-msfonts: Microsoft's fonts from the user's own Windows ISO, which 7z reads. The fonts are never downloaded.
+[fedora.utils.parts.msfonts]
+default = false
+packages = ['7zip']
+notes = ['Install the Microsoft fonts from your Windows ISO: desktop-msfonts install WINDOWS.iso']
 # The AI Assistant: the Settings section, Super + A and the bar icon need it (the shell hides them without it). Its
 # console is herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, for any coding agent
 # (docs/features/ai-assistant.md). Put where their own installers put them (releases.herdr.dev/app/install.sh), from
@@ -663,6 +668,11 @@ packages = ['tailscale']
 services = ['tailscaled.service']
 notes = ['Connect Tailscale: sudo tailscale up']
 
+# desktop-msfonts: Microsoft's fonts from the user's own Windows ISO, which 7z reads. The fonts are never downloaded.
+[arch.utils.parts.msfonts]
+default = false
+packages = ['7zip']
+notes = ['Install the Microsoft fonts from your Windows ISO: desktop-msfonts install WINDOWS.iso']
 # The AI Assistant: the Settings section, Super + A and the bar icon need it (the shell hides them without it). Its
 # console is herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, for any coding agent
 # (docs/features/ai-assistant.md). Put where their own installers put them (releases.herdr.dev/app/install.sh), from
