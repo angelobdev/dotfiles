@@ -127,14 +127,13 @@ def repository_updates():
     if not (REPO / '.git').exists() or not (REPO / 'scripts/install-desktop.py').is_file():
         return {}, None
     try:
-        upstream = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}')
-        if upstream.returncode:
+        upstream, remote = channel.upstream(git)
+        if remote is None:
             return {}, None
-        upstream = upstream.stdout.strip()
-        fetched = git('fetch', '--quiet', upstream.split('/', 1)[0])
+        fetched = git('fetch', '--quiet', remote)
         if fetched.returncode:
             return None, tr('updates.errors.git', [(fetched.stderr or fetched.stdout).strip()[-200:]])
-        followed = channel.target(git, upstream)
+        followed = channel.target(git, upstream, remote)
         behind = int(git('rev-list', '--count', f'HEAD..{followed}').stdout.strip() or 0)
         ahead = int(git('rev-list', '--count', f'{followed}..HEAD').stdout.strip() or 0)
         log = git('log', f'--max-count={COMMITS}', '--format=%h%x09%s', f'HEAD..{followed}').stdout

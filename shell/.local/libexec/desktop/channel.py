@@ -6,8 +6,8 @@ whats-new --current: the section of the installed version, for About, seen or no
 seen: record the installed version as seen.
 
 A clone follows the stable branch, which every release moves to its tag (scripts/release.py). A clone on main moves
-to stable at the first update that is a fast-forward from where it is. A maintainer (git config desktop.maintainer
-true) stays on the branch they track.
+to stable at the first update that is a fast-forward from where it is, and so does one whose branch is gone from the
+remote. A maintainer (git config desktop.maintainer true) stays on the branch they track (develop).
 """
 from common import write_atomic
 from i18n import tr
@@ -27,6 +27,8 @@ STATE = Path(os.environ.get('XDG_STATE_HOME') or Path.home() / '.local/state') /
 CHECKED = STATE.with_name('updates.json')
 SECTION = re.compile(r'^## (v\d+\.\d+\.\d+)(?:\s+-\s+(\S+))?\s*$', re.M)
 VERSION = re.compile(r'^v(\d+)\.(\d+)\.(\d+)$')
+# Below every release: between() from it lists them all.
+FIRST = 'v0.0.0'
 
 
 def version_key(version):
@@ -51,12 +53,24 @@ def maintainer(git):
     return git('config', '--bool', 'desktop.maintainer').stdout.strip() == 'true'
 
 
-def target(git, upstream):
+def upstream(git):
+    """(upstream, remote): the branch this one tracks and its remote; ('', 'origin') when the branch it tracked is
+    gone from the remote but origin has stable (main, once deleted); (None, None) with nothing to follow."""
+    found = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}')
+    name = found.stdout.strip() if found.returncode == 0 else ''
+    if name:
+        return name, name.split('/', 1)[0]
+    if git('rev-parse', '--verify', '--quiet', f'refs/remotes/origin/{STABLE}').returncode == 0:
+        return '', 'origin'
+    return None, None
+
+
+def target(git, upstream, remote=None):
     """The branch to follow, after a fetch: the remote's stable branch, or the upstream for a maintainer and for a
     remote without one yet."""
-    remote = upstream.split('/', 1)[0]
+    remote = remote or upstream.split('/', 1)[0]
     stable = f'{remote}/{STABLE}'
-    if upstream == stable or maintainer(git):
+    if upstream == stable or (upstream and maintainer(git)):
         return upstream
     found = git('rev-parse', '--verify', '--quiet', f'refs/remotes/{stable}')
     return stable if found.returncode == 0 else upstream
@@ -119,7 +133,8 @@ def record_seen(name, path=STATE):
 
 def whats_new(git=default_git, current_only=False, path=STATE, checked=CHECKED):
     """{version, sections}: the notes not seen yet. With nothing recorded, a shell that ran before releases began
-    (it has checked for updates) sees the notes of its version once, and a new install starts from its version."""
+    (it has checked for updates) sees the notes of every release up to its version once, since it may come straight
+    to a later one, and a new install starts from its version."""
     installed = version(git)
     text = read_changelog()
     if current_only:
@@ -133,7 +148,7 @@ def whats_new(git=default_git, current_only=False, path=STATE, checked=CHECKED):
     # A version older than the one seen (a downgrade) has nothing new to say.
     if seen and version_key(seen) > version_key(installed):
         return {'version': installed, 'sections': []}
-    return {'version': installed, 'sections': between(text, seen or '', installed)}
+    return {'version': installed, 'sections': between(text, seen or FIRST, installed)}
 
 
 def main(arguments=None):

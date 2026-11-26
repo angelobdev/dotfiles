@@ -68,6 +68,24 @@ class ChannelTests(unittest.TestCase):
         self.assertEqual(channel.target(answering(stable=False), 'origin/main'), 'origin/main')
         self.assertEqual(channel.target(answering(), 'origin/stable'), 'origin/stable')
 
+    def test_a_branch_gone_from_the_remote_follows_stable(self):
+        def git(tracked, stable):
+            def answer(*arguments):
+                if '@{u}' in arguments:
+                    return done(tracked + '\n', 0 if tracked else 128)
+                if arguments[:2] == ('rev-parse', '--verify'):
+                    return done('', 0 if stable else 1)
+                if arguments[0] == 'config':
+                    return done('true\n')
+                raise AssertionError(arguments)
+            return answer
+        self.assertEqual(channel.upstream(git('origin/main', True)), ('origin/main', 'origin'))
+        self.assertEqual(channel.upstream(git('', True)), ('', 'origin'))
+        self.assertEqual(channel.upstream(git('', False)), (None, None))
+        # Even for a maintainer: there is no branch of theirs left to follow.
+        self.assertEqual(channel.target(git('', True), '', 'origin'), 'origin/stable')
+        self.assertEqual(channel.update_command('origin/stable', ''), ('switch', '-C', 'stable', '--track', 'origin/stable'))
+
     def test_moving_to_stable_takes_the_branch(self):
         self.assertEqual(channel.update_command('origin/stable', 'origin/main'), ('switch', '-C', 'stable', '--track', 'origin/stable'))
         self.assertEqual(channel.update_command('origin/stable', 'origin/stable'), ('merge', '--ff-only', 'origin/stable'))
@@ -97,10 +115,11 @@ class WhatsNewTests(unittest.TestCase):
         self.assertEqual(self.new()['sections'], [])
         self.assertEqual(channel.seen_version(self.state), 'v1.2.0')
 
-    def test_a_shell_from_before_releases_sees_its_version_once(self):
+    def test_a_shell_from_before_releases_sees_every_release_once(self):
+        # It may come straight to a later release: the first one says what releases are.
         self.checked.parent.mkdir(parents=True)
         self.checked.write_text('{}', encoding='utf-8')
-        self.assertEqual([section['version'] for section in self.new()['sections']], ['v1.2.0'])
+        self.assertEqual([section['version'] for section in self.new()['sections']], ['v1.2.0', 'v1.1.0', 'v1.0.0'])
         channel.record_seen('v1.2.0', self.state)
         self.assertEqual(self.new()['sections'], [])
 

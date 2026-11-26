@@ -109,9 +109,9 @@ The pin lines are for whoever maintains the manifest: they write new pins into `
 
 ### Releases and What's new
 
-The desktop is released as `vMAJOR.MINOR.PATCH` tags, and each release moves the `stable` branch to its tag. A clone follows `stable`: the update icon, **Settings → System → Updates** and the Repository line above offer a release once it is out, with the changes it makes from [`CHANGELOG.md`](../../CHANGELOG.md), and never the work in progress on `main`. After the update, **What's new** opens once with the notes of every release installed since the last one you saw; **Settings → System → About** shows the installed release and opens its notes again.
+The desktop is released as `vMAJOR.MINOR.PATCH` tags, and each release moves the `stable` branch to its tag. A clone follows `stable`: the update icon, **Settings → System → Updates** and the Repository line above offer a release once it is out, with the changes it makes from [`CHANGELOG.md`](../../CHANGELOG.md), and never the work in progress on `develop`. After the update, **What's new** opens once with the notes of every release installed since the last one you saw; **Settings → System → About** shows the installed release and opens its notes again.
 
-A clone made before releases began is on `main`: it moves to `stable` at the first update that is a fast-forward from where it is, and its first shell start after the release shows the notes of that release. A clone with commits newer than the last release (pulled by hand from `main`) waits for the release that has them. Whoever publishes the releases sets `git config desktop.maintainer true` and keeps following `main` ([releasing](../development/releasing.md)).
+A clone made before releases began is on `main`, which each release still moves with `stable` for a while: it moves to `stable` at the first update that is a fast-forward from where it is, and its first shell start after that shows the notes of every release up to the installed one. A clone with commits newer than the last release (pulled by hand from `develop`) waits for the release that has them. Whoever publishes the releases sets `git config desktop.maintainer true` and follows `develop`, where the work lands ([releasing](../development/releasing.md)).
 
 ### AUR packages (Arch)
 

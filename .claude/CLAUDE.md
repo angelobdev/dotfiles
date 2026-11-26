@@ -9,7 +9,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 - **English everywhere** (code, comments, docs, default labels). Italian text lives only in `quickshell/.config/quickshell/desktop/i18n/it_IT.json`.
 - **Every user-visible string goes through i18n**: `I18n.tr()` / `I18n.plural()` in QML, `tr()` in Python helpers, with the key added to *both* catalogs.
 - **Never run Stow with sudo**, never `git add -A` blindly (state and backups live outside the repo but check `git status`), never edit `build.py`, `hyprpm.toml` or the patch in `scripts/hyprpm/` casually (it changes the plugin bundle digest: the plugins rebuild at the next login), and never replace loaded plugins in the live session.
-- Commit only when asked; message style is `type: summary` (`chore:`, `fix:`, …).
+- Commit only when asked; message style is `type: summary` (`chore:`, `fix:`, …). Work lands on `develop`; `stable` (the default branch) moves only through `scripts/release.py publish`.
 
 ## Map
 
@@ -23,7 +23,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 | `hypridle/ hyprlock/ hyprpaper/ gtk/ kitty/ fastfetch/ portals/ udiskie/ electron/ zsh/` | Plain config packages; `steam-hidpi/` is optional (`stow.py --with`) |
 | `docs/` | User guides (`guide/`), one page per area (`features/`), developer docs (`development/`) |
 | `scripts/` | `install-desktop.py` (the command line; the installer is `install/install_*.py`, see [architecture](../docs/development/architecture.md#installer)) and its guided front end `install-tui.py`, with `install/manifest.toml` (the only package list) and `install/fedora.py` / `install/arch.py`, `stow.py` (explicit package list), `check.sh`, `check-i18n.py`, `check-links.py`, hyprpm plugin packaging |
-| `.github/workflows/` | CI: `check.yml` runs `check.sh` on Fedora 45 and Arch on pushes to `main` and pull requests; `install.yml` runs the installer in a fresh Fedora 45 and Arch when it changes |
+| `.github/workflows/` | CI: `check.yml` runs `check.sh` on Fedora 45 and Arch on pushes to `develop` and pull requests; `install.yml` runs the installer in a fresh Fedora 45 and Arch when it changes |
 
 ## Commands
 

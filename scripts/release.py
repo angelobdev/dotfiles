@@ -3,8 +3,8 @@
 and the GitHub release.
 
 draft VERSION: print a CHANGELOG.md section for VERSION from the commits since the last release, to edit and commit.
-publish VERSION: check main (clean, pushed, its CHANGELOG.md section, CI green), then tag it, move stable to the tag
-and create the GitHub release with that section. It asks before pushing anything.
+publish VERSION: check develop (clean, pushed, its CHANGELOG.md section, CI green), then tag it, move stable (and the
+legacy main) to the tag and create the GitHub release with that section. It asks before pushing anything.
 """
 from argparse import ArgumentParser
 import datetime
@@ -19,7 +19,10 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / 'shell/.local/libexec/desktop'))
 import channel  # noqa: E402
 
-BRANCH = 'main'
+BRANCH = 'develop'
+# Branches every release moves with stable for the clones from before releases, whose code follows only the branch
+# they track: main, until they have all moved to stable. Empty it, then delete main on GitHub.
+LEGACY = ('main',)
 REMOTE = 'origin'
 WORKFLOW = 'check.yml'
 # Commit types and the changelog heading their subjects go under; the rest (docs, chore, ci, test…) only with --all.
@@ -101,13 +104,16 @@ def publish(version, skip_ci):
     if state != 'success' and not skip_ci:
         sys.exit(f'{WORKFLOW} on {head[:7]}: {state}. Wait for it, or pass --skip-ci.')
     print(f'Release {version} (after {last or "none"}) at {head[:7]}, {WORKFLOW}: {state}.')
-    print(f'It tags {head[:7]}, pushes the tag, moves {REMOTE}/{channel.STABLE} to it and creates the GitHub release:\n')
+    moved = ', '.join(f'{REMOTE}/{branch}' for branch in (channel.STABLE, *LEGACY))
+    print(f'It tags {head[:7]}, pushes the tag, moves {moved} to it and creates the GitHub release:\n')
     print(entry['notes'] + '\n')
     if input('Publish? [y/N] ').strip().lower() != 'y':
         return 1
     checked('tag', '--annotate', version, '--message', f'{version}\n\n{entry["notes"]}', head)
     checked('push', REMOTE, f'refs/tags/{version}')
     checked('push', REMOTE, f'{head}:refs/heads/{channel.STABLE}')
+    for branch in LEGACY:
+        checked('push', REMOTE, f'{head}:refs/heads/{branch}')
     if shutil.which('gh'):
         subprocess.run(('gh', 'release', 'create', version, '--title', version, '--notes-file', '-', '--verify-tag'),
                        input=entry['notes'] + '\n', text=True, cwd=REPO, check=True, timeout=120)

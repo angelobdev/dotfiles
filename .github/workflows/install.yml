@@ -2,7 +2,7 @@ name: Install
 
 on:
   push:
-    branches: [main]
+    branches: [develop]
     paths:
       - .github/workflows/install.yml
       - scripts/install-desktop.py

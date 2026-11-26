@@ -843,14 +843,13 @@ def repository_source():
     # Only a fast-forward: a clean tree with nothing the branch it follows lacks. That branch is stable, which every
     # release moves to its tag, or the upstream for a maintainer (channel.py).
     channel = shell_helper('channel')
-    upstream = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}')
-    if upstream.returncode:
+    upstream, remote = channel.upstream(git)
+    if remote is None:
         return Source('repository', 'Repository', 'no upstream branch to compare with', [], 'git branch --set-upstream-to sets one.')
-    upstream = upstream.stdout.strip()
-    fetched = git('fetch', '--quiet', upstream.split('/', 1)[0])
+    fetched = git('fetch', '--quiet', remote)
     if fetched.returncode:
         return failed_source('repository', 'Repository', 'git fetch failed: ' + (fetched.stderr or fetched.stdout).strip()[-300:])
-    followed = channel.target(git, upstream)
+    followed = channel.target(git, upstream, remote)
     behind = int(git('rev-list', '--count', f'HEAD..{followed}').stdout.strip() or 0)
     ahead = int(git('rev-list', '--count', f'{followed}..HEAD').stdout.strip() or 0)
     log = git('log', '--format=%h %s', f'HEAD..{followed}').stdout.splitlines()
@@ -880,8 +879,8 @@ def repository_source():
 def update_repository():
     # The fast-forward repository_source offered, to the branch it follows; then the new version's changelog shows.
     channel = shell_helper('channel')
-    upstream = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}').stdout.strip()
-    command = channel.update_command(channel.target(git, upstream), upstream)
+    upstream, remote = channel.upstream(git)
+    command = channel.update_command(channel.target(git, upstream, remote), upstream)
     print('Running: git ' + ' '.join(command), flush=True)
     subprocess.run(('git', '-C', str(REPO), *command), check=True)
 
