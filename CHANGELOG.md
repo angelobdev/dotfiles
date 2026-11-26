@@ -4,6 +4,13 @@ What changed in each release of the desktop. The desktop shows the sections of t
 
 Releases are `vMAJOR.MINOR.PATCH`: a new minor version brings new features, a patch only fixes, and a new major version changes something you may have to act on (said in its notes). How a release is made: [Releasing](docs/development/releasing.md).
 
+## v1.2.0 - 2026-11-26
+
+### Added
+
+- **The system time zone from the calendar panel.** Under its title the calendar shows the time zone and its offset from UTC; **Change** searches every zone by city or region (in English) or by offset, such as `UTC+1`, and applies one after the administrator password. The bar clock follows at once; apps already open keep the old zone until they restart.
+- When the weather follows where the computer is (no city set for it) and that place is in another time zone, the calendar suggests it: **You seem to be in …**, with **Use**.
+
 ## v1.1.0 - 2026-11-26
 
 ### Added
