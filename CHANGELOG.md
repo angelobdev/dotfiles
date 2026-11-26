@@ -4,6 +4,20 @@ What changed in each release of the desktop. The desktop shows the sections of t
 
 Releases are `vMAJOR.MINOR.PATCH`: a new minor version brings new features, a patch only fixes, and a new major version changes something you may have to act on (said in its notes). How a release is made: [Releasing](docs/development/releasing.md).
 
+## v1.1.0 - 2026-11-26
+
+### Added
+
+- **A bar you arrange yourself.** It is made of widgets in five sections: left, center left, center, center right and right; the three center ones stay together, centred on the screen. Without changes it looks as before.
+- **Hold Super with the pointer on the bar** to edit it: drag widgets between sections, drop one on **Drop here to remove from the bar** to take it off, and release Super to save (`Esc` cancels). `Super` + right click on a widget moves or removes it; the **+** of a section opens the widgets not on the bar yet.
+- A right click on an empty part of the bar opens its menu: **Edit layout** (without holding Super, until **Done**) and the **Classic**, **Centered** and **Minimal** layouts.
+- New widgets: weather, volume (the wheel changes it), network, keyboard layout, a separator and a spacer.
+- Two new bar backgrounds, **Floating** and **Pills** (one per section), in **Settings → Appearance → Theme** next to Shaded and Transparent. With Pills, **One pill for the center** (Settings → Desktop → Bar, or the bar menu) puts the center block on one.
+
+### Changed
+
+- A double click on an empty part of the bar steps through the four backgrounds instead of switching between Shaded and Transparent.
+
 ## v1.0.2 - 2026-11-26
 
 ### Fixed
