@@ -511,15 +511,32 @@ class UpdateSourceTests(unittest.TestCase):
     def test_no_pins_no_line(self):
         self.assertIsNone(tui.pin_source(plan(), 'aur', 'AUR packages'))
 
-    def repository(self, behind='3', ahead='0', dirty='', upstream=reply('origin/main\n'), fetch=reply()):
-        answers = {'rev-parse': upstream, 'fetch': fetch, 'status': reply(dirty), 'log': reply('abc1234 docs: x\n')}
+    def repository(self, behind='3', ahead='0', dirty='', upstream=reply('origin/main\n'), fetch=reply(), stable=False,
+                   versions=('', ''), changelog=''):
+        answers = {'rev-parse': upstream, 'fetch': fetch, 'status': reply(dirty), 'log': reply('abc1234 docs: x\n'), 'config': reply(),
+                   'show': reply(changelog, 0 if changelog else 128)}
 
         def git(*arguments):
             if arguments[0] == 'rev-list':
-                return reply(behind if arguments[-1] == 'HEAD..@{u}' else ahead)
+                return reply(behind if arguments[-1].startswith('HEAD..') else ahead)
+            if arguments[0] == 'rev-parse' and '--verify' in arguments:
+                return reply('', 0 if stable else 1)
+            if arguments[0] == 'describe':
+                return reply(versions[0 if arguments[-1] == 'HEAD' else 1] + '\n')
             return answers[arguments[0]]
         with mock.patch.object(tui, 'git', side_effect=git):
             return tui.repository_source()
+
+    def test_a_new_release_shows_its_changelog(self):
+        changelog = '## v1.1.0 - 2026-12-01\n\n- New.\n\n## v1.0.0 - 2026-11-26\n\nFirst.\n'
+        found = self.repository(stable=True, versions=('v1.0.0', 'v1.1.0'), changelog=changelog)
+        self.assertEqual((found.summary, found.details, found.selectable), ('v1.0.0 to v1.1.0', ['v1.1.0 2026-12-01', '- New.'], True))
+        self.assertTrue(found.note.startswith('git switch -C stable --track origin/stable'))
+
+    def test_a_clone_newer_than_stable_waits_for_the_next_release(self):
+        found = self.repository(stable=True, ahead='2')
+        self.assertFalse(found.selectable)
+        self.assertIn('follows stable from the release', found.summary)
 
     def test_a_clean_tree_behind_its_upstream_can_fast_forward(self):
         found = self.repository()
@@ -687,7 +704,7 @@ class ApplyUpdatesTests(unittest.TestCase):
                 mock.patch.object(tui, 'git', return_value=reply('abc\n')), mock.patch.object(tui, 'after_pull') as after, \
                 mock.patch.object(tui, 'refresh_bar') as bar:
             tui.pull(plan())
-        run.assert_called_once_with(('git', '-C', str(tui.REPO), 'merge', '--ff-only', '@{u}'), check=True)
+        run.assert_called_once_with(('git', '-C', str(tui.REPO), 'switch', '-C', 'stable', '--track', 'abc/stable'), check=True)
         self.assertEqual(after.call_args.args[1], 'abc')
         # The bar no longer lists the commits just pulled.
         bar.assert_called_once_with('repository')
@@ -795,7 +812,8 @@ class HeadlessTests(unittest.TestCase):
 
     def test_the_repository_goes_first_and_its_new_version_applies_the_rest(self):
         _, run, after, execv, applied = self.run_headless(('system', 'repository'))
-        self.assertEqual(run.call_args.args[0][-2:], ('--ff-only', '@{u}'))
+        # The mocked git answers abc to everything: an upstream abc whose remote has a stable branch.
+        self.assertEqual(run.call_args.args[0][-4:], ('-C', 'stable', '--track', 'abc/stable'))
         after.assert_called_once()
         self.assertEqual(execv.call_args.args[1][-2:], ['--apply-updates', 'system'])
         applied.assert_not_called()

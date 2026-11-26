@@ -26,5 +26,6 @@
 - [Architecture](development/architecture.md): how session, IPC, services and panels connect.
 - [Conventions](development/conventions.md): style per language, i18n and theme usage.
 - [Workflow](development/workflow.md): making changes safely on a live desktop.
+- [Releasing](development/releasing.md): versions, the changelog, and how installs follow releases.
 - [Roadmap](development/roadmap.md): where this is going and what is done.
 - [Verification log](development/verification-log.md): what was tested, and how.

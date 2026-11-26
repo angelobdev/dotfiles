@@ -324,6 +324,11 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
   - [x] #112: tests for the helpers that had none, all without hardware: `brightness.py` (backends, DDC/CI readings, the panel found without a mapping), the Bluetooth agent's replies (only the pending request, PIN and passkey limits), `recording.py` (areas in logical pixels, rotated displays), `xwayland.py`, `clipboard.py` and `bar_visibility.py` (2026-11-10).
   - [x] #143 (found in the live log during the review): the zoom keys showed the OSD but never zoomed, since `hl.config` went through `Hyprland.dispatch`, which wraps it in `hl.dispatch()`; it goes through `hyprctl eval` now (2026-11-10).
 
+### Releases (2026-11-26)
+
+- [x] Tagged releases, decided with the user: SemVer from `v1.0.0`, a `stable` branch every release moves to its tag, a curated `CHANGELOG.md` in English, and the first tag once the mechanism is in, so that the update to it already shows its notes. `channel.py` (the branch a clone follows, its version, the changelog between two releases, What's new once per release), `updates.py`, `install-tui.py` and `about.py` on it, `services/Release.qml` and `panels/WhatsNewPanel.qml`, the release in **About** with its notes, `scripts/release.py draft|publish`. A clone on `main` moves to `stable` at its first fast-forward; a maintainer (`desktop.maintainer`) stays on `main`. See [releasing](releasing.md) and the [verification log](verification-log.md#releases-and-whats-new-2026-11-26).
+- [ ] Publish `v1.0.0` (`release.py publish v1.0.0`), then see an install on `main` move to `stable` and show What's new.
+
 ### Microsoft fonts (#281, 2026-11-16)
 
 - [x] `desktop-msfonts install SOURCE` (`msfonts.py`): the fonts of the user's own Windows ISO, `install.wim` / `install.esd`, Windows partition or Fonts folder, into `~/.local/share/fonts/microsoft`, without Segoe UI Emoji unless `--emoji`; `status` and `remove`. Opt-in part `utils.msfonts` (`7zip`) on Fedora and Arch. Run against a real Windows 11 ISO on 2026-11-16: 142 fonts.

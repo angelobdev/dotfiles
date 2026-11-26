@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Available updates (dnf or pacman, Flatpak, and the commits of this repository) for the shell's update icon.
+"""Available updates (dnf or pacman, Flatpak, and the release or commits this repository follows) for the shell's update icon.
 
 check: refresh the metadata and write ~/.local/state/desktop-shell/updates.json, which services/Updates.qml
 watches (run by desktop-updates.timer 5 minutes after login and every 6 hours, 30 minutes after a failed check,
@@ -13,6 +13,7 @@ apply-status: that state as JSON, with the end of the log.
 """
 from common import last_lines, lock_held, read_json, release_id, write_atomic
 from i18n import tr
+import channel
 import fcntl
 import functools
 import json
@@ -121,7 +122,8 @@ def git(*arguments):
 
 
 def repository_updates():
-    """(state, error): this repository against its upstream branch after a fetch, {} for a clone without one."""
+    """(state, error): this repository against the branch it follows (channel.py: stable, or its upstream for a
+    maintainer) after a fetch, {} for a clone without an upstream branch."""
     if not (REPO / '.git').exists() or not (REPO / 'scripts/install-desktop.py').is_file():
         return {}, None
     try:
@@ -132,16 +134,21 @@ def repository_updates():
         fetched = git('fetch', '--quiet', upstream.split('/', 1)[0])
         if fetched.returncode:
             return None, tr('updates.errors.git', [(fetched.stderr or fetched.stdout).strip()[-200:]])
-        behind = int(git('rev-list', '--count', 'HEAD..@{u}').stdout.strip() or 0)
-        ahead = int(git('rev-list', '--count', '@{u}..HEAD').stdout.strip() or 0)
-        log = git('log', f'--max-count={COMMITS}', '--format=%h%x09%s', 'HEAD..@{u}').stdout
-        head = git('rev-parse', '--short', '@{u}').stdout.strip()
+        followed = channel.target(git, upstream)
+        behind = int(git('rev-list', '--count', f'HEAD..{followed}').stdout.strip() or 0)
+        ahead = int(git('rev-list', '--count', f'{followed}..HEAD').stdout.strip() or 0)
+        log = git('log', f'--max-count={COMMITS}', '--format=%h%x09%s', f'HEAD..{followed}').stdout
+        head = git('rev-parse', '--short', followed).stdout.strip()
         dirty = bool(git('status', '--porcelain', '--untracked-files=no').stdout.strip())
+        installed = channel.version(git)
+        latest = channel.version(git, followed) if behind else installed
+        notes = channel.between(channel.changelog_at(git, followed), installed, latest) if latest != installed else []
     except (OSError, subprocess.SubprocessError, ValueError) as error:
         return None, tr('updates.errors.git', [str(error)])
     commits = [{'hash': fields[0], 'subject': fields[1]} for fields in (line.split('\t', 1) for line in log.splitlines())
                if len(fields) == 2 and fields[0]]
-    return {'upstream': upstream, 'head': head, 'behind': behind, 'ahead': ahead, 'dirty': dirty, 'commits': commits}, None
+    return {'upstream': followed, 'head': head, 'behind': behind, 'ahead': ahead, 'dirty': dirty, 'commits': commits,
+            'version': installed, 'latest': latest, 'notes': notes}, None
 
 
 def run(command, timeout):

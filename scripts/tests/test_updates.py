@@ -129,14 +129,20 @@ class RepositoryTests(unittest.TestCase):
             patcher.start()
             self.addCleanup(patcher.stop)
 
-    def repository(self, behind='3', ahead='0', dirty='', upstream=done('origin/main\n'), fetch=done()):
-        answers = {'fetch': fetch, 'status': done(dirty), 'log': done('abc1234\tdocs: x\ndef5678\tfix: y\n')}
+    def repository(self, behind='3', ahead='0', dirty='', upstream=done('origin/main\n'), fetch=done(), stable=False,
+                   versions=('', ''), changelog=''):
+        answers = {'fetch': fetch, 'status': done(dirty), 'log': done('abc1234\tdocs: x\ndef5678\tfix: y\n'), 'config': done(),
+                   'show': done(changelog, 0 if changelog else 128)}
 
         def git(*arguments):
             if arguments[0] == 'rev-list':
-                return done(behind if arguments[-1] == 'HEAD..@{u}' else ahead)
+                return done(behind if arguments[-1].startswith('HEAD..') else ahead)
+            if arguments[0] == 'rev-parse' and '--verify' in arguments:
+                return done('', 0 if stable else 1)
             if arguments[0] == 'rev-parse':
                 return upstream if '--abbrev-ref' in arguments else done('fedcba9\n')
+            if arguments[0] == 'describe':
+                return done(versions[0 if arguments[-1] == 'HEAD' else 1] + '\n')
             return answers[arguments[0]]
         with mock.patch.object(updates, 'git', side_effect=git) as called:
             return updates.repository_updates(), called
@@ -145,8 +151,16 @@ class RepositoryTests(unittest.TestCase):
         (state, error), called = self.repository()
         self.assertIsNone(error)
         self.assertEqual(state, {'upstream': 'origin/main', 'head': 'fedcba9', 'behind': 3, 'ahead': 0, 'dirty': False,
-                                 'commits': [{'hash': 'abc1234', 'subject': 'docs: x'}, {'hash': 'def5678', 'subject': 'fix: y'}]})
+                                 'commits': [{'hash': 'abc1234', 'subject': 'docs: x'}, {'hash': 'def5678', 'subject': 'fix: y'}],
+                                 'version': '', 'latest': '', 'notes': []})
         self.assertIn(('fetch', '--quiet', 'origin'), [call.args for call in called.call_args_list])
+
+    def test_a_clone_follows_the_stable_branch_and_its_changelog(self):
+        changelog = '# Changelog\n\n## v1.1.0 - 2026-12-01\n\nNew.\n\n## v1.0.0 - 2026-11-26\n\nFirst.\n'
+        (state, _), called = self.repository(stable=True, versions=('v1.0.0', 'v1.1.0'), changelog=changelog)
+        self.assertEqual((state['upstream'], state['version'], state['latest']), ('origin/stable', 'v1.0.0', 'v1.1.0'))
+        self.assertEqual(state['notes'], [{'version': 'v1.1.0', 'date': '2026-12-01', 'notes': 'New.'}])
+        self.assertIn(('rev-list', '--count', 'HEAD..origin/stable'), [call.args for call in called.call_args_list])
 
     def test_commits_of_its_own_and_local_changes_are_reported(self):
         (state, _), _ = self.repository(ahead='2', dirty=' M x')

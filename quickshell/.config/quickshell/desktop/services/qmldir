@@ -38,3 +38,4 @@ singleton Plugins 1.0 Plugins.qml
 Job 1.0 Job.qml
 singleton Radio 1.0 Radio.qml
 singleton Installed 1.0 Installed.qml
+singleton Release 1.0 Release.qml

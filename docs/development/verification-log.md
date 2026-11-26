@@ -1298,3 +1298,11 @@ Reported by the user after the merges of the day:
 - `VERIFIED` has `0.57.2-2.fc45.x86_64`. Arch's `extra` also has `0.57.2-2` since 2026-11-25; not compiled (no container here), so not accepted. `check.sh` passes.
 - HP's sensor hub firmware installed the same day by the `tablet` firmware step (`install-desktop.py apply --firmware ~/Downloads`, the recorded profiles): the hash matches the manifest, `lib_t` context, initramfs rebuilt.
 - After a reboot: the login rebuild loaded the four plugins (bundle `current`, no config errors), and `monitor-sensor` sees the accelerometer. Confirmed by the user: rotation, touch gestures, one finger in Kitty, the screenshot editor and the glass all work.
+
+## Releases and What's new, 2026-11-26
+
+- `test_channel.py` (13 tests): changelog sections and the versions between two releases, numeric version order, stable for a clone and the upstream for a maintainer or a remote without `stable`, `switch -C` to move to stable, What's new for a new install (nothing, its version recorded), an install from before releases (its version once), an update over two releases, a downgrade, and About. `test_updates.py`, `test_install_tui.py` and `test_about.py` updated for the stable branch, the release notes and the version. `check.sh` passes.
+- In the session, with a local tag `v1.0.0` on HEAD and no `whats-new.json`: four seconds after a shell reload, **What's new in v1.0.0** opened with the section of `CHANGELOG.md` (Markdown headings, lists, bold and inline code drawn by `Text.MarkdownText`); closing it wrote `{"seen": "v1.0.0"}`, after which `whats-new` returned nothing and `whats-new --current` the section. The tag and the state file were removed afterwards, so the real release shows it again.
+- `release.py draft v1.0.0` grouped 337 lines of subjects (no earlier tag: every commit); `draft 1.0` and `publish` on a tree with local changes were refused.
+- The repository card, with a pending release written into `updates.json` by hand (`origin/stable`, `latest` v1.0.0 and its notes): the summary read "Desktop v1.0.0", the card "— → v1.0.0" and the notes in place of the commits. The real file was put back.
+- Not tried yet: `publish` itself, and an install moving from `main` to `stable` through the updates panel.

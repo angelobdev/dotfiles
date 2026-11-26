@@ -9,7 +9,7 @@ import "../../services"
 import "../updates"
 import "../../SettingsSchema.js" as Schema
 
-// Settings → System: About (the computer and the desktop, from about.py), Updates (the view of the updates
+// Settings → System: About (the computer and the desktop, from about.py, with What is new in its release), Updates (the view of the updates
 // panel), Profiles (those of the installer, to install or remove: ProfilesView), Plugins (the Hyprland plugins, their rebuild
 // and build cache: PluginsView) and Advanced (the folder and files of your own settings, Hyprland's config errors, and the shell
 // options back to their defaults).
@@ -28,6 +28,7 @@ ColumnLayout {
         const about = root.about;
         const processor = about.processor?.name ?? "";
         const commit = about.repository?.commit ?? "";
+        const release = about.repository?.version ?? "";
         return [
             {
                 label: I18n.tr("settings.system.distribution"),
@@ -59,7 +60,7 @@ ColumnLayout {
             },
             {
                 label: I18n.tr("settings.system.desktop"),
-                value: commit === "" ? "" : I18n.tr(about.repository.changed ? "settings.system.commitChanged" : "settings.system.commit", [commit, about.repository.date])
+                value: commit === "" ? "" : release !== "" ? I18n.tr(about.repository.changed ? "settings.system.releaseChanged" : "settings.system.release", [release, commit, about.repository.date]) : I18n.tr(about.repository.changed ? "settings.system.commitChanged" : "settings.system.commit", [commit, about.repository.date])
             },
             {
                 label: I18n.tr("settings.system.repository"),
@@ -229,11 +230,21 @@ ColumnLayout {
                     }
                 }
             }
-            ActionButton {
-                outlined: true
-                visible: root.facts.length > 0
-                text: root.copied ? I18n.tr("settings.system.copied") : I18n.tr("settings.system.copy")
-                onClicked: root.copyAbout()
+            RowLayout {
+                spacing: 10
+                ActionButton {
+                    outlined: true
+                    visible: root.facts.length > 0
+                    text: root.copied ? I18n.tr("settings.system.copied") : I18n.tr("settings.system.copy")
+                    onClicked: root.copyAbout()
+                }
+                // The changelog of the installed release.
+                ActionButton {
+                    outlined: true
+                    visible: (root.about.repository?.version ?? "") !== ""
+                    text: I18n.tr("settings.system.whatsNew")
+                    onClicked: Release.showCurrent()
+                }
             }
             Item {
                 Layout.fillHeight: true

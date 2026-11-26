@@ -67,7 +67,7 @@ On a fresh Fedora 45, Server edition included, or a base Arch Linux, one script 
 ```sh
 sudo dnf install -y git-core python3      # Fedora
 sudo pacman -S --needed git python        # Arch
-git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
+git clone --branch stable https://github.com/angelobdev/dotfiles ~/.dotfiles
 cd ~/.dotfiles
 ./scripts/install-tui.py              # guided: choose, review, then apply
 ```

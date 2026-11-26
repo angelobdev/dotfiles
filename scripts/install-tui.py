@@ -840,7 +840,9 @@ def git(*arguments):
 
 
 def repository_source():
-    # Only a fast-forward: a clean tree whose branch has nothing its upstream lacks.
+    # Only a fast-forward: a clean tree with nothing the branch it follows lacks. That branch is stable, which every
+    # release moves to its tag, or the upstream for a maintainer (channel.py).
+    channel = shell_helper('channel')
     upstream = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}')
     if upstream.returncode:
         return Source('repository', 'Repository', 'no upstream branch to compare with', [], 'git branch --set-upstream-to sets one.')
@@ -848,20 +850,40 @@ def repository_source():
     fetched = git('fetch', '--quiet', upstream.split('/', 1)[0])
     if fetched.returncode:
         return failed_source('repository', 'Repository', 'git fetch failed: ' + (fetched.stderr or fetched.stdout).strip()[-300:])
-    behind = int(git('rev-list', '--count', 'HEAD..@{u}').stdout.strip() or 0)
-    ahead = int(git('rev-list', '--count', '@{u}..HEAD').stdout.strip() or 0)
-    log = git('log', '--format=%h %s', 'HEAD..@{u}').stdout.splitlines()
+    followed = channel.target(git, upstream)
+    behind = int(git('rev-list', '--count', f'HEAD..{followed}').stdout.strip() or 0)
+    ahead = int(git('rev-list', '--count', f'{followed}..HEAD').stdout.strip() or 0)
+    log = git('log', '--format=%h %s', f'HEAD..{followed}').stdout.splitlines()
     dirty = bool(git('status', '--porcelain', '--untracked-files=no').stdout.strip())
-    note = f'git merge --ff-only {upstream}: it changes the running desktop at once, as editing the files does.'
+    installed = channel.version(git)
+    latest = channel.version(git, followed) if behind else installed
+    # A release says what changed in its changelog; between releases (a maintainer on main) the commits do.
+    notes = channel.between(channel.changelog_at(git, followed), installed, latest) if latest != installed else []
+    details = [line for section in notes for line in [f'{section["version"]} {section["date"]}'.strip(), *section['notes'].splitlines()]] or log
+    command = ' '.join(('git', *channel.update_command(followed, upstream)))
+    note = f'{command}: it changes the running desktop at once, as editing the files does.'
+    moving = f'{installed or "this version"} to {latest}' if latest and latest != installed else ''
     if not behind:
-        summary = f'up to date with {upstream}' + (f', {ahead} commits ahead' if ahead else '')
+        summary = f'up to date with {followed}' + (f', {ahead} commits ahead' if ahead else '')
         return Source('repository', 'Repository', summary, [], note)
     if ahead:
-        return Source('repository', 'Repository', f'{behind} behind and {ahead} ahead of {upstream}: merge it by hand', log, note)
+        if followed != upstream:
+            return Source('repository', 'Repository', f'{ahead} commits newer than {followed}: it follows stable from the release '
+                          'that has them', details, note)
+        return Source('repository', 'Repository', f'{behind} behind and {ahead} ahead of {followed}: merge it by hand', details, note)
     if dirty:
-        return Source('repository', 'Repository', f'{behind} commits behind {upstream}, with local changes: commit or stash them first',
-                      log, note)
-    return Source('repository', 'Repository', f'{behind} commits behind {upstream}', log, note, True)
+        return Source('repository', 'Repository', f'{moving or f"{behind} commits behind {followed}"}, with local changes: commit '
+                      'or stash them first', details, note)
+    return Source('repository', 'Repository', moving or f'{behind} commits behind {followed}', details, note, True)
+
+
+def update_repository():
+    # The fast-forward repository_source offered, to the branch it follows; then the new version's changelog shows.
+    channel = shell_helper('channel')
+    upstream = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}').stdout.strip()
+    command = channel.update_command(channel.target(git, upstream), upstream)
+    print('Running: git ' + ' '.join(command), flush=True)
+    subprocess.run(('git', '-C', str(REPO), *command), check=True)
 
 
 def desktop_source(plan):
@@ -883,10 +905,10 @@ def plugins_source():
 
 
 def maintainer():
-    # Who moves the pins: `git config desktop.maintainer true` in this repository. Everyone else gets the pins
-    # with the repository, and the Desktop line applies them: pinning here would leave local changes that stop
-    # the next pull.
-    return git('config', '--bool', 'desktop.maintainer').stdout.strip() == 'true'
+    # Who moves the pins and publishes releases: `git config desktop.maintainer true` in this repository. Everyone
+    # else gets the pins with the releases, and the Desktop line applies them: pinning here would leave local changes
+    # that stop the next update.
+    return shell_helper('channel').maintainer(git)
 
 
 def check_updates(ui, plan):
@@ -1173,8 +1195,7 @@ def apply(plan):
 def pull(plan):
     # Then this program starts again from the new version, on the updates screen: the pins may have moved.
     before = git('rev-parse', 'HEAD').stdout.strip()
-    print('Running: git merge --ff-only @{u}', flush=True)
-    subprocess.run(('git', '-C', str(REPO), 'merge', '--ff-only', '@{u}'), check=True)
+    update_repository()
     after_pull(plan, before)
     # The bar listed these commits until now.
     refresh_bar('repository')
@@ -1270,8 +1291,7 @@ def apply_headless(keys):
         if not source.selectable:
             sys.exit(f'Repository: {source.summary}.')
         before = git('rev-parse', 'HEAD').stdout.strip()
-        print('Running: git merge --ff-only @{u}', flush=True)
-        subprocess.run(('git', '-C', str(REPO), 'merge', '--ff-only', '@{u}'), check=True)
+        update_repository()
         after_pull(plan, before)
         refresh_bar('repository')
         if rest:

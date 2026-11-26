@@ -50,7 +50,7 @@ class AboutTests(unittest.TestCase):
         self.assertEqual(about.os_release(self.write('arch', 'NAME="Arch Linux"\n')), 'Arch Linux')
 
     def test_a_folder_without_git_has_no_commit(self):
-        self.assertEqual(about.repository(self.root), {'commit': '', 'date': '', 'changed': False, 'path': str(self.root)})
+        self.assertEqual(about.repository(self.root), {'version': '', 'commit': '', 'date': '', 'changed': False, 'path': str(self.root)})
 
 
 if __name__ == '__main__':

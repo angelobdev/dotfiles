@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """What Settings → System → About shows, as one JSON object: the distribution, the computer, the kernel, the
-processor and memory, Hyprland and Quickshell, and the desktop repository's commit. Anything unreadable is
+processor and memory, Hyprland and Quickshell, and the desktop repository's release and commit. Anything unreadable is
 an empty string, never an error."""
 import json
 import os
@@ -75,11 +75,13 @@ def quickshell():
 
 def repository(repo=REPO):
     if not (repo / '.git').exists():
-        return {'commit': '', 'date': '', 'changed': False, 'path': str(repo)}
+        return {'version': '', 'commit': '', 'date': '', 'changed': False, 'path': str(repo)}
     line = run(['git', '-C', str(repo), 'log', '-1', '--format=%h%x09%cs'])
     commit, _, date = line.partition('\t')
     changed = run(['git', '-C', str(repo), 'status', '--porcelain', '--untracked-files=no']) != ''
-    return {'commit': commit, 'date': date, 'changed': changed, 'path': str(repo)}
+    # The newest release tag it has, '' before the first (channel.py).
+    release = run(['git', '-C', str(repo), 'describe', '--tags', '--abbrev=0', '--match', 'v[0-9]*'])
+    return {'version': release, 'commit': commit, 'date': date, 'changed': changed, 'path': str(repo)}
 
 
 def about():

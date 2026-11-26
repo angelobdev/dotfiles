@@ -37,6 +37,9 @@ ColumnLayout {
         skipped = next;
     }
     readonly property var applied: Updates.applyState
+    // A new release on the way: its changelog takes the place of the commits (a maintainer between releases sees those).
+    readonly property var notes: Array.isArray(Updates.repository.notes) ? Updates.repository.notes.filter(note => note && typeof note.notes === "string") : []
+    readonly property bool release: typeof Updates.repository.latest === "string" && Updates.repository.latest !== "" && Updates.repository.latest !== Updates.repository.version
     function result() {
         if (Updates.applying)
             return I18n.tr("updates.apply.applying");
@@ -69,7 +72,9 @@ ColumnLayout {
             parts.push(I18n.plural("updates.summary.packages.one", "updates.summary.packages.other", Updates.packages.length));
         if (Updates.flatpaks.length > 0)
             parts.push(I18n.plural("updates.summary.flatpaks.one", "updates.summary.flatpaks.other", Updates.flatpaks.length));
-        if (Updates.behind > 0)
+        if (Updates.behind > 0 && root.release)
+            parts.push(I18n.tr("updates.summary.release", [Updates.repository.latest]));
+        else if (Updates.behind > 0)
             parts.push(I18n.plural("updates.summary.commits.one", "updates.summary.commits.other", Updates.behind));
         return parts.join(" · ");
     }
@@ -204,21 +209,58 @@ ColumnLayout {
             GroupCard {
                 Layout.fillWidth: true
                 // Not an empty tile when the check found no commit subjects to list.
-                visible: Updates.behind > 0 && (Updates.commits.length > 0 || Updates.repository.ahead > 0 || Updates.repository.dirty === true)
+                visible: Updates.behind > 0 && (Updates.commits.length > 0 || root.notes.length > 0 || Updates.repository.ahead > 0 || Updates.repository.dirty === true)
                 verticalPadding: 10
                 spacing: 6
                 // What stops the fast-forward of the updates screen, as found at the check.
                 Text {
                     Layout.fillWidth: true
                     visible: Updates.repository.ahead > 0 || Updates.repository.dirty === true
-                    text: I18n.tr(Updates.repository.ahead > 0 ? "updates.repositoryAhead" : "updates.repositoryDirty")
+                    // A clone on main past the last release waits for the next one; any other clone is merged by hand.
+                    text: I18n.tr(Updates.repository.ahead > 0 ? (String(Updates.repository.upstream ?? "").endsWith("/stable") ? "updates.repositoryNewer" : "updates.repositoryAhead") : "updates.repositoryDirty")
                     color: Theme.muted
                     font.family: Theme.font
                     font.pixelSize: Theme.textSize(11)
                     wrapMode: Text.Wrap
                 }
+                Text {
+                    Layout.fillWidth: true
+                    visible: root.release
+                    text: I18n.tr("updates.repositoryRelease", [Updates.repository.version || "—", Updates.repository.latest ?? ""])
+                    color: Theme.text
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(12)
+                    font.weight: Font.DemiBold
+                    textFormat: Text.PlainText
+                }
                 Repeater {
-                    model: Updates.behind > 0 ? Updates.commits : []
+                    model: Updates.behind > 0 ? root.notes : []
+                    ColumnLayout {
+                        id: note
+                        required property var modelData
+                        Layout.fillWidth: true
+                        spacing: 4
+                        Heading {
+                            visible: root.notes.length > 1
+                            section: true
+                            text: note.modelData.version
+                        }
+                        // The changelog of this repository, written as Markdown for this view and for GitHub.
+                        Text {
+                            Layout.fillWidth: true
+                            text: note.modelData.notes
+                            textFormat: Text.MarkdownText
+                            wrapMode: Text.Wrap
+                            color: Theme.text
+                            linkColor: Theme.accent
+                            font.family: Theme.font
+                            font.pixelSize: Theme.textSize(12)
+                            onLinkActivated: link => Qt.openUrlExternally(link)
+                        }
+                    }
+                }
+                Repeater {
+                    model: Updates.behind > 0 && root.notes.length === 0 ? Updates.commits : []
                     Entry {
                         required property var modelData
                         name: modelData.subject
@@ -226,7 +268,7 @@ ColumnLayout {
                     }
                 }
                 Text {
-                    visible: Updates.behind > Updates.commits.length && Updates.commits.length > 0
+                    visible: root.notes.length === 0 && Updates.behind > Updates.commits.length && Updates.commits.length > 0
                     text: I18n.tr("updates.repositoryMore", [Updates.behind - Updates.commits.length])
                     color: Theme.muted
                     font.family: Theme.font

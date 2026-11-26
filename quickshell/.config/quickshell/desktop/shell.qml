@@ -30,6 +30,8 @@ ShellRoot {
     property var nightShift: NightShift
     property var battery: Battery
     property var idle: Idle
+    // Opens What's new after an update of the desktop.
+    property var release: Release
     // The rotation sensor and helper run for this shell only, not for other configs that load Theme.
     Binding {
         target: Tablet
@@ -372,6 +374,10 @@ ShellRoot {
         LazyPanel {
             name: "radio"
             RadioPanel {}
+        }
+        LazyPanel {
+            name: "whatsnew"
+            WhatsNewPanel {}
         }
         LazyPanel {
             name: "notifications"

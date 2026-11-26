@@ -949,6 +949,8 @@
       "copied": "Copied",
       "copy": "Copy",
       "desktop": "Desktop",
+      "release": "%1 · %2 of %3",
+      "releaseChanged": "%1 · %2 of %3, with local changes",
       "distribution": "Distribution",
       "kernel": "Kernel",
       "memory": "Memory",
@@ -967,6 +969,7 @@
       "resetTitle": "Shell options",
       "threads": "%1 · %2 threads",
       "updates": "Updates",
+      "whatsNew": "What's new",
       "plugins": "Plugins"
     },
     "title": "Settings",
@@ -1401,7 +1404,8 @@
       "commits": {
         "one": "%1 desktop commit",
         "other": "%1 desktop commits"
-      }
+      },
+      "release": "Desktop %1"
     },
     "notice": {
       "one": "%1 update available",
@@ -1418,9 +1422,11 @@
     "packagesHeading": "System",
     "flatpaksHeading": "Flatpak",
     "repositoryHeading": "Desktop · %1",
+    "repositoryRelease": "%1 → %2",
     "repositoryMore": "…and %1 more",
     "repositoryAhead": "This clone has commits of its own: merge the new ones by hand, the updates screen only fast-forwards.",
     "repositoryDirty": "This clone has local changes: commit or stash them first, then the updates screen can pull.",
+    "repositoryNewer": "This clone has commits newer than the stable channel: it follows stable again from the release that has them.",
     "terminal": {
       "close": "Press Enter to close.",
       "failed": "Something went wrong (see above). Press Enter to close."
@@ -1664,5 +1670,16 @@
     "videoLoading": "Loading the video…",
     "videoMissing": "Video needs Qt Multimedia: the radio profile installs it (Settings → System → Profiles).",
     "nothingPlaying": "Nothing playing"
+  },
+  "release": {
+    "errors": {
+      "usage": "Usage: channel.py whats-new [--current]|seen"
+    }
+  },
+  "whatsNew": {
+    "done": "Got it",
+    "heading": "%1 · %2",
+    "title": "What's new",
+    "titleVersion": "What's new in %1"
   }
 }

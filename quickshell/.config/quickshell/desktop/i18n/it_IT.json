@@ -949,6 +949,8 @@
       "copied": "Copiato",
       "copy": "Copia",
       "desktop": "Desktop",
+      "release": "%1 · %2 del %3",
+      "releaseChanged": "%1 · %2 del %3, con modifiche locali",
       "distribution": "Distribuzione",
       "kernel": "Kernel",
       "memory": "Memoria",
@@ -967,6 +969,7 @@
       "resetTitle": "Opzioni della shell",
       "threads": "%1 · %2 thread",
       "updates": "Aggiornamenti",
+      "whatsNew": "Novità",
       "plugins": "Plugin"
     },
     "title": "Impostazioni",
@@ -1401,7 +1404,8 @@
       "commits": {
         "one": "%1 commit del desktop",
         "other": "%1 commit del desktop"
-      }
+      },
+      "release": "Desktop %1"
     },
     "notice": {
       "one": "%1 aggiornamento disponibile",
@@ -1418,9 +1422,11 @@
     "packagesHeading": "Sistema",
     "flatpaksHeading": "Flatpak",
     "repositoryHeading": "Desktop · %1",
+    "repositoryRelease": "%1 → %2",
     "repositoryMore": "…e altri %1",
     "repositoryAhead": "Questa copia ha commit propri: unisci a mano quelli nuovi, la schermata aggiornamenti fa solo fast-forward.",
     "repositoryDirty": "Questa copia ha modifiche locali: prima fai commit o stash, poi la schermata aggiornamenti può scaricare.",
+    "repositoryNewer": "Questo clone ha commit più recenti del canale stabile: segue di nuovo stable dalla versione che li contiene.",
     "terminal": {
       "close": "Premi Invio per chiudere.",
       "failed": "Qualcosa non è andato (vedi sopra). Premi Invio per chiudere."
@@ -1664,5 +1670,16 @@
     "videoLoading": "Caricamento del video…",
     "videoMissing": "Il video richiede Qt Multimedia: lo installa il profilo radio (Impostazioni → Sistema → Profili).",
     "nothingPlaying": "Niente in riproduzione"
+  },
+  "release": {
+    "errors": {
+      "usage": "Uso: channel.py whats-new [--current]|seen"
+    }
+  },
+  "whatsNew": {
+    "done": "Ho capito",
+    "heading": "%1 · %2",
+    "title": "Novità",
+    "titleVersion": "Novità della %1"
   }
 }

@@ -34,6 +34,7 @@ Personal desktop managed as GNU Stow packages: Hyprland configured in Lua, a Qui
 ./scripts/install-tui.py        # the same, guided: profiles, firmware, review, then apply; --updates: the updates screen
 desktop-manager [updates]      # that guided installer from any terminal (shell/.local/bin)
 ./scripts/install-desktop.py pins   # commits newer than the pins, AUR packages and zsh clones (--update writes them into the manifest)
+./scripts/release.py draft vX.Y.Z   # a CHANGELOG.md section from the commits; publish vX.Y.Z tags it, moves stable, makes the GitHub release
 hyprctl configerrors            # live Hyprland config state
 qs log -p ~/.config/quickshell/desktop | tail   # live shell reload result
 ~/.local/bin/desktop-shell status               # JSON snapshot of every service
@@ -44,6 +45,7 @@ qs log -p ~/.config/quickshell/desktop | tail   # live shell reload result
 - [Architecture](../docs/development/architecture.md): how session startup, IPC, services, helpers and panels connect.
 - [Conventions](../docs/development/conventions.md): style rules per language, i18n and theme usage.
 - [Workflow](../docs/development/workflow.md): making changes safely, sync points, verification.
+- [Releasing](../docs/development/releasing.md): `vX.Y.Z` tags, `stable`, `CHANGELOG.md`, What's new.
 - [Roadmap](../docs/development/roadmap.md): current direction, completed work, open items and review follow-ups.
 
 ## User documentation

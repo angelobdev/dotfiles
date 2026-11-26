@@ -30,7 +30,7 @@ Verified versions: Hyprland 0.57.2, Quickshell 0.3.2, hypridle 0.1.8, hyprlock 0
 ```sh
 sudo dnf install -y git-core python3                         # Fedora
 sudo pacman -S --needed git python                           # Arch
-git clone https://github.com/angelobdev/dotfiles ~/.dotfiles
+git clone --branch stable https://github.com/angelobdev/dotfiles ~/.dotfiles                 # the latest release
 cd ~/.dotfiles
 ./scripts/install-tui.py                                     # guided, see below; or by hand:
 ./scripts/install-desktop.py                                 # preview: changes nothing
@@ -99,13 +99,19 @@ On Fedora Server the guided partitioning stops `/` at 15 GiB, which is not enoug
 | AUR packages (Arch), maintainer only | the AUR's latest commit of each pinned PKGBUILD, and the version it builds | the new commit and version go into the manifest, then the `aur` step builds them |
 | Release archives, maintainer only | each archive's version in its release manifest (`latest`), for a new install: Herdr updates itself once installed | the new version and its sha256 go into the manifest; the `archives` step installs only what is missing |
 | zsh plugins, maintainer only | each clone's latest release tag (`track = 'tags'` in the manifest, as zsh-autocomplete) or the head of its branch (Powerlevel10k, whose releases stopped) | the new commit goes into the manifest, then the `clones` step checks it out |
-| Repository | how far this repository is behind its upstream branch (`origin/main` in a clone from GitHub), after a `git fetch` that never asks for a password | `git merge --ff-only`; then `stow.py apply` links new files, Hyprland reloads and the shell restarts (through Hyprland, in the session's environment) when their files changed, and the installer starts again on this screen, from the new version |
+| Repository | a newer [release](#releases-and-whats-new) (`origin/stable`), with its changelog, after a `git fetch` that never asks for a password; for a maintainer, the new commits of their upstream branch | `git merge --ff-only` (a clone still on `main` moves to `stable` with `git switch`); then `stow.py apply` links new files, Hyprland reloads and the shell restarts (through Hyprland, in the session's environment) when their files changed, and the installer starts again on this screen, from the new version |
 | Desktop | what the installed profiles still need from the manifest (after a pull, say) | nothing here: **Install or update the desktop** applies it, after its own review |
 | Hyprland plugins | the state of the plugin builds | nothing: they are replaced at a login, before they load |
 
 The pin lines are for whoever maintains the manifest: they write new pins into `scripts/install/manifest.toml` for you to commit, and a clone with uncommitted changes can no longer fast-forward. They show only in a repository with `git config desktop.maintainer true`; every other install gets new pins with **Repository**, and **Desktop** then lists the AUR builds and clone checkouts they need. Keep your own settings in `~/.config/desktop` ([configuration](configuration.md#your-own-settings)), so the repository stays clean and every pull is a fast-forward.
 
 `Space` checks a line, `Enter` shows its details (the packages, the new commits and the links to review their changes), `r` checks again, `a` applies the checked lines after a confirmation, with one sudo prompt for the whole run. Everything there is to apply starts checked but the repository: a pull goes alone and first, because it can move the pins, and the rest is checked again after it. The repository is offered only for a fast-forward, on a clean tree with no commits of its own; a clone with local changes keeps its pin, and the details say which files to look at. New pins change `scripts/install/manifest.toml`, which stays for you to commit, so the other machines get the same ones. From the command line, `./scripts/install-desktop.py pins` lists the newer pins of every distribution (commits, and versions of the release archives) with their links, and `pins --update` writes them into the manifest.
+
+### Releases and What's new
+
+The desktop is released as `vMAJOR.MINOR.PATCH` tags, and each release moves the `stable` branch to its tag. A clone follows `stable`: the update icon, **Settings → System → Updates** and the Repository line above offer a release once it is out, with the changes it makes from [`CHANGELOG.md`](../../CHANGELOG.md), and never the work in progress on `main`. After the update, **What's new** opens once with the notes of every release installed since the last one you saw; **Settings → System → About** shows the installed release and opens its notes again.
+
+A clone made before releases began is on `main`: it moves to `stable` at the first update that is a fast-forward from where it is, and its first shell start after the release shows the notes of that release. A clone with commits newer than the last release (pulled by hand from `main`) waits for the release that has them. Whoever publishes the releases sets `git config desktop.maintainer true` and keeps following `main` ([releasing](../development/releasing.md)).
 
 ### AUR packages (Arch)
 
