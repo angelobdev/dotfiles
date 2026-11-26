@@ -50,11 +50,11 @@ While Super is held over the bar, Hyprland turns off its `Super + left/right dra
 Settings → Appearance → Theme, **Bar**, or a double click on an empty part of the bar, which steps through them:
 
 - **Shaded**: the dark gradient across the whole width (the default).
-- **Floating**: a rounded surface 6 px from the screen edges.
-- **Pills**: one rounded surface per section that shows; with **One pill for the center** (Settings → Desktop → Bar, or the bar menu) center left, center and center right share one.
+- **Floating**: a rounded surface away from the screen edges: by the screen margin of the windows (**Settings → Appearance → Layout**, Hyprland `gaps_out`), so it lines up with them; the windows keep that margin from the bar too.
+- **Pills**: one rounded surface per section that shows, with the same margins as Floating; with **One pill for the center** (Settings → Desktop → Bar, or the bar menu) center left, center and center right share one.
 - **Transparent**: no surface; text and icons take the theme text colour that contrasts more with the wallpaper, with a soft halo ([theming](theming.md)).
 
-Floating and pills reserve 6 px more at the top, and panels, notifications and the assist button open that much lower.
+Floating and pills reserve that margin more at the top, and panels, notifications and the assist button open that much lower.
 
 ## Configuration
 

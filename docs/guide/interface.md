@@ -165,7 +165,7 @@ Follow [Hyprland plugins](plugins.md) to enable the backend. If the plugin is no
 
 The top-left corner of each monitor opens or closes Hyprspace: rest the pointer in the 8 px zone of the bar for 220 ms. It fires once per visit, so leave the corner to use it again, and clicks still reach the button under it. It is off in tablet mode, and with a fullscreen window over the bar it may not respond. `Esc` closes the overview. No keyboard binding opens it.
 
-During the overview, the affected monitor's bar is invisible, releases its 38 px (44 floating or as pills), and receives no clicks. Previews exclude bars and overlays; Hyprspace adds no 200 px reserved area. Closing restores the bar and normal layout.
+During the overview, the affected monitor's bar is invisible, releases its 38 px (plus the screen margin when floating or as pills), and receives no clicks. Previews exclude bars and overlays; Hyprspace adds no 200 px reserved area. Closing restores the bar and normal layout.
 
 Touch gestures are in [Tablet and touch](../features/tablet-and-touch.md).
 

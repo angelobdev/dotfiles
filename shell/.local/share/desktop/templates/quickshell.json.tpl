@@ -27,6 +27,7 @@
   "reduceEffects": {{ preferences.reduceEffects | bool }},
   "rounding": {{ hyprland.rounding }},
   "borderSize": {{ hyprland.borderSize }},
+  "gapsOut": {{ hyprland.gapsOut }},
   "activeBorder": "{{ hyprland.activeBorder | qt }}",
   "inactiveBorder": "{{ hyprland.inactiveBorder | qt }}"
 }

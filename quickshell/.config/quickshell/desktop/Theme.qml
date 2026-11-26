@@ -57,8 +57,9 @@ Singleton {
     // Text size chosen in the Theming panel (1 to 1.5); every drawn text size goes through textSize().
     readonly property real textScale: Math.max(1, Math.min(1.5, colors.textScale))
     readonly property int barHeight: hit(38)
-    // A floating bar and its pills keep this gap from the screen edges; what the bar reserves grows with it.
-    readonly property int barInset: barStyle === "floating" || barStyle === "pills" ? 6 : 0
+    // A floating bar and its pills keep the screen margin of the windows (Hyprland gaps_out) from the screen edges,
+    // so they line up with the windows, which keep it from the bar too. What the bar reserves grows with it.
+    readonly property int barInset: barStyle === "floating" || barStyle === "pills" ? Math.max(0, Math.round(colors.gapsOut)) : 0
     readonly property int barReserved: barHeight + barInset
     // Shell surfaces take the window border chosen in the Theming panel: its width, the active colour for
     // what has the focus (panels, menus) and the inactive one for the rest (dock, OSD, notifications).
@@ -131,6 +132,7 @@ Singleton {
             property bool reduceEffects: false
             property real rounding: 16
             property real borderSize: 0
+            property real gapsOut: 4
             property color activeBorder: "#d4d6dc"
             property color inactiveBorder: "#44474e"
         }
