@@ -380,6 +380,14 @@ ShellRoot {
             WhatsNewPanel {}
         }
         LazyPanel {
+            name: "themes"
+            ThemeSwitcher {}
+        }
+        LazyPanel {
+            name: "wallpapers"
+            WallpaperSwitcher {}
+        }
+        LazyPanel {
             name: "notifications"
             NotificationCenter {}
         }

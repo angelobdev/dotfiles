@@ -28,7 +28,7 @@ One shell, no external applets: bar, launcher, Control Center, dock, notificatio
   <img alt="Settings going through its sections: themes, wallpapers, desktop, displays, sound, keyboard, tablet, updates and the installer profiles" src="docs/screenshots/settings.webp">
 </p>
 
-`Super + I` opens one Settings panel for network, Bluetooth, displays, sound, power, appearance, the desktop, the AI assistant, keyboard, tablet and privacy. Its **System** section looks after the system with no terminal: it checks for updates and applies them, adds and removes [installer profiles](docs/guide/installation.md#profiles-in-settings) and rebuilds the [Hyprland plugins](docs/guide/plugins.md), in the background, behind one prompt. That prompt is the shell's own Polkit agent: on a machine with a fingerprint reader it asks for the fingerprint first, and **Use password** is one tap away.
+`Super + Ctrl + Space` opens one Settings panel for network, Bluetooth, displays, sound, power, appearance, the desktop, the AI assistant, keyboard, tablet and privacy. Its **System** section looks after the system with no terminal: it checks for updates and applies them, adds and removes [installer profiles](docs/guide/installation.md#profiles-in-settings) and rebuilds the [Hyprland plugins](docs/guide/plugins.md), in the background, behind one prompt. That prompt is the shell's own Polkit agent: on a machine with a fingerprint reader it asks for the fingerprint first, and **Use password** is one tap away.
 
 ### An installer in profiles
 

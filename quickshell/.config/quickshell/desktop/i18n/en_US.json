@@ -1,9 +1,34 @@
 {
   "apps": {
     "browser": "Browser",
-    "passwordManager": "1Password",
+    "calculator": "Calculator",
+    "commandPlaceholder": "A command, as typed in a terminal: firefox --private-window",
+    "default": "Default: %1",
+    "defaultMissing": "Default: %1, not installed",
+    "errors": {
+      "usage": "Usage: apps.py launch {terminal|browser|passwords|files}|list"
+    },
+    "fileManager": "File manager",
+    "group": "Opened by the shortcuts",
+    "hint": "A command runs as typed, without a shell. An app that is not installed gives way to the first installed one of its kind.",
+    "missing": "No %1 is installed: choose one in Settings → Apps.",
+    "none": "%1 opens nothing: none of these is installed",
+    "opens": "%1 opens %2",
+    "otherCommand": "Other command…",
+    "passwordManager": "Password manager",
+    "roles": {
+      "browser": "browser",
+      "browserTitle": "Browser",
+      "files": "file manager",
+      "filesTitle": "File manager",
+      "passwords": "password manager",
+      "passwordsDefault": "1Password Quick Access",
+      "passwordsTitle": "Password manager",
+      "terminal": "terminal",
+      "terminalTitle": "Terminal"
+    },
     "terminal": "Terminal",
-    "calculator": "Calculator"
+    "title": "Default apps"
   },
   "assistant": {
     "errors": {
@@ -899,6 +924,7 @@
           "theme": "colours, colors, dark, light, dynamic, matugen, bar style, transparent, effects, liquid glass",
           "wallpaper": "background, image, picture, download wallpapers"
         },
+        "apps": "default apps, terminal, browser, password manager, file manager, kitty, firefox, 1password, nautilus, files",
         "assistant": "ai, agent, coding agents, claude, codex, console, primary agent, language, dictation, voice, usage, limits",
         "bluetooth": "devices, pair, pairing, scan, headphones, earbuds, speaker, controller",
         "displays": "monitor, screen, resolution, refresh rate, hz, scale, scaling, position, mirror, extend, external, laptop",
@@ -907,7 +933,7 @@
         "power": "power profile, performance, balanced, power saver, energy",
         "sound": "volume, microphone, speaker, speakers, headphones, output, input, audio, mute, applications",
         "system": {
-          "about": "version, computer, hardware, model, processor, cpu, memory, ram, kernel, distribution, hyprland, quickshell, repository",
+          "about": "release, version, changelog, what's new, computer, hardware, model, processor, cpu, memory, ram, kernel, distribution, hyprland, quickshell, repository",
           "advanced": "configuration, config errors, own settings, hypr.lua, shell.json, folder, files, reset, defaults",
           "plugins": "plugin, hyprland plugins, hyprspace, hyprgrass, hyprglass, hyprcapture, rebuild, build cache",
           "profiles": "installer, install, remove, packages, apps, gaming, components",
@@ -930,7 +956,8 @@
       "privacy": "Privacy",
       "sound": "Sound",
       "system": "System",
-      "tablet": "Tablet and touch"
+      "tablet": "Tablet and touch",
+      "apps": "Apps"
     },
     "sidebar": {
       "connections": "Connections",
@@ -1219,7 +1246,10 @@
     },
     "cursorSize": "Cursor size",
     "cursorDownload": "%1 (download)",
-    "shellText": "Shell text"
+    "shellText": "Shell text",
+    "switcher": "Themes",
+    "switcherKeys": "←→|choose; Enter|apply; Esc|close",
+    "switchTheme": "Switch theme"
   },
   "wallpaper": {
     "apply": "Set wallpaper",
@@ -1242,7 +1272,12 @@
     "previewUnavailable": "Preview unavailable. The file will be converted when applied.",
     "restoreDefault": "Restore Fedora wallpaper",
     "title": "Choose wallpaper",
-    "applied": "Wallpaper applied: %1"
+    "applied": "Wallpaper applied: %1",
+    "switcher": "Wallpapers",
+    "switcherKeys": "←→|choose; Enter|apply; Esc|close",
+    "switchWallpaper": "Switch wallpaper",
+    "switcherMissing": "The wallpapers of this theme are not downloaded yet: Settings → Appearance → Wallpaper downloads them.",
+    "switcherEmpty": "This theme has no wallpapers of its own: Super + Shift + W picks any image."
   },
   "workspaces": {
     "accessibleName": "Workspace %1",

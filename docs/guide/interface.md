@@ -29,7 +29,11 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 
 | Keys | Action |
 | --- | --- |
-| `Super + Enter` | Kitty |
+| `Super + Enter` | Terminal (kitty by default) |
+| `Super + Shift + Enter` | Browser (Firefox by default; without it, the first browser installed) |
+| `Super + Shift + Space` | Password manager (1Password Quick Access by default) |
+| `Super + Shift + F` | File manager (Files, Nautilus, by default) |
+| Settings → Apps | The app each of the four keys above opens: one of the installed apps of its kind, the default, or a command typed by hand; read at every press, so a change applies at once |
 | `Alt + Tab` / `Alt + Shift + Tab` | Window switcher: thumbnails of the windows from the most recently used, on the focused monitor; Tab, Shift + Tab or the arrows move, releasing the left `Alt` (or `Return`) focuses the selected one and moves the pointer onto it, `Esc`, any other key or a click outside cancels, a click on a thumbnail picks it. Windows on special workspaces (the assistant console) are left out |
 | `Super + A` | AI assistant: the drop-down console with the primary coding agent (Settings → Assistant; Claude Code: hold `Space` to dictate); a click or tap outside closes it |
 | `Super + Shift + A` | Move the active window into the assistant console, or back out |
@@ -43,17 +47,18 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + D` | Calendar |
 | `Super + Shift + H` | Hints / active bindings |
 | `Super + Shift + Q` | Session menu |
-| `Super + Shift + W` | Choose wallpaper |
+| `Super + Shift + W` | Choose wallpaper: the picker that browses any folder |
 | `Super + Shift + T` | Text from a screen area: select it, its text (OCR, Italian and English) is copied |
 | `Super + Ctrl + A` | Ask the assistant about a screen area: select it, the image path is typed at the agent's prompt and the console opens |
 | `Super + .` | Emoji: search by name in the interface language or browse by group, recently used first; Enter or a click pastes it into the window that was focused (Ctrl + V, or Ctrl + Shift + V in a terminal) and leaves it on the clipboard |
 | `Super + Alt + +` / `-` / `0` | Zoom in / out around the pointer (up to 800%) / back to 100%, with an OSD |
 | `Super + Shift + P` | Color picker: click a point (`Esc` cancels); its hex code is copied and named in a notification |
-| `Super + Ctrl + W` | Next wallpaper of the current theme |
+| `Super + Ctrl + W` | Switch wallpaper: the wallpapers of the current theme in a row of large previews; ←→ choose, Enter (or a click on the middle one) applies, Esc closes |
+| `Super + Ctrl + Shift + W` | Next wallpaper of the current theme |
 | Settings → Keyboard → Your shortcuts | Your own shortcuts (keys and a command), into `~/.config/desktop/settings.lua` |
 | Right click (or a long press) on the empty desktop | Desktop menu: **Open** Applications, Settings; **Session** Lock screen (at once), Suspend…, Log out…, Restart…, Shut down… (the session menu, already asking to confirm). `desktop-shell desktop-menu` opens it in the middle of the focused monitor |
-| `Super + I` | Settings, grouped in the sidebar: Connections (Network, Bluetooth), Devices (Displays, Sound, Power), Personalization (Appearance, Desktop, Assistant), Input (Keyboard, Tablet and touch), System (Privacy, System: About, Updates, [Profiles](installation.md#profiles-in-settings), Advanced). A search field tops the sidebar (`Ctrl + F`, or `/` on the sidebar): while it has text, the sidebar lists the matching sections, tabs and options as Section › Group › Option, found by their names, descriptions and a few keywords per page (`wifi`, `font`, `monitor`…), in the language shown, ignoring case and accents; ↑↓ pick one and Enter or a click opens it, an option scrolled to and selected; `Esc` clears the search first. Close is at the top right; each section's tabs sit under its title; every section takes the whole width of the panel, and the long ones scroll. System → About has **Copy** (the table as plain text, for a bug report), and its repository path opens the folder. The Control Center and the Network, Bluetooth, Sound, Displays, assistant and updates panels link to it (**Settings…**); `desktop-shell toggle settings SECTION[/TAB]` opens one (`system/advanced`, `appearance/font`); ↑↓ pick an option, Space or Enter change it, ←→ adjust it. Also **Settings** in the launcher |
-| `Super + Ctrl + T` | Settings → Appearance: theme, wallpaper, font, icons, cursors |
+| `Super + Ctrl + Space` | Settings, grouped in the sidebar: Connections (Network, Bluetooth), Devices (Displays, Sound, Power), Personalization (Appearance, Desktop, Apps, Assistant), Input (Keyboard, Tablet and touch), System (Privacy, System: About, Updates, [Profiles](installation.md#profiles-in-settings), Advanced). A search field tops the sidebar (`Ctrl + F`, or `/` on the sidebar): while it has text, the sidebar lists the matching sections, tabs and options as Section › Group › Option, found by their names, descriptions and a few keywords per page (`wifi`, `font`, `monitor`…), in the language shown, ignoring case and accents; ↑↓ pick one and Enter or a click opens it, an option scrolled to and selected; `Esc` clears the search first. Close is at the top right; each section's tabs sit under its title; every section takes the whole width of the panel, and the long ones scroll. System → About has **Copy** (the table as plain text, for a bug report), and its repository path opens the folder. The Control Center and the Network, Bluetooth, Sound, Displays, assistant and updates panels link to it (**Settings…**); `desktop-shell toggle settings SECTION[/TAB]` opens one (`system/advanced`, `appearance/font`); ↑↓ pick an option, Space or Enter change it, ←→ adjust it. Also **Settings** in the launcher |
+| `Super + Ctrl + T` | Switch theme: each theme on the wallpaper it would show, with a mock-up of its colours, in a row of large previews; ←→ choose, Enter applies, Esc closes. The rest (wallpaper, font, icons, cursors) is in Settings → Appearance |
 | `Super + Ctrl + N` | Do Not Disturb on/off |
 | `Super + Ctrl + K` | Keep awake on/off |
 | `Super + Ctrl + F` | Focus session on/off (Do Not Disturb for 25 minutes) |
@@ -64,7 +69,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Alt + 1`…`9` | Open or focus the Nth dock item |
 | `Super + L` / `XF86Sleep` | Lock / suspend with lock (the desktop holds logind's Sleep-key inhibitor, so the key suspends once) |
 | `Super + Shift + R` | Restart Quickshell |
-| `Super + V` / `Super + Shift + F` | Floating / fullscreen |
+| `Super + V` / `Super + F` | Floating / fullscreen |
 | `Super + Ctrl + P` / `Super + J` | Pseudotiling / split orientation |
 | `Super + arrows` / `Super + Shift + arrows` | Focus / move window |
 | `Super + Ctrl + arrows` | Resize the window 40 px at a time (hold to repeat): right/left wider/narrower, down/up taller/shorter; a tiled window moves its split |

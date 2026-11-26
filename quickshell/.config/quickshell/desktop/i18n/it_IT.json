@@ -1,9 +1,34 @@
 {
   "apps": {
     "browser": "Browser",
-    "passwordManager": "1Password",
+    "calculator": "Calcolatrice",
+    "commandPlaceholder": "Un comando, come in un terminale: firefox --private-window",
+    "default": "Predefinita: %1",
+    "defaultMissing": "Predefinita: %1, non installata",
+    "errors": {
+      "usage": "Uso: apps.py launch {terminal|browser|passwords|files}|list"
+    },
+    "fileManager": "File manager",
+    "group": "Aperte dalle scorciatoie",
+    "hint": "Un comando viene eseguito così com'è scritto, senza shell. Un'app non installata cede il posto alla prima installata dello stesso tipo.",
+    "missing": "Nessun %1 installato: scegline uno in Impostazioni → App.",
+    "none": "%1 non apre nulla: nessuna di queste è installata",
+    "opens": "%1 apre %2",
+    "otherCommand": "Altro comando…",
+    "passwordManager": "Password manager",
+    "roles": {
+      "browser": "browser",
+      "browserTitle": "Browser",
+      "files": "file manager",
+      "filesTitle": "File manager",
+      "passwords": "password manager",
+      "passwordsDefault": "Accesso rapido di 1Password",
+      "passwordsTitle": "Password manager",
+      "terminal": "terminale",
+      "terminalTitle": "Terminale"
+    },
     "terminal": "Terminale",
-    "calculator": "Calcolatrice"
+    "title": "App predefinite"
   },
   "assistant": {
     "errors": {
@@ -899,6 +924,7 @@
           "theme": "colori, scuro, chiaro, dinamico, matugen, stile della barra, trasparente, effetti, vetro liquido",
           "wallpaper": "wallpaper, sfondo, immagine, foto, scarica sfondi"
         },
+        "apps": "app predefinite, terminale, browser, password manager, file manager, gestore file, kitty, firefox, 1password, nautilus, file",
         "assistant": "ia, ai, agente, agenti di programmazione, claude, codex, console, agente principale, lingua, dettatura, voce, utilizzo, limiti",
         "bluetooth": "dispositivi, associa, associazione, cerca, cuffie, auricolari, altoparlante, controller",
         "displays": "monitor, schermo, display, risoluzione, frequenza di aggiornamento, hz, scala, scale, ridimensionamento, posizione, duplica, estendi, esterno, portatile",
@@ -907,7 +933,7 @@
         "power": "profilo energetico, prestazioni, bilanciato, risparmio energetico, energia",
         "sound": "volume, microfono, altoparlante, altoparlanti, cuffie, uscita, ingresso, audio, muto, applicazioni",
         "system": {
-          "about": "versione, computer, hardware, modello, processore, cpu, memoria, ram, kernel, distribuzione, hyprland, quickshell, repository",
+          "about": "versione, rilascio, changelog, novità, computer, hardware, modello, processore, cpu, memoria, ram, kernel, distribuzione, hyprland, quickshell, repository",
           "advanced": "configurazione, errori di configurazione, impostazioni personali, hypr.lua, shell.json, cartella, file, ripristina, predefiniti",
           "plugins": "plugin, plugin di hyprland, hyprspace, hyprgrass, hyprglass, hyprcapture, ricompila, cache di compilazione",
           "profiles": "installer, installa, rimuovi, pacchetti, app, gaming, giochi, componenti",
@@ -930,7 +956,8 @@
       "privacy": "Privacy",
       "sound": "Audio",
       "system": "Sistema",
-      "tablet": "Tablet e touch"
+      "tablet": "Tablet e touch",
+      "apps": "App"
     },
     "sidebar": {
       "connections": "Connessioni",
@@ -1219,7 +1246,10 @@
     },
     "cursorSize": "Dimensione del cursore",
     "cursorDownload": "%1 (da scaricare)",
-    "shellText": "Testo della shell"
+    "shellText": "Testo della shell",
+    "switcher": "Temi",
+    "switcherKeys": "←→|scegli; Invio|applica; Esc|chiudi",
+    "switchTheme": "Cambia tema"
   },
   "wallpaper": {
     "apply": "Imposta sfondo",
@@ -1242,7 +1272,12 @@
     "previewUnavailable": "Anteprima non disponibile. Il file verrà convertito all’applicazione.",
     "restoreDefault": "Ripristina Fedora",
     "title": "Scegli sfondo",
-    "applied": "Sfondo applicato: %1"
+    "applied": "Sfondo applicato: %1",
+    "switcher": "Sfondi",
+    "switcherKeys": "←→|scegli; Invio|applica; Esc|chiudi",
+    "switchWallpaper": "Cambia sfondo",
+    "switcherMissing": "Gli sfondi di questo tema non sono ancora scaricati: li scarica Impostazioni → Aspetto → Sfondo.",
+    "switcherEmpty": "Questo tema non ha sfondi propri: Super + Maiusc + W sceglie un'immagine qualsiasi."
   },
   "workspaces": {
     "accessibleName": "Workspace %1",

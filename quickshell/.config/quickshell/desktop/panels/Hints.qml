@@ -86,9 +86,9 @@ Overlay {
             return I18n.tr("hints.categories.workspaces");
         if (/lock|suspend|logout|reboot|shut down|session/.test(name))
             return I18n.tr("session.title");
-        if (/applications|control center|notifications|quickshell|network|wi-fi|sound.*devices|battery|calendar|hints|wallpaper|clipboard|theming|do not disturb|keep awake|^dock|color picker|focus session|^emoji$|zoom|^displays$/.test(name))
+        if (/applications|control center|notifications|quickshell|network|wi-fi|sound.*devices|battery|calendar|hints|wallpaper|clipboard|theming|switch theme|do not disturb|keep awake|^dock|color picker|focus session|^emoji$|zoom|^displays$/.test(name))
             return I18n.tr("hints.categories.shell");
-        if (/browser|terminal|kitty|1password|calculator/.test(name))
+        if (/browser|terminal|kitty|1password|password manager|file manager|calculator/.test(name))
             return I18n.tr("launcher.title");
         if (/window|focus|floating|fullscreen|^move |tiling|split|pseudo|switch windows/.test(name))
             return I18n.tr("hints.categories.windows");

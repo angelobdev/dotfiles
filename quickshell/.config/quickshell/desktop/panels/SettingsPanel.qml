@@ -71,6 +71,12 @@ Overlay {
             group: "personalization"
         },
         {
+            name: "apps",
+            icon: "window",
+            labelKey: "settings.sections.apps",
+            group: "personalization"
+        },
+        {
             name: "assistant",
             icon: "assistant",
             labelKey: "settings.sections.assistant",
@@ -489,6 +495,7 @@ Overlay {
                                     assistant: assistantView,
                                     system: systemView,
                                     keyboard: keyboardView,
+                                    apps: appsView,
                                     power: powerView,
                                     privacy: privacyView
                                 })[modelData.name] ?? optionsView
@@ -632,6 +639,15 @@ Overlay {
                                     section: page.modelData.name
                                     title: I18n.tr(page.modelData.labelKey)
                                     KeyboardHyprland {}
+                                }
+                            }
+                            // Apps: what the shortcuts of the terminal, browser, password manager and file manager open.
+                            Component {
+                                id: appsView
+                                OptionsSection {
+                                    section: page.modelData.name
+                                    title: I18n.tr(page.modelData.labelKey)
+                                    AppsView {}
                                 }
                             }
                             // Power: the battery warnings, then the power profile of the battery panel.

@@ -35,6 +35,7 @@ const keywords = {
     power: "settings.search.keywords.power",
     assistant: "settings.search.keywords.assistant",
     keyboard: "settings.search.keywords.keyboard",
+    apps: "settings.search.keywords.apps",
     "appearance/theme": "settings.search.keywords.appearance.theme",
     "appearance/layout": "settings.search.keywords.appearance.layout",
     "appearance/wallpaper": "settings.search.keywords.appearance.wallpaper",

@@ -10,6 +10,8 @@ The first release. From now on the desktop updates from releases instead of foll
 
 ### Added
 
+- Quick switchers for the theme (`Super + Ctrl + T`) and the wallpaper (`Super + Ctrl + W`): a row of large previews, ←→ to choose, Enter to apply.
+- Shortcuts for the browser (`Super + Shift + Enter`), the password manager (`Super + Shift + Space`, 1Password Quick Access) and the file manager (`Super + Shift + F`). **Settings → Apps** chooses what they and `Super + Enter` open: Firefox, which the installer now adds, kitty and Files are the defaults.
 - Releases and this **What's new** window. **Settings → System → About** shows the installed release and opens its notes again.
 - `desktop-msfonts`: the Microsoft fonts (Segoe UI, Calibri, Cambria, Consolas…) from your own Windows ISO, installation media or Windows partition.
 - Settings has a search field at the top of its sidebar; a found option is scrolled to and highlighted.
@@ -19,6 +21,7 @@ The first release. From now on the desktop updates from releases instead of foll
 
 ### Changed
 
+- Some shortcuts moved to make room: **Settings** is `Super + Ctrl + Space` (no longer `Super + I`), **fullscreen** is `Super + F` (no longer `Super + Shift + F`), and the **next wallpaper** of the theme is `Super + Ctrl + Shift + W` (no longer `Super + Ctrl + W`). The Appearance section of Settings no longer has a shortcut of its own.
 - Hyprland plugins for Hyprland 0.57.2-2: Hyprglass 1.2.0 (glass behind the menus of glassed bars, fixes for very large windows), HyprCapture 0.7.0 (text recognition in the screenshot editor, recording fixes) and Hyprgrass, with upstream fixes to how it tracks the windows a gesture touched. They are rebuilt once at the next login.
 - Network, Bluetooth, Sound and Updates group their contents on cards; key hints are drawn as keycaps; dialogs take one of three widths.
 

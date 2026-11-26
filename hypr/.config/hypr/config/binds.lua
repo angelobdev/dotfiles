@@ -66,7 +66,11 @@ bind("ALT + SHIFT + Tab", function()
 end, "Switch windows backwards")
 
 -- Applications
-bind("SUPER + Return", hl.dsp.exec_cmd("kitty"), "Terminal")
+-- The apps chosen in Settings → Apps (desktop-app, apps.py): kitty, Firefox, 1Password Quick Access and Files by default.
+bind("SUPER + Return", hl.dsp.exec_cmd(util.bin("desktop-app") .. " terminal"), "Terminal")
+bind("SUPER + SHIFT + Return", hl.dsp.exec_cmd(util.bin("desktop-app") .. " browser"), "Browser")
+bind("SUPER + SHIFT + Space", hl.dsp.exec_cmd(util.bin("desktop-app") .. " passwords"), "Password manager")
+bind("SUPER + SHIFT + F", hl.dsp.exec_cmd(util.bin("desktop-app") .. " files"), "File manager")
 bind("XF86Calculator", hl.dsp.exec_cmd("gnome-calculator"), "Calculator")
 -- The AI assistant, only with its profile installed.
 if installed("assistant") then
@@ -80,7 +84,7 @@ bind("SUPER + Q", hl.dsp.window.close(), "Close window")
 bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Toggle floating window")
 bind("SUPER + CTRL + P", hl.dsp.window.pseudo(), "Toggle pseudotiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Toggle split orientation")
-bind("SUPER + SHIFT + F", hl.dsp.window.fullscreen(), "Fullscreen")
+bind("SUPER + F", hl.dsp.window.fullscreen(), "Fullscreen")
 
 -- Only with the plugin's part installed; installed but not loaded (a rebuild pending), they say so when pressed.
 if installed("plugins.hyprcapture") then
@@ -111,9 +115,10 @@ bind("SUPER + ALT + 0", hl.dsp.exec_cmd(shell .. " zoom reset"), "Reset zoom")
 bind("SUPER + period", hl.dsp.exec_cmd(shell .. " toggle emoji"), "Emoji")
 bind("SUPER + SHIFT + P", hl.dsp.exec_cmd(util.bin("desktop-color")), "Color picker")
 bind("SUPER + SHIFT + W", hl.dsp.exec_cmd(util.bin("desktop-wallpaper")), "Choose wallpaper")
-bind("SUPER + CTRL + W", hl.dsp.exec_cmd(util.bin("desktop-wallpaper") .. " --next"), "Next wallpaper")
-bind("SUPER + I", hl.dsp.exec_cmd(shell .. " toggle settings"), "Settings")
-bind("SUPER + CTRL + T", hl.dsp.exec_cmd(shell .. " toggle theming"), "Theming")
+bind("SUPER + CTRL + W", hl.dsp.exec_cmd(shell .. " toggle wallpapers"), "Switch wallpaper")
+bind("SUPER + CTRL + SHIFT + W", hl.dsp.exec_cmd(util.bin("desktop-wallpaper") .. " --next"), "Next wallpaper")
+bind("SUPER + CTRL + Space", hl.dsp.exec_cmd(shell .. " toggle settings"), "Settings")
+bind("SUPER + CTRL + T", hl.dsp.exec_cmd(shell .. " toggle themes"), "Switch theme")
 bind("SUPER + CTRL + N", hl.dsp.exec_cmd(shell .. " dnd toggle"), "Do Not Disturb")
 bind("SUPER + CTRL + F", hl.dsp.exec_cmd(shell .. " focus toggle"), "Focus session")
 bind("SUPER + CTRL + K", hl.dsp.exec_cmd(shell .. " keep-awake toggle"), "Keep awake")

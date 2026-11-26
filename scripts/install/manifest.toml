@@ -118,8 +118,8 @@ packages = [
     'adwaita-cursor-theme', 'breeze-cursor-theme', 'fontconfig', 'adwaita-sans-fonts', 'adwaita-mono-fonts',
     'google-noto-color-emoji-fonts', 'rsms-inter-fonts', 'ibm-plex-sans-fonts', 'ibm-plex-mono-fonts',
     'jetbrains-mono-fonts', 'fira-code-fonts',
-    # Apps the shell opens.
-    'nautilus', 'gnome-calculator',
+    # Apps the shell and the default app shortcuts open (Settings → Apps changes those).
+    'nautilus', 'gnome-calculator', 'firefox',
     # The login shell and its plugins; Powerlevel10k and zsh-autocomplete come from clones below.
     'zsh', 'zsh-autosuggestions', 'zsh-syntax-highlighting', 'git-core', 'fzf', 'zoxide', 'eza', 'bat',
     # Codecs: the patent-encumbered ones from RPM Fusion, in place of the free builds Fedora ships.
@@ -463,8 +463,8 @@ packages = [
     'qt5ct', 'qt6ct', 'qt6-svg', 'qt6-imageformats', 'papirus-icon-theme', 'adwaita-icon-theme', 'adw-gtk-theme',
     'adwaita-cursors', 'breeze-cursors', 'fontconfig', 'adwaita-fonts', 'noto-fonts-emoji', 'inter-font',
     'ttf-ibm-plex', 'ttf-jetbrains-mono', 'ttf-fira-code',
-    # Apps the shell opens.
-    'nautilus', 'gnome-calculator',
+    # Apps the shell and the default app shortcuts open (Settings → Apps changes those).
+    'nautilus', 'gnome-calculator', 'firefox',
     # The login shell and its plugins; Powerlevel10k and zsh-autocomplete come from clones below.
     'zsh', 'zsh-autosuggestions', 'zsh-syntax-highlighting', 'git', 'fzf', 'zoxide', 'eza', 'bat',
     # Codecs: Arch's ffmpeg and media drivers have every one; these are the GStreamer plugins that use them (OpenH264

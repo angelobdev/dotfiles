@@ -4,7 +4,9 @@ from common import focused_monitor, install_command, magick, theme_name, write_a
 from i18n import tr
 import argparse
 import colorsys
+import contextlib
 import fcntl
+import io
 import json
 from pathlib import Path
 import re
@@ -392,6 +394,8 @@ def build_parser():
     check_icons.add_argument('name')
     folder = commands.add_parser('open-folder')
     folder.add_argument('kind', choices=('fonts', 'icons'))
+    previews = commands.add_parser('previews')
+    previews.add_argument('--make', action='store_true', help='make the thumbnails still missing first')
     pack = commands.add_parser('wallpapers')
     pack.add_argument('name', nargs='?')
     getter = commands.add_parser('fetch')
@@ -456,6 +460,25 @@ def command_wallpapers(arguments):
                       'wallpapers': theme_wallpapers.wallpaper_entries(name, theme), 'files': [str(path) for path in files],
                       'thumbs': {str(path): str(theme_wallpapers.thumb_path(path)) for path in files},
                       'thumbsReady': {str(path): theme_wallpapers.thumb_path(path).is_file() for path in files}}, ensure_ascii=False))
+
+
+# The wallpaper each theme would show and its thumbnail, for the theme switcher (Super + Ctrl + T): a theme whose set is
+# not downloaded yet has none, and is drawn in its colours alone.
+def command_previews(arguments):
+    entries = []
+    for listed in theme_core.themes():
+        try:
+            path = theme_wallpapers.wallpaper_for(listed['id'], theme_core.load(listed['id']))
+        except ValueError:
+            path = None
+        entries.append({'id': listed['id'], 'wallpaper': str(path) if path else '', 'thumb': str(theme_wallpapers.thumb_path(path)) if path else '',
+                        'ready': bool(path) and theme_wallpapers.thumb_path(path).is_file()})
+    if arguments.make:
+        missing = [Path(entry['wallpaper']) for entry in entries if entry['wallpaper'] and not entry['ready']]
+        with contextlib.redirect_stdout(io.StringIO()):
+            theme_wallpapers.make_thumbs(missing)
+        entries = [dict(entry, ready=bool(entry['thumb']) and Path(entry['thumb']).is_file()) for entry in entries]
+    print(json.dumps(entries, ensure_ascii=False))
 
 
 def command_thumbs(arguments):

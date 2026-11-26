@@ -4,9 +4,15 @@
 
 One panel switches the whole desktop: shell, terminal, GTK and Qt apps, lock screen, wallpapers, fonts and icons, with hand-made themes and a dynamic one drawn from the wallpaper.
 
+## Quick switchers
+
+- `Super + Ctrl + T` switches theme without opening Settings: every theme in a row of large previews, each on the wallpaper it would show (`theme.py previews`, which also makes the thumbnails still missing) with a mock-up of its surfaces, text, terminal colours and accent; a theme whose set is not downloaded yet is drawn in its colours alone. The applied one starts in the middle; ←→ move, Enter or a click on the middle card applies (`desktop-theme set`, as a card in Settings does), a click on another moves to it, Esc closes. The dynamic theme is in the row where matugen is installed.
+- `Super + Ctrl + W` does the same with the wallpapers of the current theme (the downloaded ones of its set, or its folder), applied as from the Wallpaper tab. `Super + Shift + W` keeps the picker that browses any folder.
+- Both are panels of the shell (`desktop-shell toggle themes`, `toggle wallpapers`; `panels/ThemeSwitcher.qml`, `panels/WallpaperSwitcher.qml` on `components/Carousel.qml`).
+
 ## The Theming panel
 
-The Theming panel is the **Appearance** section of **Settings**. `Super + Ctrl + T` opens Settings there (and closes it when Appearance is already on screen); `Super + I`, the Settings entry in the launcher or `desktop-shell toggle settings` open Settings on the section seen last. Settings has a sidebar of sections after GNOME Settings; more of the desktop's configuration moves in over time ([#8](https://github.com/angelobdev/dotfiles/issues/8)). On a screen narrower than the sidebar and a section together, it shows one of the two, with a back button. `Ctrl+Tab` / `Ctrl+Shift+Tab` (or `Ctrl+PgDown` / `Ctrl+PgUp`) switch tabs, and so does a one-finger swipe sideways over the page by touch (to the left for the next tab); arrows move within a tab, Enter applies, and Esc closes.
+The Theming panel is the **Appearance** section of **Settings**; `Super + Ctrl + Space`, the Settings entry in the launcher or `desktop-shell toggle settings` open Settings on the section seen last. Settings has a sidebar of sections after GNOME Settings; more of the desktop's configuration moves in over time ([#8](https://github.com/angelobdev/dotfiles/issues/8)). On a screen narrower than the sidebar and a section together, it shows one of the two, with a back button. `Ctrl+Tab` / `Ctrl+Shift+Tab` (or `Ctrl+PgDown` / `Ctrl+PgUp`) switch tabs, and so does a one-finger swipe sideways over the page by touch (to the left for the next tab); arrows move within a tab, Enter applies, and Esc closes.
 
 **Tabs**
 - **Theme:** a card per theme with a small mock-up of its surfaces, text and accent, plus its terminal colours; the current one is marked. Choosing one switches colours at once, and the theme's wallpaper follows.
@@ -138,7 +144,7 @@ Commands:
 - **ANSI, success and warning** use the standard terminal hues (red, green, yellow, blue, magenta, cyan), each turned at most 15° toward the primary, as Material harmonizes custom colours. matugen's base16 is not used, because it holds the image's own colours in no hue order. Their HSL lightness is then moved away from bg until they reach 3:1 (normal colours) or 4.5:1 (bright colours, which are also success and warning). Black and white come from the surfaces.
 - **System:** adw-gtk3 or adw-gtk3-dark, Papirus-Dark or Papirus-Light, the GSettings accent nearest to the primary hue (slate when it is grey), VS Code Default Dark Modern or Default Light Modern.
 - **Light mode:** the bar shade uses bg at 60%/53% instead of black, so its dark text stays readable. This applies to any theme with `"mode": "light"` that does not set `barShadeTop`/`barShadeBottom`.
-- `wallpaperDirectories` is the image's folder, so `Super + Ctrl + W` cycles it.
+- `wallpaperDirectories` is the image's folder, so `Super + Ctrl + Shift + W` cycles it and `Super + Ctrl + W` shows it.
 
 `desktop-theme dynamic --mode auto|dark|light` stores `dynamic` in `preferences.json` (matugen `-m smart|dark|light`, always with `-t scheme-tonal-spot`) and regenerates when the dynamic theme is current. `services/DynamicTheme.qml` watches `current.json`, the wallpaper selection and the generated theme: while the theme is `dynamic` and the wallpaper is not its `source`, it runs `theme.py generate`, one run at a time.
 
@@ -152,7 +158,7 @@ The shell uses translucent surfaces with blur and thin borders. Window borders f
 ~/.local/bin/desktop-wallpaper                     # open the QML picker
 ~/.local/bin/desktop-wallpaper /path/to/image.png
 ~/.local/bin/desktop-wallpaper --reset             # restore Fedora wallpaper
-~/.local/bin/desktop-wallpaper --next              # next wallpaper of the current theme (Super + Ctrl + W)
+~/.local/bin/desktop-wallpaper --next              # next wallpaper of the current theme (Super + Ctrl + Shift + W)
 ```
 
 The picker starts at home and supports moving to parent directories, entering a path, and opening the wallpaper collection. It supports PNG, JPEG, WebP, JXL, AVIF, BMP, and TIFF. ImageMagick converts the selected file into a managed JPEG, applies EXIF orientation, and preserves the original. Preview support depends on Qt decoders; a JXL without a preview can still be converted and applied.
@@ -174,8 +180,8 @@ Downloads:
 Switching theme also switches the wallpaper:
 - `desktop-theme set` first remembers the current wallpaper (`selection.json` source) under the theme being left, in `~/.local/state/desktop-theme/wallpapers.json`.
 - In the background it then applies the new theme's remembered wallpaper, or its first one, downloading the set if needed (log in `wallpapers.log` there).
-- Wallpapers picked with `Super + Shift + W` or `Super + Ctrl + W` are remembered the same way.
-- `Super + Ctrl + W` cycles through the current theme's set in order. If nothing is downloaded yet, it starts the download and shows a notification.
+- Wallpapers picked with `Super + Shift + W`, `Super + Ctrl + W` or `Super + Ctrl + Shift + W` are remembered the same way.
+- `Super + Ctrl + Shift + W` cycles through the current theme's set in order. If nothing is downloaded yet, it starts the download and shows a notification.
 
 Sources:
 - Omarchy's theme backgrounds (`basecamp/omarchy`, MIT);
