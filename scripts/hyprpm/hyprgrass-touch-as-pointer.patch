@@ -1,16 +1,17 @@
 touch_as_pointer for Hyprgrass, applied by build.py on top of the pin in build.py.
 
 One finger on a window whose client never asked for wl_touch (Kitty) works as the pointer: past 12 px a
-drag scrolls, otherwise lifting is a left click. Off by default; plugins.lua turns it on.
+drag scrolls, otherwise lifting is a left click. Off by default; plugins.lua turns it on. Since upstream
+6a03d08 touches no longer move the cursor, so this touch warps it, and only this one.
 
 Proposed upstream as horriblename/hyprgrass#435 and closed there (the maintainer wants it in Hyprland).
-This is the diff of that PR against the pinned commit; rebase it whenever the pin moves.
+This is the diff of that PR rebased on the pinned commit; rebase it whenever the pin moves.
 
 diff --git a/src/GestureManager.cpp b/src/GestureManager.cpp
-index 1fc9b63..af96d1c 100644
+index bf4027d..986100d 100644
 --- a/src/GestureManager.cpp
 +++ b/src/GestureManager.cpp
-@@ -34,6 +34,7 @@
+@@ -27,6 +27,7 @@
  
  #include <algorithm>
  #include <cmath>
@@ -18,7 +19,7 @@ index 1fc9b63..af96d1c 100644
  #include <ranges>
  #include <vector>
  
-@@ -49,6 +50,9 @@ static int handleLongPressTimer(void* data) {
+@@ -42,6 +43,9 @@ static int handleLongPressTimer(void* data) {
  // A touch that moves this far (logical px) first is a scroll or a pinch, not a gesture waiting for more fingers.
  constexpr static double HOLD_SLOP = 12;
  
@@ -28,7 +29,7 @@ index 1fc9b63..af96d1c 100644
  static int handleHoldTimer(void* data) {
      ((GestureManager*)data)->onHoldTimeout();
      return 0;
-@@ -549,7 +553,8 @@ void GestureManager::sendCancelEventsToWindows() {
+@@ -553,7 +557,8 @@ void GestureManager::sendCancelEventsToWindows() {
  
  // @return whether or not to inhibit further actions
  bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
@@ -38,11 +39,11 @@ index 1fc9b63..af96d1c 100644
  
      // Held touches replayed to the window: already part of the gesture state.
      if (this->holdState == HoldState::REPLAYING) {
-@@ -571,12 +576,12 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
+@@ -575,12 +580,12 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
      const auto& monitorSize = this->m_lastTouchedMonitor->m_size;
      this->m_monitorArea     = SMonitorArea{monitorPos.x, monitorPos.y, monitorSize.x, monitorSize.y};
  
--    Pointer::pointerController()->warpTo(
+-    g_pInputManager->refocus(
 -        Vector2D{
 -            monitorPos.x + ev.pos.x * monitorSize.x,
 -            monitorPos.y + ev.pos.y * monitorSize.y,
@@ -53,41 +54,47 @@ index 1fc9b63..af96d1c 100644
 +        monitorPos.y + ev.pos.y * monitorSize.y,
 +    };
 +
-+    Pointer::pointerController()->warpTo(global);
++    g_pInputManager->refocus(global);
  
-     g_pInputManager->refocus();
- 
-@@ -616,6 +621,15 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
+     const bool first = this->m_sGestureState.fingers.size() == 0;
+     if (first) {
+@@ -601,7 +606,21 @@ bool GestureManager::onTouchDown(ITouch::SDownEvent ev) {
      };
  
-     const bool block = IGestureManager::onTouchDown(gesture_event);
+     bool block = IGestureManager::onTouchDown(gesture_event);
+-    block      = this->holdTouchDown(ev, first, block);
 +
 +    if (first) {
 +        this->emulatingPointer = TOUCH_AS_POINTER->value() && !block && this->clientIgnoresTouch(global);
 +        this->pointerAnchor    = pos;
++        if (this->emulatingPointer) {
++            // Touches no longer move the cursor: this one is the pointer, so it clicks and scrolls where it lands.
++            Pointer::pointerController()->warpTo(global);
++            g_pInputManager->refocus();
++        }
 +    } else {
 +        // A second finger is a gesture, or a pinch for a client that cannot see it anyway.
 +        this->stopPointerEmulation(ev.timeMs);
 +    }
 +
-     return this->holdTouchDown(ev, first, block);
- }
++    block = this->holdTouchDown(ev, first, block);
  
-@@ -649,6 +663,13 @@ bool GestureManager::forwardTouchUp(ITouch::SUpEvent ev) {
-     };
+     // Remember which surfaces were touched, to later send cancel events. Only touches that reached a
+     // window need tracking, i.e. only save if we're delivering this event normally (HoldState::DELIVERED)
+@@ -643,6 +662,12 @@ bool GestureManager::forwardTouchUp(ITouch::SUpEvent ev) {
  
      const auto BLOCK = IGestureManager::onTouchUp(gesture_event);
-+
+ 
 +    const bool click = this->emulatingPointer && !this->scrollingPointer && !BLOCK;
 +    this->stopPointerEmulation(ev.timeMs);
 +    if (click) {
 +        this->clickPointer(ev.timeMs);
 +    }
 +
-     if (SEND_CANCEL->value()) {
-         const auto surface = g_pInputManager->m_touchData.touchFocusSurface;
- 
-@@ -698,6 +719,13 @@ bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
+     // With cancel enabled, the gesture engine decides whether this up is forwarded. With it disabled,
+     // the client must see the up because it will never get a cancel for an active touch.
+     return SEND_CANCEL->value() ? BLOCK : false;
+@@ -668,6 +693,13 @@ bool GestureManager::onTouchMove(ITouch::SMotionEvent ev) {
      };
  
      const bool block = IGestureManager::onTouchMove(gesture_event) != FindGestureResult::NONE;
@@ -101,7 +108,7 @@ index 1fc9b63..af96d1c 100644
      return this->holdTouchMove(ev, block);
  }
  
-@@ -726,6 +754,68 @@ bool GestureManager::shouldHoldTouches(const Vector2D& pos) const {
+@@ -696,6 +728,68 @@ bool GestureManager::shouldHoldTouches(const Vector2D& pos) const {
      return true;
  }
  
@@ -145,7 +152,7 @@ index 1fc9b63..af96d1c 100644
 +    this->pointerAnchor = to;
 +}
 +
-+// The pointer is already there: every touch warps it.
++// The pointer is already there: the touch down warped it.
 +void GestureManager::clickPointer(uint32_t time) {
 +    g_pSeatManager->sendPointerButton(time, BTN_LEFT, WL_POINTER_BUTTON_STATE_PRESSED);
 +    g_pSeatManager->sendPointerFrame();
@@ -171,10 +178,10 @@ index 1fc9b63..af96d1c 100644
  bool GestureManager::holdTouchDown(const ITouch::SDownEvent& ev, bool first, bool block) {
      static auto const HOLD_TOUCHES = g_config->holdTouches;
 diff --git a/src/GestureManager.hpp b/src/GestureManager.hpp
-index 61a152f..889f9ba 100644
+index 05f3455..dbd4fab 100644
 --- a/src/GestureManager.hpp
 +++ b/src/GestureManager.hpp
-@@ -43,7 +43,7 @@ struct SKeybind {
+@@ -39,7 +39,7 @@ struct SKeybind {
  struct Cfg {
      SP<Config::Values::CIntValue> longPressDelay, edgeMargin, holdTouchesDelay;
      SP<Config::Values::CFloatValue> sensitivity;
@@ -183,7 +190,7 @@ index 61a152f..889f9ba 100644
  
      using INT              = Config::Values::CIntValue;
      using FLOAT            = Config::Values::CFloatValue;
-@@ -73,6 +73,9 @@ struct Cfg {
+@@ -69,6 +69,9 @@ struct Cfg {
            holdTouches{makeShared<BOOL>(
                "plugin:hyprgrass:hold_touches",
                "Hold back new touches so the fingers of a gesture never reach the window", true
@@ -193,7 +200,7 @@ index 61a152f..889f9ba 100644
            )} {}
  };
  
-@@ -156,6 +159,16 @@ class GestureManager final : public IGestureManager {
+@@ -154,6 +157,16 @@ class GestureManager final : public IGestureManager {
      void releaseHeldTouches();
      bool forwardTouchUp(ITouch::SUpEvent ev);
  
@@ -211,10 +218,10 @@ index 61a152f..889f9ba 100644
          bool active = false;
          Config::CCssGapData old_gaps_in;
 diff --git a/src/main.cpp b/src/main.cpp
-index 059da72..694a6dc 100644
+index aa2a0f2..d050b71 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
-@@ -615,6 +615,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
+@@ -606,6 +606,7 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
      HyprlandAPI::addConfigValueV2(PHANDLE, g_config->resizeOnBorder);
      HyprlandAPI::addConfigValueV2(PHANDLE, g_config->holdTouches);
      HyprlandAPI::addConfigValueV2(PHANDLE, g_config->holdTouchesDelay);

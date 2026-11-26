@@ -6,7 +6,7 @@ Configuration: [`plugins.lua`](../../hypr/.config/hypr/config/plugins.lua). Scre
 
 ## Installation
 
-Verified builds: **Hyprland and hyprland-devel 0.57.2-1.fc45.x86_64** (0.57.1-1 is still accepted), from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora, and on Arch **hyprland 0.57.2-1** (0.57.1-1 is still accepted) from `extra`, which also holds the headers (compiled in a container; not yet loaded in an Arch session). The `plugins` profile of the [installer](installation.md#automated-installation) has the build tools and Hyprland's headers, and one part per plugin: `plugins.hyprspace`, `plugins.hyprglass` and `plugins.hyprcapture`. The last brings the CMake, Qt, OpenCV, PipeWire and FFmpeg headers only HyprCapture needs, with FFmpeg from RPM Fusion on Fedora. Hyprgrass comes with `tablet`. Only the plugins of the installed parts are built (`bundle.selected()`), and the installer runs this step at the first login.
+Verified builds: **Hyprland and hyprland-devel 0.57.2-2.fc45.x86_64** (0.57.2-1 and 0.57.1-1 are still accepted), from the [`lionheartp/Hyprland`](https://copr.fedorainfracloud.org/coprs/lionheartp/Hyprland) COPR that the Hyprland wiki recommends for Fedora, and on Arch **hyprland 0.57.2-1** (0.57.1-1 is still accepted) from `extra`, which also holds the headers (compiled in a container; not yet loaded in an Arch session). The `plugins` profile of the [installer](installation.md#automated-installation) has the build tools and Hyprland's headers, and one part per plugin: `plugins.hyprspace`, `plugins.hyprglass` and `plugins.hyprcapture`. The last brings the CMake, Qt, OpenSSL, ICU, PipeWire and FFmpeg headers only HyprCapture needs (it builds its own OpenCV), with FFmpeg from RPM Fusion on Fedora. Hyprgrass comes with `tablet`. Only the plugins of the installed parts are built (`bundle.selected()`), and the installer runs this step at the first login.
 
 Without its part, what a plugin drives is not shown either. The installer writes its units to `~/.local/state/dotfiles/units`, which Hyprland (`config/installed.lua`) and the shell (`services/Installed.qml`) read:
 - without `plugins.hyprspace`, no overview corner on the bar, no Overview in the assist button, and no four-finger gesture in the hints;
@@ -29,15 +29,15 @@ Packaging in [`scripts/hyprpm`](../../scripts/hyprpm) downloads the four origina
 | Plugin / source | Pinned revision |
 | --- | --- |
 | [Hyprspace](https://github.com/KZDKM/Hyprspace) | `258b7b8bcea177e99da74946cf5cddd1dfe0e1ab` |
-| [Hyprgrass](https://github.com/horriblename/hyprgrass) | `578e9849278eb4ac7445d68f10a0266f740c58a9` |
-| [Hyprglass](https://github.com/hyprnux/hyprglass) | `28b38df92176baf3d42fe58bf6c3b663d230c6c9` |
-| [HyprCapture](https://github.com/gfhdhytghd/HyprCapture) | `fd465d85d953592862e30b296dd69ad746bc79af` |
+| [Hyprgrass](https://github.com/horriblename/hyprgrass) | `36c38e3ed7de9dd7b304b5a45dd4b52f274713a9` |
+| [Hyprglass](https://github.com/hyprnux/hyprglass) | `56714382e7ee6a46826bc8586f6d68b662c60c8a` (v1.2.0) |
+| [HyprCapture](https://github.com/gfhdhytghd/HyprCapture) | `654dac5b598c94a8e69d44d7c3194b9040825450` (v0.7.0) |
 
 ## Fedora COPR adaptations
 
 The installer checks that the session, installed binary, and `hyprland-devel` package (`hyprland` itself on Arch) match, then prepares hyprpm headers by copying the actual packaged headers, preserving `version.h` and the ABI. The cache remains root-owned at `/var/cache/hyprpm/$USER`; privileged operations are limited to this cache. Unlike the previous COPR, this build reports its real Git commit, so the ABI hash changes with each Hyprland release: after an update the installer resets the cache itself, at the next login, before anything is loaded (below).
 
-The manifest uses runtime name **HyprCapture**, including capitalization, avoiding the upstream manifest mismatch. It installs the Qt helper `~/.local/bin/hyprcapture-ui` and licenses. It does not install the optional TensorFlow/AEC microphone runtime: capture does not require it. Quickshell recording continues to use wf-recorder.
+The manifest uses runtime name **HyprCapture**, including capitalization, avoiding the upstream manifest mismatch. It installs the Qt helper `~/.local/bin/hyprcapture-ui` and licenses, OpenCV's included (HyprCapture links its own build of it). It does not install the optional TensorFlow/AEC microphone runtime: capture does not require it. HyprCapture does not load when its lock socket, `$XDG_RUNTIME_DIR/hypr/<instance>/hyprcapture-lock.sock`, would be 108 bytes or longer; with the usual `/run/user/<uid>` it is about 104. Quickshell recording continues to use wf-recorder.
 
 ## Behavior
 

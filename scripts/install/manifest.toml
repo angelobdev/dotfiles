@@ -250,8 +250,8 @@ default = true
 [fedora.plugins.parts.hyprcapture]
 default = true
 packages = [
-    'cmake', 'libjpeg-turbo-devel', 'qt6-qtsvg-devel', 'qt6-qtwayland-devel', 'layer-shell-qt-devel', 'opencv-devel',
-    'pipewire-devel', 'pulseaudio-libs-devel', 'fftw-devel', 'ffmpeg-devel', 'x265-devel', 'libde265-devel',
+    'cmake', 'libjpeg-turbo-devel', 'qt6-qtsvg-devel', 'qt6-qtwayland-devel', 'layer-shell-qt-devel', 'openssl-devel',
+    'libicu-devel', 'pipewire-devel', 'pulseaudio-libs-devel', 'fftw-devel', 'ffmpeg-devel', 'x265-devel', 'libde265-devel',
 ]
 
 # Everything below is opt-in: add the profile to --profiles.
@@ -563,8 +563,8 @@ default = true
 [arch.plugins.parts.hyprcapture]
 default = true
 packages = [
-    'cmake', 'libjpeg-turbo', 'qt6-svg', 'qt6-wayland', 'layer-shell-qt', 'opencv', 'pipewire', 'libpulse', 'fftw', 'ffmpeg',
-    'x265', 'libde265',
+    'cmake', 'libjpeg-turbo', 'qt6-svg', 'qt6-wayland', 'layer-shell-qt', 'openssl', 'icu', 'pipewire', 'libpulse', 'fftw',
+    'ffmpeg', 'x265', 'libde265',
 ]
 
 # Everything below is opt-in: add the profile to --profiles.

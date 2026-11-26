@@ -9,9 +9,9 @@ import sys
 
 PLUGINS = {
     'Hyprspace': ('KZDKM/Hyprspace', '258b7b8bcea177e99da74946cf5cddd1dfe0e1ab', 'Hyprspace.so'),
-    'hyprgrass': ('horriblename/hyprgrass', '578e9849278eb4ac7445d68f10a0266f740c58a9', 'build/src/libhyprgrass.so'),
-    'hyprglass': ('hyprnux/hyprglass', '28b38df92176baf3d42fe58bf6c3b663d230c6c9', 'hyprglass.so'),
-    'HyprCapture': ('gfhdhytghd/HyprCapture', 'fd465d85d953592862e30b296dd69ad746bc79af', 'build/libhyprcapture.so'),
+    'hyprgrass': ('horriblename/hyprgrass', '36c38e3ed7de9dd7b304b5a45dd4b52f274713a9', 'build/src/libhyprgrass.so'),
+    'hyprglass': ('hyprnux/hyprglass', '56714382e7ee6a46826bc8586f6d68b662c60c8a', 'hyprglass.so'),
+    'HyprCapture': ('gfhdhytghd/HyprCapture', '654dac5b598c94a8e69d44d7c3194b9040825450', 'build/libhyprcapture.so'),
 }
 # One finger works as the pointer on clients without touch (hold_touches is upstream since the pin above).
 HYPRGRASS_PATCH = Path(__file__).resolve().with_name('hyprgrass-touch-as-pointer.patch')
@@ -114,6 +114,8 @@ def build(name):
         for source in (cache / 'resources/licenses').iterdir():
             if source.is_file():
                 shutil.copy2(source, licenses / source.name)
+        # The OpenCV it builds and links in statically.
+        shutil.copy2(cache / 'build/opencv-LICENSE', licenses / 'opencv-LICENSE')
 
 
 if __name__ == '__main__':
