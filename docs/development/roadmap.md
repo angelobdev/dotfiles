@@ -328,7 +328,8 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 
 - [x] Tagged releases, decided with the user: SemVer from `v1.0.0`, a `stable` branch every release moves to its tag, a curated `CHANGELOG.md` in English, and the first tag once the mechanism is in, so that the update to it already shows its notes. `channel.py` (the branch a clone follows, its version, the changelog between two releases, What's new once per release), `updates.py`, `install-tui.py` and `about.py` on it, `services/Release.qml` and `panels/WhatsNewPanel.qml`, the release in **About** with its notes, `scripts/release.py draft|publish`. A clone on `main` moves to `stable` at its first fast-forward; a maintainer (`desktop.maintainer`) stays on `main`. See [releasing](releasing.md) and the [verification log](verification-log.md#releases-and-whats-new-2026-11-26).
 - [x] Into v1.0.0 as well: the default apps of the shortcuts (Settings → Apps, `desktop-app`, `apps.py`), the theme and wallpaper switchers (`Super + Ctrl + T`, `Super + Ctrl + W`), Settings on `Super + Ctrl + Space`, fullscreen on `Super + F` ([verification log](verification-log.md#default-apps-theme-and-wallpaper-switchers-2026-11-26)).
-- [ ] Publish `v1.0.0` (`release.py publish v1.0.0`), then see an install on `main` move to `stable` and show What's new.
+- [x] `v1.0.0` published on 2026-11-26 (`release.py publish v1.0.0`): the tag on `4762303`, `stable` created there, the [GitHub release](https://github.com/angelobdev/dotfiles/releases/tag/v1.0.0) with the changelog section; `check.yml` green on both distributions first.
+- [ ] See an install on `main` move to `stable` through the updates panel and show What's new (at the next release).
 
 ### Microsoft fonts (#281, 2026-11-16)
 
