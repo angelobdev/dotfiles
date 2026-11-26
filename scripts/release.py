@@ -119,6 +119,9 @@ def publish(version, skip_ci):
                        input=entry['notes'] + '\n', text=True, cwd=REPO, check=True, timeout=120)
     else:
         print('gh is not installed: create the GitHub release by hand.')
+    # The tag is now on this clone's HEAD, so its shell would count the release as installed and unseen, and open
+    # What's new with the notes just written at its next update check.
+    channel.record_seen(version)
     print(f'Published {version}.')
     return 0
 
