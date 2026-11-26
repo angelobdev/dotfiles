@@ -13,6 +13,7 @@ sys.path.insert(0, str(REPO / 'shell/.local/libexec/desktop'))
 import weather  # noqa: E402
 
 FORECAST = {
+    'timezone': 'Europe/Rome',
     'current': {'time': '2026-11-05T14:15', 'temperature_2m': 17.4, 'apparent_temperature': 14.7, 'weather_code': 0, 'is_day': 1,
                 'wind_speed_10m': 15.9},
     'hourly': {'time': [f'2026-11-05T{hour:02}:00' for hour in range(24)], 'temperature_2m': [float(h) for h in range(24)],
@@ -44,6 +45,8 @@ class WeatherTests(unittest.TestCase):
         self.assertEqual((result['place'], result['current']['temp'], result['current']['feels'], result['error']), ('Santa Maria a Vico', 17, 15, ''))
         self.assertEqual([hour['time'] for hour in result['hours']], ['15:00', '17:00', '19:00', '21:00', '23:00'])
         self.assertEqual(result['days'][1], {'date': '2026-11-06', 'code': 61, 'max': 16, 'min': 12})
+        # The zone of the forecast, offered by the calendar panel as the system time zone.
+        self.assertEqual(result['timezone'], 'Europe/Rome')
 
     def test_a_city_is_geocoded(self):
         with mock.patch.object(weather, 'fetch', side_effect=self.answers) as fetch, mock.patch.object(weather, 'geoclue') as geoclue:

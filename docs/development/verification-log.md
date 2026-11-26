@@ -1335,3 +1335,11 @@ Reported by the user after the merges of the day:
 - `desktop-bar edit eDP-1` sent by hand: outlines, names with counts and a + on every section, the three empty center sections as slots centred on the screen, hidden widgets (media, recording, updates) dimmed, the hint at the bottom; `desktop-bar cancel` restored the bar.
 - With the Centered layout written into `shell.json` for the test: shaded, floating, pills, pills with one center pill and transparent, each screenshotted; clock and weather centred. `shell.json` and the bar style were put back as they were.
 - The pointer part (holding Super for real, drags, the menus, the gallery), which no input tool here could drive: confirmed working by the user.
+
+## System time zone from the calendar, 2026-11-26
+
+- `test_timezone.py` (5 tests): offsets with and without daylight saving and half hours, unknown zones left out of the list and refused before timedated, a refused prompt, the new zone after `set`. `test_weather.py`: the forecast carries its `timezone`.
+- A QML process left running while `/etc/localtime` changed under it (a user and mount namespace binding Europe/Rome over America/New_York): `Date` and `Qt.locale().toString()` gave Rome time on the next call, before `Date.timeZoneUpdated()`; the shell calls it anyway and redraws the bar clock through `TimeZones.revision`.
+- On this machine: `timezone.py list` gives `America/New_York` (−300) and 598 zones; `weather.py now`, from GeoClue, `Casagiove` in `Europe/Rome` (+60), so the panel has a suggestion. A weather cache from before the key is read again.
+- The panel, the suggestion and a real change with the administrator password: confirmed working by the user.
+

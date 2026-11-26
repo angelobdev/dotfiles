@@ -342,8 +342,13 @@ Designed with the user on a claude.ai canvas (five sections, center left and cen
 - [x] Behavior: editing by holding Super over a bar (`config/binds.lua`, custom events, the window drag binds off meanwhile), the bar menu and `desktop-shell bar edit|done|cancel|reset`, drag and drop with a drop marker and a trash, the widget menu on Super + right click, the gallery.
 - [x] New widgets: weather, volume, network, keyboard layout, separator, spacer.
 - [x] Tried by hand, confirmed by the user: holding Super over the bar, drags between sections, the trash, the widget menu, the gallery, Done, Cancel and Esc.
-- [ ] Layouts per monitor (`monitors` in the design): one layout for every bar for now.
+- Layouts and styles per monitor: dropped by the user (2026-11-26); every bar shares one layout.
 - [ ] Widget options (clock format, media width) from the design, still the global options for now.
+
+### System time zone from the calendar (2026-11-26)
+
+- [x] Asked by the user: the time zone and its offset under the calendar title, **Change** with a search over the zones (names and offsets), and a suggestion from the zone of the weather forecast when it follows GeoClue and the offset differs. `timezone.py list|set` (timedated through polkit), `services/TimeZones.qml`, `timezone` in the output of `weather.py`.
+- [ ] Search by localized city names (Roma, Monaco): the zone names are English only for now.
 
 ### Microsoft fonts (#281, 2026-11-16)
 

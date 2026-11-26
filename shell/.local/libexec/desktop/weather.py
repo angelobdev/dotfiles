@@ -92,7 +92,8 @@ def forecast(location):
     daily = data['daily']
     days = [{'date': daily['time'][index], 'code': daily['weather_code'][index], 'max': round(daily['temperature_2m_max'][index]),
              'min': round(daily['temperature_2m_min'][index])} for index in range(len(daily['time']))]
-    return {'place': location['place'], 'updated': time.time(), 'hours': hours, 'days': days,
+    # timezone: where the forecast is, which the calendar panel offers as the system time zone.
+    return {'place': location['place'], 'timezone': data.get('timezone', ''), 'updated': time.time(), 'hours': hours, 'days': days,
             'current': {'temp': round(current['temperature_2m']), 'feels': round(current['apparent_temperature']),
                         'code': current['weather_code'], 'day': current['is_day'] == 1, 'wind': round(current['wind_speed_10m'])}}
 
@@ -101,7 +102,8 @@ def now(city):
     code = 'it' if language() == 'it_IT' else 'en'
     cache = CACHE / 'weather.json'
     cached = read(cache)
-    if cached and cached.get('city') == city and time.time() - cached.get('updated', 0) < FORECAST_AGE:
+    # A reading from before the timezone key is read again, so the calendar panel can offer the zone.
+    if cached and cached.get('city') == city and 'timezone' in cached and time.time() - cached.get('updated', 0) < FORECAST_AGE:
         return dict(cached, stale=False, error='')
     try:
         result = dict(forecast(locate(city, code)), city=city)

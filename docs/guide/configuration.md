@@ -164,7 +164,7 @@ readonly property int osdWidth: 320
 readonly property int osdBottomMargin: 96
 ```
 
-`weatherEnabled: true` and `weatherCity: ""` set the calendar weather: an empty city means where GeoClue says the computer is (its IP-based estimate needs no setup), a name is looked up with Open-Meteo's geocoding. `barMedia: true` shows what plays in the bar; `barLayout` and `barMergeCenter` hold the layout of the bar ([bar](../features/bar.md#configuration)).
+`weatherEnabled: true` and `weatherCity: ""` set the calendar weather (with an empty city, its time zone is also what the calendar panel suggests as the system one): an empty city means where GeoClue says the computer is (its IP-based estimate needs no setup), a name is looked up with Open-Meteo's geocoding. `barMedia: true` shows what plays in the bar; `barLayout` and `barMergeCenter` hold the layout of the bar ([bar](../features/bar.md#configuration)).
 
 `batteryLow: 20` and `batteryCritical: 10` are the battery warnings' thresholds in percent (`services/Battery.qml`); `batteryLow` is also where Power Saver turns on by itself (the switch in the battery panel, saved in `~/.local/state/desktop-shell/battery.json`), `peripheralLow: 15` the one for peripherals. `stylusBatteries` lists UPower native-path prefixes of stylus batteries that UPower does not type as a pen (the OmniBook's ELAN pen reports as a keyboard of the touchscreen controller: `hid-0018:04F3:4302`), so they are named Stylus. `focusMinutes: 25` is the length of a focus session started by the shortcut. `panelKeepSeconds: 60` is how long a closed panel stays loaded before the shell drops it.
 

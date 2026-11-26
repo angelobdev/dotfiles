@@ -1377,6 +1377,25 @@
     "switcherKeys": "←→|scegli; Invio|applica; Esc|chiudi",
     "switchTheme": "Cambia tema"
   },
+  "timezone": {
+    "change": "Cambia",
+    "current": "Fuso orario: %1 · %2",
+    "errors": {
+      "denied": "Il fuso orario non è cambiato: l'autenticazione è stata rifiutata.",
+      "failed": "Impossibile cambiare il fuso orario: %1",
+      "unknown": "Fuso orario sconosciuto: %1",
+      "usage": "Uso: timezone.py {list | set FUSO}"
+    },
+    "noMatches": "Nessun fuso orario corrisponde",
+    "offset": "UTC%1",
+    "pickerHint": "↑↓|seleziona; Invio|applica; Esc|chiudi",
+    "restartNote": "Le app già aperte mantengono il vecchio fuso finché non le riavvii.",
+    "search": "Cerca una città o regione (in inglese), o UTC+1",
+    "suggestion": "Sembra che tu sia in %1 (%2).",
+    "use": "Usa",
+    "utc": "UTC",
+    "waiting": "In attesa della password di amministratore…"
+  },
   "wallpaper": {
     "apply": "Imposta sfondo",
     "applying": "Applicazione…",

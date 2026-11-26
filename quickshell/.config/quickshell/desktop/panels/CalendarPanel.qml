@@ -60,8 +60,36 @@ Overlay {
         year = selected.getFullYear();
         month = selected.getMonth();
     }
+    // The time zone search: open, its text and the matches (by name, region or offset, as UTC+1).
+    property bool pickingZone: false
+    property string zoneQuery: ""
+    readonly property var zoneMatches: {
+        const fold = text => text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[_/]/g, " ").replace(/−/g, "-");
+        const words = fold(zoneQuery).split(/\s+/).filter(word => word !== "");
+        if (!pickingZone)
+            return [];
+        return TimeZones.zones.filter(zone => {
+            const haystack = fold(zone.name + " " + TimeZones.label(zone.offset));
+            return words.every(word => haystack.includes(word));
+        }).slice(0, 200);
+    }
+    function openZones() {
+        zoneSearch.text = "";
+        pickingZone = true;
+        Qt.callLater(() => zoneSearch.forceActiveFocus());
+    }
+    function closeZones() {
+        pickingZone = false;
+        keyboard.forceActiveFocus();
+    }
+    function applyZone(name) {
+        closeZones();
+        TimeZones.set(name);
+    }
     onOpened: {
         Weather.refresh();
+        TimeZones.refresh();
+        pickingZone = false;
         today();
         Qt.callLater(loadEvents);
         keyboard.forceActiveFocus();
@@ -101,6 +129,131 @@ Overlay {
                 PanelHeader {
                     Layout.fillWidth: true
                     title: I18n.tr("calendar.title")
+                }
+                // The system time zone: what it is, the zone of where the computer seems to be when they differ,
+                // and a search to change it.
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+                        Icon {
+                            name: "clock"
+                            color: Theme.muted
+                            Layout.preferredWidth: 16
+                            Layout.preferredHeight: 16
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            text: TimeZones.current === "" ? I18n.tr("common.loading") : I18n.tr("timezone.current", [TimeZones.displayName(TimeZones.current), TimeZones.label(TimeZones.offset)])
+                            elide: Text.ElideRight
+                            textFormat: Text.PlainText
+                            color: Theme.muted
+                            font.pixelSize: Theme.textSize(12)
+                        }
+                        ActionButton {
+                            outlined: true
+                            implicitHeight: Theme.hit(30)
+                            text: root.pickingZone ? I18n.tr("common.close") : I18n.tr("timezone.change")
+                            enabled: !TimeZones.busy && TimeZones.zones.length > 0
+                            onClicked: root.pickingZone ? root.closeZones() : root.openZones()
+                        }
+                    }
+                    Rectangle {
+                        Layout.fillWidth: true
+                        visible: !!TimeZones.suggested && !root.pickingZone && !TimeZones.busy
+                        implicitHeight: suggestion.implicitHeight + 16
+                        radius: Theme.corner(10)
+                        color: Theme.active
+                        RowLayout {
+                            id: suggestion
+                            anchors {
+                                fill: parent
+                                margins: 8
+                                leftMargin: 12
+                            }
+                            spacing: 10
+                            Text {
+                                Layout.fillWidth: true
+                                text: TimeZones.suggested ? I18n.tr("timezone.suggestion", [TimeZones.displayName(TimeZones.suggested.name), TimeZones.label(TimeZones.suggested.offset)]) : ""
+                                wrapMode: Text.WordWrap
+                                textFormat: Text.PlainText
+                                color: Theme.text
+                                font.pixelSize: Theme.textSize(12)
+                            }
+                            ActionButton {
+                                highlighted: true
+                                implicitHeight: Theme.hit(30)
+                                text: I18n.tr("timezone.use")
+                                onClicked: TimeZones.set(TimeZones.suggested.name)
+                            }
+                        }
+                    }
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        visible: root.pickingZone
+                        spacing: 6
+                        InputField {
+                            id: zoneSearch
+                            Layout.fillWidth: true
+                            placeholderText: I18n.tr("timezone.search")
+                            onTextChanged: {
+                                root.zoneQuery = text;
+                                zoneList.currentIndex = 0;
+                            }
+                            Keys.onUpPressed: zoneList.currentIndex = Math.max(0, zoneList.currentIndex - 1)
+                            Keys.onDownPressed: zoneList.currentIndex = Math.min(zoneList.count - 1, zoneList.currentIndex + 1)
+                            Keys.onReturnPressed: {
+                                if (zoneList.currentIndex >= 0 && zoneList.currentIndex < root.zoneMatches.length)
+                                    root.applyZone(root.zoneMatches[zoneList.currentIndex].name);
+                            }
+                            Keys.onEnterPressed: {
+                                if (zoneList.currentIndex >= 0 && zoneList.currentIndex < root.zoneMatches.length)
+                                    root.applyZone(root.zoneMatches[zoneList.currentIndex].name);
+                            }
+                            Keys.onEscapePressed: event => {
+                                root.closeZones();
+                                event.accepted = true;
+                            }
+                        }
+                        ListView {
+                            id: zoneList
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: Theme.hit(200)
+                            clip: true
+                            model: root.zoneMatches
+                            highlightMoveDuration: 0
+                            boundsBehavior: Flickable.StopAtBounds
+                            delegate: ActionButton {
+                                required property var modelData
+                                required property int index
+                                width: ListView.view.width
+                                implicitHeight: Theme.hit(34)
+                                alignLeft: true
+                                text: TimeZones.displayName(modelData.name) + "  ·  " + TimeZones.label(modelData.offset)
+                                highlighted: ListView.isCurrentItem
+                                tone: "cursor"
+                                onClicked: root.applyZone(modelData.name)
+                            }
+                        }
+                        Text {
+                            Layout.fillWidth: true
+                            visible: zoneList.count === 0
+                            text: I18n.tr("timezone.noMatches")
+                            color: Theme.muted
+                            font.pixelSize: Theme.textSize(12)
+                        }
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        visible: TimeZones.busy || TimeZones.error !== "" || TimeZones.changed
+                        text: TimeZones.busy ? I18n.tr("timezone.waiting") : TimeZones.error !== "" ? TimeZones.error : I18n.tr("timezone.restartNote")
+                        wrapMode: Text.WordWrap
+                        textFormat: Text.PlainText
+                        color: TimeZones.error !== "" && !TimeZones.busy ? Theme.danger : Theme.muted
+                        font.pixelSize: Theme.textSize(11)
+                    }
                 }
                 // Weather: now, then every two hours; the place and the time of the reading below.
                 ColumnLayout {
@@ -367,7 +520,7 @@ Overlay {
                     }
                 }
                 KeyHints {
-                    hints: I18n.tr("calendar.navigationHint")
+                    hints: root.pickingZone ? I18n.tr("timezone.pickerHint") : I18n.tr("calendar.navigationHint")
                 }
             }
         }

@@ -1377,6 +1377,25 @@
     "switcherKeys": "←→|choose; Enter|apply; Esc|close",
     "switchTheme": "Switch theme"
   },
+  "timezone": {
+    "change": "Change",
+    "current": "Time zone: %1 · %2",
+    "errors": {
+      "denied": "The time zone was not changed: authentication was refused.",
+      "failed": "Could not change the time zone: %1",
+      "unknown": "Unknown time zone: %1",
+      "usage": "Usage: timezone.py {list | set ZONE}"
+    },
+    "noMatches": "No time zone matches",
+    "offset": "UTC%1",
+    "pickerHint": "↑↓|select; Enter|apply; Esc|close",
+    "restartNote": "Apps already open keep the old time zone until they restart.",
+    "search": "Search a city or region, or UTC+1",
+    "suggestion": "You seem to be in %1 (%2).",
+    "use": "Use",
+    "utc": "UTC",
+    "waiting": "Waiting for the administrator password…"
+  },
   "wallpaper": {
     "apply": "Set wallpaper",
     "applying": "Applying…",
