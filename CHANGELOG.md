@@ -4,6 +4,12 @@ What changed in each release of the desktop. The desktop shows the sections of t
 
 Releases are `vMAJOR.MINOR.PATCH`: a new minor version brings new features, a patch only fixes, and a new major version changes something you may have to act on (said in its notes). How a release is made: [Releasing](docs/development/releasing.md).
 
+## v1.0.1 - 2026-11-26
+
+### Fixed
+
+- On Arch Linux, the Hyprland plugins (overview, touch gestures, glass, screenshots) are built again with Hyprland 0.57.2-2, the version now in `extra`: until this release they stayed off after that update. They are rebuilt once at the next login.
+
 ## v1.0.0 - 2026-11-26
 
 The first release. From now on the desktop updates from releases instead of following every change as it is made: **Settings → System → Updates** (or the updates icon in the bar) offers a new release when there is one and shows what it changes, and after the update this window shows the changes once.
