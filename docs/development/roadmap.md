@@ -333,6 +333,18 @@ Goal: anyone can install the desktop from GitHub on an ordinary laptop or deskto
 - [ ] See an install on `main` move to `stable` through the updates panel and show What's new (the machines from before releases: this laptop's other clones, GBSpada's).
 - [ ] Then empty `LEGACY` in `release.py` and delete `main` on GitHub.
 
+### Customizable bar (2026-11-26)
+
+Designed with the user on a claude.ai canvas (five sections, center left and center right against the center, four backgrounds, pills per section with an option to merge the center, the double click stepping through the styles, the new widgets kept).
+
+- [x] Cleanup without visible change: every bar item is its own widget in `bar/widgets/`, loaded by id into `bar/BarSection.qml`; the classic preset is the bar from before, item for item (a screenshot of the strip before and after differs only on the pulsing dot of the assistant).
+- [x] Behavior: layouts in `shell.json` (`barLayout`), the Classic, Centered and Minimal presets, the floating and pills styles (`barMergeCenter`), the double click stepping through four styles (`theme.py bar-style toggle`), and panels below the taller bar (`Theme.barReserved`).
+- [x] Behavior: editing by holding Super over a bar (`config/binds.lua`, custom events, the window drag binds off meanwhile), the bar menu and `desktop-shell bar edit|done|cancel|reset`, drag and drop with a drop marker and a trash, the widget menu on Super + right click, the gallery.
+- [x] New widgets: weather, volume, network, keyboard layout, separator, spacer.
+- [x] Tried by hand, confirmed by the user: holding Super over the bar, drags between sections, the trash, the widget menu, the gallery, Done, Cancel and Esc.
+- [ ] Layouts per monitor (`monitors` in the design): one layout for every bar for now.
+- [ ] Widget options (clock format, media width) from the design, still the global options for now.
+
 ### Microsoft fonts (#281, 2026-11-16)
 
 - [x] `desktop-msfonts install SOURCE` (`msfonts.py`): the fonts of the user's own Windows ISO, `install.wim` / `install.esd`, Windows partition or Fonts folder, into `~/.local/share/fonts/microsoft`, without Segoe UI Emoji unless `--emoji`; `status` and `remove`. Opt-in part `utils.msfonts` (`7zip`) on Fedora and Arch. Run against a real Windows 11 ISO on 2026-11-16: 142 fonts.

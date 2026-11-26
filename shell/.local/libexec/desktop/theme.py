@@ -384,7 +384,7 @@ def build_parser():
     effects = commands.add_parser('reduce-effects')
     effects.add_argument('action', choices=('on', 'off', 'toggle'))
     bar = commands.add_parser('bar-style')
-    bar.add_argument('style', choices=('shade', 'transparent', 'toggle'))
+    bar.add_argument('style', choices=theme_core.BAR_STYLES + ('toggle',))
     commands.add_parser('tone')
     thumbs = commands.add_parser('thumbs')
     thumbs.add_argument('name', nargs='?')
@@ -571,8 +571,11 @@ def command_reduce_effects(arguments):
 def command_bar_style(arguments):
     def change(chosen):
         style = arguments.style
+        # toggle (the double click on the empty bar) steps through the styles in order.
         if style == 'toggle':
-            style = 'shade' if chosen.get('barStyle') == 'transparent' else 'transparent'
+            current = chosen.get('barStyle') or 'shade'
+            index = theme_core.BAR_STYLES.index(current) if current in theme_core.BAR_STYLES else -1
+            style = theme_core.BAR_STYLES[(index + 1) % len(theme_core.BAR_STYLES)]
         chosen['barStyle'] = None if style == 'shade' else style
     update_preferences(change, reloading=False)
 

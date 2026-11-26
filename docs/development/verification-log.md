@@ -1326,3 +1326,12 @@ Reported by the user after the merges of the day:
 - `gh api …/branches/main/rename` to `develop`, the local branch renamed and set to track `origin/develop`, then the default branch set to `stable`. The ruleset "main ruleset" applied to `~DEFAULT_BRANCH`, so it moved to `stable` by itself; renamed "stable and develop" and extended to `refs/heads/develop`.
 - `check.yml` ran on the push to `develop` (its new trigger): green on Fedora 45 and Arch. `release.py publish v1.0.2` tagged `223102b` and moved `stable` and `main` to it; the GitHub release was created.
 - `test_channel.py`: an install from before releases sees every release up to its version; a branch gone from the remote follows `origin/stable`, even for a maintainer. On this machine `whats-new` now lists v1.0.2, v1.0.1 and v1.0.0. `check.sh` passes.
+
+## Customizable bar, 2026-11-26
+
+- `tst_bar_layout.qml` (qmltestrunner, 11 tests): normalizing a setting (unknown ids, repeats, no section = classic), moves within and across sections, insert and remove, the gallery list, the drop index, the centred block pushed by either side. `test_theme.py`: `bar-style toggle` steps shade → floating → pills → transparent → shade, shade not saved.
+- Hyprland, through `hyprctl eval`: `hl.dsp.event` reaches the event socket as `custom>>…`, `hl.timer` fires, and `hl.get_layers({ namespace = "desktop-bar" })` gives the bar at `0,0 1728x38` on eDP-1. After the save of `binds.lua`, `--verify-config` and `hyprctl configerrors` clean.
+- Live on eDP-1: after the reload, `desktop-shell status` shows the classic layout, and a screenshot of the bar strip against one taken with the previous `Bar.qml` differs only in 13×12 px on the assistant dot (it pulses).
+- `desktop-bar edit eDP-1` sent by hand: outlines, names with counts and a + on every section, the three empty center sections as slots centred on the screen, hidden widgets (media, recording, updates) dimmed, the hint at the bottom; `desktop-bar cancel` restored the bar.
+- With the Centered layout written into `shell.json` for the test: shaded, floating, pills, pills with one center pill and transparent, each screenshotted; clock and weather centred. `shell.json` and the bar style were put back as they were.
+- The pointer part (holding Super for real, drags, the menus, the gallery), which no input tool here could drive: confirmed working by the user.

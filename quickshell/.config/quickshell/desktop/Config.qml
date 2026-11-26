@@ -120,6 +120,12 @@ Singleton {
     readonly property string weatherCity: pick("weatherCity", "")
     // Bar: what plays, with play/pause on a click (MPRIS).
     readonly property bool barMedia: pick("barMedia", true)
+    // Bar: the widgets of each section, as {"left": ["launcher", …], "centerLeft": [], "center": [],
+    // "centerRight": [], "right": […]} (ids in bar/widgets/Registry.js). Written by the edit mode of the bar;
+    // without it the bar is the classic one (bar/BarLayoutModel.js).
+    readonly property var barLayout: pick("barLayout", ({}))
+    // Bar, pills style: center-left, center and center-right on one pill instead of one each.
+    readonly property bool barMergeCenter: pick("barMergeCenter", false)
     // Launcher: files in the home folder below the apps (fd, from three typed characters).
     readonly property bool launcherFiles: pick("launcherFiles", true)
     // Launcher: apps opened from it or the dock come first, by how often and how lately (services/Apps.qml).

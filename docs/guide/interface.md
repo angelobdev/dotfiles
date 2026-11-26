@@ -4,7 +4,7 @@
 
 ## Interface
 
-- Bar height: 38 logical pixels. Distribution logo/app menu (the icon `/etc/os-release` names, else the icon pack's `distributor-logo-<ID>`) → occupied/active workspaces and at least two pills per monitor → window title → spacer → tray (items marked passive stay hidden) → battery (percentage + icon) → Hints → notifications → Control Center → date/time → session. Controls are 30 px, centered status icons 16 px, and the logo 18 px. Network and volume controls live in the Control Center.
+- Bar height: 38 logical pixels. By default: distribution logo/app menu (the icon `/etc/os-release` names, else the icon pack's `distributor-logo-<ID>`) → occupied/active workspaces and at least two pills per monitor → window title → spacer → tray (items marked passive stay hidden) → battery (percentage + icon) → Hints → notifications → Control Center → date/time → session. Controls are 30 px, centered status icons 16 px, and the logo 18 px. The bar is made of widgets in five sections that can be moved, removed and added by holding Super over it, with four backgrounds (shaded, floating, pills, transparent): see [Bar](../features/bar.md).
 - QML tray menus with rounded corners, neutral backgrounds/borders, hover, submenus, checkboxes, and disabled actions; Esc or an outside click closes the menu.
 - Panels open with a short slide from the bar (side panels: the Control Center with its Network, Bluetooth and Sound panels, Battery, notifications, updates, recording and the assistant) or a scale from the centre (dialogs, in three widths, Settings wider) and close with a quicker fade; Control Center sub-panels and the network details view push sideways; notification toasts slide in and out from the right; expandable sections grow open, pressed buttons sink slightly, the launcher selection glides, and icons cross-fade when their state changes; windows pop in and out, tiling reflow glides on a spring, and workspaces slide with a fade. See [Motion](configuration.md#motion).
 - Vector icons in a filled, macOS-like style (solid shapes with knockouts, 1.8 px round lines, 24 px grid) and native tooltips below buttons, outside the bar surface. Original application icons retain their colors.
@@ -165,7 +165,7 @@ Follow [Hyprland plugins](plugins.md) to enable the backend. If the plugin is no
 
 The top-left corner of each monitor opens or closes Hyprspace: rest the pointer in the 8 px zone of the bar for 220 ms. It fires once per visit, so leave the corner to use it again, and clicks still reach the button under it. It is off in tablet mode, and with a fullscreen window over the bar it may not respond. `Esc` closes the overview. No keyboard binding opens it.
 
-During the overview, the affected monitor's bar is invisible, releases its 38 px, and receives no clicks. Previews exclude bars and overlays; Hyprspace adds no 200 px reserved area. Closing restores the bar and normal layout.
+During the overview, the affected monitor's bar is invisible, releases its 38 px (44 floating or as pills), and receives no clicks. Previews exclude bars and overlays; Hyprspace adds no 200 px reserved area. Closing restores the bar and normal layout.
 
 Touch gestures are in [Tablet and touch](../features/tablet-and-touch.md).
 

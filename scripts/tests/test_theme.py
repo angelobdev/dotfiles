@@ -251,6 +251,18 @@ class ReduceEffectsTests(unittest.TestCase):
             # Hyprland reloads each time: animations, blur, shadows and glass are its config.
             self.assertEqual(reloaded.call_count, 4)
 
+    def test_bar_style_toggle_steps_through_the_styles(self):
+        import argparse
+        with tempfile.TemporaryDirectory() as folder, mock.patch.object(theme_paths, 'STATE', Path(folder)), \
+                mock.patch.object(theme, 'apply'), mock.patch.object(theme, 'reload'), \
+                mock.patch.object(theme_core, 'current', return_value='graphite'):
+            saved = Path(folder) / 'preferences.json'
+            # shade is the default, so it is not saved.
+            for style, expected in (('toggle', 'floating'), ('toggle', 'pills'), ('toggle', 'transparent'), ('toggle', None),
+                                    ('pills', 'pills'), ('shade', None)):
+                theme.command_bar_style(argparse.Namespace(style=style))
+                self.assertEqual(json.loads(saved.read_text()).get('barStyle'), expected, style)
+
     def test_compositor_and_glass_read_the_switch(self):
         appearance = (REPO / 'hypr/.config/hypr/config/appearance.lua').read_text(encoding='utf-8')
         self.assertIn('local effects = not theme.reduceEffects', appearance)

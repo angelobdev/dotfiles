@@ -160,7 +160,129 @@
   },
   "bar": {
     "dateFormat": "ddd d MMM",
-    "desktop": "Desktop"
+    "desktop": "Desktop",
+    "edit": {
+      "add": "Aggiungi un widget a %1",
+      "done": "Fine",
+      "hint": "Trascina i widget tra le sezioni · rilascia Super per salvare · Esc annulla",
+      "hintLatched": "Trascina i widget tra le sezioni, aggiungili con +",
+      "remove": "Rilascia qui per togliere dalla barra"
+    },
+    "gallery": {
+      "add": "Aggiungi %1",
+      "addTo": "Aggiungi a",
+      "empty": "Tutti i widget sono già nella barra.",
+      "subtitle": "Aggiungi mette un widget in fondo alla sezione scelta; oppure trascina una scheda al suo posto nella barra.",
+      "title": "Aggiungi widget"
+    },
+    "menu": {
+      "addHere": "Aggiungi un widget qui…",
+      "edit": "Modifica layout",
+      "mergeCenter": "Una sola pill per il centro",
+      "moveTo": "Sposta in %1",
+      "presets": {
+        "centered": "Layout centrato",
+        "classic": "Layout classico",
+        "minimal": "Layout minimale"
+      },
+      "remove": "Togli dalla barra",
+      "title": "Barra"
+    },
+    "sections": {
+      "center": "Centro",
+      "centerLeft": "Centro-sinistra",
+      "centerRight": "Centro-destra",
+      "left": "Sinistra",
+      "right": "Destra"
+    },
+    "widgets": {
+      "assistant": {
+        "description": "Cosa sta facendo l'agente; apre il suo pannello.",
+        "name": "Assistente"
+      },
+      "battery": {
+        "description": "Carica e profilo energetico; apre il pannello batteria.",
+        "name": "Batteria"
+      },
+      "clock": {
+        "description": "Data e ora; apre il calendario.",
+        "name": "Orologio"
+      },
+      "controls": {
+        "description": "Rete, audio, luminosità e altro.",
+        "name": "Centro di controllo"
+      },
+      "hints": {
+        "description": "Apre le scorciatoie da tastiera.",
+        "name": "Scorciatoie"
+      },
+      "keyboardLayout": {
+        "description": "Il layout di input in uso; un clic passa al successivo.",
+        "name": "Layout tastiera",
+        "tooltip": "Layout tastiera: clic per il successivo"
+      },
+      "launcher": {
+        "description": "Il logo della distribuzione; apre il launcher.",
+        "name": "Launcher"
+      },
+      "media": {
+        "description": "Cosa è in riproduzione, con play e pausa.",
+        "name": "Media"
+      },
+      "network": {
+        "description": "Segnale Wi-Fi o cavo; apre il pannello rete.",
+        "name": "Rete"
+      },
+      "notifications": {
+        "description": "La campanella, Non disturbare e le sessioni di concentrazione.",
+        "name": "Notifiche"
+      },
+      "power": {
+        "description": "Blocca, esci, riavvia, spegni.",
+        "name": "Sessione"
+      },
+      "privacy": {
+        "description": "Microfono, fotocamera o condivisione schermo in uso.",
+        "name": "Privacy"
+      },
+      "recording": {
+        "description": "La durata di una registrazione schermo; un clic la ferma.",
+        "name": "Registrazione"
+      },
+      "separator": {
+        "description": "Una linea sottile tra gruppi di widget.",
+        "name": "Separatore"
+      },
+      "spacer": {
+        "description": "Spazio vuoto tra i widget.",
+        "name": "Spaziatore"
+      },
+      "title": {
+        "description": "La finestra attiva; apre il menu finestra.",
+        "name": "Titolo finestra"
+      },
+      "tray": {
+        "description": "Le icone di stato delle app.",
+        "name": "Tray"
+      },
+      "updates": {
+        "description": "Pacchetti in attesa di aggiornamento.",
+        "name": "Aggiornamenti"
+      },
+      "volume": {
+        "description": "Il volume di uscita; la rotella lo cambia.",
+        "name": "Volume",
+        "tooltip": "Volume: scorri per cambiarlo, clic centrale per silenziare"
+      },
+      "weather": {
+        "description": "Temperatura e condizioni attuali.",
+        "name": "Meteo"
+      },
+      "workspaces": {
+        "description": "I workspace del monitor.",
+        "name": "Workspace"
+      }
+    }
   },
   "battery": {
     "autoSaver": "Risparmio energetico sotto il %1%",
@@ -789,6 +911,7 @@
       "recording": "Registrazione schermo"
     },
     "hints": {
+      "barMergeCenter": "Stile pills: centro-sinistra, centro e centro-destra in una sola pill.",
       "workspaceNumbers": "Il numero del workspace dentro ogni pillola, al posto del punto.",
       "workspaceScroll": "Con la rotellina o il touchpad sulle pillole dei workspace.",
       "dockMagnification": "Quanto cresce l'icona sotto il puntatore; 1× lo disattiva.",
@@ -870,6 +993,7 @@
     "open": "Impostazioni…",
     "options": {
       "barMedia": "Mostra cosa è in riproduzione",
+      "barMergeCenter": "Una sola pill per il centro",
       "workspaceNumbers": "Mostra i numeri dei workspace",
       "workspaceScroll": "Scorri sui workspace per cambiarli",
       "minimumWorkspaces": "Workspace sempre visibili",
@@ -1164,7 +1288,9 @@
   },
   "theming": {
     "bar": "Barra",
+    "barFloating": "Floating",
     "barHint": "Doppio clic su una parte vuota della barra per cambiare",
+    "barPills": "Pills",
     "barShaded": "Ombreggiata",
     "barTransparent": "Trasparente",
     "current": "Attuale",

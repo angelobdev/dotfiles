@@ -6,7 +6,7 @@ Card {
         top: parent.top
         right: parent.right
         // 20 px below the bar, whose height grows in tablet mode.
-        topMargin: Theme.barHeight + 20
+        topMargin: Theme.barReserved + 20
         rightMargin: 12
     }
     width: Math.min(Config.controlCenterWidth, parent.width - 24)

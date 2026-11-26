@@ -20,7 +20,7 @@ PanelWindow {
     property Scale motionScale: Scale {
         // Side panels grow from the top of their card (SidePanelCard: 20 px under the bar, 12 from the edge).
         origin.x: root.dialog ? root.width / 2 : root.width - 12 - Math.min(Config.controlCenterWidth, root.width - 24) / 2
-        origin.y: root.dialog ? root.height / 2 : Theme.barHeight + 20
+        origin.y: root.dialog ? root.height / 2 : Theme.barReserved + 20
         xScale: ShellState.navigation !== 0 ? 1 : 0.97 + 0.03 * root.reveal
         yScale: xScale
     }

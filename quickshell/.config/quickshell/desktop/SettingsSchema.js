@@ -12,6 +12,7 @@
 const options = [
     // Desktop
     { key: "barMedia", section: "desktop", group: "bar", type: "bool", fallback: true },
+    { key: "barMergeCenter", section: "desktop", group: "bar", type: "bool", fallback: false, hint: true },
     { key: "workspaceScroll", section: "desktop", group: "bar", type: "bool", fallback: true, hint: true },
     { key: "workspaceNumbers", section: "desktop", group: "bar", type: "bool", fallback: false, hint: true },
     { key: "minimumWorkspaces", section: "desktop", group: "bar", type: "number", fallback: 2, min: 1, max: 10, step: 1 },

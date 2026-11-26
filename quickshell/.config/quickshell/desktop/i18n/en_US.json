@@ -160,7 +160,129 @@
   },
   "bar": {
     "dateFormat": "ddd MMM d",
-    "desktop": "Desktop"
+    "desktop": "Desktop",
+    "edit": {
+      "add": "Add a widget to %1",
+      "done": "Done",
+      "hint": "Drag widgets between sections · release Super to save · Esc cancels",
+      "hintLatched": "Drag widgets between sections, add them with +",
+      "remove": "Drop here to remove from the bar"
+    },
+    "gallery": {
+      "add": "Add %1",
+      "addTo": "Add to",
+      "empty": "Every widget is already on the bar.",
+      "subtitle": "Add puts a widget at the end of the chosen section; or drag a card to its place on the bar.",
+      "title": "Add widgets"
+    },
+    "menu": {
+      "addHere": "Add a widget here…",
+      "edit": "Edit layout",
+      "mergeCenter": "One pill for the center",
+      "moveTo": "Move to %1",
+      "presets": {
+        "centered": "Centered layout",
+        "classic": "Classic layout",
+        "minimal": "Minimal layout"
+      },
+      "remove": "Remove from the bar",
+      "title": "Bar"
+    },
+    "sections": {
+      "center": "Center",
+      "centerLeft": "Center left",
+      "centerRight": "Center right",
+      "left": "Left",
+      "right": "Right"
+    },
+    "widgets": {
+      "assistant": {
+        "description": "What the coding agent is doing; opens its panel.",
+        "name": "Assistant"
+      },
+      "battery": {
+        "description": "Charge and power profile; opens the battery panel.",
+        "name": "Battery"
+      },
+      "clock": {
+        "description": "Date and time; opens the calendar.",
+        "name": "Clock"
+      },
+      "controls": {
+        "description": "Network, sound, brightness and more.",
+        "name": "Control Center"
+      },
+      "hints": {
+        "description": "Opens the keyboard shortcuts.",
+        "name": "Shortcuts"
+      },
+      "keyboardLayout": {
+        "description": "The input layout in use; a click switches to the next.",
+        "name": "Keyboard layout",
+        "tooltip": "Keyboard layout: click for the next"
+      },
+      "launcher": {
+        "description": "The distribution logo; opens the launcher.",
+        "name": "Launcher"
+      },
+      "media": {
+        "description": "What plays, with play and pause.",
+        "name": "Media"
+      },
+      "network": {
+        "description": "Wi-Fi strength or cable; opens the network panel.",
+        "name": "Network"
+      },
+      "notifications": {
+        "description": "The bell, Do Not Disturb and focus sessions.",
+        "name": "Notifications"
+      },
+      "power": {
+        "description": "Lock, log out, restart, shut down.",
+        "name": "Session"
+      },
+      "privacy": {
+        "description": "Microphone, camera or screen sharing in use.",
+        "name": "Privacy"
+      },
+      "recording": {
+        "description": "The time of a screen recording; a click stops it.",
+        "name": "Recording"
+      },
+      "separator": {
+        "description": "A thin line between groups of widgets.",
+        "name": "Separator"
+      },
+      "spacer": {
+        "description": "Empty room between widgets.",
+        "name": "Spacer"
+      },
+      "title": {
+        "description": "The active window; opens the window menu.",
+        "name": "Window title"
+      },
+      "tray": {
+        "description": "The status icons of apps.",
+        "name": "Tray"
+      },
+      "updates": {
+        "description": "Packages waiting to be updated.",
+        "name": "Updates"
+      },
+      "volume": {
+        "description": "The output volume; the wheel changes it.",
+        "name": "Volume",
+        "tooltip": "Volume: scroll to change, middle click mutes"
+      },
+      "weather": {
+        "description": "Temperature and conditions now.",
+        "name": "Weather"
+      },
+      "workspaces": {
+        "description": "The workspaces of the monitor.",
+        "name": "Workspaces"
+      }
+    }
   },
   "battery": {
     "autoSaver": "Power Saver below %1%",
@@ -789,6 +911,7 @@
       "recording": "Screen recording"
     },
     "hints": {
+      "barMergeCenter": "Pills style: center left, center and center right share one pill.",
       "workspaceNumbers": "Workspace number inside each pill, in place of the dot.",
       "workspaceScroll": "With the mouse wheel or the touchpad over the workspace pills.",
       "dockMagnification": "How much the icon under the pointer grows; 1× turns it off.",
@@ -870,6 +993,7 @@
     "open": "Settings…",
     "options": {
       "barMedia": "Show what is playing",
+      "barMergeCenter": "One pill for the center",
       "workspaceNumbers": "Show workspace numbers",
       "workspaceScroll": "Scroll over the workspaces to switch",
       "minimumWorkspaces": "Workspaces always shown",
@@ -1164,7 +1288,9 @@
   },
   "theming": {
     "bar": "Bar",
+    "barFloating": "Floating",
     "barHint": "Double-click an empty part of the bar to switch",
+    "barPills": "Pills",
     "barShaded": "Shaded",
     "barTransparent": "Transparent",
     "current": "Current",

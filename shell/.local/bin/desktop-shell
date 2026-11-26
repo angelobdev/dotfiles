@@ -221,9 +221,16 @@ case "${1:-start}" in
         [[ $2 == menu && -n "${3:-}" ]] && exec qs ipc -p "$config" call desktop assistPage -- "$3"
         exec qs ipc -p "$config" call desktop assist -- "$2"
         ;;
+    bar)
+        # The layout of the bar: edit it on the focused monitor (until Done), finish or drop that, or go back to
+        # the classic layout.
+        case "${2:-}" in edit|done|cancel|reset) exec qs ipc -p "$config" call desktop bar -- "$2" ;; esac
+        echo 'Usage: desktop-shell bar {edit|done|cancel|reset}' >&2
+        exit 2
+        ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
     # The desktop menu (launcher, Settings, session), as a right click on the empty desktop opens it.
     desktop-menu) exec qs ipc -p "$config" call desktop desktopMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|window-menu|desktop-menu}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|bar ACTION|window-menu|desktop-menu}' >&2; exit 2 ;;
 esac

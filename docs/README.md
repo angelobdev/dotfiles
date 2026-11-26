@@ -13,6 +13,7 @@
 
 ## Features
 
+- [Bar](features/bar.md)
 - [Tablet and touch](features/tablet-and-touch.md)
 - [On-screen keyboard](features/on-screen-keyboard.md)
 - [Notifications](features/notifications.md)

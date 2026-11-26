@@ -43,7 +43,8 @@ Singleton {
     readonly property string font: colors.font
     // "desktop" draws the shell glyphs from assets/icons, "pack" from the icon theme where it has them.
     readonly property string iconSource: colors.iconSource
-    // "shade" keeps the bar gradient, "transparent" drops it (bar colours then follow BarStyle).
+    // "shade" keeps the bar gradient, "floating" draws the bar as a rounded surface away from the edges,
+    // "pills" one surface per section, "transparent" none (bar colours then follow BarStyle).
     readonly property string barStyle: colors.barStyle
     // Corners follow the window rounding chosen in the Theming panel. Top-level surfaces (panels, dock,
     // OSD, popup notifications, menus) take exactly that radius, so they match the windows and the glass
@@ -56,6 +57,9 @@ Singleton {
     // Text size chosen in the Theming panel (1 to 1.5); every drawn text size goes through textSize().
     readonly property real textScale: Math.max(1, Math.min(1.5, colors.textScale))
     readonly property int barHeight: hit(38)
+    // A floating bar and its pills keep this gap from the screen edges; what the bar reserves grows with it.
+    readonly property int barInset: barStyle === "floating" || barStyle === "pills" ? 6 : 0
+    readonly property int barReserved: barHeight + barInset
     // Shell surfaces take the window border chosen in the Theming panel: its width, the active colour for
     // what has the focus (panels, menus) and the inactive one for the rest (dock, OSD, notifications).
     // Without a border they keep the thin neutral stroke.

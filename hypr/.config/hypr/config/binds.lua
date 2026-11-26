@@ -159,8 +159,76 @@ for i = 1, 10 do
 end
 
 -- Window Management (Cursor)
-bind("SUPER + mouse:272", hl.dsp.window.drag(), "Drag window", { mouse = true })
-bind("SUPER + mouse:273", hl.dsp.window.resize(), "Resize window", { mouse = true })
+local window_drag = bind("SUPER + mouse:272", hl.dsp.window.drag(), "Drag window", { mouse = true })
+local window_resize = bind("SUPER + mouse:273", hl.dsp.window.resize(), "Resize window", { mouse = true })
+
+-- Editing the bar (bar/Bar.qml, services/BarLayout.qml): Super held for 200 ms with the pointer on a bar, and
+-- no other key meanwhile, makes that bar editable until Super is released; Escape drops the changes. The shell
+-- hears it through custom events ("desktop-bar edit MONITOR", "desktop-bar release", "desktop-bar cancel").
+-- The two mouse binds above would take the presses on the bar, so they are off meanwhile.
+-- Keycodes are XKB ones (evdev + 8): 133 and 134 the Super keys, 9 Escape.
+local bar_edit = { monitor = nil, timer = nil, held = false }
+local function bar_event(text)
+    hl.dispatch(hl.dsp.event("desktop-bar " .. text))
+end
+local function bar_under_cursor()
+    local cursor = hl.get_cursor_pos()
+    if not cursor then
+        return nil
+    end
+    for _, layer in ipairs(hl.get_layers({ namespace = "desktop-bar" })) do
+        -- The strip at the top of the surface: it grows down the screen only while edited.
+        if layer.mapped and layer.monitor and cursor.x >= layer.x and cursor.x < layer.x + layer.w
+            and cursor.y >= layer.y and cursor.y < layer.y + math.min(layer.h, 56) then
+            return layer.monitor.name
+        end
+    end
+    return nil
+end
+local function bar_wait_stop()
+    if bar_edit.timer then
+        bar_edit.timer:set_enabled(false)
+        bar_edit.timer = nil
+    end
+end
+local function bar_edit_end(action)
+    bar_edit.monitor = nil
+    window_drag:set_enabled(true)
+    window_resize:set_enabled(true)
+    bar_event(action)
+end
+hl.on("input.keyboard.key", function(keycode, _, state)
+    if keycode == 133 or keycode == 134 then
+        if state == 1 and not bar_edit.held then
+            bar_edit.held = true
+            local monitor = bar_under_cursor()
+            if monitor and not bar_edit.monitor then
+                bar_wait_stop()
+                bar_edit.timer = hl.timer(function()
+                    bar_edit.timer = nil
+                    if bar_edit.held and bar_under_cursor() == monitor then
+                        bar_edit.monitor = monitor
+                        window_drag:set_enabled(false)
+                        window_resize:set_enabled(false)
+                        bar_event("edit " .. monitor)
+                    end
+                end, { timeout = 200, type = "oneshot" })
+            end
+        elseif state == 0 then
+            bar_edit.held = false
+            bar_wait_stop()
+            if bar_edit.monitor then
+                bar_edit_end("release")
+            end
+        end
+    elseif state == 1 then
+        -- Another key: a shortcut, not a hold.
+        bar_wait_stop()
+        if bar_edit.monitor and keycode == 9 then
+            bar_edit_end("cancel")
+        end
+    end
+end)
 
 -- Keyboard Controls
 -- Use the same selected MPRIS player as the Quickshell Control Center.

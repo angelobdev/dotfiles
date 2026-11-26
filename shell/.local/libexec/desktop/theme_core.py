@@ -28,6 +28,8 @@ GLASS_OPTIONS = {option: (default, low, high, step) for option, default, low, hi
 
 # Window gaps: between windows and to the screen edges (Hyprland general.gaps_in / gaps_out).
 WINDOW_KEYS = ('rounding', 'borderSize', 'gapsIn', 'gapsOut')
+# The bar backgrounds (Theme.barStyle), in the order the double click on the empty bar steps through them.
+BAR_STYLES = ('shade', 'floating', 'pills', 'transparent')
 
 
 # {{ path }} or {{ path | filter }} or {{ path | filter:alpha }}; braces are free for CSS, Lua and JSON.

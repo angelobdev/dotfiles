@@ -30,6 +30,14 @@ ColumnLayout {
                         label: I18n.tr("theming.barShaded")
                     },
                     {
+                        name: "floating",
+                        label: I18n.tr("theming.barFloating")
+                    },
+                    {
+                        name: "pills",
+                        label: I18n.tr("theming.barPills")
+                    },
+                    {
                         name: "transparent",
                         label: I18n.tr("theming.barTransparent")
                     }

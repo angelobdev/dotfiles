@@ -73,6 +73,10 @@ ShellRoot {
         function overview(): void {
             BarVisibility.wake();
         }
+        // The bar layout: edit (on the focused monitor, until Done), done, cancel, reset (desktop-shell bar).
+        function bar(action: string): bool {
+            return BarLayout.request(action);
+        }
         // Screen zoom: in, out, reset, toggle.
         function zoom(action: string): bool {
             return Zoom.request(action);
@@ -151,6 +155,12 @@ ShellRoot {
                 batteryTimeToEmpty: UPower.displayDevice?.timeToEmpty ?? null,
                 batteryAlert: Battery.level,
                 focusMinutesLeft: Focus.minutesLeft,
+                bar: {
+                    style: Theme.barStyle,
+                    layout: BarLayout.current,
+                    editing: BarLayout.editingScreen,
+                    latched: BarLayout.latched
+                },
                 privacy: {
                     microphone: Privacy.microphoneApps,
                     camera: Privacy.cameraApps,

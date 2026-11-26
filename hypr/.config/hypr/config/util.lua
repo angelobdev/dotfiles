@@ -12,7 +12,7 @@ M.shell = M.bin("desktop-shell")
 function M.bind(keys, dispatcher, description, flags)
     flags = flags or {}
     flags.description = description
-    hl.bind(keys, dispatcher, flags)
+    return hl.bind(keys, dispatcher, flags)
 end
 
 -- $XDG_STATE_HOME, an empty value counted as unset, as the installer and the shell do.
