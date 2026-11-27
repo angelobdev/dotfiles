@@ -76,13 +76,36 @@ local function apply(id, mode)
     end
 end
 
-function M.cycle()
+-- The focused workspace's id as a string, nil for a named or special one: they have no number to keep a mode under.
+local function focused()
     local workspace = hl.get_active_workspace()
-    -- Named and special workspaces have no number to keep a mode under.
     if not workspace or not workspace.id or workspace.id < 1 then
+        return nil
+    end
+    return tostring(workspace.id)
+end
+
+function M.set(mode)
+    local id = focused()
+    local known = false
+    for _, name in ipairs(MODES) do
+        known = known or name == mode
+    end
+    if not id or not known then
         return
     end
-    local id = tostring(workspace.id)
+    apply(id, mode)
+    modes[id] = mode ~= "dwindle" and mode or nil
+    write()
+    hl.dispatch(hl.dsp.event("desktop-workspace-layout " .. id .. " " .. mode))
+    hl.dispatch(hl.dsp.event("desktop-osd workspaceLayout " .. mode))
+end
+
+function M.cycle()
+    local id = focused()
+    if not id then
+        return
+    end
     local current = modes[id] or "dwindle"
     local next = MODES[1]
     for index, mode in ipairs(MODES) do
@@ -90,11 +113,7 @@ function M.cycle()
             next = MODES[index % #MODES + 1]
         end
     end
-    apply(id, next)
-    modes[id] = next ~= "dwindle" and next or nil
-    write()
-    hl.dispatch(hl.dsp.event("desktop-workspace-layout " .. id .. " " .. next))
-    hl.dispatch(hl.dsp.event("desktop-osd workspaceLayout " .. next))
+    M.set(next)
 end
 
 read()
@@ -105,6 +124,11 @@ end
 -- For the bar, through hyprctl eval.
 function desktop_workspace_layout_cycle()
     M.cycle()
+end
+
+-- For the commands of the launcher: one layout by name.
+function desktop_workspace_layout_set(mode)
+    M.set(mode)
 end
 
 return M

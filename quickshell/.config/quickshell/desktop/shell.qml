@@ -120,9 +120,13 @@ ShellRoot {
         function close(): void {
             ShellState.close();
         }
-        // The desktop menu in the middle of the focused monitor.
+        // The commands of the launcher (desktop-shell commands): "" the first level, a category, or a command to run.
+        function commands(id: string): bool {
+            return Commands.request(id);
+        }
+        // What a right click on the desktop opens: the launcher, on the focused monitor (desktop-shell desktop-menu).
         function desktopMenu(): void {
-            ShellState.desktopMenuRequested(Hyprland.focusedMonitor?.name ?? "");
+            ShellState.toggle("launcher");
         }
         // Opens Settings on a section (appearance, …), or toggles it with none.
         function settings(section: string): void {
@@ -305,15 +309,11 @@ ShellRoot {
                 screen: scope.modelData
                 screenName: scope.modelData.name
             }
-            // A right click or long press on the empty desktop: launcher, Settings, session.
+            // A right click or long press on the empty desktop: the launcher, with its commands, on this screen.
             DesktopCatcher {
                 screen: scope.modelData
                 screenName: scope.modelData.name
-                onMenuRequested: (x, y) => desktopMenu.popup(x, y)
-            }
-            DesktopMenuWindow {
-                id: desktopMenu
-                screen: scope.modelData
+                onMenuRequested: (x, y) => ShellState.toggle("launcher", scope.modelData)
             }
         }
     }

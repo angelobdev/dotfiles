@@ -180,6 +180,19 @@ local function fullscreen_desktop()
     hl.dispatch(hl.dsp.event("desktop-bar " .. (full_desktop and "hide" or "show")))
     confirm("fullscreenDesktop", full_desktop)
 end
+-- The same for the commands of the launcher (commands.json), through hyprctl eval.
+local tricks = {
+    popOut = pop_out,
+    transparency = transparency,
+    workspaceGaps = workspace_gaps,
+    tiledFullscreen = tiled_fullscreen,
+    fullscreenDesktop = fullscreen_desktop,
+}
+function desktop_window_trick(name)
+    if tricks[name] then
+        tricks[name]()
+    end
+end
 bind("SUPER + O", pop_out, "Pop window out")
 bind("SUPER + BackSpace", transparency, "Window transparency")
 bind("SUPER + SHIFT + BackSpace", workspace_gaps, "Gaps on this workspace")

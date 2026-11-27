@@ -513,6 +513,85 @@
     "searchPlaceholder": "Search history…",
     "title": "Clipboard"
   },
+  "commands": {
+    "apps": {
+      "title": "Apps"
+    },
+    "toggles": {
+      "title": "Toggles",
+      "keepAwake": "Keep awake",
+      "doNotDisturb": "Do Not Disturb",
+      "focus": "Focus session",
+      "nightShift": "Night shift",
+      "bar": "Bar",
+      "zoom": "Screen zoom",
+      "rotationLock": "Rotation lock",
+      "onScreenKeyboard": "On-screen keyboard"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "theme": "Theme",
+      "themeSwitcher": "Switch theme",
+      "wallpaperSwitcher": "Switch wallpaper",
+      "chooseWallpaper": "Choose wallpaper",
+      "nextWallpaper": "Next wallpaper",
+      "barStyle": "Bar background",
+      "editBar": "Edit the bar",
+      "settings": "Appearance settings"
+    },
+    "windows": {
+      "title": "Windows & workspaces",
+      "workspaceLayout": "Workspace layout",
+      "float": "Float or tile the window",
+      "fullscreen": "Fullscreen",
+      "maximize": "Maximize window",
+      "popOut": "Pop window out",
+      "transparency": "Window transparency",
+      "workspaceGaps": "Gaps on this workspace",
+      "tiledFullscreen": "Tiled fullscreen",
+      "fullscreenDesktop": "Full-screen desktop",
+      "close": "Close window"
+    },
+    "tools": {
+      "title": "Tools",
+      "clipboard": "Clipboard history",
+      "emoji": "Emoji",
+      "reminders": "Reminders",
+      "colorPicker": "Color picker",
+      "qrCode": "QR code from screen area",
+      "recording": "Screen recording",
+      "notifications": "Notifications",
+      "calendar": "Calendar",
+      "shortcuts": "Keyboard shortcuts",
+      "assistant": "AI assistant",
+      "radio": "Radio"
+    },
+    "system": {
+      "title": "System",
+      "lock": "Lock screen",
+      "suspend": "Suspend",
+      "logout": "Log out",
+      "reboot": "Restart",
+      "firmware": "Restart to firmware setup",
+      "powerOff": "Shut down",
+      "powerProfile": "Power profile",
+      "audioOutput": "Sound output",
+      "network": "Network",
+      "bluetooth": "Bluetooth",
+      "sound": "Sound",
+      "displays": "Displays",
+      "battery": "Battery & power",
+      "controlCenter": "Control Center",
+      "settings": "Settings"
+    },
+    "updates": {
+      "title": "Updates",
+      "open": "Updates",
+      "restart": "Restart to finish updates",
+      "nothingWaits": "Nothing waits for a restart",
+      "whatsNew": "What's new"
+    }
+  },
   "common": {
     "cancel": "Cancel",
     "close": "Close",
@@ -527,12 +606,6 @@
   },
   "controlCenter": {
     "title": "Control Center"
-  },
-  "desktopMenu": {
-    "launcher": "Applications",
-    "open": "Open",
-    "session": "Session",
-    "settings": "Settings"
   },
   "directions": {
     "down": "down",
@@ -672,13 +745,18 @@
   },
   "launcher": {
     "empty": "No applications",
-    "navigationHint": "↑↓|select; Enter|open; Ctrl+P,Right click|pin to dock; Esc|close",
-    "searchPlaceholder": "Search applications…",
+    "navigationHint": "↑↓|select; Enter|open; Ctrl+P,Right click|pin to dock; ←|back; Esc|close",
+    "searchPlaceholder": "Search apps and commands…",
     "terminalSuffix": "  [terminal]",
     "title": "Applications",
     "touchHint": "Tap: open    Long press: pin to dock",
     "copyResult": "Enter copies the result",
-    "openFile": "Enter opens the file"
+    "openFile": "Enter opens the file",
+    "commandsPlaceholder": "Search commands…",
+    "noCommands": "No commands",
+    "commandsHint": "↑↓|select; Enter,→|open; ←|back; Alt|alternatives; Esc|close",
+    "appsPlaceholder": "Search applications…",
+    "noResults": "Nothing found"
   },
   "media": {
     "choosePlayer": "Choose player",
@@ -909,7 +987,7 @@
       "idleNotRunning": "hypridle is not running: run desktop-session start before suspending.",
       "lockMissing": "hyprlock is not installed.",
       "suspendLockMissing": "hyprlock is not installed: suspend canceled.",
-      "usage": "Usage: desktop-power {lock|suspend|logout|reboot|poweroff}",
+      "usage": "Usage: desktop-power {lock|suspend|logout|reboot|poweroff|firmware}",
       "waylandRequired": "A Wayland session is required"
     },
     "keys": {
@@ -928,7 +1006,8 @@
     "powerOff": "Shut down…",
     "reboot": "Restart…",
     "suspend": "Suspend…",
-    "title": "Session"
+    "title": "Session",
+    "confirmFirmware": "Restart into the firmware setup?"
   },
   "settings": {
     "groups": {

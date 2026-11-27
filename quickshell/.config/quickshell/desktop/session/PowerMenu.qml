@@ -77,15 +77,20 @@ Overlay {
         pending = "";
         Qt.callLater(() => focusAction(selectedAction));
     }
-    // The desktop menu can open this on one action, waiting for its confirmation (ShellState "power/ask").
+    // The commands of the launcher open this on one action, waiting for its confirmation (ShellState "power/ask");
+    // firmware, a restart into the firmware setup, is Restart with its own question.
     onOpened: {
         pending = "";
         failure = "";
         const ask = ShellState.recall("power/ask", "");
         ShellState.remember("power/ask", "");
-        const index = actions.findIndex(entry => entry.action === ask);
+        const index = actions.findIndex(entry => entry.action === (ask === "firmware" ? "reboot" : ask));
         if (index >= 0)
-            Qt.callLater(() => choose(index));
+            Qt.callLater(() => {
+                choose(index);
+                if (ask === "firmware")
+                    pending = ask;
+            });
         else
             Qt.callLater(() => focusAction(0));
     }
@@ -177,7 +182,7 @@ Overlay {
             }
             Text {
                 visible: root.pending !== ""
-                text: I18n.tr("session.confirmAction")
+                text: I18n.tr(root.pending === "firmware" ? "session.confirmFirmware" : "session.confirmAction")
                 color: Theme.text
             }
             RowLayout {

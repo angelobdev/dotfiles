@@ -250,8 +250,13 @@ case "${1:-start}" in
         exec qs ipc -p "$config" call desktop osd -- "$2" "$3" "${4:-}" "${5:--1}"
         ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
-    # The desktop menu (launcher, Settings, session), as a right click on the empty desktop opens it.
+    # What a right click on the empty desktop opens: the launcher, with its commands.
     desktop-menu) exec qs ipc -p "$config" call desktop desktopMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|bar ACTION|osd ICON TITLE|remind WHEN TEXT|window-menu|desktop-menu}' >&2; exit 2 ;;
+    commands)
+        # The commands of the launcher (commands.json of the shell): the first level, a category, or ID runs one.
+        [[ -z ${2:-} || $2 =~ ^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$ ]] || { echo 'Usage: desktop-shell commands [ID]' >&2; exit 2; }
+        exec qs ipc -p "$config" call desktop commands "${2:-}"
+        ;;
+    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|commands [ID]|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|bar ACTION|osd ICON TITLE|remind WHEN TEXT|window-menu|desktop-menu}' >&2; exit 2 ;;
 esac

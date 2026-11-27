@@ -96,5 +96,7 @@ PY
         ;;
     logout) exec hyprctl dispatch 'hl.dsp.exit()' ;;
     reboot|poweroff) exec systemctl "$1" ;;
+    # Restart into the UEFI firmware setup (the commands of the launcher, Alt on Restart).
+    firmware) exec systemctl reboot --firmware-setup ;;
     *) message 'session.errors.usage' >&2; exit 2 ;;
 esac

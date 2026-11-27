@@ -1411,3 +1411,10 @@ Reported by the user after the merges of the day:
 - On this machine: `/` is the btrfs subvolume `root` (`/home` another), snapper is packaged by Fedora but not installed, so nothing changes until the part is chosen. The design and its limits (no dnf5 hook, no boot into a snapshot on Fedora's layout) are in the issue.
 - Not tried here: a real update with the part installed, and `snapper undochange`.
 
+## Launcher commands (#298, phase 1), 2026-11-27
+
+- `tst_command_model.qml` (14 tests): parsing and parents, conditions with `!` and lists, categories that show nothing left out, Alt stand-ins out of their category and in the search, switches, dimmed entries, search tiers with the category names as words and in file order within a tier, the tier of each match, provider rows in the search. `check-i18n.py` checks every label, reason and glyph of `commands.json`.
+- In the session: `Super + Space` (`desktop-shell toggle launcher`) opens on the categories, always in the order of `commands.json`, Apps first (no recent commands: dropped by the user for a fixed order); `desktop-shell commands apps` lists the apps as the launcher did, pinned marks and pin hints included; `desktop-shell commands system` on System, `system.powerProfile` on its three rows with Balanced marked; `desktop-shell commands toggles.keepAwake` twice turned Keep awake off and on again with its OSD, the launcher closed. `desktop_workspace_layout_set` ignores an unknown mode. `hyprctl configerrors` is clean.
+- Keycaps: Toggles shows Super + Ctrl + K beside Keep awake and Super + B beside Bar, with their switches; Windows & workspaces the keys of each window command (Super + Ctrl + Shift + F for Tiled fullscreen). `check-i18n.py` checks every `bind` of `commands.json` against the binds of the Hyprland config.
+- Not tried here: typing a search and the arrow keys by hand (apps and commands mixed), Alt on Restart, a real restart to the firmware setup.
+

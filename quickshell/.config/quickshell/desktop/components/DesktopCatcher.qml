@@ -4,7 +4,7 @@ import Quickshell.Wayland
 import "../services"
 
 // The empty desktop of one screen: a transparent layer under every window, over the wallpaper, that opens
-// the desktop menu on a right click or a long press (touch). Windows are above it, so their clicks never
+// the launcher (apps and commands) on a right click or a long press (touch). Windows are above it, so their clicks never
 // reach it. While the assistant console is open on this screen, ConsoleCatcher takes the presses instead.
 PanelWindow {
     id: root

@@ -513,6 +513,85 @@
     "searchPlaceholder": "Cerca nello storico…",
     "title": "Clipboard"
   },
+  "commands": {
+    "apps": {
+      "title": "App"
+    },
+    "toggles": {
+      "title": "Interruttori",
+      "keepAwake": "Resta sveglio",
+      "doNotDisturb": "Non disturbare",
+      "focus": "Sessione di concentrazione",
+      "nightShift": "Luce notturna",
+      "bar": "Barra",
+      "zoom": "Ingrandimento dello schermo",
+      "rotationLock": "Blocco rotazione",
+      "onScreenKeyboard": "Tastiera su schermo"
+    },
+    "appearance": {
+      "title": "Aspetto",
+      "theme": "Tema",
+      "themeSwitcher": "Cambia tema",
+      "wallpaperSwitcher": "Cambia sfondo",
+      "chooseWallpaper": "Scegli lo sfondo",
+      "nextWallpaper": "Sfondo successivo",
+      "barStyle": "Sfondo della barra",
+      "editBar": "Modifica la barra",
+      "settings": "Impostazioni dell’aspetto"
+    },
+    "windows": {
+      "title": "Finestre e spazi di lavoro",
+      "workspaceLayout": "Disposizione dello spazio di lavoro",
+      "float": "Finestra mobile o affiancata",
+      "fullscreen": "Schermo intero",
+      "maximize": "Massimizza la finestra",
+      "popOut": "Finestra in primo piano",
+      "transparency": "Trasparenza della finestra",
+      "workspaceGaps": "Spazi in questo spazio di lavoro",
+      "tiledFullscreen": "Schermo intero affiancato",
+      "fullscreenDesktop": "Desktop a schermo intero",
+      "close": "Chiudi la finestra"
+    },
+    "tools": {
+      "title": "Strumenti",
+      "clipboard": "Cronologia degli appunti",
+      "emoji": "Emoji",
+      "reminders": "Promemoria",
+      "colorPicker": "Selettore di colore",
+      "qrCode": "Codice QR da un’area dello schermo",
+      "recording": "Registrazione dello schermo",
+      "notifications": "Notifiche",
+      "calendar": "Calendario",
+      "shortcuts": "Scorciatoie da tastiera",
+      "assistant": "Assistente IA",
+      "radio": "Radio"
+    },
+    "system": {
+      "title": "Sistema",
+      "lock": "Blocca lo schermo",
+      "suspend": "Sospendi",
+      "logout": "Esci",
+      "reboot": "Riavvia",
+      "firmware": "Riavvia nelle impostazioni del firmware",
+      "powerOff": "Spegni",
+      "powerProfile": "Profilo energetico",
+      "audioOutput": "Uscita audio",
+      "network": "Rete",
+      "bluetooth": "Bluetooth",
+      "sound": "Audio",
+      "displays": "Schermi",
+      "battery": "Batteria e alimentazione",
+      "controlCenter": "Centro di controllo",
+      "settings": "Impostazioni"
+    },
+    "updates": {
+      "title": "Aggiornamenti",
+      "open": "Aggiornamenti",
+      "restart": "Riavvia per completare gli aggiornamenti",
+      "nothingWaits": "Nessun riavvio in attesa",
+      "whatsNew": "Novità"
+    }
+  },
   "common": {
     "cancel": "Annulla",
     "close": "Chiudi",
@@ -527,12 +606,6 @@
   },
   "controlCenter": {
     "title": "Centro di controllo"
-  },
-  "desktopMenu": {
-    "launcher": "Applicazioni",
-    "open": "Apri",
-    "session": "Sessione",
-    "settings": "Impostazioni"
   },
   "directions": {
     "down": "in basso",
@@ -672,13 +745,18 @@
   },
   "launcher": {
     "empty": "Nessuna applicazione",
-    "navigationHint": "↑↓|seleziona; Invio|apri; Ctrl+P,Tasto destro|fissa nella dock; Esc|chiudi",
-    "searchPlaceholder": "Cerca un’applicazione…",
+    "navigationHint": "↑↓|seleziona; Invio|apri; Ctrl+P,Tasto destro|fissa nella dock; ←|indietro; Esc|chiudi",
+    "searchPlaceholder": "Cerca app e comandi…",
     "terminalSuffix": "  [terminale]",
     "title": "Applicazioni",
     "touchHint": "Tocco: apri    Pressione lunga: fissa nella dock",
     "copyResult": "Invio copia il risultato",
-    "openFile": "Invio apre il file"
+    "openFile": "Invio apre il file",
+    "commandsPlaceholder": "Cerca un comando…",
+    "noCommands": "Nessun comando",
+    "commandsHint": "↑↓|seleziona; Invio,→|apri; ←|indietro; Alt|alternative; Esc|chiudi",
+    "appsPlaceholder": "Cerca un’applicazione…",
+    "noResults": "Nessun risultato"
   },
   "media": {
     "choosePlayer": "Scegli lettore",
@@ -909,7 +987,7 @@
       "idleNotRunning": "hypridle non attivo: avvia desktop-session start prima di sospendere.",
       "lockMissing": "hyprlock non installato.",
       "suspendLockMissing": "hyprlock non installato: sospensione annullata.",
-      "usage": "Uso: desktop-power {lock|suspend|logout|reboot|poweroff}",
+      "usage": "Uso: desktop-power {lock|suspend|logout|reboot|poweroff|firmware}",
       "waylandRequired": "Sessione Wayland richiesta"
     },
     "keys": {
@@ -928,7 +1006,8 @@
     "powerOff": "Spegni…",
     "reboot": "Riavvia…",
     "suspend": "Sospendi…",
-    "title": "Sessione"
+    "title": "Sessione",
+    "confirmFirmware": "Riavviare nelle impostazioni del firmware?"
   },
   "settings": {
     "groups": {

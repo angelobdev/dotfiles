@@ -360,7 +360,12 @@ Reviewed with the user from Omarchy's source (basecamp/omarchy@a11b6a6); the cho
 - [x] #291 Omarchy themes: `theme_import.py` (`desktop-theme import|remove`, the Import field and the trash button on imported cards), into `~/.config/desktop/themes/`, with their backgrounds as wallpapers.
 - [x] #285 workspace layouts: `config/workspace_layouts.lua` (tiling, scrolling, floating per workspace; a workspace rule or a floating window rule; kept in `workspace-layouts.json`), `Super + Ctrl + L`, the glyph and the click on the focused pill, the OSD.
 - [x] #293 snapshots: the opt-in `utils.snapshots` part (snapper; snap-pac on Arch), a pre and a post snapshot around the system update (`scripts/install/install_snapshots.py`), the root config made at the first update, the way back with `snapper undochange`; no dnf5 actions hook, no boot into snapshots (design in the issue).
-- To discuss: #295–#298.
+- Triage (2026-11-27): #295 agent usage for every provider accepted; #296 hardware quirks and #297 speaker tuning in the backlog; #298 the command menu designed with the user on a claude.ai canvas (a commands mode of the launcher, no fourth panel).
+- [x] #298 phase 1: `commands.json` (categories, switches, provider rows, Alt stand-ins), `services/CommandModel.js` (tested by `tst_command_model.qml`) and `services/Commands.qml`; the launcher (`Super + Space`) opens on them, with Apps as the first category and one search over apps and commands (a `>` prefix and `Super + Alt + Space` were tried first and dropped by the user: `>` is awkward on their keyboard); `desktop-shell commands [ID]`, restart to the firmware setup (`desktop-power firmware`, asked in the session menu).
+- [x] #298, asked by the user: the launcher narrower (the narrow dialog width), and a right click on the empty desktop opens it on that screen instead of the desktop menu, which is removed (`components/DesktopMenuWindow.qml`; `desktop-shell desktop-menu` now opens the launcher). The first level lists only the categories, in a fixed order: no recent commands, and commands rank by match and then file order, never by use.
+- [x] #298, asked by the user: the keys of a command that has a bind beside it (`bind` in `commands.json`, the description of the bind; `Commands.shortcuts` from `hyprctl binds`, read again at each config reload).
+- [ ] #298 phase 2: the shortcuts without a command (as Hints lists them) and the Settings search index as commands.
+- [ ] #298 phase 3: `~/.config/desktop/commands.json` merged by id (`hidden`, `requires`), errors notified, `docs/features/commands.md`.
 
 ### System time zone from the calendar (2026-11-26)
 

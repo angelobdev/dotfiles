@@ -181,6 +181,27 @@ class TranslationTests(unittest.TestCase):
                     with self.subTest(file=f'{path.relative_to(DESKTOP)}:{number}', value=value):
                         self.assertIn(value, self.UNTRANSLATED, 'Shown text outside I18n.tr: ' + value)
 
+    def test_launcher_commands(self):
+        # commands.json (services/Commands.qml): every label and reason a catalog key, every icon a shell glyph, at
+        # most one action per entry, every Alt stand-in an entry that is a command, and every bind the description
+        # of a bind in the Hyprland config (its keys are shown beside the command).
+        catalog = self.flattened_catalog('en_US')
+        commands = json.loads((DESKTOP / 'commands.json').read_text())
+        glyphs = {path.stem for path in (DESKTOP / 'assets/icons').glob('*.svg')}
+        actions = ('panel', 'settings', 'session', 'call', 'run')
+        binds = ''.join(path.read_text() for path in (ROOT / 'hypr/.config/hypr/config').rglob('*.lua'))
+        for id, entry in commands.items():
+            with self.subTest(command=id):
+                self.assert_translation_key(entry['label'], catalog)
+                if 'reason' in entry:
+                    self.assert_translation_key(entry['reason'], catalog)
+                self.assertIn(entry.get('icon', ''), glyphs)
+                self.assertLessEqual(sum(name in entry for name in actions), 1)
+                if 'alt' in entry:
+                    self.assertTrue(any(name in commands.get(entry['alt'], {}) for name in actions))
+                if 'bind' in entry:
+                    self.assertIn('"' + entry['bind'] + '")', binds)
+
     def test_python_and_command_references(self):
         catalog = self.flattened_catalog('en_US')
         for path in HELPER.parent.glob('*.py'):
