@@ -356,7 +356,8 @@ Reviewed with the user from Omarchy's source (basecamp/omarchy@a11b6a6); the cho
 - [x] #286 notifications: links under a strict policy (`NotificationText.safeUrl`, the host beside link text that is not the address), `bodyHyperlinksSupported`, repeats within 2 s dropped (`NotificationDeck.duplicates`).
 - [x] #287 reminders: `services/Reminders.qml` (kept in `session.json`, missed ones at the next start), `RemindersPanel.qml` on `Super + Ctrl + M`, `desktop-shell remind`, the `reminders` bar widget in every preset, through Do Not Disturb by the `x-desktop-reminder` hint.
 - [x] #289 Network panel: live traffic from the device's sysfs counters, the Wi-Fi band (`network.py set-band`, `802-11-wireless.band`), a speed test with the first installed of Ookla's `speedtest`, `librespeed-cli` and `speedtest-cli`.
-- [ ] #290; #291; #285, #293. To discuss: #295–#298.
+- [x] #290 fingerprint enrollment in Settings → Privacy (`FingerprintGroup.qml`, `fingerprint.py` over fprintd's D-Bus API): the enrolled fingers, Remove, Add with each touch followed; in the page rather than full-screen.
+- [ ] #291; #285, #293. To discuss: #295–#298.
 
 ### System time zone from the calendar (2026-11-26)
 

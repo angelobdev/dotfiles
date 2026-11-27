@@ -275,7 +275,7 @@ default = 'fingerprint'
 packages = ['fprintd', 'fprintd-pam']
 # authselect's with-fingerprint: GDM and sudo try the reader (Workstation has it on already, Server does not).
 auth = ['with-fingerprint']
-notes = ['Enroll your fingerprint: fprintd-enroll']
+notes = ['Enroll your fingerprint in Settings → Privacy (or fprintd-enroll)']
 
 [[fedora.hardware.parts.fingerprint.files]]
 path = '/etc/pam.d/polkit-1'
@@ -714,7 +714,7 @@ packages = ['libcamera', 'libcamera-ipa', 'pipewire-libcamera']
 [arch.hardware.parts.fingerprint]
 default = 'fingerprint'
 packages = ['fprintd']
-notes = ['Enroll your fingerprint: fprintd-enroll. On Arch it signs in at GDM, unlocks the lock screen and answers the polkit prompt; sudo still asks for the password.']
+notes = ['Enroll your fingerprint in Settings → Privacy (or fprintd-enroll). On Arch it signs in at GDM, unlocks the lock screen and answers the polkit prompt; sudo still asks for the password.']
 
 [[arch.hardware.parts.fingerprint.files]]
 path = '/etc/pam.d/polkit-1'

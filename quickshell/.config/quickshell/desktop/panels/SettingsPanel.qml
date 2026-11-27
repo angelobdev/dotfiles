@@ -669,6 +669,7 @@ Overlay {
                                     groupRows: ({
                                             launcher: launchHistoryRow
                                         })
+                                    FingerprintGroup {}
                                 }
                             }
                             Component {

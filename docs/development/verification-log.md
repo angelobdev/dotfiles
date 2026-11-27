@@ -1386,3 +1386,9 @@ Reported by the user after the merges of the day:
 - On this machine: `network.py profile` of the active Wi-Fi gives `band: auto`; `extras` gives `speedTest: ""` (none installed). The shell loaded after the change (a first version set `wrapMode` twice: Quickshell kept the previous configuration until it was fixed).
 - Not tried here: the details view on screen (it opens with a click on a network), changing the band (it reconnects the Wi-Fi in use), a speed test.
 
+## Fingerprint enrollment in Settings (#290), 2026-11-27
+
+- `test_fingerprint.py`: the ten fingers, unknown fingers and commands refused, no reader no listing, fprintd's PermissionDenied and AlreadyInUse in words.
+- On this machine: `fingerprint.py list` gives `Synaptics Sensors`, 9 enroll stages, `right-index-finger`. Settings → Privacy shows **Fingerprint** with **Right index finger · Remove** and the next finger to add with **Add**; the shell loaded with the new group (after `stow.py apply`; a first try had apostrophes in QML comments, which `check-i18n.py` reads as a string).
+- Not tried here: an enrollment and a removal, which take the user's password and finger.
+

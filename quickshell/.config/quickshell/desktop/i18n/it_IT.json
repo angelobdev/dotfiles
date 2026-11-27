@@ -1777,6 +1777,46 @@
       "usage": "Uso: emoji.py list"
     }
   },
+  "fingerprint": {
+    "title": "Impronta digitale",
+    "noReader": "Nessun lettore di impronte trovato.",
+    "none": "%1 non ha ancora nessuna tua impronta.",
+    "add": "Aggiungi",
+    "remove": "Rimuovi",
+    "confirmRemove": "Rimuovere?",
+    "fingers": {
+      "rightIndexFinger": "Indice destro",
+      "leftIndexFinger": "Indice sinistro",
+      "rightThumb": "Pollice destro",
+      "leftThumb": "Pollice sinistro",
+      "rightMiddleFinger": "Medio destro",
+      "leftMiddleFinger": "Medio sinistro",
+      "rightRingFinger": "Anulare destro",
+      "leftRingFinger": "Anulare sinistro",
+      "rightLittleFinger": "Mignolo destro",
+      "leftLittleFinger": "Mignolo sinistro"
+    },
+    "results": {
+      "waiting": "Conferma con la password per iniziare…",
+      "touch": "Appoggia il dito sul lettore.",
+      "again": "Sollevalo, poi appoggialo di nuovo.",
+      "retry": "Lettura non riuscita: riprova.",
+      "centre": "Metti il dito al centro del lettore.",
+      "lift": "Solleva il dito e riappoggialo.",
+      "completed": "Impronta aggiunta.",
+      "duplicate": "Quel dito è già registrato.",
+      "full": "Il lettore non ha spazio per altre impronte.",
+      "disconnected": "Il lettore non risponde più.",
+      "failed": "L’impronta non è stata aggiunta."
+    },
+    "errors": {
+      "denied": "La richiesta della password è stata rifiutata.",
+      "busy": "Il lettore è in uso (un accesso o la schermata di blocco): riprova tra poco.",
+      "failed": "fprintd: %1",
+      "noReader": "Nessun lettore di impronte trovato.",
+      "usage": "Uso: fingerprint.py {list | enroll DITO | delete DITO}"
+    }
+  },
   "weather": {
     "title": "Meteo",
     "feels": "Percepita %1°",

@@ -1777,6 +1777,46 @@
       "usage": "Usage: emoji.py list"
     }
   },
+  "fingerprint": {
+    "title": "Fingerprint",
+    "noReader": "No fingerprint reader found.",
+    "none": "%1 has no fingerprint of yours yet.",
+    "add": "Add",
+    "remove": "Remove",
+    "confirmRemove": "Remove?",
+    "fingers": {
+      "rightIndexFinger": "Right index finger",
+      "leftIndexFinger": "Left index finger",
+      "rightThumb": "Right thumb",
+      "leftThumb": "Left thumb",
+      "rightMiddleFinger": "Right middle finger",
+      "leftMiddleFinger": "Left middle finger",
+      "rightRingFinger": "Right ring finger",
+      "leftRingFinger": "Left ring finger",
+      "rightLittleFinger": "Right little finger",
+      "leftLittleFinger": "Left little finger"
+    },
+    "results": {
+      "waiting": "Confirm with your password to start…",
+      "touch": "Touch the reader with the finger.",
+      "again": "Lift it, then touch again.",
+      "retry": "That touch did not read: try again.",
+      "centre": "Put the finger in the middle of the reader.",
+      "lift": "Lift the finger and touch again.",
+      "completed": "Fingerprint added.",
+      "duplicate": "That finger is already enrolled.",
+      "full": "The reader has no room for more prints.",
+      "disconnected": "The reader went away.",
+      "failed": "The fingerprint was not added."
+    },
+    "errors": {
+      "denied": "The password prompt was refused.",
+      "busy": "The reader is in use (a sign-in or the lock screen): try again in a moment.",
+      "failed": "fprintd: %1",
+      "noReader": "No fingerprint reader found.",
+      "usage": "Usage: fingerprint.py {list | enroll FINGER | delete FINGER}"
+    }
+  },
   "weather": {
     "title": "Weather",
     "feels": "Feels like %1°",
