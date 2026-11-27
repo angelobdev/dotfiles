@@ -91,8 +91,20 @@ PanelWindow {
         // Reach full opacity early so the blur behind the card does not pop in late.
         contentItem.opacity = Qt.binding(() => Math.min(1, root.reveal * 2));
     }
-    contentItem.Keys.onEscapePressed: if (closeOnEscape)
-        ShellState.close()
+    // Esc goes one step back: inside the panel when it has a step to go back from (goBack, which a panel with inner
+    // views replaces and which says whether it went back), then to the Control Center for a panel it opened (Network,
+    // Bluetooth, Sound); on the panel opened first it closes.
+    function goBack() {
+        return false;
+    }
+    contentItem.Keys.onEscapePressed: {
+        if (!closeOnEscape || goBack())
+            return;
+        if (ShellState.pushed === panelName)
+            ShellState.back();
+        else
+            ShellState.close();
+    }
     Region {
         id: passThrough
     }

@@ -8,10 +8,9 @@ import "network"
 Overlay {
     id: root
     panelName: "network"
-    closeOnEscape: false
-    contentItem.Keys.onEscapePressed: {
-        if (!view.goBack())
-            ShellState.close();
+    // Esc leaves the details of a network first (components/Overlay.qml).
+    function goBack() {
+        return view.goBack();
     }
     // Overlay focuses its content item when it opens, after the view asked for the search field: the field would
     // stay unfocused (no accent outline) in the side panel, unlike in Settings. In tablet mode it waits for a tap.

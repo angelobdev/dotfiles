@@ -132,6 +132,13 @@ Overlay {
         apps.currentIndex = 0;
         Qt.callLater(() => apps.currentIndex = Math.max(0, results.findIndex(item => item.entry?.current)));
     }
+    // Esc in a category goes up a level; on the first level it closes (components/Overlay.qml).
+    function goBack() {
+        if (route === "")
+            return false;
+        up();
+        return true;
+    }
     // Up a level, with the category left behind selected.
     function up() {
         const left = route;

@@ -11,6 +11,13 @@ Overlay {
     panelName: "clipboard"
     dialog: true
     property bool confirmClear: false
+    // Esc cancels the question to clear the history before it closes the panel (components/Overlay.qml).
+    function goBack() {
+        if (!confirmClear)
+            return false;
+        confirmClear = false;
+        return true;
+    }
     readonly property var shown: Clipboard.entries.filter(e => (e.preview + "\n" + Clipboard.label(e)).toLowerCase().includes(search.text.toLowerCase()))
     // With an image on screen, text rows leave its thumbnail room, so every label starts at one edge.
     readonly property bool images: shown.some(e => e.image)

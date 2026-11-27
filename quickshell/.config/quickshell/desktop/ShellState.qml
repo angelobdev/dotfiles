@@ -26,6 +26,9 @@ Singleton {
     }
     // Direction of the last move between the Control Center and a sub-panel: 1 forward, -1 back, 0 none.
     property int navigation: 0
+    // The sub-panel the Control Center opened, "" for a panel opened by itself: Esc on it goes back to the Control
+    // Center (components/Overlay.qml).
+    property string pushed: ""
     function toggle(name, screen) {
         show(name, screen, 0);
     }
@@ -64,6 +67,7 @@ Singleton {
             return;
         // Set before the panel changes so both the closing and the opening panel read the same direction.
         navigation = direction ?? 0;
+        pushed = navigation === 1 ? name : "";
         activeScreen = screen || screenNamed(Hyprland.focusedMonitor?.name);
         panel = panel === name ? "" : name;
     }
@@ -83,6 +87,7 @@ Singleton {
             return;
         }
         navigation = 0;
+        pushed = "";
         activeScreen = screen || screenNamed(Hyprland.focusedMonitor?.name);
         panel = name;
     }
@@ -91,6 +96,7 @@ Singleton {
     }
     function close() {
         navigation = 0;
+        pushed = "";
         panel = "";
     }
     // A panel on a monitor that went away closes; the next one opens on the focused monitor.

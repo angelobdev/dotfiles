@@ -93,7 +93,8 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `XF86AudioNext` / `XF86AudioPrev` / `XF86AudioStop` | Next / previous / stop |
 | `XF86Calculator` | Calculator (`gnome-calculator`) |
 | Multimedia keys | Volume, microphone, brightness |
-| `Esc` / outside click | Close panel |
+| `Esc` | One step back, then close: out of an inner view first (the details of a network, a category of the launcher, a question such as clearing the clipboard history, the search of Settings); a panel the Control Center opened (Network, Bluetooth, Sound) goes back to it; the panel opened first closes |
+| Outside click | Close panel |
 
 Touchpad gestures (`input.lua`): three fingers left / right step workspaces, up opens Applications, down the Control Center. The touchscreen has its own set ([Tablet and touch](../features/tablet-and-touch.md#gestures)).
 

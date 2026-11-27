@@ -367,6 +367,12 @@ Reviewed with the user from Omarchy's source (basecamp/omarchy@a11b6a6); the cho
 - [x] #298 phase 2: the Settings category (the index of the Settings search, `panels/settings/SettingsSections.js` now shared with `SettingsPanel.qml`; Enter opens Settings on the option, selected) and the Shortcuts category (every described bind no command stands for, run through `desktop_run_bind` of `config/util.lua`, which keeps the action of each described bind, those of `hypr.lua` included); `desktop-shell commands ID` runs a row too.
 - [x] #298 phase 3: `~/.config/desktop/commands.json` laid over the shipped commands by id (`CommandModel.merge`: fields replaced, `hidden`, new entries with their own text), `requires` checked once per program, a file that does not parse left out with a notification (JSON.parse gives no line number); `docs/features/commands.md`.
 
+### After v1.4.0 (2026-11-27)
+
+Asked by the user, in this order: Esc as back, the Wi-Fi password under its network, the Omarchy themes, the Global Menu (an investigation first), default apps (triage).
+
+- [x] Esc goes one step back before it closes: `Overlay.goBack()` (a panel with inner views replaces it: Network's details, the launcher's categories, the clipboard's clear question), then back to the Control Center for the sub-panel it opened (`ShellState.pushed`), else close.
+
 ### System time zone from the calendar (2026-11-26)
 
 - [x] Asked by the user: the time zone and its offset under the calendar title, **Change** with a search over the zones (names and offsets), and a suggestion from the zone of the weather forecast when it follows GeoClue and the offset differs. `timezone.py list|set` (timedated through polkit), `services/TimeZones.qml`, `timezone` in the output of `weather.py`.
