@@ -86,7 +86,7 @@ class SchemaTests(unittest.TestCase):
             self.assertEqual(set(catalog['settings']['hints']), hinted, name)
 
     def test_every_section_is_in_the_sidebar(self):
-        panel = (SHELL / 'panels/SettingsPanel.qml').read_text(encoding='utf-8')
+        panel = (SHELL / 'panels/settings/SettingsSections.js').read_text(encoding='utf-8')
         sidebar = set(re.findall(r'name: "(\w+)",\s*icon:', panel))
         self.assertLessEqual({option['section'] for option in self.options}, sidebar)
 

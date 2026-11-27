@@ -590,6 +590,15 @@
       "restart": "Riavvia per completare gli aggiornamenti",
       "nothingWaits": "Nessun riavvio in attesa",
       "whatsNew": "Novità"
+    },
+    "settings": {
+      "title": "Impostazioni"
+    },
+    "shortcuts": {
+      "title": "Scorciatoie"
+    },
+    "errors": {
+      "ownFile": "Il tuo commands.json è stato ignorato: non è JSON valido"
     }
   },
   "common": {

@@ -590,6 +590,15 @@
       "restart": "Restart to finish updates",
       "nothingWaits": "Nothing waits for a restart",
       "whatsNew": "What's new"
+    },
+    "settings": {
+      "title": "Settings"
+    },
+    "shortcuts": {
+      "title": "Shortcuts"
+    },
+    "errors": {
+      "ownFile": "Your commands.json was left out: it is not valid JSON"
     }
   },
   "common": {

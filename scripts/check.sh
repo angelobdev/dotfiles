@@ -56,12 +56,13 @@ if [[ -x $qmltestrunner ]]; then
     # the desktop passes here and fails there.
     LC_ALL=C QT_QPA_PLATFORM=offscreen "$qmltestrunner" -silent -input "$repo/scripts/tests"
 fi
-# The hyprctl eval entry points of config/displays.lua, tablet.lua and console.lua, which --verify-config never runs: a stub of hl, a temporary state.
+# The hyprctl eval entry points of config/displays.lua, tablet.lua, console.lua and util.lua, which --verify-config never runs: a stub of hl, a temporary state.
 if command -v lua >/dev/null; then
     state=$(mktemp -d)
     XDG_STATE_HOME="$state" lua "$repo/scripts/tests/test_displays.lua"
     lua "$repo/scripts/tests/test_console.lua"
     lua "$repo/scripts/tests/test_installed.lua"
+    lua "$repo/scripts/tests/test_util.lua"
     rm -rf "$state"
 fi
 XDG_CONFIG_HOME="$repo/hypr/.config" Hyprland --verify-config -c "$repo/hypr/.config/hypr/hyprland.lua"

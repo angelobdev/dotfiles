@@ -66,5 +66,8 @@
   "updates": { "label": "commands.updates.title", "icon": "update" },
   "updates.open": { "label": "commands.updates.open", "icon": "update", "panel": "updates" },
   "updates.restart": { "label": "commands.updates.restart", "icon": "reboot", "enabled": "restartNeeded", "reason": "commands.updates.nothingWaits", "session": "reboot" },
-  "updates.whatsNew": { "label": "commands.updates.whatsNew", "icon": "help", "panel": "whatsnew" }
+  "updates.whatsNew": { "label": "commands.updates.whatsNew", "icon": "help", "panel": "whatsnew" },
+
+  "settings": { "label": "commands.settings.title", "icon": "controls", "rows": "settings" },
+  "shortcuts": { "label": "commands.shortcuts.title", "icon": "keyboard", "rows": "shortcuts" }
 }

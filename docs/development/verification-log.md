@@ -1418,3 +1418,10 @@ Reported by the user after the merges of the day:
 - Keycaps: Toggles shows Super + Ctrl + K beside Keep awake and Super + B beside Bar, with their switches; Windows & workspaces the keys of each window command (Super + Ctrl + Shift + F for Tiled fullscreen). `check-i18n.py` checks every `bind` of `commands.json` against the binds of the Hyprland config.
 - Not tried here: typing a search and the arrow keys by hand (apps and commands mixed), Alt on Restart, a real restart to the firmware setup.
 
+## Launcher commands (#298, phases 2 and 3), 2026-11-27
+
+- `tst_command_model.qml` (15 tests) adds merging the user file (fields over the shipped entry with its place kept, `hidden`, new entries as plain text, entries that are not objects skipped) and `requires`; `test_util.lua` (5 checks) runs `desktop_run_bind` for a function bind, a dispatcher, the first of two binds with one description, a bind made with `hl.bind` (as in `hypr.lua`), and nothing for a mouse bind or an unknown description. `test_settings.py` reads the sections from `SettingsSections.js`.
+- In the session: the Shortcuts category lists Terminal, Browser, Password manager… with their keys; `desktop_run_bind("Keep awake")` twice turned it on and off again; the Settings category lists the sections, tabs and options, `desktop-shell commands settings.appearance-font-` opened Settings on Appearance → Font and `settings.desktop-barclockformat` on Desktop with **Bar clock** selected.
+- A temporary `~/.config/desktop/commands.json` (removed afterwards): System showed **Lock it now** with its keys and no Suspend; the category **Mine** showed Say hello (`requires: notify-send`) and not the entry whose program is missing; an invalid file brought the notification and left the shipped commands; deleting it took Mine away. Editing that file reloads the whole shell (Quickshell watches the files a FileView read), as `shell.json` does.
+- Not tried here: running a Shortcuts row by hand from the launcher (Enter), and a bind of the user's own `hypr.lua` from the launcher.
+

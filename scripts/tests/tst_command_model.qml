@@ -176,6 +176,54 @@ TestCase {
         compare(ids(Model.search(model, "power profile", state, label, "", rows)).length, 2);
     }
 
+    function test_mergeLaysTheUsersOwnOver() {
+        const shipped = {
+            "system": {
+                "label": "commands.system.title"
+            },
+            "system.lock": {
+                "label": "commands.system.lock",
+                "session": "lock"
+            },
+            "system.suspend": {
+                "label": "commands.system.suspend",
+                "session": "suspend"
+            }
+        };
+        const merged = Model.merge(shipped, {
+            "system.lock": {
+                "icon": "lock"
+            },
+            "system.suspend": {
+                "hidden": true
+            },
+            "mine": {
+                "label": "Mine"
+            },
+            "mine.vpn": {
+                "label": "Work VPN",
+                "run": ["nmcli", "con", "up", "work"],
+                "requires": "nmcli"
+            },
+            "broken": 3
+        });
+        compare(Object.keys(merged), ["system", "system.lock", "system.suspend", "mine", "mine.vpn"]);
+        // A field changed keeps the label a catalog key; a new entry is the user's own text.
+        compare(merged["system.lock"].icon, "lock");
+        compare(merged["system.lock"].session, "lock");
+        verify(!merged["system.lock"].literal);
+        verify(merged["mine.vpn"].literal);
+        const tree = Model.parse(merged);
+        compare(ids(Model.children(tree, "system", {})), ["system.lock"]);
+        compare(Model.required(tree), ["nmcli"]);
+        // Shown once the program is found.
+        compare(ids(Model.children(tree, "", {})), ["system"]);
+        compare(ids(Model.children(tree, "", { "requires:nmcli": true })), ["system", "mine"]);
+        // Nothing of the user's: the shipped commands as they are.
+        compare(Object.keys(Model.merge(shipped, null)).length, 3);
+        compare(Object.keys(Model.merge(shipped, [1])).length, 3);
+    }
+
     function test_matchesCarryTheirTier() {
         const found = Model.matches(model, "lock", state, label);
         compare(found.map(match => match.entry.id), ["system.lock", "toggles.rotation"]);

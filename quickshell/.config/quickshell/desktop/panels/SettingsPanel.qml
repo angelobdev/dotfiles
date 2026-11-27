@@ -13,6 +13,7 @@ import "audio"
 import "agent"
 import "system"
 import "settings/SettingsSearch.js" as Search
+import "settings/SettingsSections.js" as Sections
 
 // Settings: one entry point for configuring the desktop, after GNOME Settings. A sidebar of sections on the
 // left, the chosen section on the right; on a narrow screen one of the two at a time, with Back. Sections are
@@ -27,88 +28,7 @@ Overlay {
     // (settings/OptionsSection.qml).
     // Labels as catalog keys, translated where shown: a translation reload would otherwise make a new array, and the
     // page Repeater below would rebuild every page visited so far (scroll, focus and half-typed values lost).
-    readonly property var sections: [
-        {
-            name: "network",
-            icon: "wifi",
-            labelKey: "settings.sections.network",
-            group: "connections"
-        },
-        {
-            name: "bluetooth",
-            icon: "bluetooth",
-            labelKey: "settings.sections.bluetooth",
-            group: "connections"
-        },
-        {
-            name: "displays",
-            icon: "monitor",
-            labelKey: "settings.sections.displays",
-            group: "devices"
-        },
-        {
-            name: "sound",
-            icon: "volume-high",
-            labelKey: "settings.sections.sound",
-            group: "devices"
-        },
-        {
-            name: "power",
-            icon: "battery-75",
-            labelKey: "settings.sections.power",
-            group: "devices"
-        },
-        {
-            name: "appearance",
-            icon: "palette",
-            labelKey: "settings.sections.appearance",
-            group: "personalization"
-        },
-        {
-            name: "desktop",
-            icon: "apps",
-            labelKey: "settings.sections.desktop",
-            group: "personalization"
-        },
-        {
-            name: "apps",
-            icon: "window",
-            labelKey: "settings.sections.apps",
-            group: "personalization"
-        },
-        {
-            name: "assistant",
-            icon: "assistant",
-            labelKey: "settings.sections.assistant",
-            group: "personalization",
-            // Only with the AI Assistant profile installed (services/Installed.qml).
-            unit: "assistant"
-        },
-        {
-            name: "keyboard",
-            icon: "keyboard",
-            labelKey: "settings.sections.keyboard",
-            group: "input"
-        },
-        {
-            name: "tablet",
-            icon: "rotate",
-            labelKey: "settings.sections.tablet",
-            group: "input"
-        },
-        {
-            name: "privacy",
-            icon: "eye-off",
-            labelKey: "settings.sections.privacy",
-            group: "system"
-        },
-        {
-            name: "system",
-            icon: "controls",
-            labelKey: "settings.sections.system",
-            group: "system"
-        }
-    ]
+    readonly property var sections: Sections.sections
     // Names that open a tab of a section: the updates panel links to System → Updates.
     readonly property var sectionAliases: ({
             updates: ["system", "updates"],
@@ -246,14 +166,46 @@ Overlay {
     onOpened: {
         searchField.clear();
         showSection(ShellState.recall("settings/section", section), "");
+        revealRequested();
+    }
+    // An option the commands of the launcher asked for (ShellState "settings/reveal", services/Commands.qml): scrolled
+    // to and selected once its page is there (a page loads with the panel, or a frame later).
+    function revealRequested() {
+        const key = ShellState.recall("settings/reveal", "");
+        ShellState.remember("settings/reveal", "");
+        if (key !== "")
+            revealer.reveal(key);
+    }
+    Timer {
+        id: revealer
+        property string key: ""
+        property int tries: 0
+        interval: 50
+        repeat: true
+        function reveal(name) {
+            key = name;
+            tries = 0;
+            restart();
+        }
+        onTriggered: {
+            const page = pages.itemAt(root.sectionNames.indexOf(root.section))?.item;
+            if (page?.reveal) {
+                page.reveal(key);
+                stop();
+            } else if (++tries > 20) {
+                stop();
+            }
+        }
     }
     closeOnEscape: false
     contentItem.Keys.onEscapePressed: root.escapePressed()
     Connections {
         target: ShellState
         function onSectionRequested(name, section) {
-            if (name === root.panelName)
+            if (name === root.panelName) {
                 root.showSection(section, "");
+                root.revealRequested();
+            }
         }
     }
     // Ctrl+F: the search, from anywhere in the panel (text fields of the pages have no use for it).

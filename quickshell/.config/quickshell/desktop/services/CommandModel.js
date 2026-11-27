@@ -62,8 +62,45 @@ function holds(condition, state) {
     return negated ? !value : value;
 }
 
+// "requires" names a program that must be installed: the shell checks it once ("requires:NAME" in the state).
 function shown(entry, state) {
-    return !!entry && entry.hidden !== true && holds(entry.when, state);
+    if (!entry || entry.hidden === true || !holds(entry.when, state))
+        return false;
+    return typeof entry.requires !== "string" || entry.requires === "" || (state ?? {})["requires:" + entry.requires] === true;
+}
+
+// The commands of the desktop with the user's own laid over them, both objects as commands.json holds them. An id
+// of both takes the user's fields over the shipped ones and keeps its place; a new one comes after the shipped
+// ones; "hidden": true leaves one out. A label or reason the user wrote is their own text, shown as it is
+// (literal), not a catalog key.
+function merge(shipped, own) {
+    const result = {};
+    const plain = value => value && typeof value === "object" && !Array.isArray(value);
+    for (const id in (plain(shipped) ? shipped : {}))
+        result[id] = shipped[id];
+    if (!plain(own))
+        return result;
+    for (const id in own) {
+        const value = own[id];
+        if (!plain(value))
+            continue;
+        const entry = Object.assign({}, plain(result[id]) ? result[id] : {}, value);
+        if (value.label !== undefined || !plain(result[id]))
+            entry.literal = true;
+        result[id] = entry;
+    }
+    return result;
+}
+
+// The programs commands name in "requires", once each.
+function required(model) {
+    const names = [];
+    for (const id of model.order) {
+        const name = model.items[id].requires;
+        if (typeof name === "string" && name !== "" && !names.includes(name))
+            names.push(name);
+    }
+    return names;
 }
 
 function enabled(entry, state) {
