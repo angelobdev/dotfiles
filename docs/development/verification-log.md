@@ -1352,3 +1352,9 @@ Reported by the user after the merges of the day:
 - Installer: `test_install*.py` and `test_profiles.py` pass; a firewall not running yet (Arch) is read from `firewalld.conf` and set with `firewall-offline-cmd`. The preview on this machine lists the twelve new files, `zbar` and the two `desktop-regdom` units; nothing applied here (`install-desktop.py apply` is the user's). The Arch package names (`zbar`, `iw`, `firewalld`, `cups-browsed`, `nss-mdns`) were not checked with `pacman -Si` from here.
 - Not tried here: the window keys and `--here` by hand, a QR code (zbar is not installed yet), a suspend with the new hooks, Zen reading `/etc/zen/policies`.
 
+## Updates: restart, guardrails, firmware (#292), 2026-11-27
+
+- `test_updates.py` (39 tests): fwupd's updates and its "nothing to do" (exit 2), dnf's reboot hint as kernel or system, a running kernel without its modules, a replaced Hyprland binary, a staged firmware update by `UpdateState` 4 only, the known causes, no room refusing before anything runs, `systemd-inhibit` around the apply, the restart in the result notification. `test_install_tui.py`: firmware in the headless apply.
+- On this machine a real `desktop-updates check` (39 s): `dnf needs-restarting --json` names the kernel (7.3.6 installed, 7.3.4 running), so `restart` is `kernel`, and fwupd lists no update. The first version took fwupd's `needs-reboot` flag, which every UEFI device carries, for a staged update: fixed to `UpdateState`. The panel shows **Restart needed · A new kernel is installed** with **Restart…**, and the bar icon stays with the restart glyph.
+- Not tried here: an apply with each guard (a full disk, a failure, a firmware update), since this machine is up to date.
+

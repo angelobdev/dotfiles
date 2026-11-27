@@ -96,6 +96,7 @@ On Fedora Server the guided partitioning stops `/` at 15 GiB, which is not enoug
 | --- | --- | --- |
 | System packages | dnf, or `checkupdates` on Arch: the same list as the update icon in the bar | the installer's `upgrade` step |
 | Flatpak apps | `flatpak remote-ls --updates` | `flatpak update`: the system apps with sudo, your own as you |
+| Firmware (the updates panel and `--apply-updates` only) | `fwupdmgr get-updates` | `fwupdmgr update`; a capsule applied at boot asks for the restart |
 | AUR packages (Arch), maintainer only | the AUR's latest commit of each pinned PKGBUILD, and the version it builds | the new commit and version go into the manifest, then the `aur` step builds them |
 | Release archives, maintainer only | each archive's version in its release manifest (`latest`), for a new install: Herdr updates itself once installed | the new version and its sha256 go into the manifest; the `archives` step installs only what is missing |
 | zsh plugins, maintainer only | each clone's latest release tag (`track = 'tags'` in the manifest, as zsh-autocomplete) or the head of its branch (Powerlevel10k, whose releases stopped) | the new commit goes into the manifest, then the `clones` step checks it out |

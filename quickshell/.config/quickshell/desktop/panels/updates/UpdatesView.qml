@@ -27,6 +27,8 @@ ColumnLayout {
             keys.push("system");
         if (Updates.flatpaks.length > 0 && !skipped.flatpak)
             keys.push("flatpak");
+        if (Updates.firmware.length > 0 && !skipped.firmware)
+            keys.push("firmware");
         if (Updates.pullable && !skipped.repository)
             keys.push("repository");
         return keys;
@@ -49,7 +51,16 @@ ColumnLayout {
             return I18n.tr(applied.compositor ? "updates.apply.lastDoneCompositor" : "updates.apply.lastDone", [root.moment(applied.finished * 1000)]);
         if (applied.status === -1)
             return I18n.tr("updates.apply.stopped");
+        // A known cause (updates.py FAILURES) says what to do instead of the status number.
+        if (typeof applied.reason === "string" && applied.reason !== "")
+            return I18n.tr("updates.apply.failed", [I18n.tr(root.reasonKey(applied.reason))]);
         return I18n.tr("updates.apply.lastFailed", [applied.status]);
+    }
+    function reasonKey(reason) {
+        return "updates.apply.reasons." + reason;
+    }
+    function restartKey(reason) {
+        return "updates.restart." + reason;
     }
     // A time today, or a day and a time.
     function moment(milliseconds) {
@@ -72,6 +83,8 @@ ColumnLayout {
             parts.push(I18n.plural("updates.summary.packages.one", "updates.summary.packages.other", Updates.packages.length));
         if (Updates.flatpaks.length > 0)
             parts.push(I18n.plural("updates.summary.flatpaks.one", "updates.summary.flatpaks.other", Updates.flatpaks.length));
+        if (Updates.firmware.length > 0)
+            parts.push(I18n.plural("updates.summary.firmware.one", "updates.summary.firmware.other", Updates.firmware.length));
         if (Updates.behind > 0 && root.release)
             parts.push(I18n.tr("updates.summary.release", [Updates.repository.latest]));
         else if (Updates.behind > 0)
@@ -126,6 +139,48 @@ ColumnLayout {
         font.family: Theme.font
         font.pixelSize: Theme.textSize(15)
         wrapMode: Text.Wrap
+    }
+    // A restart is needed for what an update replaced, with the reasons and the session menu one click away.
+    Rectangle {
+        Layout.fillWidth: true
+        visible: Updates.restartNeeded && !Updates.applying
+        implicitHeight: restartRow.implicitHeight + 20
+        radius: Theme.corner(10)
+        color: Theme.active
+        RowLayout {
+            id: restartRow
+            anchors {
+                fill: parent
+                margins: 10
+                leftMargin: 12
+            }
+            spacing: 10
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+                Text {
+                    Layout.fillWidth: true
+                    text: I18n.tr("updates.restart.title")
+                    color: Theme.text
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(13)
+                    font.weight: Font.DemiBold
+                }
+                Text {
+                    Layout.fillWidth: true
+                    text: Updates.restartReasons.map(reason => I18n.tr(root.restartKey(reason))).join(" ")
+                    wrapMode: Text.Wrap
+                    color: Theme.text
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(12)
+                }
+            }
+            ActionButton {
+                highlighted: true
+                text: I18n.tr("updates.restart.action")
+                onClicked: ShellState.open("power")
+            }
+        }
     }
     Text {
         Layout.fillWidth: true
@@ -196,6 +251,26 @@ ColumnLayout {
                         required property var modelData
                         name: modelData.id
                         version: modelData.version
+                    }
+                }
+            }
+            Section {
+                visible: Updates.firmware.length > 0
+                text: I18n.tr("updates.firmwareHeading")
+                key: "firmware"
+                Layout.topMargin: 12
+            }
+            GroupCard {
+                Layout.fillWidth: true
+                visible: Updates.firmware.length > 0
+                verticalPadding: 10
+                spacing: 6
+                Repeater {
+                    model: Updates.firmware
+                    Entry {
+                        required property var modelData
+                        name: modelData.name
+                        version: modelData.current ? modelData.current + " → " + modelData.version : modelData.version
                     }
                 }
             }

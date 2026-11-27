@@ -27,6 +27,11 @@ class UpdatesTests(unittest.TestCase):
         repository = mock.patch.object(updates, 'repository_updates', return_value=({}, None))
         repository.start()
         self.addCleanup(repository.stop)
+        # No fwupd or restart probes here: FirmwareTests and RestartTests cover them.
+        for name, value in (('firmware_listing', ([], None)), ('restart_state', {'needed': False, 'reasons': []})):
+            patcher = mock.patch.object(updates, name, return_value=value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
 
     def test_dnf_lines_are_parsed_and_sorted(self):
         output = 'kernel\t7.2.14-200.fc44\tupdates\nhyprland\t0.56.3-1.fc44\tcopr:nett00n:hyprland\n\nnoise\n'
@@ -87,6 +92,11 @@ class ArchUpdatesTests(unittest.TestCase):
         repository = mock.patch.object(updates, 'repository_updates', return_value=({}, None))
         repository.start()
         self.addCleanup(repository.stop)
+        # No fwupd or restart probes here: FirmwareTests and RestartTests cover them.
+        for name, value in (('firmware_listing', ([], None)), ('restart_state', {'needed': False, 'reasons': []})):
+            patcher = mock.patch.object(updates, name, return_value=value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
 
     def test_checkupdates_lines_are_parsed_and_sorted(self):
         output = 'linux 7.2.14.arch1-1 -> 7.2.15.arch1-1\nhyprland 0.57.0-1 -> 0.57.1-1\nnoise\n'
@@ -243,6 +253,14 @@ class ApplyTests(unittest.TestCase):
         translate = mock.patch.object(updates, 'tr', side_effect=lambda key, args=(): ' '.join([key, *map(str, args)]))
         translate.start()
         self.addCleanup(translate.stop)
+        # Room on the disk, no restart pending, and no systemd-inhibit unless a test asks for it.
+        for name, value in (('free_space', 10 * 1024 ** 3), ('restart_state', {'needed': False, 'reasons': []})):
+            patcher = mock.patch.object(updates, name, return_value=value)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+        which = mock.patch.object(updates.shutil, 'which', return_value=None)
+        which.start()
+        self.addCleanup(which.stop)
 
     def apply(self, keys, code=0, line='Done.'):
         calls = []
@@ -283,6 +301,35 @@ class ApplyTests(unittest.TestCase):
         self.assertEqual(status, 1)
         self.assertIn('Authentication was cancelled', calls[-1][-1])
 
+    def test_sleep_is_inhibited_while_it_runs(self):
+        with mock.patch.object(updates.shutil, 'which', side_effect=lambda name: '/usr/bin/' + name if name == 'systemd-inhibit' else None):
+            _, calls = self.apply('system')
+        self.assertEqual(calls[0][:3], ['systemd-inhibit', '--what=sleep:handle-lid-switch', '--mode=block'])
+        self.assertIn(str(updates.HERE / 'privileged.py'), calls[0])
+
+    def test_no_room_refuses_before_anything_runs(self):
+        with mock.patch.object(updates, 'free_space', return_value=512 * 1024 ** 2):
+            status, calls = self.apply('system,repository')
+        self.assertEqual(status, 1)
+        self.assertEqual([call[0] for call in calls], ['notify-send'])
+        self.assertIn('updates.apply.noSpace', calls[0][-1])
+        self.assertEqual(json.loads(updates.APPLY.read_text())['reason'], 'space')
+        # A pull alone needs no room on the root file system.
+        with mock.patch.object(updates, 'free_space', return_value=512 * 1024 ** 2):
+            status, _ = self.apply('repository')
+        self.assertEqual(status, 0)
+
+    def test_a_known_failure_is_named(self):
+        status, calls = self.apply('system', code=1, line='Error: Curl error (6): Could not resolve host: mirrors.fedoraproject.org')
+        self.assertEqual(status, 1)
+        self.assertIn('updates.apply.reasons.network', calls[-1][-1])
+        self.assertEqual(json.loads(updates.APPLY.read_text())['reason'], 'network')
+
+    def test_a_restart_is_said_after_the_update(self):
+        with mock.patch.object(updates, 'restart_state', return_value={'needed': True, 'reasons': ['kernel']}):
+            _, calls = self.apply('system')
+        self.assertIn('updates.apply.doneRestart', calls[-1][-1])
+
     def test_unknown_keys_run_nothing(self):
         status, calls = self.apply('everything')
         self.assertEqual((status, calls), (2, []))
@@ -297,6 +344,63 @@ class ApplyTests(unittest.TestCase):
             self.assertTrue(updates.apply_status()['running'])
         # The lock is gone without a result: it stopped.
         self.assertEqual(updates.apply_status()['status'], -1)
+
+
+class FirmwareTests(unittest.TestCase):
+    def test_devices_with_a_newer_release(self):
+        output = json.dumps({'Devices': [{'Name': 'System Firmware', 'Version': '01.02', 'Releases': [{'Version': '01.05'}, {'Version': '01.04'}]},
+                                         {'Name': 'Touchpad', 'Version': '3', 'Releases': []}]})
+        self.assertEqual(updates.firmware_updates(output), [{'name': 'System Firmware', 'version': '01.05', 'current': '01.02'}])
+        self.assertEqual(updates.firmware_updates('not json'), [])
+
+    def test_without_fwupd_nothing_to_update(self):
+        with mock.patch.object(updates.shutil, 'which', return_value=None):
+            self.assertEqual(updates.firmware_listing(), ([], None))
+
+    def test_nothing_to_update_is_not_an_error(self):
+        with mock.patch.object(updates.shutil, 'which', return_value='/usr/bin/fwupdmgr'), \
+                mock.patch.object(updates, 'run', return_value=done('{"Devices": []}', code=2)):
+            self.assertEqual(updates.firmware_listing(), ([], None))
+
+
+class RestartTests(unittest.TestCase):
+    def test_dnf_names_a_kernel_or_the_system(self):
+        kernel = json.dumps([{'type': 'reboot', 'reboot_required': True, 'packages': ['kernel-core', 'python3-perf']}])
+        system = json.dumps([{'type': 'reboot', 'reboot_required': True, 'packages': ['glibc']}])
+        self.assertEqual(updates.dnf_restart(kernel), ['kernel'])
+        self.assertEqual(updates.dnf_restart(system), ['system'])
+        self.assertEqual(updates.dnf_restart('[]'), [])
+        self.assertEqual(updates.dnf_restart('Reboot is required'), [])
+
+    def test_the_running_kernel_without_its_modules(self):
+        with tempfile.TemporaryDirectory() as folder:
+            self.assertTrue(updates.kernel_replaced(folder))
+            (Path(folder) / updates.platform.release()).mkdir()
+            self.assertFalse(updates.kernel_replaced(folder))
+
+    def test_a_replaced_hyprland(self):
+        with tempfile.TemporaryDirectory() as folder:
+            process = Path(folder) / '42'
+            process.mkdir()
+            (process / 'comm').write_text('Hyprland\n')
+            (process / 'exe').symlink_to('/usr/bin/Hyprland')
+            self.assertFalse(updates.compositor_replaced(folder))
+            (process / 'exe').unlink()
+            (process / 'exe').symlink_to('/usr/bin/Hyprland (deleted)')
+            self.assertTrue(updates.compositor_replaced(folder))
+
+    def test_only_a_staged_firmware_update_asks_for_the_restart(self):
+        # Every UEFI device carries the needs-reboot flag; UpdateState 4 is an update waiting for the reboot, 2 a past one.
+        updated = json.dumps({'Devices': [{'Name': 'System Firmware', 'Flags': ['needs-reboot'], 'UpdateState': 2}]})
+        staged = json.dumps({'Devices': [{'Name': 'System Firmware', 'Flags': ['needs-reboot'], 'UpdateState': 4}]})
+        self.assertFalse(updates.firmware_waiting(updated))
+        self.assertTrue(updates.firmware_waiting(staged))
+        self.assertFalse(updates.firmware_waiting('oops'))
+
+    def test_failure_reasons(self):
+        self.assertEqual(updates.failure_reason(['error: failed to commit transaction (conflicting files)']), 'conflict')
+        self.assertEqual(updates.failure_reason(['[Errno 28] No space left on device']), 'space')
+        self.assertEqual(updates.failure_reason(['Done.']), '')
 
 
 if __name__ == '__main__':

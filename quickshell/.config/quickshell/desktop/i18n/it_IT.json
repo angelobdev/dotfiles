@@ -1597,7 +1597,11 @@
         "one": "%1 commit del desktop",
         "other": "%1 commit del desktop"
       },
-      "release": "Desktop %1"
+      "release": "Desktop %1",
+      "firmware": {
+        "one": "%1 aggiornamento firmware",
+        "other": "%1 aggiornamenti firmware"
+      }
     },
     "notice": {
       "one": "%1 aggiornamento disponibile",
@@ -1628,7 +1632,8 @@
       "pacman": "pacman non è riuscito a cercare aggiornamenti: %1",
       "flatpak": "Flatpak non è riuscito a cercare aggiornamenti: %1",
       "git": "git non è riuscito a controllare il repository: %1",
-      "usage": "Uso: updates.py check [repository]|status|apply CHIAVI|apply-status"
+      "usage": "Uso: updates.py check [repository]|status|apply CHIAVI|apply-status",
+      "firmware": "fwupd: %1"
     },
     "apply": {
       "applying": "Aggiornamento…",
@@ -1639,9 +1644,31 @@
       "lastDone": "Aggiornato alle %1",
       "lastDoneCompositor": "Aggiornato alle %1. Tra gli aggiornamenti c’era Hyprland: esci e rientra, e i plugin vengono ricompilati a quel login.",
       "lastFailed": "L’ultimo aggiornamento non è finito (stato %1): guarda il log qui sotto, poi premi di nuovo Aggiorna.",
-      "stopped": "L’ultimo aggiornamento si è fermato prima di finire: premi di nuovo Aggiorna."
+      "stopped": "L’ultimo aggiornamento si è fermato prima di finire: premi di nuovo Aggiorna.",
+      "noSpace": "Spazio insufficiente per aggiornare: %1 GB liberi sul disco di sistema, ne servono 2.",
+      "inhibit": "Installazione degli aggiornamenti",
+      "doneRestart": "Gli aggiornamenti sono installati. Riavvia per usarli.",
+      "reasons": {
+        "space": "il disco di sistema è pieno.",
+        "network": "un server non è raggiungibile: controlla la connessione e riprova.",
+        "signature": "la firma di un pacchetto non si può verificare (potrebbe servire importare una chiave).",
+        "conflict": "due pacchetti vogliono gli stessi file: il log li indica.",
+        "lock": "è in corso un altro gestore di pacchetti: attendi che finisca, poi aggiorna di nuovo.",
+        "initramfs": "la creazione dell’immagine di avvio è fallita: non riavviare prima di averla ricreata.",
+        "authorization": "la richiesta di password o impronta è stata rifiutata."
+      }
     },
-    "packagesMore": "…e altri %1"
+    "packagesMore": "…e altri %1",
+    "firmwareHeading": "Firmware",
+    "restart": {
+      "title": "Riavvio necessario",
+      "kernel": "È installato un nuovo kernel.",
+      "system": "Sono state aggiornate librerie di sistema.",
+      "compositor": "Hyprland è stato aggiornato: esci e rientra.",
+      "firmware": "Un aggiornamento firmware attende il riavvio.",
+      "action": "Riavvia…",
+      "tooltip": "Riavvia per completare gli aggiornamenti"
+    }
   },
   "gaming": {
     "title": "Steam e gamescope",

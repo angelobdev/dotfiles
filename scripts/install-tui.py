@@ -1230,6 +1230,14 @@ def update_flatpaks():
         subprocess.run(('flatpak', 'update', '--user', '-y', '--noninteractive'), check=True)
 
 
+def update_firmware():
+    # fwupd's updates from its metadata; a UEFI capsule is staged for the next boot, which the updates panel then
+    # asks for (updates.py restart_state). Exit 2 is "nothing to do".
+    result = subprocess.run(('sudo', 'fwupdmgr', 'update', '--assume-yes', '--no-reboot-check'), check=False)
+    if result.returncode not in (0, 2):
+        raise subprocess.CalledProcessError(result.returncode, 'fwupdmgr update')
+
+
 def refresh_bar(*sources):
     # The update icon shows what updates.py found last: check again, as the update terminal does (sources: only
     # those, as desktop-updates check repository).
@@ -1260,9 +1268,11 @@ def apply_updates(plan, picked):
             install_run.run_steps(plan, False, steps)
         if 'flatpak' in keys:
             update_flatpaks()
+        if 'firmware' in keys:
+            update_firmware()
     finally:
         stop.set()
-    if keys & {'system', 'flatpak'}:
+    if keys & {'system', 'flatpak', 'firmware'}:
         refresh_bar()
     if pins:
         print(f'{MANIFEST.relative_to(REPO)} changed: commit it, so the other machines get the same pins.')
@@ -1274,7 +1284,7 @@ def apply_updates(plan, picked):
 
 
 # What Settings can apply without a terminal (updates.py apply): the lines of the updates screen it shows.
-HEADLESS = {'system': 'System packages', 'flatpak': 'Flatpak apps', 'repository': 'Repository'}
+HEADLESS = {'system': 'System packages', 'flatpak': 'Flatpak apps', 'firmware': 'Firmware', 'repository': 'Repository'}
 
 
 def apply_headless(keys):

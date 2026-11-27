@@ -18,11 +18,16 @@ Singleton {
     property bool loaded: false
     readonly property var packages: Array.isArray(data.packages) ? data.packages : []
     readonly property var flatpaks: Array.isArray(data.flatpaks) ? data.flatpaks : []
+    // Devices with a newer firmware (fwupd): {name, version, current}.
+    readonly property var firmware: Array.isArray(data.firmware) ? data.firmware.filter(item => item && typeof item === "object") : []
+    // What an update left running in its old version (updates.py restart_state): kernel, system, compositor, firmware.
+    readonly property var restartReasons: data.restart && Array.isArray(data.restart.reasons) ? data.restart.reasons.filter(reason => typeof reason === "string") : []
+    readonly property bool restartNeeded: restartReasons.length > 0
     // The repository against its upstream branch: {upstream, head, behind, ahead, dirty, commits}, or {}.
     readonly property var repository: data.repository && typeof data.repository === "object" && !Array.isArray(data.repository) ? data.repository : ({})
     readonly property int behind: Number.isInteger(repository.behind) && repository.behind > 0 ? repository.behind : 0
     readonly property var commits: Array.isArray(repository.commits) ? repository.commits.filter(commit => commit && typeof commit === "object") : []
-    readonly property int count: packages.length + flatpaks.length + (behind > 0 ? 1 : 0)
+    readonly property int count: packages.length + flatpaks.length + firmware.length + (behind > 0 ? 1 : 0)
     // Hyprland is among them: the plugins need rebuilding after the update and a new login.
     readonly property bool compositor: data.compositor === true
     readonly property var errors: Array.isArray(data.errors) ? data.errors : []
@@ -42,7 +47,7 @@ Singleton {
         const repository = value.repository && typeof value.repository === "object" ? value.repository : {};
         // The repository by the commit its upstream is at: new commits are a new update.
         const pull = Number.isInteger(repository.behind) && repository.behind > 0 ? ["repository " + repository.head] : [];
-        return list(value.packages).map(p => p.name + " " + p.version).concat(list(value.flatpaks).map(f => f.id + " " + f.version), pull);
+        return list(value.packages).map(p => p.name + " " + p.version).concat(list(value.flatpaks).map(f => f.id + " " + f.version), list(value.firmware).map(f => "firmware " + f.name + " " + f.version), pull);
     }
     function check() {
         if (!checker.running)

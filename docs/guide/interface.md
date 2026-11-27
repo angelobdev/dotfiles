@@ -186,6 +186,10 @@ See [AI assistant](../features/ai-assistant.md).
 
 When updates are available, an icon with their number appears in the bar (checked 5 minutes after login and every 6 hours; offline, it keeps the last list and tries again 30 minutes later) and a notification announces new ones. Its panel lists them (the first 100 packages, then how many more) with **Check now** and **Update**. A switch on each section chooses what to update, and **Update** applies it right there, in the background, behind one password or fingerprint prompt, showing the progress and the log ([integrations](integrations.md)). A Hyprland update is flagged, since the plugins are rebuilt at the next login after it.
 
+The list includes **Firmware**: the devices fwupd has a newer version for (its metadata is kept current by `fwupd-refresh.timer`), updated with the rest; one that is applied at boot (UEFI capsules) then asks for the restart. Before it starts, **Update** checks there are 2 GB free on the system disk (a transaction that runs out of room leaves the system between versions) and refuses otherwise; while it runs, the computer does not suspend, even with the lid closed. When it fails for a known cause (the disk full, a server out of reach, a package signature, two packages wanting the same files, another package manager running, the boot image not built, the prompt refused), the notification and the panel name it instead of the last line of the log.
+
+Every check also asks whether a **restart** is needed for what an update replaced: a new kernel (`dnf needs-restarting`; on Arch, the running kernel's modules gone), core libraries dnf names, Hyprland's own binary (log out and back in), or a firmware update waiting for the boot. The panel then shows **Restart needed** with the reasons and **Restart…** (the session menu), and the bar icon stays, with the restart glyph, until it is done; this also covers updates made in a terminal.
+
 ## Assist button
 
 See [Tablet and touch](../features/tablet-and-touch.md#assist-button).

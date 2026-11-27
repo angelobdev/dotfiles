@@ -1597,7 +1597,11 @@
         "one": "%1 desktop commit",
         "other": "%1 desktop commits"
       },
-      "release": "Desktop %1"
+      "release": "Desktop %1",
+      "firmware": {
+        "one": "%1 firmware update",
+        "other": "%1 firmware updates"
+      }
     },
     "notice": {
       "one": "%1 update available",
@@ -1628,7 +1632,8 @@
       "pacman": "pacman could not check for updates: %1",
       "flatpak": "Flatpak could not check for updates: %1",
       "git": "git could not check the repository: %1",
-      "usage": "Usage: updates.py check [repository]|status|apply KEYS|apply-status"
+      "usage": "Usage: updates.py check [repository]|status|apply KEYS|apply-status",
+      "firmware": "fwupd: %1"
     },
     "apply": {
       "applying": "Updating…",
@@ -1639,9 +1644,31 @@
       "lastDone": "Updated at %1",
       "lastDoneCompositor": "Updated at %1. Hyprland was among them: log out and back in, and the plugins are rebuilt at that login.",
       "lastFailed": "The last update did not finish (status %1): see its log below, then Update again.",
-      "stopped": "The last update stopped before it finished: Update again."
+      "stopped": "The last update stopped before it finished: Update again.",
+      "noSpace": "Not enough room to update: %1 GB free on the system disk, 2 GB needed.",
+      "inhibit": "Installing updates",
+      "doneRestart": "The updates are installed. Restart to use them.",
+      "reasons": {
+        "space": "the system disk is full.",
+        "network": "a server could not be reached: check the connection and try again.",
+        "signature": "a package signature could not be verified (a key may need importing).",
+        "conflict": "two packages want the same files: the log names them.",
+        "lock": "another package manager is running: wait for it to finish, then update again.",
+        "initramfs": "building the boot image failed: do not restart before it is built again.",
+        "authorization": "the password or fingerprint prompt was refused."
+      }
     },
-    "packagesMore": "…and %1 more"
+    "packagesMore": "…and %1 more",
+    "firmwareHeading": "Firmware",
+    "restart": {
+      "title": "Restart needed",
+      "kernel": "A new kernel is installed.",
+      "system": "Core system libraries were updated.",
+      "compositor": "Hyprland was updated: log out and back in.",
+      "firmware": "A firmware update waits for the restart.",
+      "action": "Restart…",
+      "tooltip": "Restart to finish the updates"
+    }
   },
   "gaming": {
     "title": "Steam and gamescope",

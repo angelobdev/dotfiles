@@ -350,7 +350,8 @@ Designed with the user on a claude.ai canvas (five sections, center left and cen
 Reviewed with the user from Omarchy's source (basecamp/omarchy@a11b6a6); the chosen items are issues #284–#298, the review itself kept outside the repository.
 
 - [x] #284 quick wins: window tricks (`Super + O`, `Super + Backspace`, `Super + Shift + Backspace`, `Super + Alt + F`, `Super + Ctrl + Shift + F`, `Super + Ctrl + Alt + F`), bar toggle (`Super + B`), launch or focus for the browser, password manager and file manager keys, terminal and Files in the folder of the focused terminal, QR codes from a screen area, the clock format on right click, sleep hooks for fprintd and gvfs, system defaults (inotify, NOFILE, stop timeouts, oomd on the app slice), Firefox and Zen policies, the Wi-Fi regulatory domain from the time zone, firewalld on Arch, a `utils.printing` part.
-- [ ] #292 updates (restart detection, guardrails, firmware), then #294 migrations; #288, #286, #287, #289, #290; #291; #285, #293. To discuss: #295–#298.
+- [x] #292 updates: restart detection at every check (kernel, core libraries, Hyprland's binary, a staged firmware update), with the panel and the bar icon; 2 GB free before an apply, sleep inhibited while it runs, a known cause named when it fails; firmware through fwupd in the panel.
+- [ ] #294 migrations; #288, #286, #287, #289, #290; #291; #285, #293. To discuss: #295–#298.
 
 ### System time zone from the calendar (2026-11-26)
 
