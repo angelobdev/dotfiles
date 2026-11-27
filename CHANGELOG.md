@@ -4,6 +4,20 @@ What changed in each release of the desktop. The desktop shows the sections of t
 
 Releases are `vMAJOR.MINOR.PATCH`: a new minor version brings new features, a patch only fixes, and a new major version changes something you may have to act on (said in its notes). How a release is made: [Releasing](docs/development/releasing.md).
 
+## v1.4.0 - 2026-11-27
+
+### Added
+
+- **Commands in the launcher.** `Super + Space` now reaches everything the desktop can do as well as the apps, wholly from the keyboard. It opens on its categories, always in the same order: Apps (the app list from before), Toggles, Appearance, Windows & workspaces, Tools, System, Updates, Settings and Shortcuts. Typing searches the apps and every command together. `↑↓` select, Enter or `→` opens, `←` goes back, and `Alt` shows alternatives (Restart becomes **Restart to firmware setup**).
+- Switches (Keep awake, Do Not Disturb, the bar…) flip in place, and choices (theme, power profile, sound output, workspace layout, bar background) mark the one in use. A command with a shortcut shows its keys.
+- **Settings** in the launcher opens Settings on any section, tab or option, the option selected; **Shortcuts** runs any shortcut by its name.
+- Your own commands in `~/.config/desktop/commands.json`: new ones, other labels or icons, or `"hidden": true` to leave one out ([Commands](docs/features/commands.md)). `desktop-shell commands [ID]` opens a category or runs a command from a script.
+
+### Changed
+
+- A right click on the empty desktop opens the launcher with its commands, instead of the desktop menu, which is gone.
+- The launcher is narrower.
+
 ## v1.3.1 - 2026-11-27
 
 ### Fixed
