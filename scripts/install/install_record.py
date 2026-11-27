@@ -70,8 +70,28 @@ def default_target():
     return install_plan.query('systemctl', 'get-default').stdout.strip()
 
 
+def firewall_running():
+    return install_plan.query('firewall-cmd', '--state').stdout.strip() == 'running'
+
+
 def default_zone_now():
-    return install_plan.query('firewall-cmd', '--get-default-zone').stdout.strip()
+    # firewalld just installed (Arch) is enabled for the next boot, not running: its configuration says the zone.
+    if firewall_running():
+        return install_plan.query('firewall-cmd', '--get-default-zone').stdout.strip()
+    for path in ('/etc/firewalld/firewalld.conf', '/usr/lib/firewalld/firewalld.conf'):
+        try:
+            text = read_or_none(path) or ''
+        except OSError:
+            # Fedora keeps it to root; there firewalld runs anyway.
+            continue
+        for line in text.splitlines():
+            if line.strip().startswith('DefaultZone='):
+                return line.split('=', 1)[1].strip()
+    return ''
+
+
+def set_zone_command(zone):
+    return ('firewall-cmd' if firewall_running() else 'firewall-offline-cmd', '--set-default-zone=' + zone)
 
 
 def read_or_none(path):

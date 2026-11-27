@@ -126,6 +126,8 @@ Singleton {
     readonly property var barLayout: pick("barLayout", ({}))
     // Bar, pills style: center-left, center and center-right on one pill instead of one each.
     readonly property bool barMergeCenter: pick("barMergeCenter", false)
+    // Bar: the format of the clock (bar/ClockFormats.js); a right click on the clock steps to the next one.
+    readonly property string barClockFormat: pick("barClockFormat", "default")
     // Launcher: files in the home folder below the apps (fd, from three typed characters).
     readonly property bool launcherFiles: pick("launcherFiles", true)
     // Launcher: apps opened from it or the dock come first, by how often and how lately (services/Apps.qml).

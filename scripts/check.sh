@@ -4,6 +4,7 @@ repo=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 for script in "$repo"/shell/.local/bin/*; do bash -n "$script"; done
 bash -n "$repo/scripts/tablet-auth.sh"
 sh -n "$repo/scripts/privileged/desktop-fingerprint"
+for script in "$repo"/scripts/system/desktop-*; do bash -n "$script"; done
 bash -n "$repo/scripts/tests/install-container.sh"
 bash -n "$repo/scripts/tests/install-container-arch.sh"
 if command -v zsh >/dev/null; then

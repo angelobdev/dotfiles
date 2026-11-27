@@ -66,6 +66,7 @@ DESCRIPTIONS = {
     'utils.wev': 'wev, which shows Wayland input events.',
     'utils.tailscale': 'Tailscale, with its tray icon on Fedora.',
     'utils.msfonts': '7zip, for desktop-msfonts: the Microsoft fonts from your own Windows ISO.',
+    'utils.printing': 'CUPS with the printers the network announces (driverless IPP), found through Avahi.',
     'assistant': 'The AI Assistant: Super + A, its bar icon and Settings section, and the Herdr app and herdr-core in ~/.local.',
     'containers': 'Docker (moby-engine, docker-compose, the docker group).',
     'radio': 'The Radio panel (Super + M): mpv on MPRIS, yt-dlp, Qt Multimedia for its video (and ytfzf on Arch).',

@@ -6,7 +6,7 @@
     "default": "Predefinita: %1",
     "defaultMissing": "Predefinita: %1, non installata",
     "errors": {
-      "usage": "Uso: apps.py launch {terminal|browser|passwords|files}|list"
+      "usage": "Uso: apps.py launch {terminal|browser|passwords|files} | launch {terminal|files} --here | list"
     },
     "fileManager": "File manager",
     "group": "Aperte dalle scorciatoie",
@@ -28,7 +28,9 @@
       "terminalTitle": "Terminale"
     },
     "terminal": "Terminale",
-    "title": "App predefinite"
+    "title": "App predefinite",
+    "terminalHere": "Terminale nella cartella corrente",
+    "filesHere": "File nella cartella corrente"
   },
   "assistant": {
     "errors": {
@@ -364,7 +366,14 @@
     "windowWider": "Finestra più larga",
     "workspace": "Workspace %1",
     "switchWindows": "Passa tra le finestre",
-    "switchWindowsBack": "Passa tra le finestre all’indietro"
+    "switchWindowsBack": "Passa tra le finestre all’indietro",
+    "popOut": "Stacca la finestra",
+    "transparency": "Trasparenza della finestra",
+    "workspaceGaps": "Spazi su questo workspace",
+    "maximize": "Massimizza la finestra",
+    "tiledFullscreen": "Schermo intero nella griglia",
+    "fullscreenDesktop": "Desktop a schermo intero",
+    "toggleBar": "Mostra o nascondi la barra"
   },
   "bluetooth": {
     "authorizeService": "Consentire al dispositivo di utilizzare il servizio richiesto?",
@@ -911,6 +920,7 @@
       "recording": "Registrazione schermo"
     },
     "hints": {
+      "barClockFormat": "Un clic destro sull’orologio li fa scorrere.",
       "barMergeCenter": "Stile pills: centro-sinistra, centro e centro-destra in una sola pill.",
       "workspaceNumbers": "Il numero del workspace dentro ogni pillola, al posto del punto.",
       "workspaceScroll": "Con la rotellina o il touchpad sulle pillole dei workspace.",
@@ -993,6 +1003,7 @@
     "open": "Impostazioni…",
     "options": {
       "barMedia": "Mostra cosa è in riproduzione",
+      "barClockFormat": "Orologio della barra",
       "barMergeCenter": "Una sola pill per il centro",
       "workspaceNumbers": "Mostra i numeri dei workspace",
       "workspaceScroll": "Scorri sui workspace per cambiarli",
@@ -1206,7 +1217,8 @@
           "uv": "uv (Python)",
           "wev": "wev (eventi di input)",
           "tailscale": "Tailscale",
-          "msfonts": "Font Microsoft (dalla tua ISO di Windows)"
+          "msfonts": "Font Microsoft (dalla tua ISO di Windows)",
+          "printing": "Stampa (CUPS, stampanti di rete)"
         },
         "gaming": {
           "steam": "Steam",
@@ -1671,7 +1683,11 @@
     "imageCopied": "Area copiata per l’assistente",
     "pasteHint": "Incollala nel prompt con Ctrl + V.",
     "text": "Testo da un’area dello schermo",
-    "ask": "Chiedi all’assistente di un’area dello schermo"
+    "ask": "Chiedi all’assistente di un’area dello schermo",
+    "codeCopied": "Codice QR copiato",
+    "noCode": "Nessun codice QR in quell’area.",
+    "qr": "Codice QR da un’area dello schermo",
+    "qrMissing": "Per leggere i codici QR serve zbar: %1"
   },
   "privacy": {
     "title": "Privacy",

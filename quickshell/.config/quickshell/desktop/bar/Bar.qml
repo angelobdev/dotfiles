@@ -21,7 +21,9 @@ PanelWindow {
     // Keep the surface mapped: Hyprspace restores its alpha when it closes.
     // An invisible bar must neither reserve space nor intercept preview clicks, but its corner still closes
     // the overview.
-    readonly property bool compositorHidden: BarVisibility.hidden(screen.name)
+    // Hidden by the overview, or by the user (Super + B): no reserved space and no input but the corner, and
+    // nothing drawn, while the surface stays mapped.
+    readonly property bool compositorHidden: BarVisibility.hidden(screen.name) || BarVisibility.userHidden
     readonly property string style: Theme.barStyle
     readonly property bool pills: style === "pills"
     readonly property bool merged: pills && Config.barMergeCenter
@@ -267,6 +269,12 @@ PanelWindow {
     Item {
         id: stageItem
         anchors.fill: parent
+        opacity: BarVisibility.userHidden ? 0 : 1
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Theme.motionFast
+            }
+        }
         focus: true
         Keys.onEscapePressed: BarLayout.cancel()
         // Latched editing ends with a press outside the bar, the gallery and the hint.

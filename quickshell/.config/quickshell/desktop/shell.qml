@@ -73,9 +73,10 @@ ShellRoot {
         function overview(): void {
             BarVisibility.wake();
         }
-        // The bar layout: edit (on the focused monitor, until Done), done, cancel, reset (desktop-shell bar).
+        // The bar layout: edit (on the focused monitor, until Done), done, cancel, reset; and hide, show, toggle
+        // (desktop-shell bar).
         function bar(action: string): bool {
-            return BarLayout.request(action);
+            return BarVisibility.request(action) || BarLayout.request(action);
         }
         // Screen zoom: in, out, reset, toggle.
         function zoom(action: string): bool {

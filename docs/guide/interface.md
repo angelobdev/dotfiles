@@ -33,11 +33,19 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + Enter` | Browser (Firefox by default; without it, the first browser installed) |
 | `Super + Shift + Space` | Password manager (1Password Quick Access by default) |
 | `Super + Shift + F` | File manager (Files, Nautilus, by default) |
-| Settings → Apps | The app each of the four keys above opens: one of the installed apps of its kind, the default, or a command typed by hand; read at every press, so a change applies at once |
+| `Super + Alt + Enter` / `Super + Alt + Shift + F` | Terminal / Files in the folder of the focused terminal (its shell's working directory); elsewhere, as the keys above |
+| Settings → Apps | The browser, password manager and file manager keys bring the app forward when a window of it is open (the most recently used), and open it otherwise. The app each of the four keys opens: one of the installed apps of its kind, the default, or a command typed by hand; read at every press, so a change applies at once |
 | `Alt + Tab` / `Alt + Shift + Tab` | Window switcher: thumbnails of the windows from the most recently used, on the focused monitor; Tab, Shift + Tab or the arrows move, releasing the left `Alt` (or `Return`) focuses the selected one and moves the pointer onto it, `Esc`, any other key or a click outside cancels, a click on a thumbnail picks it. Windows on special workspaces (the assistant console) are left out |
 | `Super + A` | AI assistant: the drop-down console with the primary coding agent (Settings → Assistant; Claude Code: hold `Space` to dictate); a click or tap outside closes it |
 | `Super + Shift + A` | Move the active window into the assistant console, or back out |
 | `Super + Q` | Close window |
+| `Super + O` | Pop the window out: floating, 60% × 65% of the screen, centred and pinned on every workspace; again puts it back as it was |
+| `Super + Backspace` | Window transparency: the window at 85% opacity, focused or not; again makes it opaque |
+| `Super + Shift + Backspace` | Gaps on this workspace: none between its windows and to the edges; again brings them back |
+| `Super + Alt + F` | Maximize the window (the bar and gaps stay) |
+| `Super + Ctrl + Shift + F` | Tiled fullscreen: the app is told it is fullscreen (video players, presentations) while the window keeps its tile |
+| `Super + Ctrl + Alt + F` | Full-screen desktop: every bar hidden and no gaps anywhere; again brings both back |
+| `Super + B` | Show or hide the bar (every monitor): hidden, it reserves nothing and takes no clicks but its overview corner; `desktop-shell bar` with `hide`, `show` or `toggle` does the same |
 | `Super + Space` | Applications |
 | `Super + Shift + C` | Control Center |
 | `Super + Shift + E` | Network & Wi-Fi |
@@ -49,6 +57,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + Q` | Session menu |
 | `Super + Shift + W` | Choose wallpaper: the picker that browses any folder |
 | `Super + Shift + T` | Text from a screen area: select it, its text (OCR, Italian and English) is copied |
+| `Super + Ctrl + Shift + T` | QR code from a screen area: select it, what the code holds (a link, a Wi-Fi network, text) is copied (`zbar`) |
 | `Super + Ctrl + A` | Ask the assistant about a screen area: select it, the image path is typed at the agent's prompt and the console opens |
 | `Super + .` | Emoji: search by name in the interface language or browse by group, recently used first; Enter or a click pastes it into the window that was focused (Ctrl + V, or Ctrl + Shift + V in a terminal) and leaves it on the clipboard |
 | `Super + Alt + +` / `-` / `0` | Zoom in / out around the pointer (up to 800%) / back to 100%, with an OSD |

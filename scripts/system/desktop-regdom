@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# The Wi-Fi regulatory domain of the country of the system time zone (zone1970.tab), so the radio uses that
+# country's channels and power instead of the restrictive world domain. Run as root at boot and whenever
+# /etc/localtime changes (desktop-regdom.path). A zone shared by several countries (Europe/Rome: IT,SM,VA) takes
+# the first; UTC and unknown zones change nothing.
+set -euo pipefail
+zone=$(timedatectl show --property=Timezone --value 2>/dev/null || true)
+[[ -n $zone ]] || exit 0
+country=$(awk -v zone="$zone" '$1 !~ /^#/ && $3 == zone { split($1, codes, ","); print codes[1]; exit }' \
+    /usr/share/zoneinfo/zone1970.tab 2>/dev/null || true)
+[[ $country =~ ^[A-Z]{2}$ ]] || exit 0
+exec iw reg set "$country"

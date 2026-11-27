@@ -275,6 +275,8 @@ class StepTests(unittest.TestCase):
                 return reply('multi-user.target' if pending else 'graphical.target')
             if command[0] == 'busctl':
                 return reply('s "other"' if pending else 'o "/user" s "hyprland-uwsm"')
+            if command[:2] == ('firewall-cmd', '--state'):
+                return reply('running')
             if command[0] == 'firewall-cmd':
                 return reply('FedoraServer' if pending else 'Zone')
             if command[0] == 'flatpak':
@@ -1164,6 +1166,8 @@ class ReconstructTests(unittest.TestCase):
         current = install_plan.Plan(distro, '45', table, [], ('core',))
 
         def query(*command):
+            if command[:2] == ('firewall-cmd', '--state'):
+                return reply('running')
             answers = {'firewall-cmd': zone, 'busctl': session, 'systemctl': target}
             return reply(answers.get(command[0], ''))
         with mock.patch.object(install_paths, 'PROFILES', ('core', 'plugins')), mock.patch.object(install_plan, 'query', side_effect=query), \
@@ -1181,6 +1185,14 @@ class ReconstructTests(unittest.TestCase):
         record = self.reconstruct(base={'kernel.x86_64'}, installed={'new'})
         self.assertEqual(record['swaps'], [])
         self.assertIn('new.x86_64', record['packages'])
+
+    def test_the_zone_of_a_firewall_not_running_yet(self):
+        # firewalld installed in this run (Arch) is enabled for the next boot: its configuration says the zone, and
+        # the offline command sets it.
+        with mock.patch.object(install_plan, 'query', return_value=mock.Mock(stdout='not running\n', returncode=252)), \
+                mock.patch.object(install_record, 'read_or_none', side_effect=lambda path: 'DefaultZone=public\n' if path.startswith('/usr') else None):
+            self.assertEqual(install_record.default_zone_now(), 'public')
+            self.assertEqual(install_record.set_zone_command('home'), ('firewall-offline-cmd', '--set-default-zone=home'))
 
     def test_values_from_before_that_the_system_tells(self):
         record = self.reconstruct(base={'kernel.x86_64'}, installed={'gdm'})

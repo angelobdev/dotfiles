@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# systemd-sleep hook: gvfsd-fuse (the FUSE view of what Files mounts: phones, network shares) can block the kernel's
+# freeze, and the suspend then fails silently. Lazily unmounted before, and gvfs restarted for each user after, by a
+# timer: systemd ends what this hook leaves behind, and user.slice stays frozen until it returns.
+case ${1:-} in
+    pre)
+        while IFS=' ' read -r _ mountpoint fstype _; do
+            [[ $fstype == fuse.gvfsd-fuse ]] || continue
+            mountpoint=$(printf '%b' "$mountpoint")
+            fusermount3 -uz "$mountpoint" 2>/dev/null || fusermount -uz "$mountpoint" 2>/dev/null || true
+        done </proc/mounts
+        ;;
+    post)
+        for folder in /run/user/*; do
+            [[ -S $folder/bus ]] || continue
+            systemd-run --quiet --no-block --collect --on-active=5 --timer-property=AccuracySec=1s --uid="${folder##*/}" \
+                --setenv=DBUS_SESSION_BUS_ADDRESS="unix:path=$folder/bus" --setenv=XDG_RUNTIME_DIR="$folder" \
+                systemctl --user restart gvfs-daemon.service 2>/dev/null || true
+        done
+        ;;
+esac

@@ -223,9 +223,9 @@ case "${1:-start}" in
         ;;
     bar)
         # The layout of the bar: edit it on the focused monitor (until Done), finish or drop that, or go back to
-        # the classic layout.
-        case "${2:-}" in edit|done|cancel|reset) exec qs ipc -p "$config" call desktop bar -- "$2" ;; esac
-        echo 'Usage: desktop-shell bar {edit|done|cancel|reset}' >&2
+        # the classic layout; or hide and show every bar.
+        case "${2:-}" in edit|done|cancel|reset|hide|show|toggle) exec qs ipc -p "$config" call desktop bar -- "$2" ;; esac
+        echo 'Usage: desktop-shell bar {edit|done|cancel|reset|hide|show|toggle}' >&2
         exit 2
         ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;

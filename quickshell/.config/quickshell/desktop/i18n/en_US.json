@@ -6,7 +6,7 @@
     "default": "Default: %1",
     "defaultMissing": "Default: %1, not installed",
     "errors": {
-      "usage": "Usage: apps.py launch {terminal|browser|passwords|files}|list"
+      "usage": "Usage: apps.py launch {terminal|browser|passwords|files} | launch {terminal|files} --here | list"
     },
     "fileManager": "File manager",
     "group": "Opened by the shortcuts",
@@ -28,7 +28,9 @@
       "terminalTitle": "Terminal"
     },
     "terminal": "Terminal",
-    "title": "Default apps"
+    "title": "Default apps",
+    "terminalHere": "Terminal in the current folder",
+    "filesHere": "Files in the current folder"
   },
   "assistant": {
     "errors": {
@@ -364,7 +366,14 @@
     "windowWider": "Window wider",
     "workspace": "Workspace %1",
     "switchWindows": "Switch windows",
-    "switchWindowsBack": "Switch windows backwards"
+    "switchWindowsBack": "Switch windows backwards",
+    "popOut": "Pop window out",
+    "transparency": "Window transparency",
+    "workspaceGaps": "Gaps on this workspace",
+    "maximize": "Maximize window",
+    "tiledFullscreen": "Tiled fullscreen",
+    "fullscreenDesktop": "Full-screen desktop",
+    "toggleBar": "Show or hide the bar"
   },
   "bluetooth": {
     "authorizeService": "Allow the device to use the requested service?",
@@ -911,6 +920,7 @@
       "recording": "Screen recording"
     },
     "hints": {
+      "barClockFormat": "A right click on the clock steps through these.",
       "barMergeCenter": "Pills style: center left, center and center right share one pill.",
       "workspaceNumbers": "Workspace number inside each pill, in place of the dot.",
       "workspaceScroll": "With the mouse wheel or the touchpad over the workspace pills.",
@@ -993,6 +1003,7 @@
     "open": "Settings…",
     "options": {
       "barMedia": "Show what is playing",
+      "barClockFormat": "Bar clock",
       "barMergeCenter": "One pill for the center",
       "workspaceNumbers": "Show workspace numbers",
       "workspaceScroll": "Scroll over the workspaces to switch",
@@ -1206,7 +1217,8 @@
           "uv": "uv (Python)",
           "wev": "wev (input events)",
           "tailscale": "Tailscale",
-          "msfonts": "Microsoft fonts (from your Windows ISO)"
+          "msfonts": "Microsoft fonts (from your Windows ISO)",
+          "printing": "Printing (CUPS, network printers)"
         },
         "gaming": {
           "steam": "Steam",
@@ -1671,7 +1683,11 @@
     "imageCopied": "Area copied for the assistant",
     "pasteHint": "Paste it at the prompt with Ctrl + V.",
     "text": "Text from screen area",
-    "ask": "Ask the assistant about a screen area"
+    "ask": "Ask the assistant about a screen area",
+    "codeCopied": "QR code copied",
+    "noCode": "No QR code found in that area.",
+    "qr": "QR code from screen area",
+    "qrMissing": "Reading QR codes needs zbar: %1"
   },
   "privacy": {
     "title": "Privacy",

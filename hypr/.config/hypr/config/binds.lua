@@ -71,6 +71,9 @@ bind("SUPER + Return", hl.dsp.exec_cmd(util.bin("desktop-app") .. " terminal"), 
 bind("SUPER + SHIFT + Return", hl.dsp.exec_cmd(util.bin("desktop-app") .. " browser"), "Browser")
 bind("SUPER + SHIFT + Space", hl.dsp.exec_cmd(util.bin("desktop-app") .. " passwords"), "Password manager")
 bind("SUPER + SHIFT + F", hl.dsp.exec_cmd(util.bin("desktop-app") .. " files"), "File manager")
+-- In the folder of the focused terminal.
+bind("SUPER + ALT + Return", hl.dsp.exec_cmd(util.bin("desktop-app") .. " terminal --here"), "Terminal in the current folder")
+bind("SUPER + ALT + SHIFT + F", hl.dsp.exec_cmd(util.bin("desktop-app") .. " files --here"), "Files in the current folder")
 bind("XF86Calculator", hl.dsp.exec_cmd("gnome-calculator"), "Calculator")
 -- The AI assistant, only with its profile installed.
 if installed("assistant") then
@@ -85,6 +88,94 @@ bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Toggle floating w
 bind("SUPER + CTRL + P", hl.dsp.window.pseudo(), "Toggle pseudotiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Toggle split orientation")
 bind("SUPER + F", hl.dsp.window.fullscreen(), "Fullscreen")
+
+-- Window tricks: a window popped out over the others on every workspace, a see-through one, no gaps on one
+-- workspace, maximized and tiled-fullscreen windows, and a full-screen desktop without the bar or any gaps.
+-- What they changed is kept here, so a second press undoes it, until Hyprland reloads its config.
+local theme = require("config.theme")
+local popped = {} -- window address -> whether it floated before
+local see_through = {} -- window address -> true
+local gapless = {} -- workspace id -> its rule
+local full_desktop = false
+local function pop_out()
+    local window = hl.get_active_window()
+    if not window then
+        return
+    end
+    local target = "address:" .. window.address
+    local floated = popped[window.address]
+    if floated ~= nil then
+        popped[window.address] = nil
+        if window.pinned then
+            hl.dispatch(hl.dsp.window.pin({ window = target }))
+        end
+        if not floated and window.floating then
+            hl.dispatch(hl.dsp.window.float({ window = target, action = "toggle" }))
+        end
+        return
+    end
+    popped[window.address] = window.floating
+    if not window.floating then
+        hl.dispatch(hl.dsp.window.float({ window = target, action = "toggle" }))
+    end
+    -- Monitor sizes are physical pixels; the window's are logical.
+    local monitor = hl.get_active_monitor()
+    if monitor and monitor.scale > 0 then
+        hl.dispatch(hl.dsp.window.resize({ window = target, x = math.floor(monitor.width / monitor.scale * 0.6),
+            y = math.floor(monitor.height / monitor.scale * 0.65) }))
+    end
+    hl.dispatch(hl.dsp.window.center({ window = target }))
+    if not window.pinned then
+        hl.dispatch(hl.dsp.window.pin({ window = target }))
+    end
+    hl.dispatch(hl.dsp.window.alter_zorder({ window = target, mode = "top" }))
+end
+local function transparency()
+    local window = hl.get_active_window()
+    if not window then
+        return
+    end
+    -- Both multiply the opacity of appearance.lua, the inactive one included.
+    local value = see_through[window.address] and "1" or "0.85"
+    see_through[window.address] = not see_through[window.address] or nil
+    for _, prop in ipairs({ "opacity", "opacity_inactive" }) do
+        hl.dispatch(hl.dsp.window.set_prop({ window = "address:" .. window.address, prop = prop, value = value }))
+    end
+end
+local function workspace_gaps()
+    local workspace = hl.get_active_workspace()
+    if not workspace then
+        return
+    end
+    local id = tostring(workspace.id)
+    if gapless[id] then
+        gapless[id]:set_enabled(not gapless[id]:is_enabled())
+    else
+        gapless[id] = hl.workspace_rule({ workspace = id, gaps_in = 0, gaps_out = 0 })
+    end
+end
+local function tiled_fullscreen()
+    local window = hl.get_active_window()
+    if window then
+        -- The app is told it is fullscreen (client 2) while the window keeps its tile (internal 0).
+        hl.dispatch(hl.dsp.window.fullscreen_state({ internal = 0, client = window.fullscreen_client == 2 and 0 or 2 }))
+    end
+end
+local function fullscreen_desktop()
+    full_desktop = not full_desktop
+    hl.config({ general = { gaps_in = full_desktop and 0 or theme.gapsIn, gaps_out = full_desktop and 0 or theme.gapsOut } })
+    hl.dispatch(hl.dsp.event("desktop-bar " .. (full_desktop and "hide" or "show")))
+end
+bind("SUPER + O", pop_out, "Pop window out")
+bind("SUPER + BackSpace", transparency, "Window transparency")
+bind("SUPER + SHIFT + BackSpace", workspace_gaps, "Gaps on this workspace")
+bind("SUPER + ALT + F", hl.dsp.window.fullscreen({ mode = "maximized" }), "Maximize window")
+bind("SUPER + CTRL + SHIFT + F", tiled_fullscreen, "Tiled fullscreen")
+bind("SUPER + CTRL + ALT + F", fullscreen_desktop, "Full-screen desktop")
+-- The bar (services/BarVisibility.qml) hears it as a custom event: no process started for it.
+bind("SUPER + B", function()
+    hl.dispatch(hl.dsp.event("desktop-bar toggle"))
+end, "Show or hide the bar")
 
 -- Only with the plugin's part installed; installed but not loaded (a rebuild pending), they say so when pressed.
 if installed("plugins.hyprcapture") then
@@ -106,6 +197,7 @@ bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Battery 
 bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendar")
 bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Keyboard shortcuts")
 bind("SUPER + SHIFT + T", hl.dsp.exec_cmd(util.bin("desktop-area") .. " text"), "Text from screen area")
+bind("SUPER + CTRL + SHIFT + T", hl.dsp.exec_cmd(util.bin("desktop-area") .. " qr"), "QR code from screen area")
 if installed("assistant") then
     bind("SUPER + CTRL + A", hl.dsp.exec_cmd(util.bin("desktop-area") .. " ask"), "Ask the assistant about a screen area")
 end

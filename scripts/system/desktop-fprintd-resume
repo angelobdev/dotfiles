@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# systemd-sleep hook: a suspend can leave fprintd holding a stale claim on the reader, so the fingerprint prompt
+# hangs after resume (https://gitlab.freedesktop.org/libfprint/fprintd/-/issues/173). Restarted after it.
+# user.slice stays frozen until this hook returns: the restart is queued, not waited for.
+if [[ ${1:-} == post ]]; then
+    systemctl --no-block try-restart fprintd.service 2>/dev/null || true
+fi

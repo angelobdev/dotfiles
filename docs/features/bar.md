@@ -23,7 +23,7 @@ Without a layout of your own the bar is the **classic** one, item for item the b
 | `hints` | — | Shortcuts |
 | `notifications` | The bell, Do Not Disturb, a focus session | Notifications |
 | `controls` | — | Control Center |
-| `clock` | Date and time | Calendar |
+| `clock` | Date and time, in one of five formats (`barClockFormat`) | Calendar; right click: the next format |
 | `power` | — | Session menu |
 | `weather` | Temperature and conditions (with `weatherEnabled`), refreshed every 30 minutes | Calendar |
 | `volume` | The output volume | Sound panel; wheel ±5%; middle click mutes |
@@ -63,6 +63,8 @@ Floating and pills reserve that margin more at the top, and panels, notification
 - `barLayout`: the widget ids of each section, as `{"left": ["launcher", "workspaces"], "centerLeft": ["media"], "center": ["clock"], "centerRight": ["weather"], "right": ["tray", "network", "volume", "battery", "notifications", "controls", "power"]}`. Editing writes it, and removes it again when the layout is the classic one. Unknown ids are skipped, and a widget that cannot repeat is kept where it first appears; an object with none of the five sections is the classic layout.
 - `barMergeCenter: false`: one pill for the center block.
 - `barMedia: true`: whether the media widget shows what plays.
+- `barClockFormat: "default"`: the clock's format: `default` (date and time), `time`, `seconds`, `weekday` (day name and time) or `iso` (`2026-11-27  14:32`). Built from the catalog's date format and the locale's time format, so it follows the language and the 12 or 24 hours; a right click on the clock and Settings → Desktop → Bar (with each format shown as the clock now) change it.
+- `Super + B` hides and shows every bar for the session (`desktop-shell bar hide|show|toggle`); the full-screen desktop (`Super + Ctrl + Alt + F`) hides them too.
 
 The style is a theme preference (`desktop-theme bar-style shade|floating|pills|transparent|toggle`).
 

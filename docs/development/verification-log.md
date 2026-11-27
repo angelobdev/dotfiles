@@ -1343,3 +1343,12 @@ Reported by the user after the merges of the day:
 - On this machine: `timezone.py list` gives `America/New_York` (−300) and 598 zones; `weather.py now`, from GeoClue, `Casagiove` in `Europe/Rome` (+60), so the panel has a suggestion. A weather cache from before the key is read again.
 - The panel, the suggestion and a real change with the administrator password: confirmed working by the user.
 
+## Omarchy quick wins (#284), 2026-11-27
+
+- Hyprland: after the save of `binds.lua`, `--verify-config` and `hyprctl configerrors` clean, and the ten new binds in `hyprctl binds`. Through `hyprctl eval`: a workspace rule with no gaps applied to workspace 2 at once (a window from `4,42 1720x1034` to `0,38 1728x1042`) and went away when disabled; `set_prop opacity` took `0.85` and `1` (an invalid value is refused), and was put back to 1 on the window it was tried on. Monitor sizes from Lua are physical pixels (`2880x1800` at 1.67), so the popped-out size divides by the scale.
+- Bar toggle: `desktop-shell bar toggle` and the `desktop-bar toggle` custom event took the reserved top from 38 px to 0 and back.
+- `apps.py`: the shell of a kitty window found in its working directory (`~/Projects/Gradus`); the open Zen window found by class for the browser key; 1Password and Files with no window, so they would open. `test_apps.py`: window classes from the id and `StartupWMClass`, the most recently focused window, no folder without a terminal.
+- `tst_clock_formats.qml`: the five formats from the catalog and locale, seconds after the minutes, the ring. Settings shows each format as the clock now.
+- Installer: `test_install*.py` and `test_profiles.py` pass; a firewall not running yet (Arch) is read from `firewalld.conf` and set with `firewall-offline-cmd`. The preview on this machine lists the twelve new files, `zbar` and the two `desktop-regdom` units; nothing applied here (`install-desktop.py apply` is the user's). The Arch package names (`zbar`, `iw`, `firewalld`, `cups-browsed`, `nss-mdns`) were not checked with `pacman -Si` from here.
+- Not tried here: the window keys and `--here` by hand, a QR code (zbar is not installed yet), a suspend with the new hooks, Zen reading `/etc/zen/policies`.
+

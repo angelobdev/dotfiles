@@ -43,7 +43,7 @@ install_paths.INTERFACE = install_paths.STATE / 'interface-before-theme.ini'
 
 MANIFEST = tomllib.loads((REPO / 'scripts/install/manifest.toml').read_text(encoding='utf-8'))
 PROFILE_KEYS = {'repos', 'packages', 'services', 'user_services', 'disable', 'files', 'groups', 'stow', 'flatpaks',
-                'login_shell', 'clones', 'firmware', 'aur', 'notes', 'archives', 'default'}
+                'login_shell', 'clones', 'firmware', 'aur', 'notes', 'archives', 'default', 'firewall_zone'}
 # The default pacman.conf of Arch, around its repositories.
 PACMAN_CONF = '''[options]
 HoldPkg     = pacman glibc
@@ -181,9 +181,14 @@ class ManifestTests(unittest.TestCase):
         self.assertEqual(arch.PROTECTED, ('python', 'git'))
 
     def test_keys_pacman_has_no_use_for_stay_out(self):
-        # No weak dependencies, no swaps, no firewall by default, and tablet sign-in is not ported.
+        # No weak dependencies, no swaps, and tablet sign-in is not ported.
         for profile in self.profiles.values():
-            self.assertFalse(set(profile) & {'exclude', 'swaps', 'firewall_zone', 'auth'})
+            self.assertFalse(set(profile) & {'exclude', 'swaps', 'auth'})
+
+    def test_the_laptop_gets_a_firewall(self):
+        # Arch enables none: firewalld with a zone that denies what comes in.
+        hardware = self.arch['hardware']
+        self.assertEqual((hardware['firewall_zone'], hardware['services']), ('home', ['firewalld.service']))
 
     def test_aur_packages_are_pinned(self):
         entries = [item for profile in self.profiles.values() for item in profile.get('aur', ())]

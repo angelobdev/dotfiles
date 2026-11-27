@@ -5,6 +5,7 @@ import "../.."
 import "../../components"
 import "../../services"
 import "../../SettingsSchema.js" as Schema
+import "../../bar/ClockFormats.js" as ClockFormats
 
 // One shell option of SettingsSchema.js: its label (and hint), the control its type asks for, and Reset when
 // shell.json changes it. Every change goes through Config.set, which writes ~/.config/desktop/shell.json.
@@ -63,6 +64,8 @@ Item {
     function choiceLabel(name) {
         if (option.assist)
             return Assist.catalog[name]?.label ?? name;
+        if (option.clock)
+            return I18n.locale.toString(new Date(), ClockFormats.format(name, I18n.tr("bar.dateFormat"), I18n.timeFormat));
         return shown(name);
     }
     RowLayout {

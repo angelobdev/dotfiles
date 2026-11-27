@@ -97,15 +97,15 @@ packages = [
     'xdg-desktop-portal', 'xdg-desktop-portal-hyprland', 'xdg-desktop-portal-gtk',
     # Audio, network and power.
     'pipewire', 'pipewire-pulseaudio', 'wireplumber', 'pulseaudio-utils',
-    'NetworkManager', 'NetworkManager-wifi', 'NetworkManager-bluetooth', 'nm-connection-editor',
+    'NetworkManager', 'NetworkManager-wifi', 'NetworkManager-bluetooth', 'nm-connection-editor', 'iw',
     'bluez', 'upower', 'tuned', 'tuned-ppd', 'brightnessctl', 'ddcutil',
     # Shell helpers.
     'python3', 'python3-gobject', 'ImageMagick', 'libnotify', 'libical-glib', 'evolution-data-server',
     'gnome-online-accounts-gtk', 'matugen', 'jq', 'ripgrep', 'grim', 'slurp', 'wl-clipboard', 'cliphist',
     'wf-recorder', 'btop', 'fastfetch', 'flatpak', 'xdg-user-dirs', 'xdg-utils', 'dconf',
-    # Color picker (Super + Shift + P), text from a screen area (tesseract, Italian and English), the launcher's
-    # calculator and unit conversions (qalc) and its file search (fd).
-    'hyprpicker', 'tesseract', 'tesseract-langpack-ita', 'tesseract-langpack-eng', 'qalculate', 'fd-find',
+    # Color picker (Super + Shift + P), text from a screen area (tesseract, Italian and English) and its QR codes
+    # (zbar), the launcher's calculator and unit conversions (qalc) and its file search (fd).
+    'hyprpicker', 'tesseract', 'tesseract-langpack-ita', 'tesseract-langpack-eng', 'zbar', 'qalculate', 'fd-find',
     # The emoji picker: Unicode's list and CLDR's names in every language.
     'unicode-emoji', 'cldr-emoji-annotation',
     # What plays, for the lock screen.
@@ -128,7 +128,8 @@ packages = [
 ]
 swaps = [['ffmpeg-free', 'ffmpeg'], ['libva-intel-media-driver', 'intel-media-driver']]
 login_shell = '/usr/bin/zsh'
-services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service']
+services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service',
+            'desktop-regdom.service', 'desktop-regdom.path']
 # Has no D-Bus activation: passwords are stored nowhere until it runs, and pam_oo7 waits for it at login.
 user_services = ['oo7-daemon.service']
 # Recommended by gnome-shell and gnome-control-center, which GDM requires; none of them works outside GNOME or is used here.
@@ -155,6 +156,91 @@ track = 'tags'
 path = '/usr/local/libexec/dotfiles-desktop/root-broker'
 source = 'scripts/privileged/root-broker'
 mode = '0755'
+
+# Defaults for a desktop session: room for the file watchers of editors and Herdr, open files beyond 1024, services
+# stopped within 10 s at shutdown (5 s for the user's), and systemd-oomd ending apps (not the session) that keep
+# the memory under pressure.
+[[fedora.core.files]]
+path = '/etc/sysctl.d/90-desktop.conf'
+content = '''
+fs.inotify.max_user_watches = 524288
+fs.inotify.max_user_instances = 1024
+'''
+
+[[fedora.core.files]]
+path = '/etc/systemd/system.conf.d/90-desktop.conf'
+content = '''
+[Manager]
+DefaultTimeoutStopSec=10s
+DefaultLimitNOFILE=65536:1048576
+'''
+
+[[fedora.core.files]]
+path = '/etc/systemd/user.conf.d/90-desktop.conf'
+content = '''
+[Manager]
+DefaultTimeoutStopSec=5s
+DefaultLimitNOFILE=65536:1048576
+'''
+
+[[fedora.core.files]]
+path = '/etc/systemd/user/app.slice.d/90-desktop.conf'
+content = '''
+[Slice]
+ManagedOOMMemoryPressure=kill
+ManagedOOMMemoryPressureLimit=60%
+'''
+
+# gvfs's FUSE view can block the freeze of a suspend: unmounted before, restarted after.
+[[fedora.core.files]]
+path = '/usr/lib/systemd/system-sleep/desktop-gvfs'
+source = 'scripts/system/desktop-gvfs-sleep'
+mode = '0755'
+
+# Firefox: hardware video decoding (VA-API), fractional scaling and overscroll on Wayland, and no default-browser
+# prompt. Zen reads the same policies from its own folder; its packaged distribution/policies.json is not touched.
+[[fedora.core.files]]
+path = '/etc/firefox/policies/policies.json'
+source = 'scripts/system/browser-policies.json'
+
+[[fedora.core.files]]
+path = '/etc/zen/policies/policies.json'
+source = 'scripts/system/browser-policies.json'
+
+# The Wi-Fi regulatory domain of the country of the time zone, at boot and when the time zone changes.
+[[fedora.core.files]]
+path = '/usr/local/libexec/dotfiles-desktop/desktop-regdom'
+source = 'scripts/system/desktop-regdom'
+mode = '0755'
+
+[[fedora.core.files]]
+path = '/etc/systemd/system/desktop-regdom.service'
+content = '''
+[Unit]
+Description=Wi-Fi regulatory domain from the time zone
+After=systemd-timedated.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/dotfiles-desktop/desktop-regdom
+
+[Install]
+WantedBy=multi-user.target
+'''
+
+[[fedora.core.files]]
+path = '/etc/systemd/system/desktop-regdom.path'
+content = '''
+[Unit]
+Description=Follow the time zone with the Wi-Fi regulatory domain
+
+[Path]
+PathChanged=/etc/localtime
+Unit=desktop-regdom.service
+
+[Install]
+WantedBy=multi-user.target
+'''
 
 # A laptop, in parts: each checked by default where the installer finds it (default = a detection, install-desktop.py
 # DETECT), or always. The 2-in-1 parts are the tablet profile.
@@ -201,6 +287,19 @@ source = 'scripts/privileged/desktop-fingerprint'
 mode = '0755'
 
 # Firmware updates (fwupd) and Thunderbolt devices (bolt).
+# A suspend can leave fprintd holding the reader: restarted after resume, and stopped within 3 s if it hangs.
+[[fedora.hardware.parts.fingerprint.files]]
+path = '/usr/lib/systemd/system-sleep/desktop-fprintd'
+source = 'scripts/system/desktop-fprintd-resume'
+mode = '0755'
+
+[[fedora.hardware.parts.fingerprint.files]]
+path = '/etc/systemd/system/fprintd.service.d/90-desktop.conf'
+content = '''
+[Service]
+TimeoutStopSec=3s
+'''
+
 [fedora.hardware.parts.firmware]
 default = true
 packages = ['bolt', 'fwupd']
@@ -347,6 +446,13 @@ notes = ['Connect Tailscale: sudo tailscale up']
 default = false
 packages = ['7zip']
 notes = ['Install the Microsoft fonts from your Windows ISO: desktop-msfonts install WINDOWS.iso']
+
+# Printing: CUPS with the printers the network announces (driverless IPP), found through Avahi. Workstation has
+# them already; Server has none.
+[fedora.utils.parts.printing]
+default = false
+packages = ['cups', 'cups-filters', 'cups-browsed', 'avahi', 'nss-mdns', 'system-config-printer']
+services = ['cups.service', 'cups-browsed.service', 'avahi-daemon.service']
 # The AI Assistant: the Settings section, Super + A and the bar icon need it (the shell hides them without it). Its
 # console is herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, for any coding agent
 # (docs/features/ai-assistant.md). Put where their own installers put them (releases.herdr.dev/app/install.sh), from
@@ -424,7 +530,7 @@ packages = ['gamescope']
 # Arch Linux: the official repositories (core, extra, and multilib for gaming), plus three apps from the AUR.
 # Package names checked with pacman -Si and pacman -F on 2026-11-05. Profiles as on Fedora, except: no repository
 # for Hyprland (extra has it, headers and session entry included), no swaps (Arch's ffmpeg and media drivers are the
-# full builds), no firewall zone or sshd change (Arch enables neither), and no tablet sign-in yet (it needs PAM
+# full builds), firewalld with the home zone (Arch enables no firewall), no sshd change (Arch enables none), and no tablet sign-in yet (it needs PAM
 # edited without authselect).
 [arch]
 versions = ['rolling']
@@ -445,14 +551,15 @@ packages = [
     # Audio, network and power. pactl is in libpulse, bluetoothctl in bluez-utils. ffmpeg (for wf-recorder) needs a
     # JACK library, and pacman would pick jack2, a second sound server: PipeWire's instead.
     'pipewire', 'pipewire-pulse', 'pipewire-jack', 'wireplumber', 'libpulse',
-    'networkmanager', 'wpa_supplicant', 'nm-connection-editor',
+    'networkmanager', 'wpa_supplicant', 'nm-connection-editor', 'iw',
     'bluez', 'bluez-utils', 'upower', 'tuned', 'tuned-ppd', 'brightnessctl', 'ddcutil',
     # Shell helpers. pacman-contrib has checkupdates, for the update icon and the installer, which needs fakeroot.
     'python', 'python-gobject', 'imagemagick', 'libnotify', 'libical', 'evolution-data-server',
     'gnome-online-accounts-gtk', 'matugen', 'jq', 'ripgrep', 'grim', 'slurp', 'wl-clipboard', 'cliphist',
     'wf-recorder', 'btop', 'fastfetch', 'flatpak', 'xdg-user-dirs', 'xdg-utils', 'dconf', 'pacman-contrib', 'fakeroot',
-    # Color picker, text from a screen area, the launcher's calculator (qalc is in libqalculate) and file search.
-    'hyprpicker', 'tesseract', 'tesseract-data-ita', 'tesseract-data-eng', 'libqalculate', 'fd',
+    # Color picker, text and QR codes from a screen area, the launcher's calculator (qalc is in libqalculate) and file
+    # search.
+    'hyprpicker', 'tesseract', 'tesseract-data-ita', 'tesseract-data-eng', 'zbar', 'libqalculate', 'fd',
     # The emoji picker: Unicode's list, CLDR's names (annotations) and those of flags and keycaps (unicode-cldr).
     'unicode-emoji', 'unicode-cldr-annotations', 'unicode-cldr',
     # What plays, for the lock screen.
@@ -472,7 +579,9 @@ packages = [
     'gst-plugins-bad', 'gst-plugins-ugly', 'gst-libav', 'libheif',
 ]
 login_shell = '/usr/bin/zsh'
-services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service']
+# systemd-oomd, which Fedora enables and Arch does not, for the app slice limit below.
+services = ['NetworkManager.service', 'accounts-daemon.service', 'bluetooth.service', 'tuned.service', 'tuned-ppd.service',
+            'systemd-oomd.service', 'desktop-regdom.service', 'desktop-regdom.path']
 user_services = ['oo7-daemon.service']
 notes = ['Sign in to your calendars with gnome-online-accounts-gtk.']
 
@@ -494,9 +603,99 @@ path = '/usr/local/libexec/dotfiles-desktop/root-broker'
 source = 'scripts/privileged/root-broker'
 mode = '0755'
 
+# Defaults for a desktop session: room for the file watchers of editors and Herdr, open files beyond 1024, services
+# stopped within 10 s at shutdown (5 s for the user's), and systemd-oomd ending apps (not the session) that keep
+# the memory under pressure.
+[[arch.core.files]]
+path = '/etc/sysctl.d/90-desktop.conf'
+content = '''
+fs.inotify.max_user_watches = 524288
+fs.inotify.max_user_instances = 1024
+'''
+
+[[arch.core.files]]
+path = '/etc/systemd/system.conf.d/90-desktop.conf'
+content = '''
+[Manager]
+DefaultTimeoutStopSec=10s
+DefaultLimitNOFILE=65536:1048576
+'''
+
+[[arch.core.files]]
+path = '/etc/systemd/user.conf.d/90-desktop.conf'
+content = '''
+[Manager]
+DefaultTimeoutStopSec=5s
+DefaultLimitNOFILE=65536:1048576
+'''
+
+[[arch.core.files]]
+path = '/etc/systemd/user/app.slice.d/90-desktop.conf'
+content = '''
+[Slice]
+ManagedOOMMemoryPressure=kill
+ManagedOOMMemoryPressureLimit=60%
+'''
+
+# gvfs's FUSE view can block the freeze of a suspend: unmounted before, restarted after.
+[[arch.core.files]]
+path = '/usr/lib/systemd/system-sleep/desktop-gvfs'
+source = 'scripts/system/desktop-gvfs-sleep'
+mode = '0755'
+
+# Firefox: hardware video decoding (VA-API), fractional scaling and overscroll on Wayland, and no default-browser
+# prompt. Zen reads the same policies from its own folder; its packaged distribution/policies.json is not touched.
+[[arch.core.files]]
+path = '/etc/firefox/policies/policies.json'
+source = 'scripts/system/browser-policies.json'
+
+[[arch.core.files]]
+path = '/etc/zen/policies/policies.json'
+source = 'scripts/system/browser-policies.json'
+
+# The Wi-Fi regulatory domain of the country of the time zone, at boot and when the time zone changes.
+[[arch.core.files]]
+path = '/usr/local/libexec/dotfiles-desktop/desktop-regdom'
+source = 'scripts/system/desktop-regdom'
+mode = '0755'
+
+[[arch.core.files]]
+path = '/etc/systemd/system/desktop-regdom.service'
+content = '''
+[Unit]
+Description=Wi-Fi regulatory domain from the time zone
+After=systemd-timedated.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/dotfiles-desktop/desktop-regdom
+
+[Install]
+WantedBy=multi-user.target
+'''
+
+[[arch.core.files]]
+path = '/etc/systemd/system/desktop-regdom.path'
+content = '''
+[Unit]
+Description=Follow the time zone with the Wi-Fi regulatory domain
+
+[Path]
+PathChanged=/etc/localtime
+Unit=desktop-regdom.service
+
+[Install]
+WantedBy=multi-user.target
+'''
+
 # A laptop, in parts, checked as on Fedora. linux-firmware-intel holds the Wi-Fi, Bluetooth, GPU, VSC, NPU and ISH
 # firmware that Fedora splits in several packages. The 2-in-1 parts are the tablet profile.
 [arch.hardware]
+# Arch enables no firewall: firewalld, denying what comes in. The home zone keeps mDNS (printers, AirPlay) and
+# drops the rest but SSH and DHCPv6, as Fedora's zone does for its laptop.
+packages = ['firewalld']
+services = ['firewalld.service']
+firewall_zone = 'home'
 
 [arch.hardware.parts.intel]
 default = 'intel'
@@ -525,6 +724,19 @@ source = 'scripts/privileged/polkit-1.arch'
 path = '/usr/local/libexec/desktop-fingerprint'
 source = 'scripts/privileged/desktop-fingerprint'
 mode = '0755'
+
+# A suspend can leave fprintd holding the reader: restarted after resume, and stopped within 3 s if it hangs.
+[[arch.hardware.parts.fingerprint.files]]
+path = '/usr/lib/systemd/system-sleep/desktop-fprintd'
+source = 'scripts/system/desktop-fprintd-resume'
+mode = '0755'
+
+[[arch.hardware.parts.fingerprint.files]]
+path = '/etc/systemd/system/fprintd.service.d/90-desktop.conf'
+content = '''
+[Service]
+TimeoutStopSec=3s
+'''
 
 [arch.hardware.parts.firmware]
 default = true
@@ -673,6 +885,14 @@ notes = ['Connect Tailscale: sudo tailscale up']
 default = false
 packages = ['7zip']
 notes = ['Install the Microsoft fonts from your Windows ISO: desktop-msfonts install WINDOWS.iso']
+
+# Printing: CUPS with the printers the network announces (driverless IPP), found through Avahi. The .local names
+# need nss-mdns in /etc/nsswitch.conf (mdns_minimal before resolve), which this does not edit.
+[arch.utils.parts.printing]
+default = false
+packages = ['cups', 'cups-filters', 'cups-browsed', 'avahi', 'nss-mdns', 'system-config-printer']
+services = ['cups.service', 'cups-browsed.service', 'avahi-daemon.service']
+notes = ['Printers by their .local name: add mdns_minimal [NOTFOUND=return] before resolve on the hosts line of /etc/nsswitch.conf.']
 # The AI Assistant: the Settings section, Super + A and the bar icon need it (the shell hides them without it). Its
 # console is herdr (https://herdr.dev, Apache-2.0): the Herdr app and herdr-core, for any coding agent
 # (docs/features/ai-assistant.md). Put where their own installers put them (releases.herdr.dev/app/install.sh), from

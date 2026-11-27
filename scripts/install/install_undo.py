@@ -268,7 +268,7 @@ def unfirewall_pending(plan):
 
 
 def unfirewall_apply(plan, zones):
-    plan.distro.sudo('firewall-cmd', '--set-default-zone=' + zones[0])
+    plan.distro.sudo(*install_record.set_zone_command(zones[0]))
 
 
 def unservices_pending(plan):

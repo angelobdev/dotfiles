@@ -70,6 +70,26 @@ class AppsTests(unittest.TestCase):
         self.assertEqual(apps.command('kitty.desktop', self.known), ['gio', 'launch', str(self.user / 'kitty.desktop')])
         self.assertEqual(apps.command('1password --quick-access', self.known), ['1password', '--quick-access'])
 
+    def test_window_classes_of_an_app(self):
+        (self.system / 'zen.desktop').write_text(entry('Zen', 'WebBrowser;', 'StartupWMClass=zen-alpha'), encoding='utf-8')
+        known = apps.entries([self.user, self.system])
+        self.assertEqual(apps.window_classes('zen.desktop', known), {'zen', 'zen-alpha'})
+        self.assertEqual(apps.window_classes('org.gnome.Nautilus.desktop', known), {'org.gnome.nautilus'})
+        self.assertEqual(apps.window_classes('1password --quick-access', known), {'1password'})
+
+    def test_the_most_recently_focused_window_comes_forward(self):
+        clients = [{'class': 'firefox', 'address': '0x1', 'focusHistoryID': 3},
+                   {'class': 'org.gnome.Nautilus', 'address': '0x2', 'focusHistoryID': 5},
+                   {'class': 'org.gnome.Nautilus', 'address': '0x3', 'focusHistoryID': 1},
+                   {'class': '1Password', 'address': '0x4', 'focusHistoryID': 0, 'mapped': False}]
+        self.assertEqual(apps.open_window({'org.gnome.nautilus'}, clients), '0x3')
+        self.assertIsNone(apps.open_window({'1password'}, clients))
+        self.assertIsNone(apps.open_window({'kitty'}, None))
+
+    def test_no_folder_without_a_terminal(self):
+        self.assertIsNone(apps.terminal_folder(None))
+        self.assertIsNone(apps.terminal_folder({'pid': -1}))
+
     def test_an_unreadable_settings_file_keeps_the_defaults(self):
         self.config.write_text('not json', encoding='utf-8')
         self.assertEqual(apps.chosen('terminal', self.config), 'kitty.desktop')

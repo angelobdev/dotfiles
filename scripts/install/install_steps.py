@@ -382,11 +382,11 @@ def firewall_pending(plan):
     zone = install_plan.setting(plan, 'firewall_zone')
     if not zone or not install_plan.booted() or not shutil.which('firewall-cmd'):
         return []
-    return [] if install_plan.query('firewall-cmd', '--get-default-zone').stdout.strip() == zone else [zone]
+    return [] if install_record.default_zone_now() == zone else [zone]
 
 
 def firewall_apply(plan, zones):
-    plan.distro.sudo('firewall-cmd', '--set-default-zone=' + zones[0])
+    plan.distro.sudo(*install_record.set_zone_command(zones[0]))
 
 
 def auth_pending(plan):

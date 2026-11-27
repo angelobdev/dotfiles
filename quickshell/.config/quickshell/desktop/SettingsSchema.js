@@ -6,13 +6,15 @@
 // catalogs; settings.hints.<key> adds a line under the label when it exists (hint: true), and
 // settings.placeholders.<key> is the text of an empty text field (placeholder: true).
 // type: bool (switch), number (slider: min, max, step, unit), choice (options; labels from the assist
-// catalog with assist: true), text, time (HH:MM).
+// catalog with assist: true, the clock itself in that format with clock: true), text, time (HH:MM).
 // Options left out are lists and maps (dock pins, Control Center modules, DNS presets, assist pages…),
 // still set in ~/.config/desktop/shell.json by hand.
 const options = [
     // Desktop
     { key: "barMedia", section: "desktop", group: "bar", type: "bool", fallback: true },
     { key: "barMergeCenter", section: "desktop", group: "bar", type: "bool", fallback: false, hint: true },
+    { key: "barClockFormat", section: "desktop", group: "bar", type: "choice", fallback: "default", clock: true, hint: true,
+      options: ["default", "time", "seconds", "weekday", "iso"] },
     { key: "workspaceScroll", section: "desktop", group: "bar", type: "bool", fallback: true, hint: true },
     { key: "workspaceNumbers", section: "desktop", group: "bar", type: "bool", fallback: false, hint: true },
     { key: "minimumWorkspaces", section: "desktop", group: "bar", type: "number", fallback: 2, min: 1, max: 10, step: 1 },

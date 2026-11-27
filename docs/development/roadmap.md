@@ -345,6 +345,13 @@ Designed with the user on a claude.ai canvas (five sections, center left and cen
 - Layouts and styles per monitor: dropped by the user (2026-11-26); every bar shares one layout.
 - [ ] Widget options (clock format, media width) from the design, still the global options for now.
 
+### Ideas from Omarchy (2026-11-27)
+
+Reviewed with the user from Omarchy's source (basecamp/omarchy@a11b6a6); the chosen items are issues #284–#298, the review itself kept outside the repository.
+
+- [x] #284 quick wins: window tricks (`Super + O`, `Super + Backspace`, `Super + Shift + Backspace`, `Super + Alt + F`, `Super + Ctrl + Shift + F`, `Super + Ctrl + Alt + F`), bar toggle (`Super + B`), launch or focus for the browser, password manager and file manager keys, terminal and Files in the folder of the focused terminal, QR codes from a screen area, the clock format on right click, sleep hooks for fprintd and gvfs, system defaults (inotify, NOFILE, stop timeouts, oomd on the app slice), Firefox and Zen policies, the Wi-Fi regulatory domain from the time zone, firewalld on Arch, a `utils.printing` part.
+- [ ] #292 updates (restart detection, guardrails, firmware), then #294 migrations; #288, #286, #287, #289, #290; #291; #285, #293. To discuss: #295–#298.
+
 ### System time zone from the calendar (2026-11-26)
 
 - [x] Asked by the user: the time zone and its offset under the calendar title, **Change** with a search over the zones (names and offsets), and a suggestion from the zone of the weather forecast when it follows GeoClue and the offset differs. `timezone.py list|set` (timedated through polkit), `services/TimeZones.qml`, `timezone` in the output of `weather.py`.

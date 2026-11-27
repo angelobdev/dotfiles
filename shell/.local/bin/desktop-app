@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
-# The default apps of the shortcuts, as chosen in Settings → Apps: desktop-app {terminal|browser|passwords|files}.
+# The default apps of the shortcuts, as chosen in Settings → Apps: desktop-app {terminal|browser|passwords|files}, or
+# desktop-app {terminal|files} --here for the folder of the focused terminal. The browser, the password manager
+# and the file manager come forward when they are open.
 set -euo pipefail
-case "${1:-}" in
-    terminal | browser | passwords | files) ;;
+case "${1:-} ${2:-}" in
+    'terminal ' | 'browser ' | 'passwords ' | 'files ' | 'terminal --here' | 'files --here') ;;
     *)
-        echo 'Usage: desktop-app {terminal|browser|passwords|files}' >&2
+        echo 'Usage: desktop-app {terminal|browser|passwords|files} | desktop-app {terminal|files} --here' >&2
         exit 2
         ;;
 esac
 # The terminal is how a broken setup is mended: kitty when the helper itself fails.
-python3 "$HOME/.local/libexec/desktop/apps.py" launch "$1" || {
+python3 "$HOME/.local/libexec/desktop/apps.py" launch "$@" || {
     status=$?
     [[ $1 == terminal ]] && exec kitty
     exit "$status"

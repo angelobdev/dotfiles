@@ -1,11 +1,24 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Io
 
 Singleton {
     id: root
     property var hiddenMonitors: []
+    // Hidden by the user (Super + B, the full-screen desktop): every bar, until shown again or the shell restarts.
+    property bool userHidden: false
+    // hide, show, toggle (desktop-shell bar, and the "desktop-bar" custom events of binds.lua).
+    function request(action) {
+        if (action === "hide" || action === "show")
+            userHidden = action === "hide";
+        else if (action === "toggle")
+            userHidden = !userHidden;
+        else
+            return false;
+        return true;
+    }
     readonly property string helper: Quickshell.env("HOME") + "/.local/libexec/desktop/bar_visibility.py"
     function hidden(name) {
         return hiddenMonitors.indexOf(name) !== -1;
@@ -14,6 +27,13 @@ Singleton {
     function wake() {
         if (watcher.running)
             watcher.write("wake\n");
+    }
+    Connections {
+        target: Hyprland
+        function onRawEvent(event) {
+            if (event.name === "custom" && /^desktop-bar (hide|show|toggle)$/.test(event.data))
+                root.request(event.data.split(" ")[1]);
+        }
     }
     Process {
         id: watcher

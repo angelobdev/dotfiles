@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """The default apps the shortcuts open: terminal, browser, password manager and file manager.
 
-launch ROLE: start the app chosen for ROLE in Settings → Apps ("defaultApps" in ~/.config/desktop/shell.json), else
-its default; an app that is not installed gives way to the first installed one of its kind, and with none a
-notification says so.
+launch ROLE [--here]: start the app chosen for ROLE in Settings → Apps ("defaultApps" in ~/.config/desktop/shell.json),
+else its default; an app that is not installed gives way to the first installed one of its kind, and with none a
+notification says so. The browser, the password manager and the file manager are focused instead when a window of
+theirs is open. --here (terminal and files) opens in the folder of the focused terminal.
 list: as JSON, per role the choice, the default and the installed apps of its kind, for Settings → Apps.
 
 A choice is a desktop entry id ("kitty.desktop") or a command line ("1password --quick-access").
@@ -26,6 +27,8 @@ ROLES = {
     'passwords': ('1password --quick-access', None),
     'files': ('org.gnome.Nautilus.desktop', 'FileManager'),
 }
+# Roles whose shortcut brings an open window forward rather than opening another.
+FOCUSED = ('browser', 'passwords', 'files')
 PASSWORD_MANAGERS = ('1password.desktop', 'bitwarden.desktop', 'com.bitwarden.desktop.desktop', 'org.keepassxc.KeePassXC.desktop',
                      'proton-pass.desktop', 'me.proton.Pass.desktop', 'enpass.desktop')
 
@@ -52,7 +55,7 @@ def read_entry(path):
     entry = parser['Desktop Entry']
     if entry.get('Type', 'Application') != 'Application' or entry.get('Hidden', '').lower() == 'true':
         return None
-    return {'name': entry.get('Name', path.stem), 'icon': entry.get('Icon', ''),
+    return {'name': entry.get('Name', path.stem), 'icon': entry.get('Icon', ''), 'wmclass': entry.get('StartupWMClass', ''),
             'categories': [part for part in entry.get('Categories', '').split(';') if part],
             'shown': entry.get('NoDisplay', '').lower() != 'true'}
 
@@ -114,14 +117,72 @@ def command(choice, known):
     return shlex.split(choice)
 
 
-def launch(role):
+def window_classes(choice, known):
+    """The window classes an app's windows may have, lower case: its StartupWMClass and its id, or its program."""
+    if choice.endswith('.desktop'):
+        stem = choice.removesuffix('.desktop')
+        names = {stem, known.get(choice, {}).get('wmclass', '')}
+    else:
+        words = shlex.split(choice)
+        names = {Path(words[0]).name} if words else set()
+    return {name.lower() for name in names if name}
+
+
+def hypr_json(*arguments):
+    result = subprocess.run(['hyprctl', '-j', *arguments], capture_output=True, text=True, timeout=5, check=False)
+    return json.loads(result.stdout) if result.returncode == 0 and result.stdout.strip() else None
+
+
+def open_window(classes, clients):
+    """The address of the app's most recently focused window, None without one."""
+    found = [client for client in clients or () if str(client.get('class', '')).lower() in classes and client.get('mapped', True)]
+    found.sort(key=lambda client: client.get('focusHistoryID', 1 << 30))
+    return found[0]['address'] if found else None
+
+
+def terminal_folder(active):
+    """The folder of the shell in the focused terminal: its newest child that leads a session on a terminal."""
+    pid = (active or {}).get('pid')
+    if not isinstance(pid, int) or pid <= 0:
+        return None
+    children = []
+    for listing_file in Path(f'/proc/{pid}/task').glob('*/children'):
+        try:
+            children += [int(word) for word in listing_file.read_text().split()]
+        except (OSError, ValueError):
+            continue
+    for child in sorted(children, reverse=True):
+        try:
+            fields = Path(f'/proc/{child}/stat').read_text().rsplit(')', 1)[1].split()
+            folder = os.readlink(f'/proc/{child}/cwd')
+        except (OSError, IndexError):
+            continue
+        # fields[3] is the session, fields[4] the terminal: a shell the terminal started, not some helper.
+        if int(fields[3]) == child and int(fields[4]) != 0 and Path(folder).is_dir():
+            return folder
+    return None
+
+
+def launch(role, here=False):
     known = entries()
     choice = resolve(role, known)
     if not choice:
         subprocess.run(['notify-send', '--app-name=' + tr('apps.title'), '--app-icon=dialog-warning', tr('apps.title'),
                         tr('apps.missing', [tr(f'apps.roles.{role}')])], check=False)
         return 1
+    if role in FOCUSED and not here:
+        address = open_window(window_classes(choice, known), hypr_json('clients'))
+        if address:
+            subprocess.run(['hyprctl', 'dispatch', f'hl.dsp.focus({{ window = "address:{address}" }})'],
+                           capture_output=True, timeout=5, check=False)
+            return 0
     arguments = command(choice, known)
+    folder = terminal_folder(hypr_json('activewindow')) if here else None
+    if folder:
+        # The terminal starts in the folder it is started from; the file manager is given it to show.
+        os.chdir(folder)
+        if role == 'files':
+            arguments.append(folder)
     os.execvp(arguments[0], arguments)
 
 
@@ -142,6 +203,8 @@ def main(arguments=None):
     arguments = sys.argv[1:] if arguments is None else arguments
     if len(arguments) == 2 and arguments[0] == 'launch' and arguments[1] in ROLES:
         return launch(arguments[1])
+    if arguments[:1] == ['launch'] and arguments[2:] == ['--here'] and len(arguments) == 3 and arguments[1] in ('terminal', 'files'):
+        return launch(arguments[1], here=True)
     if arguments == ['list']:
         print(json.dumps(listing(), ensure_ascii=False))
         return 0

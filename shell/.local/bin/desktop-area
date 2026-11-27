@@ -1,19 +1,27 @@
 #!/usr/bin/env bash
 # A screen area, chosen with slurp (Esc cancels):
 #   text  its text (tesseract, Italian and English), copied to the clipboard;
+#   qr    what the QR code (or bar code) in it holds (zbarimg), copied to the clipboard;
 #   ask   the area as an image for Claude in the assistant console: its path is typed at the prompt, or, with a
 #         console started before this existed, the image is copied for Ctrl + V.
 set -euo pipefail
 message() { python3 "$HOME/.local/libexec/desktop/i18n.py" "$@"; }
 notify() { notify-send --app-name="$(message 'area.title')" --app-icon="$1" "$2" "${3:-}"; }
 mode=${1:-}
-[[ $mode == text || $mode == ask ]] || { echo 'Usage: desktop-area {text|ask}' >&2; exit 2; }
+[[ $mode == text || $mode == qr || $mode == ask ]] || { echo 'Usage: desktop-area {text|qr|ask}' >&2; exit 2; }
 if [[ $mode == text ]] && ! command -v tesseract >/dev/null; then
     case $(. /etc/os-release && echo "$ID") in
         arch) install='sudo pacman -S tesseract tesseract-data-ita' ;;
         *) install='sudo dnf install tesseract tesseract-langpack-ita' ;;
     esac
     exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify area.title area.ocrMissing "$install"
+fi
+if [[ $mode == qr ]] && ! command -v zbarimg >/dev/null; then
+    case $(. /etc/os-release && echo "$ID") in
+        arch) install='sudo pacman -S zbar' ;;
+        *) install='sudo dnf install zbar' ;;
+    esac
+    exec python3 "$HOME/.local/libexec/desktop/i18n.py" --notify area.title area.qrMissing "$install"
 fi
 area=$(slurp 2>/dev/null) || exit 0
 # Captures stay in the runtime directory (gone at logout); the assistant may read one later in the chat,
@@ -34,6 +42,18 @@ if [[ $mode == text ]]; then
     fi
     printf '%s' "$text" | wl-copy
     notify edit-copy-symbolic "$(message 'area.textCopied')" "$(printf '%s' "$text" | head -c 240)"
+    exit 0
+fi
+if [[ $mode == qr ]]; then
+    # --raw: the content alone, one line per code found (the first one is copied).
+    code=$(zbarimg --quiet --raw "$image" 2>/dev/null | head -n 1 || true)
+    rm -f "$image"
+    if [[ -z $code ]]; then
+        notify dialog-information-symbolic "$(message 'area.noCode')"
+        exit 0
+    fi
+    printf '%s' "$code" | wl-copy
+    notify edit-copy-symbolic "$(message 'area.codeCopied')" "$(printf '%s' "$code" | head -c 240)"
     exit 0
 fi
 # ask: desktop-ai starts its kitty with a remote-control socket for this; the path is typed as the primary
