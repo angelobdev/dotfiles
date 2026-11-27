@@ -1399,3 +1399,9 @@ Reported by the user after the merges of the day:
 - On this machine: `desktop-theme import` of Nord gave `{"id": "nord"}`, `desktop-theme list` showed it with `imported: true`, `desktop-theme remove nord` took the folder away; it was never applied. `theme.py` imported `theme_import` a few minutes before `stow.py apply` linked it: a `theme.py` call in that window would have failed.
 - Not tried here: an import from a git URL, and the Import field and trash button on screen.
 
+## Workspace layouts (#285), 2026-11-27
+
+- Hyprland 0.57.2 through `hyprctl eval`: a workspace rule with `layout = "scrolling"` turned workspace 1 (hidden) to `scrolling` in `hyprctl workspaces` and back to `dwindle` when disabled. After the save of `binds.lua` and the new module, `--verify-config` and `configerrors` clean, `test_binds.py` passes.
+- Live on workspace 2 (one window): three `desktop_workspace_layout_cycle()` gave `scrolling` (`{"2": "scrolling"}` in the state file, the pill of workspace 2 with the scrolling glyph), `floating` (its window floating) and `dwindle` (the window tiled again, the state file `{}`).
+- Not tried here: the key itself, a click on the pill, a reload or login with a layout kept, a window opened on a floating workspace.
+

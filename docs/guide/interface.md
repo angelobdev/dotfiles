@@ -43,6 +43,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Backspace` | Window transparency: the window at 85% opacity, focused or not; again makes it opaque |
 | `Super + Shift + Backspace` | Gaps on this workspace: none between its windows and to the edges; again brings them back |
 | `Super + Alt + F` | Maximize the window (the bar and gaps stay) |
+| `Super + Ctrl + L` | Workspace layout: the focused workspace goes from tiling to scrolling to floating and back, with an OSD; a click on its pill in the bar does the same |
 | `Super + Ctrl + Shift + F` | Tiled fullscreen: the app is told it is fullscreen (video players, presentations) while the window keeps its tile |
 | `Super + Ctrl + Alt + F` | Full-screen desktop: every bar hidden and no gaps anywhere; again brings both back |
 | `Super + B` | Show or hide the bar (every monitor): hidden, it reserves nothing and takes no clicks but its overview corner; `desktop-shell bar` with `hide`, `show` or `toggle` does the same |
@@ -117,6 +118,8 @@ Media keys call Quickshell through `desktop-shell media ACTION`, using the same 
 ## Workspaces per monitor
 
 The bar shows occupied/active workspaces and at least two pills per monitor. Empty slots are placeholders: a workspace is created only when clicked or reached by scrolling, or by scrolling past the last pill. IDs are assigned globally without reusing another monitor's workspaces; special workspaces are excluded. Clicking first focuses the bar's monitor. Scrolling or a vertical touchpad gesture over the workspace area moves to the previous/next workspace, stopping at the first one. Scrolling past the last one opens a new workspace on that monitor, with the first free ID above it, if the last one has windows; an empty last workspace stops the scroll, since Hyprland removes an empty workspace once you leave it. Touchpad deltas accumulate to prevent accidental switches; the area responds over the entire bar height.
+
+Each workspace has its own layout (`config/workspace_layouts.lua`): **tiling** (dwindle, the default), **scrolling** (windows side by side in a row that scrolls), or **floating** (what it holds and what opens there floats; going back tiles again only the windows it floated). `Super + Ctrl + L` or a click on the focused workspace's pill changes it, the pill then shows the glyph of a layout other than tiling, and its tooltip names it. The choice is kept in `~/.local/state/desktop-session/workspace-layouts.json` across reloads and logins; named and special workspaces keep the default.
 
 In `Config.qml`: `minimumWorkspaces: 2` (minimum 2, maximum 10), `workspaceScroll: true` and `workspaceNumbers: false`. Turning `workspaceNumbers` on (Settings → Desktop → Bar, "Show workspace numbers") draws each workspace's number inside the active pill and in place of the other dots; the bar height does not change.
 

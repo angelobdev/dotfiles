@@ -87,6 +87,9 @@ bind("SUPER + Q", hl.dsp.window.close(), "Close window")
 bind("SUPER + V", hl.dsp.window.float({ action = "toggle" }), "Toggle floating window")
 bind("SUPER + CTRL + P", hl.dsp.window.pseudo(), "Toggle pseudotiling")
 bind("SUPER + J", hl.dsp.layout("togglesplit"), "Toggle split orientation")
+-- Tiling, scrolling or floating for the focused workspace (config/workspace_layouts.lua).
+local workspace_layouts = require("config.workspace_layouts")
+bind("SUPER + CTRL + L", workspace_layouts.cycle, "Workspace layout")
 bind("SUPER + F", hl.dsp.window.fullscreen(), "Fullscreen")
 
 -- Window tricks: a window popped out over the others on every workspace, a see-through one, no gaps on one

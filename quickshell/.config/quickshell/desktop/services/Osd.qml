@@ -57,6 +57,9 @@ Singleton {
     }
     // Any action that wants to confirm itself (desktop-shell osd): an icon of assets/icons, a title, a line under
     // it, and a level from 0 to 100 drawn as the bar of the volume (-1 for none).
+    function layoutKey(mode) {
+        return "workspaces.layouts." + (["scrolling", "floating"].includes(mode) ? mode : "dwindle");
+    }
     function showMessage(icon, heading, line, progress) {
         if (!Config.osdEnabled)
             return false;
@@ -153,7 +156,10 @@ Singleton {
             if (event.name === "custom" && event.data.startsWith("desktop-osd ")) {
                 const words = event.data.split(" ");
                 const trick = root.tricks[words[1]];
-                if (trick)
+                // The layout of a workspace (config/workspace_layouts.lua) says which one it is now.
+                if (words[1] === "workspaceLayout")
+                    root.showState(words[2] === "scrolling" ? "split" : words[2] === "floating" ? "window" : "overview", I18n.tr("bindings.workspaceLayout"), I18n.tr(root.layoutKey(words[2])));
+                else if (trick)
                     root.showState(trick.icon, I18n.tr(trick.title), I18n.tr(words[2] === "on" ? "common.on" : "common.off"));
             } else if (event.name === "activelayout") {
                 // "keyboard,Layout name" for every keyboard that switches: one OSD for the layout.

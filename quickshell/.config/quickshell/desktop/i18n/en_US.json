@@ -377,7 +377,8 @@
     "maximize": "Maximize window",
     "tiledFullscreen": "Tiled fullscreen",
     "fullscreenDesktop": "Full-screen desktop",
-    "toggleBar": "Show or hide the bar"
+    "toggleBar": "Show or hide the bar",
+    "workspaceLayout": "Workspace layout"
   },
   "bluetooth": {
     "authorizeService": "Allow the device to use the requested service?",
@@ -1476,7 +1477,13 @@
     "windowCount": {
       "one": "Workspace %2 · %1 window",
       "other": "Workspace %2 · %1 windows"
-    }
+    },
+    "layouts": {
+      "dwindle": "Tiling",
+      "scrolling": "Scrolling",
+      "floating": "Floating"
+    },
+    "layoutHint": "%1 · click to change the layout"
   },
   "msfonts": {
     "help": {

@@ -19,6 +19,7 @@ var bindKeys = {
     "Toggle floating window": "bindings.toggleFloating",
     "Toggle pseudotiling": "bindings.togglePseudotiling",
     "Toggle split orientation": "bindings.toggleSplit",
+    "Workspace layout": "bindings.workspaceLayout",
     "Window wider": "bindings.windowWider",
     "Window narrower": "bindings.windowNarrower",
     "Window taller": "bindings.windowTaller",

@@ -15,6 +15,8 @@ RowLayout {
     // The id of a workspace opened by scrolling past the last pill; -1 opens none.
     property int newId: -1
     property bool scrollEnabled: true
+    // Workspace id (a string) -> "scrolling" or "floating"; tiling ones are left out.
+    property var layouts: ({})
     property real accumulated: 0
     property bool pixelGesture: false
     signal activated(int id)
@@ -68,17 +70,32 @@ RowLayout {
             focusPolicy: Qt.NoFocus
             implicitWidth: active ? Theme.hit(46) : Theme.hit(28)
             implicitHeight: Theme.hit(28)
+            readonly property string layout: root.layouts[String(modelData.id)] ?? ""
             Accessible.name: I18n.tr("workspaces.accessibleName", [modelData.id])
             HintTooltip {
                 target: workspace
                 hovered: workspace.hovered
-                text: I18n.plural("workspaces.windowCount.one", "workspaces.windowCount.other", workspace.modelData.count, [workspace.modelData.id])
+                // The focused one says its layout, which a click on it changes.
+                text: {
+                    const count = I18n.plural("workspaces.windowCount.one", "workspaces.windowCount.other", workspace.modelData.count, [workspace.modelData.id]);
+                    return workspace.active ? count + "\n" + I18n.tr("workspaces.layoutHint", [I18n.tr(Osd.layoutKey(workspace.layout))]) : count;
+                }
             }
             background: Rectangle {
                 radius: Theme.corner(10)
                 color: workspace.hovered || workspace.activeFocus ? Theme.raised : "transparent"
             }
             contentItem: Item {
+                // Not tiling: the glyph of its layout on the pill of the focused workspace.
+                Icon {
+                    visible: workspace.active && workspace.layout !== ""
+                    name: workspace.layout === "scrolling" ? "split" : "window"
+                    color: workspace.active ? BarStyle.halo : BarStyle.muted
+                    anchors.centerIn: parent
+                    width: 10
+                    height: 10
+                    z: 1
+                }
                 Rectangle {
                     anchors.centerIn: parent
                     width: workspace.active ? 28 : 8

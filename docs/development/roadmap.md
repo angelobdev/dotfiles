@@ -358,7 +358,8 @@ Reviewed with the user from Omarchy's source (basecamp/omarchy@a11b6a6); the cho
 - [x] #289 Network panel: live traffic from the device's sysfs counters, the Wi-Fi band (`network.py set-band`, `802-11-wireless.band`), a speed test with the first installed of Ookla's `speedtest`, `librespeed-cli` and `speedtest-cli`.
 - [x] #290 fingerprint enrollment in Settings → Privacy (`FingerprintGroup.qml`, `fingerprint.py` over fprintd's D-Bus API): the enrolled fingers, Remove, Add with each touch followed; in the page rather than full-screen.
 - [x] #291 Omarchy themes: `theme_import.py` (`desktop-theme import|remove`, the Import field and the trash button on imported cards), into `~/.config/desktop/themes/`, with their backgrounds as wallpapers.
-- [ ] #285, #293. To discuss: #295–#298.
+- [x] #285 workspace layouts: `config/workspace_layouts.lua` (tiling, scrolling, floating per workspace; a workspace rule or a floating window rule; kept in `workspace-layouts.json`), `Super + Ctrl + L`, the glyph and the click on the focused pill, the OSD.
+- [ ] #293 (design first). To discuss: #295–#298.
 
 ### System time zone from the calendar (2026-11-26)
 

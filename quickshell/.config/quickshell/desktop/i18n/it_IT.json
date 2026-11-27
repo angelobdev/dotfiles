@@ -377,7 +377,8 @@
     "maximize": "Massimizza la finestra",
     "tiledFullscreen": "Schermo intero nella griglia",
     "fullscreenDesktop": "Desktop a schermo intero",
-    "toggleBar": "Mostra o nascondi la barra"
+    "toggleBar": "Mostra o nascondi la barra",
+    "workspaceLayout": "Layout del workspace"
   },
   "bluetooth": {
     "authorizeService": "Consentire al dispositivo di utilizzare il servizio richiesto?",
@@ -1476,7 +1477,13 @@
     "windowCount": {
       "one": "Workspace %2 · %1 finestra",
       "other": "Workspace %2 · %1 finestre"
-    }
+    },
+    "layouts": {
+      "dwindle": "Affiancate",
+      "scrolling": "A scorrimento",
+      "floating": "Flottanti"
+    },
+    "layoutHint": "%1 · clic per cambiare layout"
   },
   "msfonts": {
     "help": {

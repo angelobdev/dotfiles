@@ -11,7 +11,7 @@ Without a layout of your own the bar is the **classic** one, item for item the b
 | Id | Shows | Click |
 | --- | --- | --- |
 | `launcher` | The distribution logo | Launcher |
-| `workspaces` | The workspaces of the monitor ([workspaces](../guide/interface.md#workspaces-per-monitor)) | Focuses one; the wheel moves |
+| `workspaces` | The workspaces of the monitor ([workspaces](../guide/interface.md#workspaces-per-monitor)), the focused one with the glyph of its layout when not tiling | Focuses one; on the focused one, the next layout; the wheel moves |
 | `title` | The active window; on a narrow bar or in tablet mode, its app icon | Right click or long press: window menu |
 | `tray` | The status icons of apps | Their menus |
 | `media` | What plays (with `barMedia`) | Play/pause; wheel skips; right click Control Center |
