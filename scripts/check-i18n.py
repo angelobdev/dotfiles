@@ -105,7 +105,7 @@ class TranslationTests(unittest.TestCase):
             expected = self.flattened_catalog(lang)
             with patch.dict(os.environ, {'XDG_CONFIG_HOME': str(config)}), patch.object(i18n, 'language', return_value=lang):
                 self.assertEqual(i18n.tr('launcher.title'), expected['launcher.title'])
-                self.assertEqual(i18n.tr('network.passwordFor', ['a$&b']), expected['network.passwordFor'].replace('%1', 'a$&b'))
+                self.assertEqual(i18n.tr('network.connectionFailed', ['a$&b']), expected['network.connectionFailed'].replace('%1', 'a$&b'))
                 self.assertEqual(i18n.tr('bindings.moveToWorkspace', [4]), expected['bindings.moveToWorkspace'].replace('%1', '4'))
                 self.assertEqual(i18n.tr('missing.key'), 'missing.key')
                 self.assertEqual(i18n.tr('bindings.moveToWorkspace'), expected['bindings.moveToWorkspace'])

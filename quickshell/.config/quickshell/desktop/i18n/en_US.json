@@ -899,7 +899,6 @@
     "wifiOff": "Wi-Fi off",
     "wifiOn": "Wi-Fi on",
     "connectionFailed": "Connection failed: %1",
-    "passwordFor": "Password for %1",
     "traffic": "Traffic",
     "trafficValue": "↓ %1 · ↑ %2",
     "rateKilo": "%1 kB/s",

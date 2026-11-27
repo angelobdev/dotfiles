@@ -50,14 +50,12 @@ ColumnLayout {
         attempt = network;
         network.connect();
     }
+    // The password is asked under the network row itself (its field opens empty and focused, see the list below).
     function askPassword(network) {
         passwordNetwork = network;
-        password.clear();
-        password.forceActiveFocus();
     }
     function cancelPassword() {
         passwordNetwork = null;
-        password.clear();
     }
     function openHidden(device) {
         cancelPassword();
@@ -133,8 +131,12 @@ ColumnLayout {
             }
         }
     }
-    // Esc: back from the details first; false when there is nothing to go back from.
+    // Esc: the password prompt closes first, then the details; false when there is nothing to go back from.
     function goBack() {
+        if (passwordNetwork) {
+            cancelPassword();
+            return true;
+        }
         if (!detailsNetwork)
             return false;
         closeDetails();
@@ -354,70 +356,128 @@ ColumnLayout {
                             leftPadding: 6
                             rightPadding: 6
                             spacing: 2
-                            // At most seven networks at a time; more scroll inside the list, and Other network stays
-                            // right below it.
+                            // At most seven networks at a time (and the password prompt of one); more scroll inside the
+                            // list, and Other network stays right below it.
                             ListView {
                                 id: networkList
                                 readonly property int rowHeight: Theme.hit(36)
                                 readonly property int shownRows: Math.min(count, 7)
+                                // The prompt under the row of the network asking for its password, when it is here.
+                                property real promptHeight: 0
+                                readonly property real fullHeight: shownRows * rowHeight + Math.max(0, shownRows - 1) * spacing + promptHeight
+                                readonly property bool scrolls: contentHeight > fullHeight + 1
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: shownRows * rowHeight + Math.max(0, shownRows - 1) * spacing
+                                Layout.preferredHeight: Math.min(contentHeight, fullHeight)
                                 visible: count > 0
                                 spacing: 2
                                 clip: true
-                                interactive: count > 7
+                                interactive: scrolls
                                 boundsBehavior: Flickable.StopAtBounds
                                 ScrollBar.vertical: ScrollBar {
-                                    policy: networkList.count > 7 ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+                                    policy: networkList.scrolls ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
                                 }
                                 // Rows follow their network: a reorder while scanning moves them instead of recreating
                                 // every row, which lost the keyboard focus and a press in progress.
                                 model: ScriptModel {
                                     values: deviceRow.modelData.networks.values.filter(n => n !== root.activeNetwork && n.name.toLowerCase().includes(search.text.toLowerCase())).sort((a, b) => Number(b.connected) - Number(a.connected) || (b.signalStrength ?? 0) - (a.signalStrength ?? 0) || a.name.localeCompare(b.name))
                                 }
-                                delegate: RowLayout {
+                                // A row, and under it the password prompt while this network asks for one.
+                                delegate: ColumnLayout {
                                     id: networkRow
                                     required property var modelData
+                                    required property int index
                                     readonly property bool secured: !deviceRow.wired && modelData.security !== WifiSecurityType.Open && modelData.security !== WifiSecurityType.Owe
-                                    width: networkList.width - (networkList.count > 7 ? 10 : 0)
-                                    height: networkList.rowHeight
-                                    spacing: 2
-                                    ActionButton {
+                                    readonly property bool asking: root.passwordNetwork === modelData
+                                    width: networkList.width - (networkList.scrolls ? 10 : 0)
+                                    spacing: 0
+                                    RowLayout {
                                         Layout.fillWidth: true
-                                        alignLeft: true
-                                        iconName: NetworkInfo.icon(networkRow.modelData)
-                                        text: networkRow.modelData.name + (networkRow.modelData.stateChanging ? " …" : "")
-                                        highlighted: networkRow.modelData.connected
-                                        tone: "state"
-                                        enabled: !networkRow.modelData.stateChanging
-                                        onClicked: {
-                                            root.error = "";
-                                            if (networkRow.modelData.connected) {
-                                                networkRow.modelData.disconnect();
-                                                return;
+                                        Layout.preferredHeight: networkList.rowHeight
+                                        spacing: 2
+                                        ActionButton {
+                                            Layout.fillWidth: true
+                                            alignLeft: true
+                                            iconName: NetworkInfo.icon(networkRow.modelData)
+                                            text: networkRow.modelData.name + (networkRow.modelData.stateChanging ? " …" : "")
+                                            highlighted: networkRow.modelData.connected
+                                            tone: "state"
+                                            enabled: !networkRow.modelData.stateChanging
+                                            onClicked: {
+                                                root.error = "";
+                                                if (networkRow.modelData.connected) {
+                                                    networkRow.modelData.disconnect();
+                                                    return;
+                                                }
+                                                if (networkRow.modelData.known || deviceRow.wired || !networkRow.secured)
+                                                    root.connectTo(networkRow.modelData);
+                                                else if (root.personal(networkRow.modelData))
+                                                    root.askPassword(networkRow.modelData);
+                                                else
+                                                    root.error = I18n.tr("network.errors.enterpriseProfileRequired");
                                             }
-                                            if (networkRow.modelData.known || deviceRow.wired || !networkRow.secured)
-                                                root.connectTo(networkRow.modelData);
-                                            else if (root.personal(networkRow.modelData))
-                                                root.askPassword(networkRow.modelData);
-                                            else
-                                                root.error = I18n.tr("network.errors.enterpriseProfileRequired");
+                                        }
+                                        Icon {
+                                            visible: networkRow.secured && !networkRow.modelData.known
+                                            name: "lock"
+                                            color: Theme.muted
+                                            Layout.preferredWidth: 14
+                                            Layout.preferredHeight: 14
+                                            Layout.rightMargin: 7
+                                        }
+                                        CompactIconButton {
+                                            visible: networkRow.modelData.known
+                                            iconName: "chevron-right"
+                                            iconSize: 16
+                                            tooltip: I18n.tr("network.details")
+                                            onClicked: root.openDetails(networkRow.modelData)
                                         }
                                     }
-                                    Icon {
-                                        visible: networkRow.secured && !networkRow.modelData.known
-                                        name: "lock"
-                                        color: Theme.muted
-                                        Layout.preferredWidth: 14
-                                        Layout.preferredHeight: 14
-                                        Layout.rightMargin: 7
-                                    }
-                                    CompactIconButton {
-                                        visible: networkRow.modelData.known
-                                        iconName: "chevron-right"
-                                        iconSize: 16
-                                        tooltip: I18n.tr("network.details")
-                                        onClicked: root.openDetails(networkRow.modelData)
+                                    Loader {
+                                        id: prompt
+                                        Layout.fillWidth: true
+                                        Layout.leftMargin: 8
+                                        Layout.rightMargin: 8
+                                        active: networkRow.asking
+                                        visible: active
+                                        onHeightChanged: networkList.promptHeight = active ? height : 0
+                                        onActiveChanged: if (!active)
+                                            networkList.promptHeight = 0
+                                        sourceComponent: ColumnLayout {
+                                            spacing: 6
+                                            // Opens empty and focused, the row and its prompt scrolled into view.
+                                            Component.onCompleted: {
+                                                password.forceActiveFocus();
+                                                Qt.callLater(() => networkList.positionViewAtIndex(networkRow.index, ListView.Contain));
+                                            }
+                                            InputField {
+                                                id: password
+                                                Layout.topMargin: 4
+                                                Layout.fillWidth: true
+                                                echoMode: TextInput.Password
+                                                placeholderText: I18n.tr("network.passwordPlaceholder")
+                                                onAccepted: connectButton.clicked()
+                                            }
+                                            RowLayout {
+                                                Layout.bottomMargin: 6
+                                                ActionButton {
+                                                    id: connectButton
+                                                    outlined: true
+                                                    text: I18n.tr("network.connect")
+                                                    enabled: password.text.length > 0
+                                                    onClicked: if (enabled) {
+                                                        root.error = "";
+                                                        root.attempt = networkRow.modelData;
+                                                        networkRow.modelData.connectWithPsk(password.text);
+                                                        password.clear();
+                                                    }
+                                                }
+                                                ActionButton {
+                                                    outlined: true
+                                                    text: I18n.tr("common.cancel")
+                                                    onClicked: root.cancelPassword()
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -500,41 +560,6 @@ ColumnLayout {
                     visible: Networking.devices.values.length === 0
                     text: I18n.tr("network.noDevices")
                     color: Theme.muted
-                }
-                ColumnLayout {
-                    visible: root.passwordNetwork !== null
-                    Layout.fillWidth: true
-                    Text {
-                        text: I18n.tr("network.passwordFor", [root.passwordNetwork?.name ?? ""])
-                        color: Theme.text
-                        textFormat: Text.PlainText
-                    }
-                    InputField {
-                        id: password
-                        Layout.fillWidth: true
-                        echoMode: TextInput.Password
-                        placeholderText: I18n.tr("network.passwordPlaceholder")
-                        onAccepted: connectButton.clicked()
-                    }
-                    RowLayout {
-                        ActionButton {
-                            id: connectButton
-                            outlined: true
-                            text: I18n.tr("network.connect")
-                            enabled: !!root.passwordNetwork && password.text.length > 0
-                            onClicked: if (enabled) {
-                                root.error = "";
-                                root.attempt = root.passwordNetwork;
-                                root.passwordNetwork.connectWithPsk(password.text);
-                                password.clear();
-                            }
-                        }
-                        ActionButton {
-                            outlined: true
-                            text: I18n.tr("common.cancel")
-                            onClicked: root.cancelPassword()
-                        }
-                    }
                 }
                 ActionButton {
                     Layout.fillWidth: true
