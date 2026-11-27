@@ -68,5 +68,37 @@ class TimeoutTests(unittest.TestCase):
         self.assertGreater(network.ACTIVATION_TIMEOUT, 90)
 
 
+class SpeedTests(unittest.TestCase):
+    def test_each_tool_in_mbit_per_second(self):
+        import json
+        ookla = json.dumps({'download': {'bandwidth': 12_500_000}, 'upload': {'bandwidth': 2_500_000}, 'ping': {'latency': 11.6}, 'server': {'name': 'Milano'}})
+        self.assertEqual(network.speed_result('speedtest', ookla), {'down': 100.0, 'up': 20.0, 'ping': 12, 'server': 'Milano'})
+        libre = json.dumps([{'download': 93.37, 'upload': 18.04, 'ping': 9.2, 'server': {'name': 'Roma'}}])
+        self.assertEqual(network.speed_result('librespeed-cli', libre), {'down': 93.4, 'up': 18.0, 'ping': 9, 'server': 'Roma'})
+        cli = json.dumps({'download': 50_000_000, 'upload': 10_000_000, 'ping': 20.4, 'server': {'sponsor': 'ISP'}})
+        self.assertEqual(network.speed_result('speedtest-cli', cli), {'down': 50.0, 'up': 10.0, 'ping': 20, 'server': 'ISP'})
+
+    def test_no_tool_no_test(self):
+        with mock.patch.object(network.shutil, 'which', return_value=None):
+            self.assertEqual(network.speed_test_tool(), '')
+            with self.assertRaises(ValueError):
+                network.speed_test()
+
+
+class BandTests(unittest.TestCase):
+    def test_a_band_is_set_and_reconnects(self):
+        calls = []
+        with mock.patch.object(network, 'connection', return_value=(network.WIFI, 'Home', 'wlan0')), \
+                mock.patch.object(network, 'nmcli', side_effect=lambda *args, **kwargs: calls.append(args) or ''):
+            network.set_band('u1', '5')
+        self.assertEqual(calls[0], ('connection', 'modify', 'u1', '802-11-wireless.band', 'a'))
+        self.assertEqual(calls[1], ('connection', 'up', 'u1'))
+
+    def test_only_wifi_has_a_band(self):
+        with mock.patch.object(network, 'connection', return_value=(network.WIRED, 'Cable', 'eth0')):
+            with self.assertRaises(ValueError):
+                network.set_band('u1', '5')
+
+
 if __name__ == '__main__':
     unittest.main()

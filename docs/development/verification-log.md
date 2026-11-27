@@ -1380,3 +1380,9 @@ Reported by the user after the merges of the day:
 - Live: `desktop-shell remind 1 "Reminder test (desktop)"` answered 0 and `remind list` showed it; `remind tea later` was refused with its usage (exit 1). The dialog listed it at 11:34 with **1 min** left; 55 s later the list was empty and the notification **Reminders · Reminder test (desktop)** was on screen. With Do Not Disturb turned on for the test, a plain `notify-send` stayed hidden and one with the `x-desktop-reminder` hint popped up; Do Not Disturb was turned off again, as it was.
 - Not tried here: a reminder missed while logged out, and the bar widget (this machine's own layout has no `reminders` yet: the gallery adds it).
 
+## Network panel extras (#289), 2026-11-27
+
+- `test_network.py`: each speed test's JSON in Mbit/s (Ookla's bandwidth in bytes per second, librespeed's list, speedtest-cli's bits), no tool no test, a band set with `nmcli` and the reconnection, only Wi-Fi has one.
+- On this machine: `network.py profile` of the active Wi-Fi gives `band: auto`; `extras` gives `speedTest: ""` (none installed). The shell loaded after the change (a first version set `wrapMode` twice: Quickshell kept the previous configuration until it was fixed).
+- Not tried here: the details view on screen (it opens with a click on a network), changing the band (it reconnects the Wi-Fi in use), a speed test.
+

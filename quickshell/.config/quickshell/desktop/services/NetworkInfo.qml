@@ -41,6 +41,17 @@ Singleton {
     property var vpns: []
     property var hotspot: ({})
     property var tailscale: ({})
+    // The speed test installed (network.py SPEED_TESTS), "" for none, and its last result {down, up, ping, server}.
+    property string speedTestTool: ""
+    property var speed: null
+    readonly property bool testingSpeed: speedTester.running
+    function speedTest() {
+        if (speedTester.running)
+            return;
+        error = "";
+        speed = null;
+        speedTester.running = true;
+    }
     // Seconds until network.py clears a copied password; reported by the helper.
     property int clearAfter: 0
     readonly property bool busy: operation.running || profileLoader.running || joiner.running
@@ -181,6 +192,28 @@ Singleton {
             }
         }
     }
+    // A minute or so of traffic: apart from the operations, which it would hold up.
+    Process {
+        id: speedTester
+        command: ["python3", root.helper, "speedtest"]
+        stdout: StdioCollector {
+            id: speedData
+        }
+        stderr: StdioCollector {
+            id: speedErrors
+        }
+        onExited: (code, status) => {
+            if (code !== 0) {
+                root.error = speedErrors.text.trim() || I18n.tr("network.errors.commandFailed", [code]);
+                return;
+            }
+            try {
+                root.speed = JSON.parse(speedData.text);
+            } catch (e) {
+                root.error = I18n.tr("network.errors.commandFailed", [speedData.text.trim()]);
+            }
+        }
+    }
     Process {
         id: extrasLoader
         command: ["python3", root.helper, "extras"]
@@ -195,6 +228,7 @@ Singleton {
                 root.vpns = data.vpn;
                 root.hotspot = data.hotspot;
                 root.tailscale = data.tailscale;
+                root.speedTestTool = data.speedTest ?? "";
             } catch (e) {}
         }
     }

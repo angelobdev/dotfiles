@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import Quickshell.Networking
 import ".."
 import "../components"
@@ -26,7 +27,30 @@ ColumnLayout {
         return preset ? preset.name : "custom";
     }
     readonly property string band: info?.frequency ? I18n.tr("network.band", [(info.frequency / 1000).toLocaleString(I18n.locale, "f", 1), info.channel]) : ""
-    readonly property var infoRows: [[I18n.tr("network.ipAddress"), (info?.ipv4 ?? []).map(a => a.split("/")[0]).join(", ")], [I18n.tr("network.gateway"), info?.gateway ?? ""], [I18n.tr("network.dnsServers"), (info?.dns ?? []).join(", ")], [I18n.tr("network.ipv6Address"), (info?.ipv6 ?? []).map(a => a.split("/")[0]).join(", ")], [I18n.tr("network.linkSpeed"), !wifi && device?.linkSpeed > 0 ? I18n.tr("network.linkSpeedValue", [device.linkSpeed]) : ""], [I18n.tr("network.hardwareAddress"), info?.mac || device?.address || ""]].filter(row => row[1] !== "")
+    // Live traffic of the device (its sysfs counters, read once a second while this view shows a connected network).
+    property var counters: null
+    property var traffic: null
+    function rate(bytes) {
+        return bytes >= 1000000 ? I18n.tr("network.rateMega", [(bytes / 1000000).toLocaleString(I18n.locale, "f", 1)]) : I18n.tr("network.rateKilo", [Math.round(bytes / 1000)]);
+    }
+    function sample() {
+        received.reload();
+        sent.reload();
+        const now = {
+            time: Date.now(),
+            rx: Number(received.text().trim()),
+            tx: Number(sent.text().trim())
+        };
+        if (counters && Number.isFinite(now.rx) && Number.isFinite(now.tx) && now.time > counters.time) {
+            const seconds = (now.time - counters.time) / 1000;
+            traffic = {
+                down: Math.max(0, now.rx - counters.rx) / seconds,
+                up: Math.max(0, now.tx - counters.tx) / seconds
+            };
+        }
+        counters = now;
+    }
+    readonly property var infoRows: [[I18n.tr("network.traffic"), traffic ? I18n.tr("network.trafficValue", [rate(traffic.down), rate(traffic.up)]) : ""], [I18n.tr("network.ipAddress"), (info?.ipv4 ?? []).map(a => a.split("/")[0]).join(", ")], [I18n.tr("network.gateway"), info?.gateway ?? ""], [I18n.tr("network.dnsServers"), (info?.dns ?? []).join(", ")], [I18n.tr("network.ipv6Address"), (info?.ipv6 ?? []).map(a => a.split("/")[0]).join(", ")], [I18n.tr("network.linkSpeed"), !wifi && device?.linkSpeed > 0 ? I18n.tr("network.linkSpeedValue", [device.linkSpeed]) : ""], [I18n.tr("network.hardwareAddress"), info?.mac || device?.address || ""]].filter(row => row[1] !== "")
     // The panel message about this network (a failed connection), shown with the NetworkInfo errors.
     property string failure: ""
     signal forgotten
@@ -46,6 +70,29 @@ ColumnLayout {
     Component.onCompleted: if (uuid !== "")
         NetworkInfo.loadProfile(uuid)
     Component.onDestruction: NetworkInfo.forgetSensitive()
+    FileView {
+        id: received
+        path: "/sys/class/net/" + (root.device?.name ?? "") + "/statistics/rx_bytes"
+        blockLoading: true
+        printErrors: false
+    }
+    FileView {
+        id: sent
+        path: "/sys/class/net/" + (root.device?.name ?? "") + "/statistics/tx_bytes"
+        blockLoading: true
+        printErrors: false
+    }
+    Timer {
+        interval: 1000
+        repeat: true
+        triggeredOnStart: true
+        running: root.visible && root.info !== null && (root.device?.name ?? "") !== ""
+        onRunningChanged: {
+            root.counters = null;
+            root.traffic = null;
+        }
+        onTriggered: root.sample()
+    }
     Connections {
         target: NetworkInfo
         // DNS and metered changes are reapplied to the device, so its effective details change too.
@@ -298,6 +345,66 @@ ColumnLayout {
             text: I18n.tr("network.macHint")
             color: Theme.muted
             font.pixelSize: Theme.textSize(11)
+        }
+    }
+    // The Wi-Fi band this network may use; the card and the access point choose within it.
+    ColumnLayout {
+        visible: (root.profile?.band ?? "") !== ""
+        Layout.fillWidth: true
+        spacing: 8
+        Text {
+            text: I18n.tr("network.wifiBand")
+            color: Theme.muted
+            font.pixelSize: Theme.textSize(11)
+        }
+        ChoiceChips {
+            enabled: !NetworkInfo.busy
+            options: [
+                {
+                    name: "auto",
+                    label: I18n.tr("network.bandAuto")
+                },
+                {
+                    name: "2.4",
+                    label: I18n.tr("network.band24")
+                },
+                {
+                    name: "5",
+                    label: I18n.tr("network.band5")
+                }
+            ]
+            current: root.profile?.band ?? ""
+            onChosen: name => {
+                if (name !== root.profile.band)
+                    NetworkInfo.run("set-band", [root.uuid, name]);
+            }
+        }
+        Text {
+            Layout.fillWidth: true
+            text: I18n.tr("network.bandHint")
+            color: Theme.muted
+            wrapMode: Text.WordWrap
+            font.pixelSize: Theme.textSize(11)
+        }
+    }
+    // A speed test of the connection in use, when one is installed (network.py SPEED_TESTS).
+    RowLayout {
+        visible: NetworkInfo.speedTestTool !== "" && root.info !== null
+        Layout.fillWidth: true
+        spacing: 10
+        ActionButton {
+            outlined: true
+            text: NetworkInfo.testingSpeed ? I18n.tr("network.speedTesting") : I18n.tr("network.speedTest")
+            enabled: !NetworkInfo.testingSpeed
+            onClicked: NetworkInfo.speedTest()
+        }
+        Text {
+            Layout.fillWidth: true
+            visible: NetworkInfo.speed !== null
+            text: NetworkInfo.speed ? I18n.tr("network.speedResult", [NetworkInfo.speed.down, NetworkInfo.speed.up, NetworkInfo.speed.ping]) + (NetworkInfo.speed.server ? " · " + NetworkInfo.speed.server : "") : ""
+            color: Theme.text
+            textFormat: Text.PlainText
+            font.pixelSize: Theme.textSize(12)
             wrapMode: Text.Wrap
         }
     }

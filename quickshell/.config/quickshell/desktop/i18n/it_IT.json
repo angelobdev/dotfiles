@@ -741,7 +741,9 @@
       "noSecrets": "Credenziali richieste ma non fornite",
       "qrUnavailable": "Impossibile creare il codice QR",
       "supplicantDisconnected": "Servizio di autenticazione Wi-Fi disconnesso",
-      "supplicantFailed": "Errore del servizio di autenticazione Wi-Fi"
+      "supplicantFailed": "Errore del servizio di autenticazione Wi-Fi",
+      "noSpeedTest": "Nessun test di velocità installato: speedtest, librespeed-cli o speedtest-cli.",
+      "speedTestFailed": "Il test di velocità non è riuscito: %1"
     },
     "ethernet": "Ethernet",
     "forget": "Dimentica questa rete",
@@ -809,7 +811,19 @@
     "wifiOff": "Wi-Fi spento",
     "wifiOn": "Wi-Fi acceso",
     "connectionFailed": "Connessione fallita: %1",
-    "passwordFor": "Password per %1"
+    "passwordFor": "Password per %1",
+    "traffic": "Traffico",
+    "trafficValue": "↓ %1 · ↑ %2",
+    "rateKilo": "%1 kB/s",
+    "rateMega": "%1 MB/s",
+    "wifiBand": "Banda Wi-Fi",
+    "bandAuto": "Automatica",
+    "band24": "2,4 GHz",
+    "band5": "5 GHz",
+    "bandHint": "Automatica sceglie la migliore che rete e scheda hanno, 6 GHz compresi. Cambiarla riconnette.",
+    "speedTest": "Test di velocità",
+    "speedTesting": "Test in corso…",
+    "speedResult": "↓ %1 Mbit/s · ↑ %2 Mbit/s · %3 ms"
   },
   "notifications": {
     "age": {

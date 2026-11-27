@@ -21,6 +21,13 @@ PERSONAL = {'wpa-psk', 'sae'}
 VPN_TYPES = {'vpn', 'wireguard'}
 # Values of {wifi,ethernet}.cloned-mac-address; '' leaves the choice to the system default.
 MAC_MODES = {'default': '', 'private': 'stable-ssid', 'rotating': 'random', 'fixed': 'permanent'}
+# The Wi-Fi band a connection may use (802-11-wireless.band): any, or only 2.4 or 5 GHz. NetworkManager has no
+# setting for 6 GHz alone: automatic takes it where the card and the network have it.
+BANDS = {'auto': '', '2.4': 'bg', '5': 'a'}
+# Speed tests the panel can run, the first installed: their command and how to read its JSON.
+SPEED_TESTS = (('speedtest', ('speedtest', '--format=json', '--accept-license', '--accept-gdpr')),
+               ('librespeed-cli', ('librespeed-cli', '--json')), ('speedtest-cli', ('speedtest-cli', '--json', '--secure')))
+SPEED_TEST_TIMEOUT = 120
 
 
 # nmcli connection up/down waits up to 90 s itself (--wait): a VPN asking for a secret or a slow DHCP takes that
@@ -114,11 +121,11 @@ def profile(uuid):
     fields = ('connection.autoconnect,connection.metered,ipv4.dns,ipv4.ignore-auto-dns,ipv6.dns,ipv6.ignore-auto-dns,'
         'ipv4.method,ipv4.addresses,ipv4.gateway')
     if kind == WIFI:
-        fields += ',802-11-wireless.cloned-mac-address,802-11-wireless-security.key-mgmt'
+        fields += ',802-11-wireless.cloned-mac-address,802-11-wireless-security.key-mgmt,802-11-wireless.band'
     elif kind == WIRED:
         fields += ',802-3-ethernet.cloned-mac-address'
-    result = values('-g', fields, 'connection', 'show', uuid) + ['', '']
-    autoconnect, metered, dns4, ignore4, dns6, ignore6, method, addresses, gateway, mac, security = result[:11]
+    result = values('-g', fields, 'connection', 'show', uuid) + ['', '', '']
+    autoconnect, metered, dns4, ignore4, dns6, ignore6, method, addresses, gateway, mac, security, band = result[:12]
     dns = multi(dns4, ',') + multi(dns6, ',')
     mode = {'stable': 'private', 'stable-ssid': 'private', 'random': 'rotating', 'permanent': 'fixed'}.get(mac, 'default')
     return {
@@ -133,6 +140,7 @@ def profile(uuid):
         'ipv4Address': (multi(addresses, ',') or [''])[0],
         'ipv4Gateway': gateway,
         'mac': mode if kind in (WIFI, WIRED) else '',
+        'band': {value: name for name, value in BANDS.items()}.get(band, 'auto') if kind == WIFI else '',
     }
 
 
@@ -193,6 +201,50 @@ def set_mac(uuid, mode):
     # The address is only chosen while activating, so an active connection has to reconnect.
     if device:
         nmcli('connection', 'up', uuid, timeout=ACTIVATION_TIMEOUT)
+
+
+def set_band(uuid, band):
+    kind, _, device = connection(uuid)
+    if kind != WIFI or band not in BANDS:
+        raise ValueError(tr('network.errors.commandFailed', (kind,)))
+    nmcli('connection', 'modify', uuid, '802-11-wireless.band', BANDS[band])
+    # The band is chosen while associating: an active connection reconnects.
+    if device:
+        nmcli('connection', 'up', uuid, timeout=ACTIVATION_TIMEOUT)
+
+
+def speed_test_tool():
+    return next((name for name, _ in SPEED_TESTS if shutil.which(name)), '')
+
+
+def speed_result(name, output):
+    """{down, up (Mbit/s), ping (ms), server} from the JSON of each tool."""
+    data = json.loads(output)
+    if name == 'librespeed-cli':
+        data = data[0] if isinstance(data, list) and data else {}
+        return {'down': round(float(data.get('download', 0)), 1), 'up': round(float(data.get('upload', 0)), 1),
+                'ping': round(float(data.get('ping', 0))), 'server': str((data.get('server') or {}).get('name', ''))}
+    if name == 'speedtest':
+        # Ookla's: bandwidth in bytes per second.
+        return {'down': round(data['download']['bandwidth'] * 8 / 1e6, 1), 'up': round(data['upload']['bandwidth'] * 8 / 1e6, 1),
+                'ping': round(float(data['ping']['latency'])), 'server': str((data.get('server') or {}).get('name', ''))}
+    server = data.get('server') or {}
+    return {'down': round(data['download'] / 1e6, 1), 'up': round(data['upload'] / 1e6, 1), 'ping': round(float(data['ping'])),
+            'server': str(server.get('sponsor') or server.get('name') or '')}
+
+
+def speed_test():
+    name = speed_test_tool()
+    if not name:
+        raise ValueError(tr('network.errors.noSpeedTest'))
+    command = dict(SPEED_TESTS)[name]
+    result = subprocess.run(command, capture_output=True, text=True, timeout=SPEED_TEST_TIMEOUT)
+    if result.returncode != 0:
+        raise ValueError(tr('network.errors.speedTestFailed', ((result.stderr or result.stdout).strip()[:200],)))
+    try:
+        return speed_result(name, result.stdout)
+    except (ValueError, KeyError, TypeError, IndexError):
+        raise ValueError(tr('network.errors.speedTestFailed', (result.stdout.strip()[:200],))) from None
 
 
 def add_hidden(device, ssid, secure):
@@ -408,6 +460,10 @@ def main():
     ipv4.add_argument('method', choices=('auto', 'manual'))
     ipv4.add_argument('address', nargs='?', default='')
     ipv4.add_argument('gateway', nargs='?', default='')
+    band = commands.add_parser('set-band')
+    band.add_argument('uuid')
+    band.add_argument('band', choices=tuple(BANDS))
+    commands.add_parser('speedtest')
     mac = commands.add_parser('set-mac')
     mac.add_argument('uuid')
     mac.add_argument('mode', choices=tuple(MAC_MODES))
@@ -447,6 +503,11 @@ def main():
     elif args.command == 'set-mac':
         set_mac(args.uuid, args.mode)
         result = profile(args.uuid)
+    elif args.command == 'set-band':
+        set_band(args.uuid, args.band)
+        result = profile(args.uuid)
+    elif args.command == 'speedtest':
+        result = speed_test()
     elif args.command == 'add-hidden':
         result = {'uuid': add_hidden(args.device, args.ssid, args.secure)}
     elif args.command == 'vpn':
@@ -464,7 +525,7 @@ def main():
         result = tailscale()
     elif args.command == 'extras':
         listed = connections()
-        result = {'vpn': vpns(listed), 'hotspot': hotspot(listed), 'tailscale': tailscale()}
+        result = {'vpn': vpns(listed), 'hotspot': hotspot(listed), 'tailscale': tailscale(), 'speedTest': speed_test_tool()}
     elif args.command in ('tailscale-up', 'tailscale-down'):
         result = tailscale_toggle(args.command == 'tailscale-up')
     elif args.command == 'set-dns':
