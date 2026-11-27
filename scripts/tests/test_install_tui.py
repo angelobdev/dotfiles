@@ -717,18 +717,23 @@ class ApplyUpdatesTests(unittest.TestCase):
             tui.after_pull(plan(), 'abc')
         return [call.args[0] for call in run.call_args_list]
 
+    def migrations(self):
+        return (sys.executable, str(tui.REPO / 'shell/.local/libexec/desktop/migrations.py'), 'run')
+
     def test_a_pull_links_new_files_then_reloads_what_changed(self):
         calls = self.after_pull(['hypr/.config/hypr/config/new.lua', 'quickshell/.config/quickshell/desktop/New.qml'], True)
         self.assertEqual(calls[0], install_steps.stow_command(plan(), 'apply'))
-        self.assertEqual(calls[1], ('hyprctl', 'reload'))
-        self.assertEqual(calls[2][:2], ('hyprctl', 'eval'))
-        self.assertIn('desktop-shell restart', calls[2][2])
+        # The migrations it brought run before anything reloads.
+        self.assertEqual(calls[1], self.migrations())
+        self.assertEqual(calls[2], ('hyprctl', 'reload'))
+        self.assertEqual(calls[3][:2], ('hyprctl', 'eval'))
+        self.assertIn('desktop-shell restart', calls[3][2])
 
     def test_a_pull_of_docs_only_links_and_restarts_nothing(self):
-        self.assertEqual(self.after_pull(['docs/README.md'], True), [install_steps.stow_command(plan(), 'apply')])
+        self.assertEqual(self.after_pull(['docs/README.md'], True), [install_steps.stow_command(plan(), 'apply'), self.migrations()])
 
     def test_outside_the_session_a_pull_only_links(self):
-        self.assertEqual(self.after_pull(['quickshell/x.qml'], False), [install_steps.stow_command(plan(), 'apply')])
+        self.assertEqual(self.after_pull(['quickshell/x.qml'], False), [install_steps.stow_command(plan(), 'apply'), self.migrations()])
 
     def test_a_pull_that_brought_nothing_does_nothing(self):
         self.assertEqual(self.after_pull([], True), [])

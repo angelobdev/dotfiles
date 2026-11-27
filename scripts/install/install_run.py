@@ -67,6 +67,10 @@ def run_steps(plan, preview, steps=install_steps.STEPS):
         if not install_record.knows_changes(record) and install_undo.desktop_present():
             # Installed before there was a record: what came then is told by the history, or uninstall would miss it.
             record = {**install_undo.reconstruct(plan), **record}
+        elif not install_record.knows_changes(record):
+            # A new install starts in the current form: the migrations of its version have nothing to move.
+            subprocess.run((sys.executable, str(install_paths.REPO / 'shell/.local/libexec/desktop/migrations.py'), 'mark-all'),
+                           check=False)
         # Only a whole install says the profiles are installed.
         if tuple(steps) == install_steps.STEPS:
             install_record.keep(record, 'profiles', plan.profiles)

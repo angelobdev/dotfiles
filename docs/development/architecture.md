@@ -47,6 +47,10 @@ Services spawn `python3 ~/.local/libexec/desktop/<helper>.py …` through Quicks
 
 Crashed watchers restart through a `Timer` whose `running` is `<enabled> && !process.running`. Long-lived commands start through `setpriv --pdeathsig TERM --`, so the kernel ends them with the shell even when the shell is killed or crashes (otherwise every restart left them running). Watchers wait on events where the kernel offers them: `brightness.py watch` polls `actual_brightness` for sysfs notifications, `privacy.py watch` uses inotify on `/dev/video*`. Treat argv and stdout formats as a byte-exact contract between QML and Python.
 
+## Migrations
+
+Stow links keep the repository's files current; state outside them (`~/.config/desktop/shell.json`, `~/.local/state`) is moved by one-shot scripts in `migrations/` (`YYYYMMDDhhmm-name.sh` or `.py`, [their rules](../../migrations/README.md)). `shell/.local/libexec/desktop/migrations.py run` runs the pending ones in order, as the user, with a marker each in `~/.local/state/dotfiles/migrations/`: at login (`desktop-session start`, before the theme is applied) and after a pull (`after_pull` in `install-tui.py`, which the updates panel's pull goes through). Exit 75 waits for the next run without an error; another exit stops the queue with a notification. A new install (no record and no desktop found) records every migration as done before its first step (`install_run.run_steps`).
+
 ## Root for operations from Settings
 
 Settings runs system work without a terminal ([#37](https://github.com/angelobdev/dotfiles/issues/37)). `privileged.py run COMMAND…` asks for root once per operation:

@@ -1211,6 +1211,8 @@ def after_pull(plan, before):
         return
     print('Linking new files: ' + ' '.join(install_steps.stow_command(plan, 'apply')), flush=True)
     subprocess.run(install_steps.stow_command(plan, 'apply'), check=True)
+    # The pull may bring migrations of state outside the repository (migrations/): they run now, as the user.
+    subprocess.run((sys.executable, str(REPO / 'shell/.local/libexec/desktop/migrations.py'), 'run'), check=False)
     if not os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
         return
     if any(path.startswith('hypr/') for path in changed):

@@ -108,6 +108,10 @@ The pin lines are for whoever maintains the manifest: they write new pins into `
 
 `Space` checks a line, `Enter` shows its details (the packages, the new commits and the links to review their changes), `r` checks again, `a` applies the checked lines after a confirmation, with one sudo prompt for the whole run. Everything there is to apply starts checked but the repository: a pull goes alone and first, because it can move the pins, and the rest is checked again after it. The repository is offered only for a fast-forward, on a clean tree with no commits of its own; a clone with local changes keeps its pin, and the details say which files to look at. New pins change `scripts/install/manifest.toml`, which stays for you to commit, so the other machines get the same ones. From the command line, `./scripts/install-desktop.py pins` lists the newer pins of every distribution (commits, and versions of the release archives) with their links, and `pins --update` writes them into the manifest.
 
+### Migrations
+
+An update can change how the desktop keeps your settings and state (a renamed option in `~/.config/desktop/shell.json`, say). Such changes come as migrations, which run once each, by themselves, at the next login or right after the repository is updated; one that cannot run yet or fails says so in a notification and tries again at the next login. `python3 ~/.local/libexec/desktop/migrations.py pending` lists what is left, and `~/.local/state/dotfiles/migrations.log` has their output.
+
 ### Releases and What's new
 
 The desktop is released as `vMAJOR.MINOR.PATCH` tags, and each release moves the `stable` branch to its tag. A clone follows `stable`: the update icon, **Settings → System → Updates** and the Repository line above offer a release once it is out, with the changes it makes from [`CHANGELOG.md`](../../CHANGELOG.md), and never the work in progress on `develop`. After the update, **What's new** opens once with the notes of every release installed since the last one you saw; **Settings → System → About** shows the installed release and opens its notes again.

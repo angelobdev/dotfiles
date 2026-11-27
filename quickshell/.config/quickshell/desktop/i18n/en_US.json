@@ -688,6 +688,15 @@
     "stop": "Stop",
     "barTooltip": "%1 — %2 · click: play/pause, wheel: skip"
   },
+  "migrations": {
+    "title": "Desktop update",
+    "waiting": "%1 is waiting: %2",
+    "failed": "%1 did not finish: %2. It runs again at the next login.",
+    "timeout": "no answer in %1 s",
+    "errors": {
+      "usage": "Usage: migrations.py {run|pending|mark-all}"
+    }
+  },
   "network": {
     "addressPlaceholder": "Address/prefix, e.g. 192.168.1.50/24",
     "advancedSettings": "Advanced settings…",

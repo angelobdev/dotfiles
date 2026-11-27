@@ -1358,3 +1358,8 @@ Reported by the user after the merges of the day:
 - On this machine a real `desktop-updates check` (39 s): `dnf needs-restarting --json` names the kernel (7.3.6 installed, 7.3.4 running), so `restart` is `kernel`, and fwupd lists no update. The first version took fwupd's `needs-reboot` flag, which every UEFI device carries, for a staged update: fixed to `UpdateState`. The panel shows **Restart needed · A new kernel is installed** with **Restart…**, and the bar icon stays with the restart glyph.
 - Not tried here: an apply with each guard (a full disk, a failure, a firmware update), since this machine is up to date.
 
+## Per-user migrations (#294), 2026-11-27
+
+- `test_migrations.py` (6 tests): only `YYYYMMDDhhmm-name.sh|py` files, in order; each runs once with `DOTFILES_REPO` set; exit 75 stops the queue without an error and with a notification of its last line; a failure stops it, says so, and runs again once fixed; `mark-all` records every one for a new install. `test_install_tui.py`: a pull runs the migrations after linking and before any reload.
+- On this machine: `migrations.py pending` gives `[]` (the folder has its README only), so the next login runs nothing.
+

@@ -28,6 +28,7 @@ The running desktop reads files through symlinks into this repository:
 | Moved docs | Links in `README.md`, `docs/**`, `.claude/CLAUDE.md` (`scripts/check-links.py` finds the broken ones), and the doc paths quoted in the `assistant.errors.claudeMissing`, `capture.errors.pluginMissing` and `plugins.errors.rebuildRequired` catalog strings |
 | Tool needed by `check.sh` | The package list in `.github/workflows/check.yml`, and its list of required tools when `check.sh` skips that tool if missing |
 | New runtime dependency | `scripts/install/manifest.toml`, the only list of packages; `[verify]` too if the desktop cannot start without it |
+| A key, file or format of the user's state changes (`~/.config/desktop`, `~/.local/state`) | A migration in `migrations/` that moves the old form to the new one, safe on a desktop that never had the old ([migrations](../../migrations/README.md)) |
 | New Fedora release | `versions` in the manifest, the accepted builds in `scripts/hyprpm/bundle.py`, the matrix in `check.yml`, the image in `install.yml` |
 | New runtime dependency on Arch | The `[arch]` table of the manifest, with the name checked with `pacman -Si` (`pacman -F` finds the package of a file); `scripts/tests/install-container-arch.sh` installs it for real |
 | Newer AUR package | `./scripts/install-desktop.py pins`, review the PKGBUILD changes it links, then `pins --update` |

@@ -351,7 +351,8 @@ Reviewed with the user from Omarchy's source (basecamp/omarchy@a11b6a6); the cho
 
 - [x] #284 quick wins: window tricks (`Super + O`, `Super + Backspace`, `Super + Shift + Backspace`, `Super + Alt + F`, `Super + Ctrl + Shift + F`, `Super + Ctrl + Alt + F`), bar toggle (`Super + B`), launch or focus for the browser, password manager and file manager keys, terminal and Files in the folder of the focused terminal, QR codes from a screen area, the clock format on right click, sleep hooks for fprintd and gvfs, system defaults (inotify, NOFILE, stop timeouts, oomd on the app slice), Firefox and Zen policies, the Wi-Fi regulatory domain from the time zone, firewalld on Arch, a `utils.printing` part.
 - [x] #292 updates: restart detection at every check (kernel, core libraries, Hyprland's binary, a staged firmware update), with the panel and the bar icon; 2 GB free before an apply, sleep inhibited while it runs, a known cause named when it fails; firmware through fwupd in the panel.
-- [ ] #294 migrations; #288, #286, #287, #289, #290; #291; #285, #293. To discuss: #295–#298.
+- [x] #294 migrations: `migrations/` with `migrations.py run|pending|mark-all`, run at login and after a pull, exit 75 to wait, a notification for a failure, every migration recorded as done on a new install.
+- [ ] #288, #286, #287, #289, #290; #291; #285, #293. To discuss: #295–#298.
 
 ### System time zone from the calendar (2026-11-26)
 

@@ -688,6 +688,15 @@
     "stop": "Ferma",
     "barTooltip": "%1 — %2 · clic: riproduci/pausa, rotella: cambia brano"
   },
+  "migrations": {
+    "title": "Aggiornamento del desktop",
+    "waiting": "%1 è in attesa: %2",
+    "failed": "%1 non è terminata: %2. Riparte al prossimo accesso.",
+    "timeout": "nessuna risposta in %1 s",
+    "errors": {
+      "usage": "Uso: migrations.py {run|pending|mark-all}"
+    }
+  },
   "network": {
     "addressPlaceholder": "Indirizzo/prefisso, es. 192.168.1.50/24",
     "advancedSettings": "Impostazioni avanzate…",
