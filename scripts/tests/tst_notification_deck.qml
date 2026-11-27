@@ -121,4 +121,16 @@ TestCase {
         const open = NotificationDeck.collapse(entries, ["app:a"]);
         compare(open.entries.map(e => e.id), [4, 2, 3]);
     }
+
+    function test_a_repeat_within_two_seconds_is_dropped() {
+        const shown = [{ id: 1, appName: "Zen", summary: "Mail", body: "New message" }, { id: 2, appName: "Zen", summary: "Mail", body: "Other" }];
+        const arrived = { 1: 10000, 2: 5000 };
+        verify(NotificationDeck.duplicates({ id: 3, appName: "Zen", summary: "Mail", body: "New message" }, shown, arrived, 11500));
+        // Later than that, or any difference, is a notification of its own.
+        verify(!NotificationDeck.duplicates({ id: 3, appName: "Zen", summary: "Mail", body: "New message" }, shown, arrived, 12500));
+        verify(NotificationDeck.duplicates({ id: 3, appName: "Zen", summary: "Mail", body: "Other" }, shown, arrived, 6000));
+        verify(!NotificationDeck.duplicates({ id: 3, appName: "kitty", summary: "Mail", body: "New message" }, shown, arrived, 10500));
+        // A replacement of the same notification is never one.
+        verify(!NotificationDeck.duplicates({ id: 1, appName: "Zen", summary: "Mail", body: "New message" }, shown, arrived, 10500));
+    }
 }

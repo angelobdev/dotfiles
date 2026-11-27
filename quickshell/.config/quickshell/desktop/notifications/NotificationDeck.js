@@ -121,3 +121,17 @@ function collapse(entries, openKeys) {
         keys: keys
     };
 }
+
+// A notification the same as one shown less than this long ago (ms) is dropped: several tabs of one web app, or a
+// sender that repeats itself, give one card.
+var DUPLICATE_WINDOW = 2000;
+
+// Whether incoming repeats one of the shown ones (each {id, appName, summary, body}) that arrived (arrived: id ->
+// ms) within DUPLICATE_WINDOW of now. A replacement of the same id is never a duplicate.
+function duplicates(incoming, shown, arrived, now) {
+    return shown.some(function (other) {
+        return other.id !== incoming.id && now - (arrived[other.id] || 0) < DUPLICATE_WINDOW
+            && (other.appName || "") === (incoming.appName || "") && (other.summary || "") === (incoming.summary || "")
+            && (other.body || "") === (incoming.body || "");
+    });
+}

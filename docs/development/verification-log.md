@@ -1368,3 +1368,9 @@ Reported by the user after the merges of the day:
 - Live: `desktop-shell osd update Build "Compiling plugins" 40` showed the title, the line and a bar at 40% (IPC answered `true`); a `desktop-osd workspaceGaps off` custom event sent with `hyprctl eval` showed **Gaps on this workspace · Off**, the label of its bind. `desktop-shell osd` without its arguments prints its usage. After the save of `binds.lua`, `--verify-config` and `configerrors` clean.
 - Not tried here: the keys themselves, a layout switch (one layout on this machine) and a power profile change, which read Hyprland's `activelayout` event and UPower's profile.
 
+## Notification links and repeats (#286), 2026-11-27
+
+- `tst_notification_text.qml` (14 tests): links kept with their host beside other words, addresses written out linked without the sentence's last dot, `javascript:` and `file:` links left as text, user names, numeric hosts, escaped controls and quotes refused, scheme and host lower-cased. `tst_notification_deck.qml`: a repeat within 2 s dropped, a later one, another app or another body kept, a replacement never dropped.
+- Live with `notify-send`: a body with an `<a href>` to GitHub, an address written out and a `javascript:` link showed **open them (github.com)** and **https://example.com/docs** as links and **bad** as plain text; two identical notifications in a row gave one card (the deck said **1 more**, the link test behind it). The test notifications are in the history (app "Desktop test" and "Link check").
+- Not tried here: the click itself, which opens the browser.
+

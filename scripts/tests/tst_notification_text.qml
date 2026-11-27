@@ -10,7 +10,31 @@ TestCase {
     }
 
     function test_other_tags_and_attributes_go() {
-        compare(NotificationText.styled("<a href=\"https://example.com\">link</a> <img src=\"x.png\"/>"), "link ");
+        compare(NotificationText.styled("<img src=\"x.png\"/><span class=\"x\">text</span>"), "text");
+    }
+
+    // A link keeps its address, and its text says where it goes when the words do not.
+    function test_links_say_where_they_go() {
+        compare(NotificationText.styled("<a href=\"https://example.com/a\">Open</a>"), "<a href=\"https://example.com/a\">Open (example.com)</a>");
+        compare(NotificationText.styled("<a href='https://example.com'>example.com</a>"), "<a href=\"https://example.com/\">example.com</a>");
+        compare(NotificationText.styled("<a href=\"mailto:me@example.com\">write</a>"), "<a href=\"mailto:me@example.com\">write (me@example.com)</a>");
+    }
+
+    function test_addresses_written_out_become_links() {
+        compare(NotificationText.styled("See https://example.com/x."), "See <a href=\"https://example.com/x\">https://example.com/x</a>.");
+        compare(NotificationText.styled("https://x.com/?a=1&b=2"), "<a href=\"https://x.com/?a=1&amp;b=2\">https://x.com/?a=1&amp;b=2</a>");
+    }
+
+    // What no browser should be sent to from a notification stays text.
+    function test_unsafe_links_are_text() {
+        compare(NotificationText.styled("<a href=\"javascript:alert(1)\">click</a>"), "click");
+        compare(NotificationText.styled("<a href=\"file:///etc/passwd\">file</a>"), "file");
+        compare(NotificationText.safeUrl("https://user:pass@example.com/"), "");
+        compare(NotificationText.safeUrl("https://0x7f.1/"), "");
+        compare(NotificationText.safeUrl("https://192.168.1.1/"), "");
+        compare(NotificationText.safeUrl("https://example.com/%0a"), "");
+        compare(NotificationText.safeUrl("https://example.com/\"onmouseover=x"), "");
+        compare(NotificationText.safeUrl("HTTPS://Example.COM:443"), "https://example.com:443/");
     }
 
     // Plain-text bodies: the text between a < and a > is no tag and stays.
@@ -22,7 +46,6 @@ TestCase {
     // An & that starts no entity is escaped; real entities pass through.
     function test_bare_ampersands_are_shown() {
         compare(NotificationText.styled("Q&A with AT&T"), "Q&amp;A with AT&amp;T");
-        compare(NotificationText.styled("https://x.com/?a=1&b=2"), "https://x.com/?a=1&amp;b=2");
         compare(NotificationText.styled("Tom & Jerry"), "Tom &amp; Jerry");
         compare(NotificationText.styled("&amp; &#39; &#x27; &eacute;"), "&amp; &#39; &#x27; &eacute;");
     }

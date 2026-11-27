@@ -225,14 +225,29 @@ Rectangle {
             textFormat: Text.PlainText
         }
         Text {
+            id: body
             text: NotificationText.styled(root.notification?.body ?? "")
             color: Theme.text
+            linkColor: Theme.accent
             visible: text !== ""
             Layout.fillWidth: true
             wrapMode: Text.Wrap
             maximumLineCount: root.popup ? root.bodyLines : 2147483647
             elide: Text.ElideRight
             textFormat: Text.StyledText
+            // Only what NotificationText.styled made a link, checked again as it is opened; a popup goes with it,
+            // as after any action.
+            onLinkActivated: link => {
+                const url = NotificationText.safeUrl(link);
+                if (url === "")
+                    return;
+                Qt.openUrlExternally(url);
+                if (root.popup)
+                    root.hidePopup();
+            }
+            HoverHandler {
+                cursorShape: body.hoveredLink !== "" || (root.popup && root.defaultAction) ? Qt.PointingHandCursor : Qt.ArrowCursor
+            }
         }
         Flow {
             Layout.fillWidth: true

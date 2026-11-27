@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Notifications
 import ".."
+import "../notifications/NotificationDeck.js" as NotificationDeck
 
 Singleton {
     id: root
@@ -184,9 +185,14 @@ Singleton {
         id: server
         bodySupported: true
         bodyMarkupSupported: true
+        // Links in bodies are kept when NotificationText.safeUrl takes them, and opened on a click.
+        bodyHyperlinksSupported: true
         actionsSupported: true
         persistenceSupported: true
         onNotification: n => {
+            // Not tracked, a repeat is let go without a card or an entry in the history.
+            if (NotificationDeck.duplicates(n, server.trackedNotifications.values, root.arrived, Date.now()))
+                return;
             n.tracked = true;
             root.arrived = Object.assign({}, root.arrived, {
                 [n.id]: Date.now()

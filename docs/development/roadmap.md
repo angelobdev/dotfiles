@@ -353,7 +353,8 @@ Reviewed with the user from Omarchy's source (basecamp/omarchy@a11b6a6); the cho
 - [x] #292 updates: restart detection at every check (kernel, core libraries, Hyprland's binary, a staged firmware update), with the panel and the bar icon; 2 GB free before an apply, sleep inhibited while it runs, a known cause named when it fails; firmware through fwupd in the panel.
 - [x] #294 migrations: `migrations/` with `migrations.py run|pending|mark-all`, run at login and after a pull, exit 75 to wait, a notification for a failure, every migration recorded as done on a new install.
 - [x] #288 OSD for actions: `desktop-shell osd ICON TITLE [DETAIL] [PROGRESS]` (`Osd.showMessage`), the window tricks through `desktop-osd` custom events, the bar toggle, keyboard layout switches and power profile changes.
-- [ ] #286, #287, #289, #290; #291; #285, #293. To discuss: #295–#298.
+- [x] #286 notifications: links under a strict policy (`NotificationText.safeUrl`, the host beside link text that is not the address), `bodyHyperlinksSupported`, repeats within 2 s dropped (`NotificationDeck.duplicates`).
+- [ ] #287, #289, #290; #291; #285, #293. To discuss: #295–#298.
 
 ### System time zone from the calendar (2026-11-26)
 
