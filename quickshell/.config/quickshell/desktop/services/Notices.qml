@@ -12,7 +12,11 @@ Singleton {
     // Decks show only a few of these; the oldest give way, and stay in the center.
     readonly property int popupLimit: 20
     property var popupIds: []
-    readonly property var popups: server.trackedNotifications.values.filter(n => popupIds.includes(n.id))
+    // With Do Not Disturb on, only reminders (services/Reminders.qml) pop up.
+    readonly property var popups: server.trackedNotifications.values.filter(n => popupIds.includes(n.id) && (!quiet || reminder(n)))
+    function reminder(n) {
+        return n.hints?.["x-desktop-reminder"] !== undefined;
+    }
     readonly property var notifications: server.trackedNotifications
     // The history outlives shell restarts as archived entries: readable and removable, but without
     // actions, since the sending app bound those to the server that has gone.

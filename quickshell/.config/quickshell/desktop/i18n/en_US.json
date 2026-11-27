@@ -251,6 +251,10 @@
         "description": "The time of a screen recording; a click stops it.",
         "name": "Recording"
       },
+      "reminders": {
+        "description": "The minutes to the next reminder, while one is pending.",
+        "name": "Reminders"
+      },
       "separator": {
         "description": "A thin line between groups of widgets.",
         "name": "Separator"
@@ -1907,6 +1911,21 @@
     "errors": {
       "usage": "Usage: channel.py whats-new [--current]|seen"
     }
+  },
+  "reminders": {
+    "title": "Reminders",
+    "when": "When",
+    "what": "What",
+    "add": "Add",
+    "hint": "Minutes (20), hours and minutes (1h30) or a time (14:30). It comes even with Do Not Disturb on, and stays until dismissed.",
+    "invalid": "Say when: minutes (20), hours and minutes (1h30) or a time (14:30), within a day.",
+    "pending": "Pending",
+    "untitled": "Reminder",
+    "remove": "Remove",
+    "clear": "Clear all",
+    "keys": "Tab|next field; Enter|add; Esc|close",
+    "now": "Reminder",
+    "missed": "It was due at %1, while the session was closed."
   },
   "whatsNew": {
     "done": "Got it",

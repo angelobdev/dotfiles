@@ -207,6 +207,7 @@ bind("SUPER + SHIFT + V", hl.dsp.exec_cmd(shell .. " toggle audio"), "Sound & au
 bind("SUPER + SHIFT + B", hl.dsp.exec_cmd(shell .. " toggle battery"), "Battery & power")
 bind("SUPER + SHIFT + D", hl.dsp.exec_cmd(shell .. " toggle calendar"), "Calendar")
 bind("SUPER + SHIFT + H", hl.dsp.exec_cmd(shell .. " toggle hints"), "Hints · Keyboard shortcuts")
+bind("SUPER + CTRL + M", hl.dsp.exec_cmd(shell .. " toggle reminders"), "Reminders")
 bind("SUPER + SHIFT + T", hl.dsp.exec_cmd(util.bin("desktop-area") .. " text"), "Text from screen area")
 bind("SUPER + CTRL + SHIFT + T", hl.dsp.exec_cmd(util.bin("desktop-area") .. " qr"), "QR code from screen area")
 if installed("assistant") then

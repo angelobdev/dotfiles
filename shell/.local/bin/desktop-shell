@@ -121,8 +121,8 @@ case "${1:-start}" in
         exec qs ipc -p "$config" call desktop switcher "$2"
         ;;
     toggle)
-        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays|radio|whatsnew|themes|wallpapers) ;;
-            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays|radio|whatsnew|themes|wallpapers} [SECTION]' >&2; exit 2 ;;
+        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays|radio|whatsnew|themes|wallpapers|reminders) ;;
+            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays|radio|whatsnew|themes|wallpapers|reminders} [SECTION]' >&2; exit 2 ;;
         esac
         # settings SECTION[/TAB] opens Settings on that section (appearance, system/advanced, …) instead of
         # toggling it; theming is Settings → Appearance (ShellState.aliases).
@@ -228,6 +228,21 @@ case "${1:-start}" in
         echo 'Usage: desktop-shell bar {edit|done|cancel|reset|hide|show|toggle}' >&2
         exit 2
         ;;
+    remind)
+        # Reminders: remind WHEN TEXT (WHEN: minutes, 1h30, or 14:30), remind list (JSON), remind clear.
+        case "${2:-}" in
+            list | clear) exec qs ipc -p "$config" call desktop remind -- "$2" "" "" ;;
+            '') ;;
+            *)
+                answer=$(qs ipc -p "$config" call desktop remind -- add "$2" "${*:3}")
+                [[ $answer == ok ]] && exit 0
+                echo "desktop-shell remind: when is minutes (20), hours and minutes (1h30) or a time (14:30)." >&2
+                exit 1
+                ;;
+        esac
+        echo 'Usage: desktop-shell remind {WHEN TEXT|list|clear}' >&2
+        exit 2
+        ;;
     osd)
         # A message on the OSD for scripts: osd ICON TITLE [DETAIL] [PROGRESS], ICON a shell glyph (assets/icons),
         # PROGRESS 0-100 for a bar under it.
@@ -238,5 +253,5 @@ case "${1:-start}" in
     # The desktop menu (launcher, Settings, session), as a right click on the empty desktop opens it.
     desktop-menu) exec qs ipc -p "$config" call desktop desktopMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|bar ACTION|osd ICON TITLE|window-menu|desktop-menu}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|bar ACTION|osd ICON TITLE|remind WHEN TEXT|window-menu|desktop-menu}' >&2; exit 2 ;;
 esac

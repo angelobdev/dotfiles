@@ -4,7 +4,7 @@
 
 The bar is made of widgets in five sections: **left**, **center left**, **center**, **center right** and **right**. Center left, center and center right sit side by side as one block, centred on the screen; the free room lies between the left section and that block, and between the block and the right section. The window title takes whatever its section has left and is cut with an ellipsis. When one side holds too much for the block to stay centred, the block moves away from it.
 
-Without a layout of your own the bar is the **classic** one, item for item the bar before layouts: launcher, workspaces and window title on the left; tray, media, privacy, recording, battery, updates, assistant, shortcuts, notifications, Control Center, clock and session on the right.
+Without a layout of your own the bar is the **classic** one, item for item the bar before layouts: launcher, workspaces and window title on the left; tray, media, privacy, recording, reminders (added since, shown only while one is pending), battery, updates, assistant, shortcuts, notifications, Control Center, clock and session on the right.
 
 ## Widgets
 
@@ -17,6 +17,7 @@ Without a layout of your own the bar is the **classic** one, item for item the b
 | `media` | What plays (with `barMedia`) | Play/pause; wheel skips; right click Control Center |
 | `privacy` | Microphone, camera or screen sharing in use | — |
 | `recording` | The time of a screen recording | Stops it |
+| `reminders` | The minutes to the next reminder, while one is pending | The Reminders dialog |
 | `battery` | Charge, power profile | Battery panel |
 | `updates` | The number of updates waiting | Updates panel |
 | `assistant` | The state of the coding agent | Its panel |

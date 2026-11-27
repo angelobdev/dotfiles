@@ -6,28 +6,29 @@
 
 var sections = ["left", "centerLeft", "center", "centerRight", "right"];
 
-// classic is the bar as it was before layouts, item for item; it is also the layout without a setting.
+// classic is the bar as it was before layouts, item for item, with the reminders indicator (shown only while one
+// is pending) added since; it is also the layout without a setting.
 var presets = {
     classic: {
         left: ["launcher", "workspaces", "title"],
         centerLeft: [],
         center: [],
         centerRight: [],
-        right: ["tray", "media", "privacy", "recording", "battery", "updates", "assistant", "hints", "notifications", "controls", "clock", "power"]
+        right: ["tray", "media", "privacy", "recording", "reminders", "battery", "updates", "assistant", "hints", "notifications", "controls", "clock", "power"]
     },
     centered: {
         left: ["launcher", "workspaces"],
         centerLeft: ["media"],
         center: ["clock"],
         centerRight: ["weather"],
-        right: ["tray", "privacy", "recording", "network", "volume", "battery", "updates", "assistant", "notifications", "controls", "power"]
+        right: ["tray", "privacy", "recording", "reminders", "network", "volume", "battery", "updates", "assistant", "notifications", "controls", "power"]
     },
     minimal: {
         left: ["workspaces"],
         centerLeft: [],
         center: ["clock"],
         centerRight: [],
-        right: ["privacy", "recording", "battery", "controls"]
+        right: ["privacy", "recording", "reminders", "battery", "controls"]
     }
 };
 

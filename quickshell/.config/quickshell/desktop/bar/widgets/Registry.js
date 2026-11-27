@@ -40,6 +40,11 @@ var widgets = [
         glyph: "record"
     },
     {
+        id: "reminders",
+        source: "RemindersWidget.qml",
+        glyph: "clock"
+    },
+    {
         id: "battery",
         source: "BatteryWidget.qml",
         glyph: "battery-75"

@@ -23,6 +23,8 @@ Singleton {
     readonly property bool focusQuietBefore: state.focusQuietBefore === true
     // Recently picked emoji, space separated, newest first.
     readonly property string emojiRecent: state.emojiRecent
+    // [{id, at (ms), text}] (services/Reminders.qml).
+    readonly property var reminders: state.reminders
     function set(key, value) {
         if (state[key] === value)
             return;
@@ -65,6 +67,7 @@ Singleton {
             property int focusMinutes: 0
             property bool focusQuietBefore: false
             property string emojiRecent: ""
+            property var reminders: []
         }
     }
 }

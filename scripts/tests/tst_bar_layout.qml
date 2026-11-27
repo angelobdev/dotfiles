@@ -43,7 +43,7 @@ TestCase {
     function test_classicIsTheBarBeforeLayouts() {
         const classic = BarLayoutModel.presets.classic;
         compare(classic.left, ["launcher", "workspaces", "title"]);
-        compare(classic.right, ["tray", "media", "privacy", "recording", "battery", "updates", "assistant", "hints", "notifications", "controls", "clock", "power"]);
+        compare(classic.right, ["tray", "media", "privacy", "recording", "reminders", "battery", "updates", "assistant", "hints", "notifications", "controls", "clock", "power"]);
         compare(classic.centerLeft.length + classic.center.length + classic.centerRight.length, 0);
     }
 

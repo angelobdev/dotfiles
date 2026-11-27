@@ -1374,3 +1374,9 @@ Reported by the user after the merges of the day:
 - Live with `notify-send`: a body with an `<a href>` to GitHub, an address written out and a `javascript:` link showed **open them (github.com)** and **https://example.com/docs** as links and **bad** as plain text; two identical notifications in a row gave one card (the deck said **1 more**, the link test behind it). The test notifications are in the history (app "Desktop test" and "Link check").
 - Not tried here: the click itself, which opens the browser.
 
+## Reminders (#287), 2026-11-27
+
+- `tst_reminder_time.qml` (6 tests): minutes, hours and minutes in English and Italian words, a time today or tomorrow, nothing past a day or unreadable, minutes left rounded up. `tst_bar_layout.qml`: the classic preset with `reminders`.
+- Live: `desktop-shell remind 1 "Reminder test (desktop)"` answered 0 and `remind list` showed it; `remind tea later` was refused with its usage (exit 1). The dialog listed it at 11:34 with **1 min** left; 55 s later the list was empty and the notification **Reminders · Reminder test (desktop)** was on screen. With Do Not Disturb turned on for the test, a plain `notify-send` stayed hidden and one with the `x-desktop-reminder` hint popped up; Do Not Disturb was turned off again, as it was.
+- Not tried here: a reminder missed while logged out, and the bar widget (this machine's own layout has no `reminders` yet: the gallery adds it).
+

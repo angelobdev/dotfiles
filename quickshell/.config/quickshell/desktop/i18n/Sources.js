@@ -44,6 +44,7 @@ var bindKeys = {
     "Sound & audio devices": "audio.panelTooltip",
     "Battery & power": "battery.title",
     "Calendar": "calendar.title",
+    "Reminders": "reminders.title",
     "Hints · Keyboard shortcuts": "hints.title",
     "Choose wallpaper": "wallpaper.title",
     "Next wallpaper": "wallpaper.next",

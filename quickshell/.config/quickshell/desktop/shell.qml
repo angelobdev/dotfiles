@@ -78,6 +78,10 @@ ShellRoot {
         function bar(action: string): bool {
             return BarVisibility.request(action) || BarLayout.request(action);
         }
+        // Reminders (desktop-shell remind): add WHEN TEXT, list, clear; "" when it took nothing.
+        function remind(action: string, when: string, text: string): string {
+            return Reminders.request(action, when, text);
+        }
         // A message on the OSD (desktop-shell osd): a shell glyph, a title, a line, a level 0-100 or -1.
         function osd(icon: string, title: string, detail: string, progress: int): bool {
             return Osd.showMessage(icon, title, detail, progress);
@@ -323,6 +327,10 @@ ShellRoot {
         LazyPanel {
             name: "launcher"
             Launcher {}
+        }
+        LazyPanel {
+            name: "reminders"
+            RemindersPanel {}
         }
         LazyPanel {
             name: "controls"

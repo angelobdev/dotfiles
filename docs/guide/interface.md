@@ -54,6 +54,7 @@ NetworkManager, BlueZ, PipeWire/WirePlumber, UPower, Polkit, and power-profiles-
 | `Super + Shift + N` | Notifications |
 | `Super + Shift + D` | Calendar |
 | `Super + Shift + H` | Hints / active bindings |
+| `Super + Ctrl + M` | Reminders: when (minutes `20`, `1h30`, or a time `14:30`) and what, Enter adds it; the pending ones listed with how long is left |
 | `Super + Shift + Q` | Session menu |
 | `Super + Shift + W` | Choose wallpaper: the picker that browses any folder |
 | `Super + Shift + T` | Text from a screen area: select it, its text (OCR, Italian and English) is copied |
@@ -134,6 +135,8 @@ Pins can also be changed by dragging: hold a pinned icon and move it at least 6 
 ## Do Not Disturb, Keep awake and notification history
 
 `Super + Ctrl + N` and `Super + Ctrl + K` toggle Do Not Disturb and Keep awake, the same switches as in the Control Center. An OSD shows the new state. It appears even with Do Not Disturb on, since it is the shell's own feedback rather than a notification. Both states are saved, so they survive shell restarts and logins until changed. With Keep awake on, the computer does not suspend on idle, and the bar shows the cup icon.
+
+**Reminders** (`Super + Ctrl + M`, or `desktop-shell remind 20 "Tea"`, `remind list`, `remind clear`) come as a notification at their time, even with Do Not Disturb on (the only ones that pop up then), and stay until dismissed. While one is pending the bar shows the minutes to the next (the `reminders` widget, in every layout preset), and a click on it opens the dialog. They are kept in `~/.local/state/desktop-shell/session.json`, so a restart keeps them; one due while the session was closed comes at the next login and says when it was due. A reminder is for the day ahead: 24 hours at most.
 
 A **focus session** is Do Not Disturb for a while: `Super + Ctrl + F` starts one of `Config.focusMinutes` (25), and the chevron on the Do Not Disturb tile offers 25, 50 or 90 minutes. The bar shows the minutes left beside the bell. When it ends, Do Not Disturb goes back to how it was before and a notification says so; turning Do Not Disturb off ends it early. It is saved like the other switches, so a shell restart keeps it. `desktop-shell focus toggle|start [MINUTES]|stop` does the same.
 

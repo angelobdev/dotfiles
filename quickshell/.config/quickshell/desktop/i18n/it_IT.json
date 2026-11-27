@@ -251,6 +251,10 @@
         "description": "La durata di una registrazione schermo; un clic la ferma.",
         "name": "Registrazione"
       },
+      "reminders": {
+        "description": "I minuti al prossimo promemoria, mentre ce n’è uno in attesa.",
+        "name": "Promemoria"
+      },
       "separator": {
         "description": "Una linea sottile tra gruppi di widget.",
         "name": "Separatore"
@@ -1907,6 +1911,21 @@
     "errors": {
       "usage": "Uso: channel.py whats-new [--current]|seen"
     }
+  },
+  "reminders": {
+    "title": "Promemoria",
+    "when": "Quando",
+    "what": "Cosa",
+    "add": "Aggiungi",
+    "hint": "Minuti (20), ore e minuti (1h30) o un orario (14:30). Arriva anche con Non disturbare attivo e resta finché non lo chiudi.",
+    "invalid": "Indica quando: minuti (20), ore e minuti (1h30) o un orario (14:30), entro un giorno.",
+    "pending": "In attesa",
+    "untitled": "Promemoria",
+    "remove": "Rimuovi",
+    "clear": "Cancella tutti",
+    "keys": "Tab|campo successivo; Invio|aggiungi; Esc|chiudi",
+    "now": "Promemoria",
+    "missed": "Era previsto alle %1, mentre la sessione era chiusa."
   },
   "whatsNew": {
     "done": "Ho capito",
