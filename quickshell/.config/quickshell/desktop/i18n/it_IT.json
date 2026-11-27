@@ -1318,7 +1318,12 @@
       "matugenMissing": "matugen non è installato; installalo con: %1",
       "matugenFailed": "matugen non è riuscito a leggere l’immagine: %1",
       "noWallpaper": "Non c’è un’immagine di sfondo da cui generare il tema.",
-      "glassUntunable": "%1 non ha impostazioni del vetro"
+      "glassUntunable": "%1 non ha impostazioni del vetro",
+      "importColors": "Quel colors.toml non ha i colori di sfondo, testo o accento da cui costruire un tema.",
+      "importSource": "Nessun colors.toml in %1 (un file, una cartella che lo contiene o un URL git https).",
+      "importFetch": "Non è stato possibile scaricare il tema: %1",
+      "importExists": "Un tuo tema si chiama già %1: importalo con un altro nome (--name).",
+      "importNotImported": "%1 non è un tema importato: si possono rimuovere solo quelli."
     },
     "wallpapers": {
       "downloading": "Scarico gli sfondi di %1; il primo compare appena arriva.",
@@ -1414,7 +1419,10 @@
     "shellText": "Testo della shell",
     "switcher": "Temi",
     "switcherKeys": "←→|scegli; Invio|applica; Esc|chiudi",
-    "switchTheme": "Cambia tema"
+    "switchTheme": "Cambia tema",
+    "import": "Importa",
+    "importPlaceholder": "Un tema di Omarchy: una cartella, il suo colors.toml o un URL git https",
+    "removeImported": "Rimuovi questo tema importato"
   },
   "timezone": {
     "change": "Cambia",

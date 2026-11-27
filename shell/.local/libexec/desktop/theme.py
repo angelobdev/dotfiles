@@ -16,6 +16,7 @@ import sys
 import theme_apps
 import theme_assets
 import theme_core
+import theme_import
 import theme_paths
 import theme_wallpapers
 
@@ -340,6 +341,10 @@ def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('apply')
+    importer = commands.add_parser('import')
+    importer.add_argument('source')
+    importer.add_argument('--name')
+    commands.add_parser('remove').add_argument('id')
     commands.add_parser('herdr')
     choose = commands.add_parser('set')
     choose.add_argument('name')
@@ -439,6 +444,19 @@ def command_herdr(arguments):
 
 def command_cursor_fetch(arguments):
     theme_assets.fetch_missing_cursors()
+
+
+def command_import(arguments):
+    theme_id = theme_import.install(arguments.source, arguments.name)
+    print(json.dumps({'id': theme_id}))
+
+
+def command_remove(arguments):
+    # The current theme goes back to the default first: nothing renders from a folder that is gone.
+    if theme_core.current() == arguments.id:
+        apply(theme_core.DEFAULT)
+        reload()
+    theme_import.remove(arguments.id)
 
 
 def command_set(arguments):

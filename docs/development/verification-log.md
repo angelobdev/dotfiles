@@ -1392,3 +1392,10 @@ Reported by the user after the merges of the day:
 - On this machine: `fingerprint.py list` gives `Synaptics Sensors`, 9 enroll stages, `right-index-finger`. Settings → Privacy shows **Fingerprint** with **Right index finger · Remove** and the next finger to add with **Add**; the shell loaded with the new group (after `stow.py apply`; a first try had apostrophes in QML comments, which `check-i18n.py` reads as a string).
 - Not tried here: an enrollment and a removal, which take the user's password and finger.
 
+## Omarchy themes (#291), 2026-11-27
+
+- `test_theme_import.py` (7 tests): Tokyo Night's colours on the palette and the terminal, a light theme, no theme without its basic colours, ids from folder and repository names, an import with its backgrounds that `theme_core.load` reads and `remove` takes, a theme of the user's own neither replaced nor removed, only https repositories. `test_theme.py` still passes.
+- In a scratch `XDG_CONFIG_HOME`: all 23 themes of Omarchy (basecamp/omarchy@a11b6a6) imported and rendered (`theme.py render`), the five light ones as light. The imported Tokyo Night is close to the hand-made one (same bg, fg, accent and terminal colours; `base`/`raised` one step off).
+- On this machine: `desktop-theme import` of Nord gave `{"id": "nord"}`, `desktop-theme list` showed it with `imported: true`, `desktop-theme remove nord` took the folder away; it was never applied. `theme.py` imported `theme_import` a few minutes before `stow.py apply` linked it: a `theme.py` call in that window would have failed.
+- Not tried here: an import from a git URL, and the Import field and trash button on screen.
+

@@ -137,6 +137,10 @@ Commands:
 - `desktop-theme list` prints the themes as JSON.
 - `python3 ~/.local/libexec/desktop/theme.py render --theme <id> --out <dir>` previews the output without applying it.
 
+### Omarchy themes
+
+An Omarchy theme (its `colors.toml`, the folder that holds it, or an https git URL of a theme repository) becomes a theme of this desktop: the **Import** field above the cards on the Theme tab, or `desktop-theme import SOURCE [--name NAME]`. Its colours map onto the palette and the 16 terminal colours (`base` from `dark_background`, `raised` from `lighter_background`, `fg` from `bright_foreground`, the accent text from whichever of its backgrounds and text reads best on the accent, the rest derived as for any theme), and the images of its `backgrounds/` folder, when it has one, become its wallpapers. It goes into `~/.config/desktop/themes/<id>/` (the id from the folder or repository name: `omarchy-nord-theme` is `nord`), so it shows among the cards and in the switcher, and importing it again replaces it. An imported card has a trash button; `desktop-theme remove ID` does the same, going back to Graphite first when it is the current theme. Only imports are removed: a theme of your own with the same id is refused, not replaced. Its own app files (Neovim, VS Code, keyboard RGB) are not used.
+
 ### Dynamic theme
 
 `desktop-theme generate [--image PATH]` (the Dynamic card in the Theming panel) runs `matugen image PATH --json hex --dry-run --source-color-index 0` on the current wallpaper by default, and writes `~/.config/desktop/themes/dynamic/theme.json`. It then applies it like `desktop-theme set dynamic` and remembers the image as the theme's wallpaper.

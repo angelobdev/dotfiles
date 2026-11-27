@@ -1318,7 +1318,12 @@
       "matugenMissing": "matugen is not installed; install it with: %1",
       "matugenFailed": "matugen could not read the image: %1",
       "noWallpaper": "There is no wallpaper image to generate the theme from.",
-      "glassUntunable": "%1 has no glass settings"
+      "glassUntunable": "%1 has no glass settings",
+      "importColors": "That colors.toml has no background, foreground or accent colour to build a theme from.",
+      "importSource": "No colors.toml in %1 (a file, a folder with one, or an https git URL).",
+      "importFetch": "The theme could not be downloaded: %1",
+      "importExists": "A theme of your own is already called %1: import it under another name (--name).",
+      "importNotImported": "%1 is not an imported theme: only those can be removed."
     },
     "wallpapers": {
       "downloading": "Downloading the %1 wallpapers; the first one appears as soon as it arrives.",
@@ -1414,7 +1419,10 @@
     "shellText": "Shell text",
     "switcher": "Themes",
     "switcherKeys": "←→|choose; Enter|apply; Esc|close",
-    "switchTheme": "Switch theme"
+    "switchTheme": "Switch theme",
+    "import": "Import",
+    "importPlaceholder": "An Omarchy theme: a folder, its colors.toml, or an https git URL",
+    "removeImported": "Remove this imported theme"
   },
   "timezone": {
     "change": "Change",

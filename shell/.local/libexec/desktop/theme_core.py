@@ -197,7 +197,9 @@ def themes(details=False):
             except (OSError, ValueError):
                 continue
             found[path.parent.name] = {'id': path.parent.name, 'name': theme.get('name', path.parent.name),
-                                       'mode': theme.get('mode', 'dark')}
+                                       'mode': theme.get('mode', 'dark'),
+                                       # Made by theme.py import (theme_import.MARK): Theming offers to remove it.
+                                       'imported': (path.parent / 'imported.json').is_file()}
             if details:
                 try:
                     completed = load(path.parent.name)

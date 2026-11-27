@@ -92,6 +92,28 @@ ColumnLayout {
             onChosen: name => Theming.setDynamic("mode", name)
         }
     }
+    // Omarchy themes (theme_import.py): their colors.toml becomes a theme of this desktop, among the others below.
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: 8
+        InputField {
+            id: importSource
+            Layout.fillWidth: true
+            placeholderText: I18n.tr("theming.importPlaceholder")
+            Keys.onReturnPressed: importButton.clicked()
+            Keys.onEnterPressed: importButton.clicked()
+        }
+        ActionButton {
+            id: importButton
+            outlined: true
+            text: I18n.tr("theming.import")
+            enabled: importSource.text.trim() !== "" && !Theming.busy
+            onClicked: {
+                Theming.importTheme(importSource.text);
+                importSource.text = "";
+            }
+        }
+    }
     GridView {
         id: themeGrid
         Layout.fillWidth: true
@@ -276,6 +298,14 @@ ColumnLayout {
                             font.family: Theme.font
                             font.pixelSize: Theme.textSize(12)
                             font.bold: true
+                        }
+                        CompactIconButton {
+                            visible: themeCell.modelData.imported === true
+                            iconName: "trash"
+                            iconSize: 16
+                            enabled: !Theming.busy
+                            tooltip: I18n.tr("theming.removeImported")
+                            onClicked: Theming.removeTheme(themeCell.modelData.id)
                         }
                         // Opens the glass page; the MouseArea of the card lies beneath it.
                         CompactIconButton {

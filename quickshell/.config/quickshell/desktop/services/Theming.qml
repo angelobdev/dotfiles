@@ -144,6 +144,14 @@ Singleton {
         queue = queue.slice(1);
         action.running = true;
     }
+    // An Omarchy theme (a colors.toml, a folder with one, or an https git URL), and removing one imported.
+    function importTheme(source) {
+        if (source.trim() !== "")
+            run([["python3", helper, "import", source.trim()]], ["listing"]);
+    }
+    function removeTheme(id) {
+        run([["python3", helper, "remove", id]]);
+    }
     function setTheme(id) {
         if (id !== current)
             run([["python3", helper, "set", id]]);
