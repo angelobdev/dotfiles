@@ -30,6 +30,7 @@ import install_plan  # noqa: E402
 import install_record  # noqa: E402
 import install_removal  # noqa: E402
 import install_run  # noqa: E402
+import install_snapshots  # noqa: E402
 import install_steps  # noqa: E402
 import install_undo  # noqa: E402
 
@@ -66,6 +67,7 @@ DESCRIPTIONS = {
     'utils.wev': 'wev, which shows Wayland input events.',
     'utils.tailscale': 'Tailscale, with its tray icon on Fedora.',
     'utils.msfonts': '7zip, for desktop-msfonts: the Microsoft fonts from your own Windows ISO.',
+    'utils.snapshots': 'snapper: a snapshot of the root before and after each system update, when / is btrfs.',
     'utils.printing': 'CUPS with the printers the network announces (driverless IPP), found through Avahi.',
     'assistant': 'The AI Assistant: Super + A, its bar icon and Settings section, and the Herdr app and herdr-core in ~/.local.',
     'containers': 'Docker (moby-engine, docker-compose, the docker group).',
@@ -1266,8 +1268,13 @@ def apply_updates(plan, picked):
             plan = install_plan.load_plan(plan.profiles, firmware=plan.firmware)
         titles = {STEP_OF[key] for key in keys if key in STEP_OF}
         steps = tuple(step for step in install_steps.STEPS if step.title in titles)
-        if steps:
-            install_run.run_steps(plan, False, steps)
+        # A snapshot of the root before the system update and one after, failed or not (utils.snapshots).
+        snapshot = install_snapshots.before() if 'system' in keys else ''
+        try:
+            if steps:
+                install_run.run_steps(plan, False, steps)
+        finally:
+            install_snapshots.after(snapshot)
         if 'flatpak' in keys:
             update_flatpaks()
         if 'firmware' in keys:

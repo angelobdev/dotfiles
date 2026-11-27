@@ -359,7 +359,8 @@ Reviewed with the user from Omarchy's source (basecamp/omarchy@a11b6a6); the cho
 - [x] #290 fingerprint enrollment in Settings → Privacy (`FingerprintGroup.qml`, `fingerprint.py` over fprintd's D-Bus API): the enrolled fingers, Remove, Add with each touch followed; in the page rather than full-screen.
 - [x] #291 Omarchy themes: `theme_import.py` (`desktop-theme import|remove`, the Import field and the trash button on imported cards), into `~/.config/desktop/themes/`, with their backgrounds as wallpapers.
 - [x] #285 workspace layouts: `config/workspace_layouts.lua` (tiling, scrolling, floating per workspace; a workspace rule or a floating window rule; kept in `workspace-layouts.json`), `Super + Ctrl + L`, the glyph and the click on the focused pill, the OSD.
-- [ ] #293 (design first). To discuss: #295–#298.
+- [x] #293 snapshots: the opt-in `utils.snapshots` part (snapper; snap-pac on Arch), a pre and a post snapshot around the system update (`scripts/install/install_snapshots.py`), the root config made at the first update, the way back with `snapper undochange`; no dnf5 actions hook, no boot into snapshots (design in the issue).
+- To discuss: #295–#298.
 
 ### System time zone from the calendar (2026-11-26)
 

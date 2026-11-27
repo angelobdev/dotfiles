@@ -1246,6 +1246,7 @@
           "wev": "wev (eventi di input)",
           "tailscale": "Tailscale",
           "msfonts": "Font Microsoft (dalla tua ISO di Windows)",
+          "snapshots": "Snapshot prima degli aggiornamenti (snapper, btrfs)",
           "printing": "Stampa (CUPS, stampanti di rete)"
         },
         "gaming": {

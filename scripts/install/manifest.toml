@@ -449,6 +449,14 @@ notes = ['Install the Microsoft fonts from your Windows ISO: desktop-msfonts ins
 
 # Printing: CUPS with the printers the network announces (driverless IPP), found through Avahi. Workstation has
 # them already; Server has none.
+# Snapshots of the root before and after each system update, when / is btrfs (scripts/install/install_snapshots.py);
+# on Arch snap-pac takes them for every pacman transaction. The way back: snapper undochange (docs/guide/installation.md).
+[fedora.utils.parts.snapshots]
+default = false
+packages = ['snapper']
+services = ['snapper-cleanup.timer']
+notes = ['Snapshots of / come with each system update (btrfs only): sudo snapper -c root list.']
+
 [fedora.utils.parts.printing]
 default = false
 packages = ['cups', 'cups-filters', 'cups-browsed', 'avahi', 'nss-mdns', 'system-config-printer']
@@ -888,6 +896,14 @@ notes = ['Install the Microsoft fonts from your Windows ISO: desktop-msfonts ins
 
 # Printing: CUPS with the printers the network announces (driverless IPP), found through Avahi. The .local names
 # need nss-mdns in /etc/nsswitch.conf (mdns_minimal before resolve), which this does not edit.
+# Snapshots of the root before and after each system update, when / is btrfs (scripts/install/install_snapshots.py);
+# on Arch snap-pac takes them for every pacman transaction. The way back: snapper undochange (docs/guide/installation.md).
+[arch.utils.parts.snapshots]
+default = false
+packages = ['snapper', 'snap-pac']
+services = ['snapper-cleanup.timer']
+notes = ['Snapshots of / come with each system update (btrfs only): sudo snapper -c root list.']
+
 [arch.utils.parts.printing]
 default = false
 packages = ['cups', 'cups-filters', 'cups-browsed', 'avahi', 'nss-mdns', 'system-config-printer']

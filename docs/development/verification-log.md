@@ -1405,3 +1405,9 @@ Reported by the user after the merges of the day:
 - Live on workspace 2 (one window): three `desktop_workspace_layout_cycle()` gave `scrolling` (`{"2": "scrolling"}` in the state file, the pill of workspace 2 with the scrolling glyph), `floating` (its window floating) and `dwindle` (the window tiled again, the state file `{}`).
 - Not tried here: the key itself, a click on the pill, a reload or login with a layout kept, a window opened on a floating workspace.
 
+## Snapshots around updates (#293), 2026-11-27
+
+- `test_snapshots.py` (5 tests): a pre and a post snapshot with the pre number, nothing without btrfs or snapper, nothing on top of snap-pac, the root config made with `NUMBER_LIMIT=5` at the first update, a failed snapshot that never stops the update. `test_install*.py` and `test_profiles.py` pass with the new part.
+- On this machine: `/` is the btrfs subvolume `root` (`/home` another), snapper is packaged by Fedora but not installed, so nothing changes until the part is chosen. The design and its limits (no dnf5 hook, no boot into a snapshot on Fedora's layout) are in the issue.
+- Not tried here: a real update with the part installed, and `snapper undochange`.
+
