@@ -4,6 +4,23 @@ What changed in each release of the desktop. The desktop shows the sections of t
 
 Releases are `vMAJOR.MINOR.PATCH`: a new minor version brings new features, a patch only fixes, and a new major version changes something you may have to act on (said in its notes). How a release is made: [Releasing](docs/development/releasing.md).
 
+## v1.3.0 - 2026-11-27
+
+### Added
+
+- **Window tricks**: pop a window out over the others on every workspace (`Super + O`), make it see-through (`Super + Backspace`), drop the gaps of a workspace (`Super + Shift + Backspace`), maximize (`Super + Alt + F`), tiled fullscreen (`Super + Ctrl + Shift + F`) and a full-screen desktop without the bar or gaps (`Super + Ctrl + Alt + F`). `Super + B` hides and shows the bar.
+- **A layout per workspace**: tiling, scrolling or floating, with `Super + Ctrl + L` or a click on the focused workspace in the bar.
+- **Reminders** (`Super + Ctrl + M`, or `desktop-shell remind 20 "Tea"`): they come at their time even with Do Not Disturb on, and the bar counts down to the next.
+- The browser, password manager and file manager keys bring the app forward when it is open; `Super + Alt + Enter` and `Super + Alt + Shift + F` open a terminal or Files in the folder of the focused terminal.
+- **QR codes** from a screen area (`Super + Ctrl + Shift + T`), and a right click on the bar clock steps through five formats (also in **Settings → Desktop → Bar**).
+- **Updates** say when a restart is needed (a new kernel, Hyprland itself, a firmware update), keep 2 GB free before they start and the computer awake while they run, name the cause when they fail, and update firmware too.
+- **Notifications** open their links (only plain web and mail addresses, with the site beside words that are not the address), and a repeat within 2 s is dropped.
+- The OSD confirms toggles and actions: the window tricks, the bar, the keyboard layout and the power profile.
+- The network details show live traffic, let a Wi-Fi network keep to 2.4 or 5 GHz, and run a speed test when one is installed.
+- **Fingerprints**: enroll and remove them in **Settings → Privacy**.
+- **Omarchy themes**: import one from its folder or a git URL in **Settings → Appearance → Theme**, or with `desktop-theme import`.
+- New parts of the installer: `utils.printing` (CUPS and network printers) and `utils.snapshots` (a snapper snapshot of the root before and after each system update, on btrfs). Its defaults now also restart the fingerprint reader after a suspend, give editors room to watch files, stop services faster at shutdown, set the Wi-Fi country from the time zone, enable hardware video decoding in Firefox and Zen, and turn on a firewall on Arch.
+
 ## v1.2.1 - 2026-11-27
 
 ### Changed
