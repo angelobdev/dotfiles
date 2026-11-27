@@ -135,7 +135,10 @@ class RepositoryTests(unittest.TestCase):
         (self.repo / '.git').mkdir()
         (self.repo / 'scripts').mkdir()
         (self.repo / 'scripts/install-desktop.py').write_text('', encoding='utf-8')
-        for patcher in (mock.patch.object(updates, 'REPO', self.repo), mock.patch('updates.tr', side_effect=lambda k, a=None: k)):
+        # Not the fwupd or the restart of the machine running the tests (a container has fwupdmgr without its daemon).
+        for patcher in (mock.patch.object(updates, 'REPO', self.repo), mock.patch('updates.tr', side_effect=lambda k, a=None: k),
+                        mock.patch.object(updates, 'firmware_listing', return_value=([], None)),
+                        mock.patch.object(updates, 'restart_state', return_value={'needed': False, 'reasons': []})):
             patcher.start()
             self.addCleanup(patcher.stop)
 
