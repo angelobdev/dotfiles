@@ -52,7 +52,11 @@ def prop(connection, path, name):
 
 
 def listing():
-    _, GLib = gio()
+    # Without PyGObject (a system that never installed the desktop's helpers) there is no reader to talk to either.
+    try:
+        _, GLib = gio()
+    except ImportError:
+        return {'device': '', 'fingers': [], 'stages': 0}
     try:
         connection = bus()
     except GLib.Error:

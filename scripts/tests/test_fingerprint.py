@@ -27,7 +27,13 @@ class FingerprintTests(unittest.TestCase):
             self.assertEqual(fingerprint.main(['format']), 2)
 
     def test_no_reader_lists_nothing(self):
-        with mock.patch.object(fingerprint, 'bus', return_value=object()), mock.patch.object(fingerprint, 'device', return_value=''):
+        glib = mock.Mock(Error=RuntimeError)
+        with mock.patch.object(fingerprint, 'gio', return_value=(None, glib)), mock.patch.object(fingerprint, 'bus', return_value=object()), \
+                mock.patch.object(fingerprint, 'device', return_value=''):
+            self.assertEqual(fingerprint.listing(), {'device': '', 'fingers': [], 'stages': 0})
+
+    def test_without_pygobject_no_reader(self):
+        with mock.patch.object(fingerprint, 'gio', side_effect=ImportError('gi')):
             self.assertEqual(fingerprint.listing(), {'device': '', 'fingers': [], 'stages': 0})
 
     def test_errors_in_words(self):
