@@ -97,6 +97,10 @@ local popped = {} -- window address -> whether it floated before
 local see_through = {} -- window address -> true
 local gapless = {} -- workspace id -> its rule
 local full_desktop = false
+-- The OSD confirms each (services/Osd.qml, by the name of its bind), without a process started for it.
+local function confirm(name, on)
+    hl.dispatch(hl.dsp.event("desktop-osd " .. name .. " " .. (on and "on" or "off")))
+end
 local function pop_out()
     local window = hl.get_active_window()
     if not window then
@@ -112,6 +116,7 @@ local function pop_out()
         if not floated and window.floating then
             hl.dispatch(hl.dsp.window.float({ window = target, action = "toggle" }))
         end
+        confirm("popOut", false)
         return
     end
     popped[window.address] = window.floating
@@ -129,6 +134,7 @@ local function pop_out()
         hl.dispatch(hl.dsp.window.pin({ window = target }))
     end
     hl.dispatch(hl.dsp.window.alter_zorder({ window = target, mode = "top" }))
+    confirm("popOut", true)
 end
 local function transparency()
     local window = hl.get_active_window()
@@ -141,6 +147,7 @@ local function transparency()
     for _, prop in ipairs({ "opacity", "opacity_inactive" }) do
         hl.dispatch(hl.dsp.window.set_prop({ window = "address:" .. window.address, prop = prop, value = value }))
     end
+    confirm("transparency", see_through[window.address] == true)
 end
 local function workspace_gaps()
     local workspace = hl.get_active_workspace()
@@ -153,18 +160,22 @@ local function workspace_gaps()
     else
         gapless[id] = hl.workspace_rule({ workspace = id, gaps_in = 0, gaps_out = 0 })
     end
+    -- On: the workspace has its gaps.
+    confirm("workspaceGaps", not gapless[id]:is_enabled())
 end
 local function tiled_fullscreen()
     local window = hl.get_active_window()
     if window then
         -- The app is told it is fullscreen (client 2) while the window keeps its tile (internal 0).
         hl.dispatch(hl.dsp.window.fullscreen_state({ internal = 0, client = window.fullscreen_client == 2 and 0 or 2 }))
+        confirm("tiledFullscreen", window.fullscreen_client ~= 2)
     end
 end
 local function fullscreen_desktop()
     full_desktop = not full_desktop
     hl.config({ general = { gaps_in = full_desktop and 0 or theme.gapsIn, gaps_out = full_desktop and 0 or theme.gapsOut } })
     hl.dispatch(hl.dsp.event("desktop-bar " .. (full_desktop and "hide" or "show")))
+    confirm("fullscreenDesktop", full_desktop)
 end
 bind("SUPER + O", pop_out, "Pop window out")
 bind("SUPER + BackSpace", transparency, "Window transparency")

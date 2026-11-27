@@ -228,9 +228,15 @@ case "${1:-start}" in
         echo 'Usage: desktop-shell bar {edit|done|cancel|reset|hide|show|toggle}' >&2
         exit 2
         ;;
+    osd)
+        # A message on the OSD for scripts: osd ICON TITLE [DETAIL] [PROGRESS], ICON a shell glyph (assets/icons),
+        # PROGRESS 0-100 for a bar under it.
+        [[ -n "${2:-}" && -n "${3:-}" && "${5:--1}" =~ ^-?[0-9]+$ ]] || { echo 'Usage: desktop-shell osd ICON TITLE [DETAIL] [PROGRESS]' >&2; exit 2; }
+        exec qs ipc -p "$config" call desktop osd -- "$2" "$3" "${4:-}" "${5:--1}"
+        ;;
     window-menu) exec qs ipc -p "$config" call desktop windowMenu ;;
     # The desktop menu (launcher, Settings, session), as a right click on the empty desktop opens it.
     desktop-menu) exec qs ipc -p "$config" call desktop desktopMenu ;;
     status) exec qs ipc -p "$config" call desktop status ;;
-    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|bar ACTION|window-menu|desktop-menu}' >&2; exit 2 ;;
+    *) echo 'Usage: desktop-shell {start|stop|supervise|restart [theming TAB]|status|toggle PANEL|switcher ACTION|focus ACTION|zoom ACTION|overview|media ACTION|dock ACTION|keep-awake ACTION|dnd ACTION|tablet ACTION|rotation-lock ACTION|night-shift ACTION|assist ACTION|keyboard ACTION|bar ACTION|osd ICON TITLE|window-menu|desktop-menu}' >&2; exit 2 ;;
 esac

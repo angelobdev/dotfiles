@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import ".."
 
 Singleton {
     id: root
@@ -13,8 +14,11 @@ Singleton {
     function request(action) {
         if (action === "hide" || action === "show")
             userHidden = action === "hide";
-        else if (action === "toggle")
+        else if (action === "toggle") {
             userHidden = !userHidden;
+            // Super + B: hidden, nothing on screen says it was on purpose.
+            Osd.showState("dock", I18n.tr("bindings.toggleBar"), I18n.tr(userHidden ? "common.off" : "common.on"));
+        }
         else
             return false;
         return true;

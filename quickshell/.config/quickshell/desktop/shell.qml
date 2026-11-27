@@ -78,6 +78,10 @@ ShellRoot {
         function bar(action: string): bool {
             return BarVisibility.request(action) || BarLayout.request(action);
         }
+        // A message on the OSD (desktop-shell osd): a shell glyph, a title, a line, a level 0-100 or -1.
+        function osd(icon: string, title: string, detail: string, progress: int): bool {
+            return Osd.showMessage(icon, title, detail, progress);
+        }
         // Screen zoom: in, out, reset, toggle.
         function zoom(action: string): bool {
             return Zoom.request(action);

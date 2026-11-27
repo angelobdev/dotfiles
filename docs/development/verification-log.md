@@ -1363,3 +1363,8 @@ Reported by the user after the merges of the day:
 - `test_migrations.py` (6 tests): only `YYYYMMDDhhmm-name.sh|py` files, in order; each runs once with `DOTFILES_REPO` set; exit 75 stops the queue without an error and with a notification of its last line; a failure stops it, says so, and runs again once fixed; `mark-all` records every one for a new install. `test_install_tui.py`: a pull runs the migrations after linking and before any reload.
 - On this machine: `migrations.py pending` gives `[]` (the folder has its README only), so the next login runs nothing.
 
+## OSD for actions and toggles (#288), 2026-11-27
+
+- Live: `desktop-shell osd update Build "Compiling plugins" 40` showed the title, the line and a bar at 40% (IPC answered `true`); a `desktop-osd workspaceGaps off` custom event sent with `hyprctl eval` showed **Gaps on this workspace · Off**, the label of its bind. `desktop-shell osd` without its arguments prints its usage. After the save of `binds.lua`, `--verify-config` and `configerrors` clean.
+- Not tried here: the keys themselves, a layout switch (one layout on this machine) and a power profile change, which read Hyprland's `activelayout` event and UPower's profile.
+
