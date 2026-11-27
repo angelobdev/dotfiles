@@ -8,9 +8,11 @@ primary="$(python3 "$agents" primary 2>/dev/null || true)"
 # In the Herdr app, the primary agent in a new tab when none runs yet, once the app answers.
 herdr_start() {
     [[ -n $primary ]] || return 0
+    # herdr names whatever runs in a terminal ("zsh" too): only the agents of agents.py count.
     if PATH="$HOME/.local/bin:$PATH" herdr-core ls --json 2>/dev/null | python3 -c '
 import json, sys
-sys.exit(0 if any(t.get("agent") for t in json.load(sys.stdin).get("terminals", [])) else 1)'; then
+known = {agent["herdr"] for agent in json.loads(sys.argv[1])["agents"] if agent["herdr"]}
+sys.exit(0 if any(t.get("agent") in known for t in json.load(sys.stdin).get("terminals", [])) else 1)' "$(python3 "$agents" list)"; then
         return 0
     fi
     local request

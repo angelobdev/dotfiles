@@ -117,20 +117,25 @@ Singleton {
             return "ready";
         }
     }
-    // herdr's name for an agent, as its JSON file names it, else a few herdr knows that have none here.
-    function agentName(app) {
-        const known = (catalog.agents ?? []).find(agent => agent.herdr === app);
-        if (known)
-            return known.name;
-        const names = {
+    // A few agents herdr knows that have no JSON file here.
+    readonly property var herdrNames: ({
             "claude-code": "Claude Code",
             "codex": "Codex",
             "opencode": "opencode",
             "cursor": "Cursor",
             "gemini": "Gemini CLI",
             "grok": "Grok"
-        };
-        return names[app] ?? app;
+        })
+    // herdr's name for an agent, as its JSON file names it, else one of herdrNames.
+    function agentName(app) {
+        const known = (catalog.agents ?? []).find(agent => agent.herdr === app);
+        if (known)
+            return known.name;
+        return herdrNames[app] ?? app;
+    }
+    // herdr names whatever runs in a terminal, a plain shell ("zsh") too: only agents count.
+    function knownAgent(app) {
+        return !!app && ((catalog.agents ?? []).some(agent => agent.herdr === app) || app in herdrNames);
     }
     // A new `hc ls`: the agents, most urgent first, and a notification for each that moved to asking,
     // finished or failed (none for the first read, a shell start).
@@ -146,9 +151,9 @@ Singleton {
         // each one (status.msg, status.kind, status_ms), by address.
         let list = [];
         try {
-            list = (JSON.parse(text).terminals ?? []).filter(terminal => terminal.state === "live" && (terminal.agent || details[terminal.address]?.status?.app)).map(terminal => {
+            list = (JSON.parse(text).terminals ?? []).filter(terminal => terminal.state === "live" && (knownAgent(terminal.agent) || details[terminal.address]?.status?.app)).map(terminal => {
                 const detail = details[terminal.address] ?? {};
-                const app = terminal.agent || detail.status?.app;
+                const app = knownAgent(terminal.agent) ? terminal.agent : detail.status?.app || terminal.agent;
                 const word = typeof terminal.status === "string" ? terminal.status : detail.status?.state;
                 return {
                     address: terminal.address,
