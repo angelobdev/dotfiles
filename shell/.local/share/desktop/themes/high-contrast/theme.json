@@ -85,8 +85,38 @@
   "vscode": {
     "theme": "Default High Contrast"
   },
-  "wallpaperDirectories": [
-    "~/.local/share/wallpapers",
-    "~/Pictures/Wallpapers"
+  "wallpapers": [
+    {
+      "file": "01-sun.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/high-contrast-01-sun.jpg",
+      "sha256": "faf4cb20e9a3a4695c787d1eda1607613e5d1c99206a848f17719ab29784bf0c",
+      "source": "desktop",
+      "loop": {
+        "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/high-contrast-01-sun-loop.mp4",
+        "sha256": "1daf038a56d290ef1775e592cee71bb33b13a1efad323aaea4de80fd5f23077c"
+      },
+      "intro": {
+        "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/high-contrast-01-sun-intro.mp4",
+        "sha256": "ea2c3385cf7984ddfa342bcfb86284955ac65e13cc49676ff1aeaa8aebfe4f3b"
+      }
+    },
+    {
+      "file": "02-dots.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/high-contrast-02-dots.jpg",
+      "sha256": "7c3283f80261c66edde62a0611d5f474a7caffdb0ec7ffecf7f7f6c36ed13d41",
+      "source": "desktop"
+    },
+    {
+      "file": "03-split.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/high-contrast-03-split.jpg",
+      "sha256": "4c0241d09d9a087d6be3de5b29f800f2c4981ccf5c1a2bded7c2abcb405609ab",
+      "source": "desktop"
+    },
+    {
+      "file": "04-rings.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/high-contrast-04-rings.jpg",
+      "sha256": "442250b13ef1a8ff35e7a01d78038ca92792fbc703a753f044f687bedecde503",
+      "source": "desktop"
+    }
   ]
 }

@@ -84,8 +84,38 @@
   "vscode": {
     "theme": "Default Dark Modern"
   },
-  "wallpaperDirectories": [
-    "~/.local/share/wallpapers",
-    "~/Pictures/Wallpapers"
+  "wallpapers": [
+    {
+      "file": "01-contours.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/graphite-01-contours.jpg",
+      "sha256": "e3d04a8c90b964bffaf266a62b25283767571cda453194e36d0e719bc8784362",
+      "source": "desktop",
+      "loop": {
+        "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/graphite-01-contours-loop.mp4",
+        "sha256": "bfea601e576adaa399031159930bd25e2a868284bd7615be857b7762e6f3d996"
+      },
+      "intro": {
+        "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/graphite-01-contours-intro.mp4",
+        "sha256": "242cc1d57d6b8187484a88e8522e7b19cf4cc61071a48ef818489265a6fa2b35"
+      }
+    },
+    {
+      "file": "02-grain.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/graphite-02-grain.jpg",
+      "sha256": "6bc97584422810845a70b058e1c34bc3fca310b9b9060e7d97318ed98c01b0c2",
+      "source": "desktop"
+    },
+    {
+      "file": "03-rings.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/graphite-03-rings.jpg",
+      "sha256": "1cc17294ab595d93698945ebe3c2a37bae08e97db7d72e53d1c0b6e651adddfc",
+      "source": "desktop"
+    },
+    {
+      "file": "04-folds.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/graphite-04-folds.jpg",
+      "sha256": "26f3e005eed8ab181af2c08805f5741bf716e7cd5ea52c9beeb35a8ff2295d7b",
+      "source": "desktop"
+    }
   ]
 }

@@ -69,8 +69,38 @@
   "vscode": {
     "theme": "Default Light Modern"
   },
-  "wallpaperDirectories": [
-    "~/.local/share/wallpapers",
-    "~/Pictures/Wallpapers"
+  "wallpapers": [
+    {
+      "file": "01-aurora.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-light-01-aurora.jpg",
+      "sha256": "01120b1ccdac9d45d5c5ee077c35e97fb75fa18bb98db0a280a9e2d184fbaad6",
+      "source": "desktop",
+      "loop": {
+        "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-light-01-aurora-loop.mp4",
+        "sha256": "6a95caea80fe4e14d4711e7a68577c12a1d354444d43f4a96bd492b9c36431a9"
+      },
+      "intro": {
+        "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-light-01-aurora-intro.mp4",
+        "sha256": "9ce004ede433d58d53ce2858a1b0c40b9abd5148cf958a7af273bb226bc5eae6"
+      }
+    },
+    {
+      "file": "02-mesh.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-light-02-mesh.jpg",
+      "sha256": "296d78fc2d55dfd3040491820568936ed4ecdb525cd0744cb50023e0c6c8f933",
+      "source": "desktop"
+    },
+    {
+      "file": "03-silk.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-light-03-silk.jpg",
+      "sha256": "262785fbfa39f6da9e5d2a9638fe32db4189b0c9e30b8765384fd3ede29d1d02",
+      "source": "desktop"
+    },
+    {
+      "file": "04-horizon.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-light-04-horizon.jpg",
+      "sha256": "b6354e409ed47f67b59c75bc5425fbc82062d4bc1ea39411786fd42f62d142c6",
+      "source": "desktop"
+    }
   ]
 }

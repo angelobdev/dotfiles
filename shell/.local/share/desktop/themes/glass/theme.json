@@ -67,8 +67,38 @@
   "vscode": {
     "theme": "Default Dark Modern"
   },
-  "wallpaperDirectories": [
-    "~/.local/share/wallpapers",
-    "~/Pictures/Wallpapers"
+  "wallpapers": [
+    {
+      "file": "01-aurora.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-01-aurora.jpg",
+      "sha256": "b6ff44c9741feed46591db21a512eeaddf12c3a3ad42210f40829b6a38e9d03e",
+      "source": "desktop",
+      "loop": {
+        "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-01-aurora-loop.mp4",
+        "sha256": "413bfaad191d60c435a9ea5ba35012b3a7bbbcba326b7a7653baa2455479ef67"
+      },
+      "intro": {
+        "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-01-aurora-intro.mp4",
+        "sha256": "e9c73a33a06245a4c3470ee4194aa9225dfb71ec9b3a15772b6d816b9db0c46f"
+      }
+    },
+    {
+      "file": "02-mesh.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-02-mesh.jpg",
+      "sha256": "89c6ef0a621858de68b819b25ee15d69c53cdef8aa10b669f074bfff4e1f6688",
+      "source": "desktop"
+    },
+    {
+      "file": "03-silk.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-03-silk.jpg",
+      "sha256": "728e3f35d760cbd5546c4d1bcd9aaab88a3c5402901d6f3fad23b7b731dd917b",
+      "source": "desktop"
+    },
+    {
+      "file": "04-horizon.jpg",
+      "url": "https://github.com/angelobdev/dotfiles/releases/download/wallpapers-1/glass-04-horizon.jpg",
+      "sha256": "c4aa911326f11f5a15ef51335f0f4debf64d14d520c25f9905b4b732a6e4ba62",
+      "source": "desktop"
+    }
   ]
 }

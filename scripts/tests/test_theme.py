@@ -136,9 +136,26 @@ class WallpaperTests(unittest.TestCase):
             self.assertEqual(len(files), len(set(files)), path.parent.name)
             for entry in entries:
                 with self.subTest(theme=path.parent.name, file=entry['file']):
-                    self.assertRegex(entry['url'], r'^https://raw\.githubusercontent\.com/[^/]+/[^/]+/[0-9a-f]{40}/')
+                    # A commit of a repository (Omarchy's), or the release of the desktop's own (scripts/wallpapers.py).
+                    pinned = r'^https://(raw\.githubusercontent\.com/[^/]+/[^/]+/[0-9a-f]{40}/|github\.com/angelobdev/dotfiles/releases/download/wallpapers-\d+/)'
+                    self.assertRegex(entry['url'], pinned)
                     self.assertRegex(entry['sha256'], r'^[0-9a-f]{64}$')
                     self.assertRegex(entry['file'], r'^\d{2}-[a-z0-9-]+\.(webp|jpg|png)$')
+                    for kind in ('loop', 'intro'):
+                        if kind in entry:
+                            self.assertRegex(entry[kind]['url'], pinned + r'.*\.mp4$')
+                            self.assertRegex(entry[kind]['sha256'], r'^[0-9a-f]{64}$')
+
+    def test_every_shipped_theme_has_its_wallpapers_and_ours_move(self):
+        # Only the dynamic theme (made from any wallpaper) has none of its own.
+        for path in sorted((REPO / 'shell/.local/share/desktop/themes').glob('*/theme.json')):
+            theme = json.loads(path.read_text(encoding='utf-8'))
+            with self.subTest(theme=path.parent.name):
+                self.assertTrue(theme.get('wallpapers'))
+                self.assertNotIn('wallpaperDirectories', theme)
+                if theme['wallpapers'][0]['source'] == 'desktop':
+                    self.assertIn('loop', theme['wallpapers'][0])
+                    self.assertIn('intro', theme['wallpapers'][0])
 
     def test_next_wallpaper_cycles_and_starts_over(self):
         files = [Path('/w/a.jpg'), Path('/w/b.jpg'), Path('/w/c.jpg')]
