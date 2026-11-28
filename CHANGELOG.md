@@ -4,6 +4,22 @@ What changed in each release of the desktop. The desktop shows the sections of t
 
 Releases are `vMAJOR.MINOR.PATCH`: a new minor version brings new features, a patch only fixes, and a new major version changes something you may have to act on (said in its notes). How a release is made: [Releasing](docs/development/releasing.md).
 
+## v1.6.0 - 2026-11-28
+
+### Added
+
+- **Moving wallpapers**, as in Omarchy: a wallpaper with a loop plays it in place of the picture while the computer is on AC power, and one with an intro plays it once when you choose it, when you switch theme and at login. Eight wallpapers of the Omarchy themes have a loop, 26 an intro. On battery, with **Reduce the shell's motion** on or under a fullscreen window the picture stays. **Settings → Desktop → Motion** turns loops and intros off on their own ([theming](docs/features/theming.md#moving-wallpapers)).
+- Every theme's wallpapers and their videos download in the background at login, so switching theme shows its wallpapers at once (about 240 MB in all).
+
+### Changed
+
+- The Omarchy backgrounds that show Omarchy's name or logo are no longer among the wallpapers: one each from Flexoki Light, Lupine and Rosé Pine, three from Tokyo Night.
+
+### Fixed
+
+- Switching theme no longer opens the console (Herdr or Claude Code) when it was closed.
+- The Global menu dialog no longer opens at every start of the shell, only when you add the widget to the bar.
+
 ## v1.5.0 - 2026-11-28
 
 ### Added
