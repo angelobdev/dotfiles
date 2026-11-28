@@ -128,6 +128,13 @@ Singleton {
     readonly property bool barMergeCenter: pick("barMergeCenter", false)
     // Bar: the format of the clock (bar/ClockFormats.js); a right click on the clock steps to the next one.
     readonly property string barClockFormat: pick("barClockFormat", "default")
+    // Global menu (bar/widgets/GlobalMenuWidget.qml): for an app without a menu of its own the generic menu
+    // ("generic") or nothing ("nothing"); the icon of the app before its menus; and the focus Hyprland gives while
+    // it is on a bar ("system" leaves Hyprland's own setting, "hover", "click", "off": input follow_mouse 1, 2, 0,
+    // applied live, never written to a file).
+    readonly property string globalMenuFallback: pick("globalMenuFallback", "generic")
+    readonly property bool globalMenuIcon: pick("globalMenuIcon", true)
+    readonly property string globalMenuFocus: pick("globalMenuFocus", "system")
     // Launcher: files in the home folder below the apps (fd, from three typed characters).
     readonly property bool launcherFiles: pick("launcherFiles", true)
     // Launcher: apps opened from it or the dock come first, by how often and how lately (services/Apps.qml).

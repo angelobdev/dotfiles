@@ -121,8 +121,8 @@ case "${1:-start}" in
         exec qs ipc -p "$config" call desktop switcher "$2"
         ;;
     toggle)
-        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays|radio|whatsnew|themes|wallpapers|reminders) ;;
-            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays|radio|whatsnew|themes|wallpapers|reminders} [SECTION]' >&2; exit 2 ;;
+        case "${2:-}" in launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays|radio|whatsnew|themes|wallpapers|reminders|globalmenu) ;;
+            *) echo 'Usage: desktop-shell toggle {launcher|controls|network|bluetooth|audio|battery|notifications|calendar|hints|wallpaper|settings|theming|clipboard|recording|power|agent|updates|emoji|displays|radio|whatsnew|themes|wallpapers|reminders|globalmenu} [SECTION]' >&2; exit 2 ;;
         esac
         # settings SECTION[/TAB] opens Settings on that section (appearance, system/advanced, …) instead of
         # toggling it; theming is Settings → Appearance (ShellState.aliases).

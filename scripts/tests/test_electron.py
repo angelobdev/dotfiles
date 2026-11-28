@@ -14,6 +14,13 @@ FLAGS = ['--ozone-platform-hint=auto', '--enable-wayland-ime', '--wayland-text-i
 
 
 class ElectronTests(unittest.TestCase):
+    def setUp(self):
+        # Never the global menu of this machine: no shell.json, no apps chosen for it.
+        for name in ('SHELL', 'GLOBAL_MENU'):
+            patcher = mock.patch.object(electron, name, Path('/nonexistent') / name)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
     def test_flags_follow_the_program_and_keep_field_codes(self):
         self.assertEqual(electron.with_flags('/usr/share/code/code --new-window %F', FLAGS),
                          '/usr/share/code/code --ozone-platform-hint=auto --enable-wayland-ime --wayland-text-input-version=3 --new-window %F')
@@ -76,6 +83,35 @@ class ElectronTests(unittest.TestCase):
             written = target / 'app.desktop'
             self.assertIn('Exec=app ' + ' '.join(FLAGS) + ' %U', written.read_text())
             self.assertEqual(written.stat().st_mode & 0o777, 0o644)
+
+    def test_global_menu_apps_start_under_x11_only_with_the_widget(self):
+        configured = FLAGS + ['--password-store=gnome-libsecret']
+        self.assertEqual(electron.x11_flags(configured), ['--password-store=gnome-libsecret', '--ozone-platform=x11'])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            system, target = root / 'system', root / 'user'
+            (system / 'applications').mkdir(parents=True)
+            for app in ('code', 'notes'):
+                (system / 'applications' / (app + '.desktop')).write_text(f'[Desktop Entry]\nExec={app} %U\n')
+            (root / 'apps.conf').write_text('code\n')
+            (root / 'flags.conf').write_text(' '.join(configured) + '\n')
+            (root / 'global.conf').write_text('# chosen\ncode\nnotes\n')
+            shell = root / 'shell.json'
+            patches = (mock.patch.object(electron, 'APPS', root / 'apps.conf'), mock.patch.object(electron, 'FLAGS', root / 'flags.conf'),
+                       mock.patch.object(electron, 'TARGET', target), mock.patch.object(electron, 'data_dirs', return_value=[system]),
+                       mock.patch.object(electron, 'GLOBAL_MENU', root / 'global.conf'), mock.patch.object(electron, 'SHELL', shell))
+            for patcher in patches:
+                patcher.start()
+                self.addCleanup(patcher.stop)
+            shell.write_text('{"barLayout": {"left": ["launcher", "globalMenu"]}}')
+            self.assertEqual(electron.main(['apply']), 0)
+            self.assertIn('Exec=code --password-store=gnome-libsecret --ozone-platform=x11 %U', (target / 'code.desktop').read_text())
+            self.assertIn('--ozone-platform=x11', (target / 'notes.desktop').read_text())
+            # The widget leaves the bar: code goes back to its flags, the copy made only for notes goes.
+            shell.write_text('{"barLayout": {"left": ["launcher"]}}')
+            self.assertEqual(electron.main(['apply']), 0)
+            self.assertIn('Exec=code ' + ' '.join(configured) + ' %U', (target / 'code.desktop').read_text())
+            self.assertFalse((target / 'notes.desktop').exists())
 
 
 if __name__ == '__main__':

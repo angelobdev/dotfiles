@@ -1,0 +1,10 @@
+[Unit]
+Description=Global menu registrar for the desktop bar (com.canonical.AppMenu.Registrar)
+# Started by the shell while the globalMenu widget is on a bar (services/GlobalMenu.qml), stopped when it leaves.
+PartOf=graphical-session.target
+
+[Service]
+Type=dbus
+BusName=com.canonical.AppMenu.Registrar
+ExecStart=/usr/bin/python3 %h/.local/libexec/desktop/globalmenu.py registrar
+Restart=on-failure

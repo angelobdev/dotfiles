@@ -4,12 +4,17 @@ import Quickshell
 import ".."
 
 // A context menu built from plain entries: { kind: "item" | "heading" | "separator", text, icon, glyph,
-// checked, destructive, enabled, keepOpen, action }. icon is an image (a tray icon); glyph names a shell icon
-// (assets/icons), drawn in the colour of the text. Hover and arrow keys share one selection, Enter triggers it.
+// checked, destructive, enabled, keepOpen, action, hint, submenu }. icon is an image (a tray icon); glyph names a
+// shell icon (assets/icons), drawn in the colour of the text; hint is a muted text on the right (a shortcut);
+// submenu draws an arrow on the right, and → triggers such an entry as Enter does. Hover and arrow keys share one
+// selection, Enter triggers it; ← and → on others are told to the menu's owner (sideways).
 Rectangle {
     id: root
     property var entries: []
+    property int menuWidth: 252
     signal triggered(var entry)
+    // ← (-1), or → (1) on an entry without a submenu: a menu bar moves to the next menu.
+    signal sideways(int direction)
     signal dismissed
     function selectable(index) {
         const entry = entries[index];
@@ -34,7 +39,7 @@ Rectangle {
     }
     // A menu with a checkable item reserves the leading column on every item, so the labels line up.
     readonly property bool hasCheck: entries.some(entry => entry.checked !== undefined)
-    implicitWidth: 252
+    implicitWidth: menuWidth
     implicitHeight: list.contentHeight + 12
     radius: Theme.radius
     color: Theme.background
@@ -54,6 +59,13 @@ Rectangle {
     Keys.onEnterPressed: trigger(list.currentIndex)
     Keys.onSpacePressed: trigger(list.currentIndex)
     Keys.onEscapePressed: dismissed()
+    Keys.onRightPressed: {
+        if (entries[list.currentIndex]?.submenu && selectable(list.currentIndex))
+            trigger(list.currentIndex);
+        else
+            sideways(1);
+    }
+    Keys.onLeftPressed: sideways(-1)
     // Presses on headings, separators and padding stay inside the menu.
     MouseArea {
         anchors.fill: parent
@@ -139,6 +151,21 @@ Rectangle {
                     font.family: Theme.font
                     font.pixelSize: Theme.textSize(row.kind === "heading" ? 12 : 13)
                     font.weight: row.kind === "heading" ? Font.DemiBold : Font.Normal
+                }
+                Text {
+                    visible: row.kind === "item" && !!row.modelData.hint
+                    text: row.modelData.hint ?? ""
+                    textFormat: Text.PlainText
+                    color: Theme.muted
+                    font.family: Theme.font
+                    font.pixelSize: Theme.textSize(11)
+                }
+                Icon {
+                    Layout.preferredWidth: 14
+                    Layout.preferredHeight: 14
+                    visible: row.kind === "item" && !!row.modelData.submenu
+                    name: "chevron-right"
+                    color: Theme.muted
                 }
             }
             MouseArea {

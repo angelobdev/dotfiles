@@ -28,6 +28,8 @@ ShellRoot {
     property var dynamicTheme: DynamicTheme
     property var tablet: Tablet
     property var nightShift: NightShift
+    // Runs (the registrar, the reader) while the global menu is on a bar, and asks for its apps when it is added.
+    property var globalMenu: GlobalMenu
     property var battery: Battery
     property var idle: Idle
     // Opens What's new after an update of the desktop.
@@ -331,6 +333,10 @@ ShellRoot {
         LazyPanel {
             name: "reminders"
             RemindersPanel {}
+        }
+        LazyPanel {
+            name: "globalmenu"
+            GlobalMenuPanel {}
         }
         LazyPanel {
             name: "controls"

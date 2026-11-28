@@ -13,6 +13,7 @@ Without a layout of your own the bar is the **classic** one, item for item the b
 | `launcher` | The distribution logo | Launcher |
 | `workspaces` | The workspaces of the monitor ([workspaces](../guide/interface.md#workspaces-per-monitor)), the focused one with the glyph of its layout when not tiling | Focuses one; on the focused one, the next layout; the wheel moves |
 | `title` | The active window; on a narrow bar or in tablet mode, its app icon | Right click or long press: window menu |
+| `globalMenu` | The menu of the app of this monitor: its own (File, Edit, View…) or a generic one ([global menu](#global-menu)); in no layout until you add it | A menu opens below it; right click: its options |
 | `tray` | The status icons of apps | Their menus |
 | `media` | What plays (with `barMedia`) | Play/pause; wheel skips; right click Control Center |
 | `privacy` | Microphone, camera or screen sharing in use | — |
@@ -34,6 +35,30 @@ Without a layout of your own the bar is the **classic** one, item for item the b
 | `spacer` | 24 px of empty room | — |
 
 Widgets that have nothing to show (no player, no updates, no battery) stay hidden. Only the separator and the spacer can appear more than once.
+
+## Global menu
+
+The `globalMenu` widget puts the menus of the app on the bar, as on macOS, after [Oma Top Menu](https://github.com/Somnius/oma.top.menu) (MIT), whose reading of menus it follows. Each monitor shows the menu of its own window: the focused window on the monitor in use, elsewhere the window last used on the workspace that monitor shows; a monitor without a window shows none.
+
+- **An app with a menu of its own** shows its icon and its menus, read from the app: Firefox **File Edit View History Bookmarks Tools Help**, VS Code **File Edit Selection View Go Run Terminal Help**. A click opens one below it, with each entry's shortcut on the right; a submenu opens in the same menu, under a row that goes back.
+- **An app without one** shows its icon, its name and a generic menu: the name (**New window**, the actions of its desktop entry, **Close window**, **Quit**), **File**, **Edit** (Undo, Redo, Cut, Copy, Paste, Select all, sent to the window as their keys), **View** (floating, fullscreen, maximize, pop out, transparency), **Window** (to the previous or next workspace, move left, right, up, down, close) and **Help** (the keyboard shortcuts, the launcher). Or nothing, as an option.
+- `↑↓` select, Enter runs, `→` opens a submenu, `←` goes back, and `←` `→` on the top level move to the menu beside it.
+- **A right click** on the menu opens its options (**Global menu**, also `desktop-shell toggle globalmenu`): **Focus** (System keeps your Hyprland setting; Hover, Click and Off set `input:follow_mouse` to 1, 2 or 0 while the widget is on a bar, again after each reload, never in a file: with Hover the menu changes as the pointer crosses windows on the way to the bar), **Apps without a menu** (generic menu or nothing), **App icon**, and the apps to start under X11.
+
+Where a menu comes from, in this order (`globalmenu_reader.py`):
+
+1. `com.canonical.dbusmenu` through the registrar, for X11 apps: Electron apps under XWayland, such as VS Code, which hand their menu over only under X11 (below).
+2. `org.gtk.Menus`, for GTK apps that publish their menu bar.
+3. `com.canonical.dbusmenu` an app publishes itself (Qt).
+4. The accessibility tree (AT-SPI): the menu bar of the window as a screen reader sees it, which covers Firefox and its family, Qt and GTK 3 apps on Wayland. While the widget is on a bar the reader keeps accessibility on for the session, registered as a screen reader is; **an app already open before shows its menu once it is restarted**. Firefox fills a menu only once it has been open: the first time, the menu opens inside Firefox for a moment, is read and closed again (two Escapes sent to its window), and its entries show on the bar; after that it opens at once.
+
+Without any of them, the generic menu. GTK 4 and libadwaita apps, terminals and Herdr have no menu bar, so they get it too.
+
+**Apps under X11.** When the widget is added the shell asks which apps to start under X11 for it: the installed Electron apps, each with a switch. **Apply** changes their launchers (`electron.py`, `--ozone-platform=x11` in place of the Wayland flags); an app already open keeps running as it is until it is restarted. Under X11 an app loses a few Wayland features (in tablet mode the on-screen keyboard no longer opens by itself in it) and stays sharp, as XWayland renders at full resolution with the DPI of the monitor's scale.
+
+- VS Code exports its menu only with its native title bar and menus: choosing it also sets `"window.titleBarStyle": "native"`, `"window.menuStyle": "native"` and `"window.menuBarVisibility": "toggle"` (its own menu bar on Alt) in `~/.config/Code/User/settings.json`, edited in place (comments and trailing commas kept). The values found before are kept in `~/.local/state/desktop-shell/globalmenu.json` and put back when VS Code leaves the global menu.
+- While the widget is on a bar, `desktop-globalmenu.service` (a user service, so a shell restart keeps the menus of the open X11 apps) is the registrar, and `globalmenu.py watch` reads the menus. Taking the widget off the bar stops both, turns accessibility back off and starts the chosen apps under Wayland again, their settings as they were; the choice is kept (`~/.config/desktop/global-menu-apps.conf`).
+- An X11 app registers its menu when its window opens, with the registrar already there: one opened before the widget was added shows its menu once restarted.
 
 ## Editing
 
@@ -77,3 +102,4 @@ The style is a theme preference (`desktop-theme bar-style shade|floating|pills|t
 - `bar/BarLayoutModel.js`: the sections, the presets, moving and centring (tested by `scripts/tests/tst_bar_layout.qml`).
 - `services/BarLayout.qml`: the saved layout, the draft while editing, the custom events from Hyprland and `desktop-shell bar`.
 - `bar/BarGallery.qml`, `bar/BarMenuWindow.qml`: the gallery and the menus.
+- `bar/widgets/GlobalMenuWidget.qml`, `bar/GlobalMenuWindow.qml`, `services/GlobalMenu.qml`, `panels/GlobalMenuPanel.qml`, `shell/.local/libexec/desktop/globalmenu.py` and `globalmenu_reader.py` (tested by `scripts/tests/test_globalmenu.py`) and `desktop-globalmenu.service`: the global menu.

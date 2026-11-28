@@ -20,6 +20,11 @@ var widgets = [
         glyph: "window"
     },
     {
+        id: "globalMenu",
+        source: "GlobalMenuWidget.qml",
+        glyph: "apps"
+    },
+    {
         id: "tray",
         source: "TrayWidget.qml",
         glyph: "dock"

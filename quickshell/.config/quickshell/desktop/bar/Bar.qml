@@ -36,6 +36,7 @@ PanelWindow {
     property Item titleWidget: null
     readonly property var trayMenu: trayMenuWindow
     readonly property var windowMenu: windowMenuWindow
+    readonly property var globalMenu: globalMenuWindow
     readonly property Item stage: stageItem
     // A widget being dragged ({ from: "bar", section, index, id } or { from: "gallery", id }), the pointer in
     // stage coordinates, and where it would land ({ section, index, caretX } or { trash: true }).
@@ -154,6 +155,14 @@ PanelWindow {
                     text: I18n.tr("bar.menu.moveTo", [sectionName(key)]),
                     action: () => BarLayout.move(slot.section, slot.index, key, BarLayout.current[key].length)
                 });
+        // The global menu: which apps start under X11 to hand it their menus.
+        if (slot.id === "globalMenu")
+            entries.push({
+                kind: "separator"
+            }, {
+                text: I18n.tr("globalMenu.chooseApps"),
+                action: () => ShellState.open("globalmenu")
+            });
         entries.push({
             kind: "separator"
         }, {
@@ -252,6 +261,10 @@ PanelWindow {
         id: barMenu
         screen: bar.screen
     }
+    GlobalMenuWindow {
+        id: globalMenuWindow
+        screen: bar.screen
+    }
     Connections {
         target: ShellState
         function onPanelChanged() {
@@ -259,6 +272,7 @@ PanelWindow {
                 trayMenuWindow.dismiss();
                 windowMenuWindow.dismiss();
                 barMenu.dismiss();
+                globalMenuWindow.dismiss();
             }
         }
         function onWindowMenuRequested(screenName) {

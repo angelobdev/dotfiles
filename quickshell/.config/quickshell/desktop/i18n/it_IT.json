@@ -287,6 +287,10 @@
       "workspaces": {
         "description": "I workspace del monitor.",
         "name": "Workspace"
+      },
+      "globalMenu": {
+        "name": "Menu globale",
+        "description": "L’app attiva: il suo nome, i suoi menu dove li fornisce, e Finestra."
       }
     }
   },
@@ -641,6 +645,53 @@
     },
     "remove": "Rimuovi",
     "title": "Dock"
+  },
+  "globalMenu": {
+    "title": "Menu globale",
+    "intro": "I menu dell’app di ogni monitor sulla barra, come su macOS: letti dall’app stessa (GTK, Qt, Firefox e simili tramite l’accessibilità; le app Electron sotto X11), o un menu generico per un’app che non ne ha.",
+    "noApps": "Nessuna app Electron installata.",
+    "restartApps": "Salvato. Riavvia le app che hai cambiato per avviarle nel nuovo modo.",
+    "apply": "Applica",
+    "loading": "Caricamento…",
+    "empty": "Vuoto",
+    "chooseApps": "App con il menu globale…",
+    "conf": {
+      "header": "ID delle app che partono sotto X11 per il menu globale della barra (globalmenu.py choose)."
+    },
+    "errors": {
+      "usage": "Uso: globalmenu.py {registrar|watch|apps|choose [ID...]|apply}"
+    },
+    "window": "Finestra",
+    "newWindow": "Nuova finestra",
+    "generic": {
+      "file": "File",
+      "edit": "Modifica",
+      "view": "Vista",
+      "help": "Aiuto",
+      "undo": "Annulla",
+      "redo": "Ripeti",
+      "cut": "Taglia",
+      "copy": "Copia",
+      "paste": "Incolla",
+      "selectAll": "Seleziona tutto",
+      "quit": "Esci da %1",
+      "commands": "Comandi e app"
+    },
+    "options": "Opzioni",
+    "focus": "Focus",
+    "focusHint": "Al passaggio sposta il focus mentre il puntatore attraversa le finestre, quindi il menu cambia lungo la strada verso la barra; Al clic tiene il menu della finestra cliccata. Applicato a Hyprland finché il widget è sulla barra, mai scritto in un file; Sistema tiene la tua impostazione.",
+    "focusSystem": "Sistema",
+    "focusHover": "Al passaggio",
+    "focusClick": "Al clic",
+    "focusOff": "Mai",
+    "fallback": "App senza un menu",
+    "fallbackGeneric": "Menu generico",
+    "fallbackNothing": "Niente",
+    "icon": "Icona dell’app",
+    "iconShown": "Mostrata",
+    "iconHidden": "Nascosta",
+    "x11Apps": "App sotto X11",
+    "accessibility": "Le app forniscono i loro menu tramite l’accessibilità, che resta attiva finché il widget è sulla barra: un’app aperta prima mostra il suo menu dopo un riavvio."
   },
   "hints": {
     "actionColumn": "Azione",

@@ -43,3 +43,4 @@ singleton Radio 1.0 Radio.qml
 singleton Installed 1.0 Installed.qml
 singleton Release 1.0 Release.qml
 singleton Commands 1.0 Commands.qml
+singleton GlobalMenu 1.0 GlobalMenu.qml
