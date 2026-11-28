@@ -59,7 +59,11 @@
       "file": "01-the-backwater.jpg",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/gruvbox/backgrounds/1-the-backwater.jpg",
       "sha256": "13cfc6ae370af984c08a820ff81b56a0febb0fbfe9712a6db128b94d14ecaac6",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/gruvbox/1-the-backwater.mp4",
+        "sha256": "dbebd2999edc1797c4403d29039d06713a18c10343cf461aaf156e5bfbcefd83"
+      }
     },
     {
       "file": "02-flower-basket.webp",

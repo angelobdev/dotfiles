@@ -406,6 +406,7 @@ def build_parser():
     getter = commands.add_parser('fetch')
     getter.add_argument('name', nargs='?')
     getter.add_argument('--show', action='store_true')
+    getter.add_argument('--all', action='store_true', help='every theme, the current one first')
     commands.add_parser('next-wallpaper')
     preview = commands.add_parser('render')
     preview.add_argument('--theme', required=True)
@@ -600,7 +601,20 @@ def command_bar_style(arguments):
 
 def command_fetch(arguments):
     name = arguments.name or theme_core.current()
-    return 1 if theme_wallpapers.fetch(name, theme_core.load(name), arguments.show) else 0
+    if not arguments.all:
+        return 1 if theme_wallpapers.fetch(name, theme_core.load(name), arguments.show) else 0
+    # Every theme with a set of its own (desktop-session, at each login), so switching to one shows its wallpapers at
+    # once; the current one first.
+    failures = 0
+    names = [name] + [item['id'] for item in theme_core.themes() if item['id'] != name]
+    for theme_id in names:
+        try:
+            theme = theme_core.load(theme_id)
+        except (OSError, ValueError):
+            continue
+        if theme.get('wallpapers'):
+            failures += theme_wallpapers.fetch(theme_id, theme, arguments.show and theme_id == name)
+    return 1 if failures else 0
 
 
 def command_next_wallpaper(arguments):

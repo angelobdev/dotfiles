@@ -58,7 +58,11 @@
       "file": "01-mountain-horses.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/jade-horse/backgrounds/01-mountain-horses.webp",
       "sha256": "4a5818847934c452b41323c7c4514eb1a46e563a7614f001c87cbef3ed73cfc2",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/jade-horse/01-mountain-horses.mp4",
+        "sha256": "5a7287ed59e3b576eabf4bbdc1a13b8a78d8a93d86981d161654e44214c57499"
+      }
     },
     {
       "file": "02-ink-horse.webp",

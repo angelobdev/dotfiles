@@ -58,7 +58,11 @@
       "file": "01-cherry-blossom-bokeh.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lupine/backgrounds/01-cherry-blossom-bokeh.webp",
       "sha256": "99ad4abf2685fab5aab31ebcea09988ca1f689c80b1e2f1c50f6e3d6e7c9296a",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/lupine/01-cherry-blossom-bokeh.mp4",
+        "sha256": "f98832ba6257675d1d1ddd85d1b19495ef8943672e794a1e26207f408630cada"
+      }
     },
     {
       "file": "02-cherry-blossom-white.webp",
@@ -82,12 +86,6 @@
       "file": "05-abstract-wave.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lupine/backgrounds/05-abstract-wave.webp",
       "sha256": "f7ed1e829d3a53a9451c91b7f59cde257bffe6901c8810f352dd944e2f65d67f",
-      "source": "omarchy"
-    },
-    {
-      "file": "06-omarchy.webp",
-      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lupine/backgrounds/06-omarchy.webp",
-      "sha256": "069bca2eb0e28b6c6edbc54940e7a63f647a203d95243b26bdd3f3721e32b21a",
       "source": "omarchy"
     }
   ]

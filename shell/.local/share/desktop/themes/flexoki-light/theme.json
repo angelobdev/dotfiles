@@ -59,13 +59,11 @@
       "file": "01-orb.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/flexoki-light/backgrounds/1-orb.webp",
       "sha256": "37f8c1ff2e7a95f1a15cbb0394be5642b8e9813638866c79a10537d6553ee90f",
-      "source": "omarchy"
-    },
-    {
-      "file": "02-omarchy.webp",
-      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/flexoki-light/backgrounds/2-omarchy.webp",
-      "sha256": "a3a3d457c6547bb8a94dd7da06b14deab572bdf78ae597bb6eb8a6a81b04f0bb",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/flexoki-light/1-orb.mp4",
+        "sha256": "78daefbd9418d011f38c9382122b5b87bf5b35bce80159d68ca77723b41e6461"
+      }
     }
   ]
 }

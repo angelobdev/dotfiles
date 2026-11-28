@@ -38,6 +38,8 @@ const options = [
     { key: "weatherEnabled", section: "desktop", group: "weather", type: "bool", fallback: true },
     { key: "weatherCity", section: "desktop", group: "weather", type: "text", fallback: "", hint: true, placeholder: true },
     { key: "reduceMotion", section: "desktop", group: "motion", type: "bool", fallback: false, hint: true },
+    { key: "wallpaperLoops", section: "desktop", group: "motion", type: "bool", fallback: true, hint: true },
+    { key: "wallpaperIntros", section: "desktop", group: "motion", type: "bool", fallback: true, hint: true },
     // Power
     { key: "batteryLow", section: "power", group: "battery", type: "number", fallback: 20, min: 5, max: 50, step: 1, unit: "%", hint: true },
     { key: "batteryCritical", section: "power", group: "battery", type: "number", fallback: 10, min: 2, max: 30, step: 1, unit: "%" },

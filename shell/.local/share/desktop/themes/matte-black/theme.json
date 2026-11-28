@@ -59,7 +59,11 @@
       "file": "01-ship-at-sea.jpg",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/matte-black/backgrounds/0-ship-at-sea.jpg",
       "sha256": "55fa691adfd3fb8a9102b826a28d8de679938f04879799da499b8ace2fe039ac",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/matte-black/0-ship-at-sea.mp4",
+        "sha256": "fd6e52fce01f6d2a345020262c105075b35a83f2168d734e8bc2f9e798cb9afc"
+      }
     },
     {
       "file": "02-dark-waters.webp",

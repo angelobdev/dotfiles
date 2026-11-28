@@ -59,7 +59,11 @@
       "file": "01-on-pole.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/solitude/backgrounds/1-on-pole.webp",
       "sha256": "09c685ceed958826924f258a3f19d63c1e546b85200e725f0f7b478b458eee71",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/solitude/1-on-pole.mp4",
+        "sha256": "1b286aa208767d8f0389879b081455fedf4d3a23d78ffef2f4bbbabec9ce035d"
+      }
     },
     {
       "file": "02-wreakage.webp",

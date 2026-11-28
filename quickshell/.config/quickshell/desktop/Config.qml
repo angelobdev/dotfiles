@@ -135,6 +135,10 @@ Singleton {
     readonly property string globalMenuFallback: pick("globalMenuFallback", "generic")
     readonly property bool globalMenuIcon: pick("globalMenuIcon", true)
     readonly property string globalMenuFocus: pick("globalMenuFocus", "system")
+    // Moving wallpapers (components/WallpaperVideo.qml): the loop of a still in its place, on AC power with the
+    // animations on; the intro of a still once when it is chosen and at login.
+    readonly property bool wallpaperLoops: pick("wallpaperLoops", true)
+    readonly property bool wallpaperIntros: pick("wallpaperIntros", true)
     // Launcher: files in the home folder below the apps (fd, from three typed characters).
     readonly property bool launcherFiles: pick("launcherFiles", true)
     // Launcher: apps opened from it or the dock come first, by how often and how lately (services/Apps.qml).

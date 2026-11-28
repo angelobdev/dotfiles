@@ -58,7 +58,11 @@
       "file": "01-nature-of-fear.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/miasma/backgrounds/01-nature-of-fear.webp",
       "sha256": "8bc5f2863a9eea9e3eff738d4461ab45f0fca83fc1b1d7d289edcd03c05540a4",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/miasma/01-nature-of-fear.mp4",
+        "sha256": "99322474fe88efb267d350105ba56f838c00cac68aa8df36e5445b1a8e5bd3d1"
+      }
     },
     {
       "file": "02-crowned.webp",

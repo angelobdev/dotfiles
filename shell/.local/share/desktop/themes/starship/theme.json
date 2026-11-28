@@ -58,7 +58,11 @@
       "file": "01-starbase.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/starship/backgrounds/1-starbase.webp",
       "sha256": "17a9a0abe34fb70262e16a6f000fb503f49a9297602860d92c89f6b5ffc0a1b3",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/starship/1-starbase.mp4",
+        "sha256": "45eb654c5189603eef2f6bdd4c3cb55dfe38f680ea3087068492e3f24fd9732f"
+      }
     },
     {
       "file": "02-flight14-dawn.webp",

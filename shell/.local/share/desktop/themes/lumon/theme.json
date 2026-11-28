@@ -59,13 +59,25 @@
       "file": "01-united-in-severance.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lumon/backgrounds/01-united-in-severance.webp",
       "sha256": "cdfb3d4cb22077ed5f2a73ac8822b6c4e3614a210c5947194c046078ab5073a5",
-      "source": "omarchy"
+      "source": "omarchy",
+      "loop": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-loops/4c158ea83f4e30d1653a345f66e4e85e990a93c8/lumon/01-united-in-severance.mp4",
+        "sha256": "d696e1138ee5442a91f514c2017c12e882ddea1cff1660346a8fa50ff4370b51"
+      },
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/lumon/01-united-in-severance.mp4",
+        "sha256": "0ff70b0e56b0b7bb4132a5873a5f57ecc54e85d77cf943643551ff1ebff9eaeb"
+      }
     },
     {
       "file": "02-opinions-equally.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lumon/backgrounds/02-opinions-equally.webp",
       "sha256": "ecf20fa95f659643fb37e05910b92e82195aa673f3c58a2a51e20ce1127dc7c5",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/lumon/02-opinions-equally.mp4",
+        "sha256": "fbd38b9bb8df00e71d534d59ccbbffe35077b11276bce848e5fedea164405c45"
+      }
     }
   ]
 }

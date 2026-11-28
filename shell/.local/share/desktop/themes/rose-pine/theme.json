@@ -59,18 +59,20 @@
       "file": "01-funky-shapes.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/rose-pine/backgrounds/1-funky-shapes.webp",
       "sha256": "f8920bfbe3fdff6a42a9c920e87aa4b7d590d4b01862948ffbc4e484339f2b81",
-      "source": "omarchy"
+      "source": "omarchy",
+      "loop": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-loops/4c158ea83f4e30d1653a345f66e4e85e990a93c8/rose-pine/1-funky-shapes.mp4",
+        "sha256": "a90d89f6468bdc9a1e1b3a0d11e9fbde36a5b71f2759fc831c9cde0f408d9af8"
+      },
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/rose-pine/1-funky-shapes.mp4",
+        "sha256": "c0741d0eb445747ea445a93a84b5da37b8d8375849bc9ef19650ff8facace26b"
+      }
     },
     {
       "file": "02-dot-map.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/rose-pine/backgrounds/2-dot-map.webp",
       "sha256": "0353093a4aafcefd8193914e4f9c82db0c9d2867cb0e16556ff86693bd8690ab",
-      "source": "omarchy"
-    },
-    {
-      "file": "03-omarchy-plants.webp",
-      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/rose-pine/backgrounds/3-omarchy-plants.webp",
-      "sha256": "1cf5444e546016a26c8d0335fe0743a21f0499820f41444a8d95e2fe4c65dca1",
       "source": "omarchy"
     }
   ]

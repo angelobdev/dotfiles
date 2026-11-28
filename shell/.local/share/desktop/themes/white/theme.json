@@ -58,7 +58,15 @@
       "file": "01-white.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/white/backgrounds/1-white.webp",
       "sha256": "2f2f42f7ad3ba978951f137e214404c2c4a52318a60105ded5e74ddfe8ed80f2",
-      "source": "omarchy"
+      "source": "omarchy",
+      "loop": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-loops/4c158ea83f4e30d1653a345f66e4e85e990a93c8/white/1-white.mp4",
+        "sha256": "a1f8773522d318f9dcf84fc4c25de6ce03a915c19b2d13e05d801448ae6a7ebe"
+      },
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/white/1-white.mp4",
+        "sha256": "f74d43481ddf8aac7a7a6d54b93919e116fad8aa2adf6b6488db9a75cc47bcfc"
+      }
     },
     {
       "file": "02-white.webp",

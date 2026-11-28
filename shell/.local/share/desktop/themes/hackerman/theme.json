@@ -59,7 +59,15 @@
       "file": "01-synth-scape.jpg",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/hackerman/backgrounds/1-synth-scape.jpg",
       "sha256": "c7d2594935f204e0df1b43dfe7a12389ea1c1d3fd8e57a92a9f08497f27a377e",
-      "source": "omarchy"
+      "source": "omarchy",
+      "loop": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-loops/4c158ea83f4e30d1653a345f66e4e85e990a93c8/hackerman/1-synth-scape.mp4",
+        "sha256": "1d5ca072eca2df07ac18552e2b95910307ac1352470a74b3a2f9dffc031ac4f5"
+      },
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/hackerman/1-synth-scape.mp4",
+        "sha256": "30c8d93bdbca4fd656269aa0995106c434e1128507d2a0213f6729d8dced95fa"
+      }
     },
     {
       "file": "02-geometric.webp",

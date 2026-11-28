@@ -170,6 +170,20 @@ class WallpaperTests(unittest.TestCase):
             finally:
                 theme_paths.STATE, theme_paths.WALLPAPERS = saved
 
+    def test_videos_sit_beside_their_still_and_download_after_it(self):
+        # WallpaperVideo.qml looks for loops/<stem>.mp4 and intros/<stem>.mp4 next to the still.
+        clip = {'url': 'https://example.com/v.mp4', 'sha256': '0' * 64}
+        pack = {'wallpapers': [{'file': '01-one.webp', 'url': 'https://example.com/1.webp', 'sha256': '1' * 64, 'loop': clip, 'intro': clip}]}
+        with tempfile.TemporaryDirectory() as directory, mock.patch.object(theme_paths, 'WALLPAPERS', Path(directory)), \
+                mock.patch.object(theme_assets, 'download') as fetched, mock.patch.object(theme_wallpapers, 'make_thumb'), \
+                mock.patch('sys.stdout', io.StringIO()):
+            entry = theme_wallpapers.wallpaper_entries('pack', pack)[0]
+            self.assertEqual(entry['loop']['path'], str(Path(directory) / 'pack/loops/01-one.mp4'))
+            self.assertEqual(entry['intro']['path'], str(Path(directory) / 'pack/intros/01-one.mp4'))
+            self.assertFalse(entry['loop']['downloaded'])
+            self.assertEqual(theme_wallpapers.fetch('pack', pack), 0)
+            self.assertEqual([call.args[1].name for call in fetched.call_args_list], ['01-one.webp', '01-one.mp4', '01-one.mp4'])
+            self.assertEqual([call.args[1].parent.name for call in fetched.call_args_list], ['pack', 'loops', 'intros'])
 
     def test_a_wallpaper_is_remembered_only_for_the_theme_it_was_chosen_under(self):
         with tempfile.TemporaryDirectory() as directory, mock.patch.object(theme_paths, 'SELECTION', Path(directory) / 'selection.json'):

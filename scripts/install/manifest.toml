@@ -92,6 +92,8 @@ packages = [
     # Session. hyprland-uwsm is only a weak dependency of hyprland, and GDM needs its session entry.
     'gdm', 'accountsservice', 'hyprland', 'hyprland-uwsm', 'hyprland-guiutils', 'quickshell', 'stow',
     'hypridle', 'hyprlock', 'hyprpaper', 'hyprsunset', 'kitty', 'dbus-tools', 'polkit', 'oo7-daemon',
+    # The moving wallpapers of the themes (their loops and intros), played by the shell (WallpaperVideo.qml).
+    'qt6-qtmultimedia',
     'xorg-x11-server-Xwayland', 'xrdb', 'mesa-dri-drivers', 'mesa-vulkan-drivers',
     # Portals.
     'xdg-desktop-portal', 'xdg-desktop-portal-hyprland', 'xdg-desktop-portal-gtk',
@@ -553,6 +555,8 @@ packages = [
     # Session. uwsm runs the hyprland-uwsm entry that the hyprland package installs for GDM; hyprpm is a package of its own.
     'gdm', 'accountsservice', 'hyprland', 'hyprpm', 'uwsm', 'hyprland-guiutils', 'quickshell', 'stow',
     'hypridle', 'hyprlock', 'hyprpaper', 'hyprsunset', 'kitty', 'dbus', 'polkit', 'oo7',
+    # The moving wallpapers of the themes (their loops and intros), played by the shell (WallpaperVideo.qml).
+    'qt6-multimedia', 'qt6-multimedia-ffmpeg',
     'xorg-xwayland', 'xorg-xrdb', 'mesa', 'vulkan-intel', 'vulkan-radeon',
     # Portals.
     'xdg-desktop-portal', 'xdg-desktop-portal-hyprland', 'xdg-desktop-portal-gtk',

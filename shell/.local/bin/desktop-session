@@ -29,6 +29,9 @@ case "${1:-start}" in
         # The desktop's default apps for xdg-open where none was chosen (Files for folders, Loupe, Papers, Showtime,
         # the browser of Settings → Apps); a new install gets them at its first login (apps.py defaults).
         python3 "$HOME/.local/libexec/desktop/apps.py" defaults >/dev/null || echo "Default apps not set." >&2
+        # Every theme's wallpapers and their videos, in the background at low priority, so switching theme shows them at
+        # once (theme.py fetch --all; what is already there is skipped).
+        nice -n 19 python3 "$HOME/.local/libexec/desktop/theme.py" fetch --all >/dev/null 2>&1 &
         # X11 clients take DPI and cursor size from X resources matching the monitor scale.
         "$HOME/.local/bin/desktop-xwayland" apply >/dev/null || echo "XWayland profile not applied." >&2
         systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service ||

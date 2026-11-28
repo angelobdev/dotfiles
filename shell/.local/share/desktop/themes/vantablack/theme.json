@@ -58,7 +58,15 @@
       "file": "01-dot-hands.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/vantablack/backgrounds/0-dot-hands.webp",
       "sha256": "a51e0dc5406d054ddfe16dc732ada4061c733a9e6f985a3ff773ba1e803ad3a0",
-      "source": "omarchy"
+      "source": "omarchy",
+      "loop": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-loops/4c158ea83f4e30d1653a345f66e4e85e990a93c8/vantablack/0-dot-hands.mp4",
+        "sha256": "cdf4f19717d54947372ae6dcaf2aeb4bea14dda0f3f66f25e420a622b3e7b8e7"
+      },
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/vantablack/0-dot-hands.mp4",
+        "sha256": "1fade3fb5940bc3a970126d0a2136e3737a59007c5305cadb81f61edd0331b7f"
+      }
     },
     {
       "file": "02-twisted-stairs.webp",

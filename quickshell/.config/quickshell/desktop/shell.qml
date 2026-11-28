@@ -311,6 +311,10 @@ ShellRoot {
                 screen: scope.modelData
                 screenName: scope.modelData.name
             }
+            // The moving wallpaper: the loop or intro of the still, over it and under every window.
+            WallpaperVideo {
+                screen: scope.modelData
+            }
             // A right click or long press on the empty desktop: the launcher, with its commands, on this screen.
             DesktopCatcher {
                 screen: scope.modelData

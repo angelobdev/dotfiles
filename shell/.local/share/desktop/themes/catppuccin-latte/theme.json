@@ -59,7 +59,15 @@
       "file": "01-color-fade.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/catppuccin-latte/backgrounds/1-color-fade.webp",
       "sha256": "c4cb211770713984e630ef6eebfb6cfb03169124c98765fd52f82ee0bfd36603",
-      "source": "omarchy"
+      "source": "omarchy",
+      "loop": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-loops/4c158ea83f4e30d1653a345f66e4e85e990a93c8/catppuccin-latte/1-color-fade.mp4",
+        "sha256": "22586616af436f33d523c034520c022c399f0bb0007cc7e8abd62eaaa5666e57"
+      },
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/catppuccin-latte/1-color-fade.mp4",
+        "sha256": "b3d2ffcb9c331d2f10f06dbc60c7cc16c86921eac92b5f4c6908dae953318322"
+      }
     }
   ]
 }

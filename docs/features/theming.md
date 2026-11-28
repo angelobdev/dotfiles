@@ -158,7 +158,7 @@ Commands:
 
 ### Omarchy themes
 
-The Omarchy themes that ship here come from `scripts/omarchy-themes.py OMARCHY_CHECKOUT` (a clone of `basecamp/omarchy`, read, never run). It converts each `colors.toml` as **Import** does, takes `vscode.json` as the VS Code theme, picks the GSettings accent nearest to the accent colour, and lists the theme's backgrounds pinned to that commit with their sha256 (downloaded once, to a cache, for the checksums). A shipped theme of the same id is replaced; Glass, Glass Light, Graphite and High Contrast are never touched, and Omarchy's `catppuccin` (Mocha) keeps the id `catppuccin-mocha`. Run it again when Omarchy adds themes.
+The Omarchy themes that ship here come from `scripts/omarchy-themes.py OMARCHY_CHECKOUT` (a clone of `basecamp/omarchy`, read, never run). It converts each `colors.toml` as **Import** does, takes `vscode.json` as the VS Code theme, picks the GSettings accent nearest to the accent colour, and lists the theme's backgrounds pinned to that commit with their sha256 (downloaded once, to a cache, for the checksums), each with its loop and intro when Omarchy has them, and leaves out the backgrounds that show Omarchy's name or logo. A shipped theme of the same id is replaced; Glass, Glass Light, Graphite and High Contrast are never touched, and Omarchy's `catppuccin` (Mocha) keeps the id `catppuccin-mocha`. Run it again when Omarchy adds themes.
 
 The conversion keeps the contrasts every shipped theme must have (`scripts/tests/test_theme.py`): text 7:1 on the background, secondary text 4.5:1, text on the accent 4.5:1 (light text on a light theme, dark on a dark one, the accent moved just enough when it does not read), and on a light theme dark text that still reads 3:1 on a mid-grey wallpaper. Three themes needed it: Catppuccin Latte and Rosé Pine (a slightly darker accent and text) and Miasma (a slightly lighter accent).
 
@@ -196,12 +196,12 @@ Selection lives in `~/.local/state/desktop-session/wallpaper/`: `selection.json`
 
 Each theme has its own set of wallpapers:
 - **Graphite** uses the images in `~/.local/share/wallpapers` and `~/Pictures/Wallpapers` (`wallpaperDirectories`).
-- **The other four** list eight each in their `theme.json` (`wallpapers`). Each entry has a file name, a raw GitHub URL pinned to a commit, a sha256 and its source.
+- **The others** list theirs in their `theme.json` (`wallpapers`). Each entry has a file name, a raw GitHub URL pinned to a commit, a sha256 and its source, and may have a `loop` and an `intro` (URL and sha256 of a video, see [Moving wallpapers](#moving-wallpapers)).
 
 Downloads:
-- They are fetched only when needed into `~/.local/share/desktop/wallpapers/<theme>/` and never committed.
+- At each login `desktop-session` downloads in the background, at low priority, what is still missing of every theme (`theme.py fetch --all`: the current theme first, then the others; about 240 MB in all with the videos), so switching theme shows its wallpapers at once. They go into `~/.local/share/desktop/wallpapers/<theme>/` (videos in its `loops/` and `intros/`) and are never committed.
 - A file is kept only when its sha256 matches. A failed or mismatched download is discarded, and the other entries still download.
-- `python3 ~/.local/libexec/desktop/theme.py fetch <theme>` downloads a whole set ahead of time.
+- `python3 ~/.local/libexec/desktop/theme.py fetch <theme>` downloads one set now; switching to a theme whose set is not there yet also fetches it.
 - `theme.py wallpapers [<theme>]` prints the set as JSON.
 
 Switching theme also switches the wallpaper:
@@ -210,7 +210,15 @@ Switching theme also switches the wallpaper:
 - Wallpapers picked with `Super + Shift + W`, `Super + Ctrl + W` or `Super + Ctrl + Shift + W` are remembered the same way.
 - `Super + Ctrl + Shift + W` cycles through the current theme's set in order. If nothing is downloaded yet, it starts the download and shows a notification.
 
-Sources: Omarchy's theme backgrounds (`basecamp/omarchy`, MIT), at the last commit that kept them in the repository (`c2ea2d8`; they now ship as Omarchy's own package). To change a set, edit `wallpapers` in the theme: a removed entry stays on disk until deleted from `~/.local/share/desktop/wallpapers/`.
+Sources: Omarchy's theme backgrounds (`basecamp/omarchy`, MIT), at the last commit that kept them in the repository (`c2ea2d8`; they now ship as Omarchy's own package), without the ones that show Omarchy's name or logo. To change a set, edit `wallpapers` in the theme: a removed entry stays on disk until deleted from `~/.local/share/desktop/wallpapers/`.
+
+### Moving wallpapers
+
+As in Omarchy, a wallpaper can have two videos beside it, by its own name (`loops/<name>.mp4` and `intros/<name>.mp4` in its folder):
+- **The loop** plays in place of the picture, over and over: on AC power, while the shell's motion is on (Settings → Desktop → Motion) and **Moving wallpapers** is on. It pauses while a fullscreen window covers the screen; on battery the picture shows.
+- **The intro** plays once, then gives way to the loop or the picture: when the wallpaper changes (a theme switch, a wallpaper chosen) and at the first start of the shell after a login, with **Wallpaper intros** on.
+
+They come from Omarchy's `omacom/omarchy-themes-loops` and `omacom/omarchy-themes-intros` (MIT), pinned to a commit with their sha256 by `scripts/omarchy-themes.py`: 8 loops and 26 intros among the shipped themes. The shell plays them (`components/WallpaperVideo.qml`, a layer over hyprpaper's picture and under every window, which takes no input), muted and cropped to the screen, through Qt Multimedia (`qt6-qtmultimedia` on Fedora, `qt6-multimedia` with its FFmpeg backend on Arch, in the core install); without it the picture simply stays. Options: `wallpaperLoops` and `wallpaperIntros` in `shell.json`.
 
 State data is excluded from Git and follows this repository's standard XDG layout. The script serializes concurrent requests, passes paths as arguments, and normalizes the name sent through IPC, including spaces, commas, and special characters.
 

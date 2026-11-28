@@ -59,7 +59,11 @@
       "file": "01-kanagawa.jpg",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/kanagawa/backgrounds/1-kanagawa.jpg",
       "sha256": "9b817d717688539f0db87603b661992839c3cbb5d4918a02a4efc05c9f88b27d",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/kanagawa/1-kanagawa.mp4",
+        "sha256": "90f3385ea55f85ce20403b73b5e5f7bde0f9063c9d95ed890f292f2f3be964e0"
+      }
     }
   ]
 }

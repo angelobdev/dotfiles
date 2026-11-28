@@ -58,7 +58,11 @@
       "file": "01-cosmic.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/ethereal/backgrounds/1-cosmic.webp",
       "sha256": "e3241507d4ba5cc25ae4bdf746401e4b65ce7a06cead4d83c49461587addab63",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/ethereal/1-cosmic.mp4",
+        "sha256": "1761d32308cf360155ff649439ed9c77e97851015c4ef72695010a258cb9927e"
+      }
     },
     {
       "file": "02-meadow.webp",

@@ -59,7 +59,11 @@
       "file": "01-eyes-wide.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/last-horizon/backgrounds/1-eyes-wide.webp",
       "sha256": "53cc2eea25bd75435d77d2b3cc9339841dfdcd5a52c51a1e02dda14a3e527bd4",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/last-horizon/1-eyes-wide.mp4",
+        "sha256": "b4e84584c56a01540ba2c59262807f45714eee24f535c974a4b13eeedfa5487e"
+      }
     },
     {
       "file": "02-blink.webp",

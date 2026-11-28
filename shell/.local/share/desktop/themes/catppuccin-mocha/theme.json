@@ -59,19 +59,35 @@
       "file": "01-totoro.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/catppuccin/backgrounds/1-totoro.webp",
       "sha256": "4896da620ed3016b7e52eede8db8169591a9fa4856064db4039521be96f724b6",
-      "source": "omarchy"
+      "source": "omarchy",
+      "loop": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-loops/4c158ea83f4e30d1653a345f66e4e85e990a93c8/catppuccin/1-totoro.mp4",
+        "sha256": "a9f0383648abdb0d7434af824db25f0796e8c1e69e0b88aac4a2a573ffbf298b"
+      },
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/catppuccin/1-totoro.mp4",
+        "sha256": "cb329d180cd74b4c56549df2d903ba91fa3b3b244303a20d12164aab7e811d5a"
+      }
     },
     {
       "file": "02-waves.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/catppuccin/backgrounds/2-waves.webp",
       "sha256": "5fe347ef9814dbf1d5bc73a96381b8fe4908ed0f7e4293d2c3c8d860b46041ce",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/catppuccin/2-waves.mp4",
+        "sha256": "91e9d7318d17782912c20adcf2eae6f3b3202cdef5d1e2ce6742650530f00c69"
+      }
     },
     {
       "file": "03-blue-eye.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/catppuccin/backgrounds/3-blue-eye.webp",
       "sha256": "70743c244575253b72f17978060f87239e0125575195f64e288479666129954a",
-      "source": "omarchy"
+      "source": "omarchy",
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/catppuccin/3-blue-eye.mp4",
+        "sha256": "81289e020b5b8516d5577f6f266ad33316645cb1e4fd29e830f0ed5a3b4bc7ef"
+      }
     }
   ]
 }

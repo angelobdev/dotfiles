@@ -40,12 +40,26 @@ def make_thumbs(paths):
             print(json.dumps(dict(status, status='failed', error=str(error)), ensure_ascii=False), flush=True)
 
 
+# A still may have videos beside it, as Omarchy keeps them: loops/<stem>.mp4 plays in its place (the shell's
+# WallpaperVideo.qml), intros/<stem>.mp4 once before it.
+VIDEOS = {'loop': 'loops', 'intro': 'intros'}
+
+
+def video_path(still, kind):
+    still = Path(still)
+    return still.parent / VIDEOS[kind] / (still.stem + '.mp4')
+
+
 def wallpaper_entries(name, theme):
     entries = []
     for entry in theme.get('wallpapers', []):
         path = theme_paths.WALLPAPERS / name / entry['file']
         thumb = thumb_path(path)
-        entries.append(dict(entry, path=str(path), downloaded=path.is_file(), thumb=str(thumb), thumbReady=thumb.is_file()))
+        item = dict(entry, path=str(path), downloaded=path.is_file(), thumb=str(thumb), thumbReady=thumb.is_file())
+        for kind in VIDEOS:
+            if isinstance(entry.get(kind), dict):
+                item[kind] = dict(entry[kind], path=str(video_path(path, kind)), downloaded=video_path(path, kind).is_file())
+        entries.append(item)
     return entries
 
 
@@ -138,16 +152,27 @@ def fetch(name, theme, show=False):
         status = {'theme': name, 'file': entry['file']}
         if entry['downloaded']:
             print(json.dumps(dict(status, status='present')), flush=True)
-            continue
-        try:
-            theme_assets.download(entry, Path(entry['path']))
+        else:
             try:
-                make_thumb(entry['path'])
-            except (OSError, subprocess.SubprocessError):
-                pass
-            print(json.dumps(dict(status, status='downloaded')), flush=True)
-            show_now()
-        except (OSError, ValueError) as error:
-            failures += 1
-            print(json.dumps(dict(status, status='failed', error=str(error)), ensure_ascii=False), flush=True)
+                theme_assets.download(entry, Path(entry['path']))
+                try:
+                    make_thumb(entry['path'])
+                except (OSError, subprocess.SubprocessError):
+                    pass
+                print(json.dumps(dict(status, status='downloaded')), flush=True)
+                show_now()
+            except (OSError, ValueError) as error:
+                failures += 1
+                print(json.dumps(dict(status, status='failed', error=str(error)), ensure_ascii=False), flush=True)
+        # Its videos after it: the still shows first, the loop and the intro follow.
+        for kind in VIDEOS:
+            clip = entry.get(kind)
+            if not clip or clip['downloaded']:
+                continue
+            try:
+                theme_assets.download(dict(clip, file=Path(clip['path']).name), Path(clip['path']))
+                print(json.dumps(dict(status, status='downloaded', video=kind)), flush=True)
+            except (OSError, ValueError) as error:
+                failures += 1
+                print(json.dumps(dict(status, status='failed', video=kind, error=str(error)), ensure_ascii=False), flush=True)
     return failures

@@ -58,7 +58,15 @@
       "file": "01-launch.webp",
       "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/ristretto/backgrounds/0-launch.webp",
       "sha256": "42d3a7bfe5cbf36361e8c0152c9fca2c6e3302e779690aed5a2d6ea0ab985044",
-      "source": "omarchy"
+      "source": "omarchy",
+      "loop": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-loops/4c158ea83f4e30d1653a345f66e4e85e990a93c8/ristretto/0-launch.mp4",
+        "sha256": "04cc2f5e3e483a43bf7909437f482f4a86afcbcfd0d031846281311cb2681a57"
+      },
+      "intro": {
+        "url": "https://raw.githubusercontent.com/omacom/omarchy-themes-intros/fd582b322ae09e4e3beae1456f0f9a168d4ceb2b/ristretto/0-launch.mp4",
+        "sha256": "e23d69fa5bc11ac434129d8390d202898bb02f3eb6c7da8ba758403f2d7b32c1"
+      }
     },
     {
       "file": "02-color-curves.webp",
