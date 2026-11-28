@@ -1,0 +1,71 @@
+{
+  "name": "Flexoki Light",
+  "mode": "light",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3",
+    "iconTheme": "Papirus-Light",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "blue"
+  },
+  "palette": {
+    "bg": "#fffcf0",
+    "base": "#f2efe4",
+    "raised": "#e6e4d9",
+    "border": "#c2c1b8",
+    "fg": "#100f0f",
+    "muted": "#403e3c",
+    "dim": "#878580",
+    "accent": "#205ea6",
+    "accentFg": "#fffcf0",
+    "link": "#3aa99f",
+    "danger": "#d14d41",
+    "success": "#879a39",
+    "warning": "#d0a215"
+  },
+  "ansi": [
+    "#cecdc3",
+    "#d14d41",
+    "#879a39",
+    "#d0a215",
+    "#205ea6",
+    "#ce5d97",
+    "#3aa99f",
+    "#403e3c",
+    "#878580",
+    "#d14d41",
+    "#879a39",
+    "#d0a215",
+    "#4385be",
+    "#ce5d97",
+    "#3aa99f",
+    "#100f0f"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "flexoki-light",
+    "extension": "shadesOfBuntu.flexoki-light"
+  },
+  "wallpapers": [
+    {
+      "file": "01-orb.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/flexoki-light/backgrounds/1-orb.webp",
+      "sha256": "37f8c1ff2e7a95f1a15cbb0394be5642b8e9813638866c79a10537d6553ee90f",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-omarchy.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/flexoki-light/backgrounds/2-omarchy.webp",
+      "sha256": "a3a3d457c6547bb8a94dd7da06b14deab572bdf78ae597bb6eb8a6a81b04f0bb",
+      "source": "omarchy"
+    }
+  ]
+}

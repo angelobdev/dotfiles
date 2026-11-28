@@ -1,0 +1,76 @@
+{
+  "name": "White",
+  "mode": "light",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3",
+    "iconTheme": "Papirus-Light",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "slate"
+  },
+  "palette": {
+    "bg": "#ffffff",
+    "base": "#f5f5f5",
+    "raised": "#c0c0c0",
+    "border": "#a0a0a0",
+    "fg": "#000000",
+    "muted": "#000000",
+    "dim": "#c0c0c0",
+    "accent": "#6e6e6e",
+    "accentFg": "#ffffff",
+    "link": "#3e3e3e",
+    "danger": "#2a2a2a",
+    "success": "#3a3a3a",
+    "warning": "#4a4a4a"
+  },
+  "ansi": [
+    "#c0c0c0",
+    "#2a2a2a",
+    "#3a3a3a",
+    "#4a4a4a",
+    "#1a1a1a",
+    "#2e2e2e",
+    "#3e3e3e",
+    "#000000",
+    "#c0c0c0",
+    "#2a2a2a",
+    "#3a3a3a",
+    "#4a4a4a",
+    "#1a1a1a",
+    "#2e2e2e",
+    "#3e3e3e",
+    "#000000"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Default Light Modern"
+  },
+  "wallpapers": [
+    {
+      "file": "01-white.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/white/backgrounds/1-white.webp",
+      "sha256": "2f2f42f7ad3ba978951f137e214404c2c4a52318a60105ded5e74ddfe8ed80f2",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-white.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/white/backgrounds/2-white.webp",
+      "sha256": "e81aed7c2782d2caba1fd1f070d8a9b35f8f86fb65bb87498067876e09fe498f",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-white.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/white/backgrounds/3-white.webp",
+      "sha256": "33f968945dec6c82a80938e09bef09bbca86ce020d683a3bf286ff5327e2ab48",
+      "source": "omarchy"
+    }
+  ]
+}

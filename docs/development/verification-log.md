@@ -1425,3 +1425,9 @@ Reported by the user after the merges of the day:
 - A temporary `~/.config/desktop/commands.json` (removed afterwards): System showed **Lock it now** with its keys and no Suspend; the category **Mine** showed Say hello (`requires: notify-send`) and not the entry whose program is missing; an invalid file brought the notification and left the shipped commands; deleting it took Mine away. Editing that file reloads the whole shell (Quickshell watches the files a FileView read), as `shell.json` does.
 - Not tried here: running a Shortcuts row by hand from the launcher (Enter), and a bind of the user's own `hypr.lua` from the launcher.
 
+## Omarchy themes shipped, 2026-11-27
+
+- `scripts/omarchy-themes.py` on a clone of `basecamp/omarchy` (4e1ee51 for the colours) with the backgrounds of `c2ea2d8`: 23 themes written (4 replaced, 19 added; glass, glass-light, graphite and high-contrast untouched), 80 wallpapers listed with the sha256 of the downloaded files (69 MB, once, into a scratch cache; the `omarchy.webp` logo cards left out).
+- `test_theme.py` first failed on Catppuccin Latte and Rosé Pine (text on the accent below 4.5:1, dark text below 3:1 on a mid-grey wallpaper, Rosé Pine's text below 7:1): `theme_import.convert` now moves the colours just enough; then every shipped theme renders and passes, `test_theme_import.py` included.
+- `theme.py list` lists the 27 themes. Not applied in the session (the user's Gruvbox would change at once): Gruvbox is now Omarchy's (accent `#7daea3` instead of `#fabd2f`) and takes effect at the next `desktop-theme set` or login.
+

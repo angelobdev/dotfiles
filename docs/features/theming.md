@@ -51,23 +51,42 @@ Font, size, icon pack, cursor, shell icons and bar style are your preferences: t
 
 ## Themes
 
-The palette above is the **Graphite** theme. Seven more ship with the dotfiles; all are dark except Glass Light:
+The palette above is the **Graphite** theme. 26 more ship with the dotfiles: the desktop's own Glass, Glass Light and High Contrast, and the 23 themes of Omarchy, converted by `scripts/omarchy-themes.py` (below):
 
-| Theme | Accent | GSettings accent | VS Code |
-| --- | --- | --- | --- |
-| `catppuccin-mocha` | mauve `#cba6f7` | purple | Catppuccin Mocha |
-| `tokyo-night` | blue `#7aa2f7` | blue | Tokyo Night |
-| `gruvbox` | yellow `#fabd2f` | yellow | Gruvbox Dark Medium |
-| `everforest` | green `#a7c080` | green | Everforest Dark |
-| `glass` | blue `#4da3ff` | blue | Default Dark Modern |
-| `glass-light` | blue `#006be0` | blue | Default Light Modern |
-| `high-contrast` | yellow `#ffd400` | yellow | Default High Contrast |
+| Theme | Name | Mode | Accent | GSettings accent | VS Code |
+| --- | --- | --- | --- | --- | --- |
+| `catppuccin-latte` | Catppuccin Latte | light | `#1d62eb` | blue | Catppuccin Latte |
+| `catppuccin-mocha` | Catppuccin Mocha | dark | `#89b4fa` | blue | Catppuccin Mocha |
+| `ethereal` | Ethereal | dark | `#7d82d9` | blue | Default Dark Modern |
+| `everforest` | Everforest | dark | `#7fbbb3` | teal | Everforest Dark |
+| `flexoki-light` | Flexoki Light | light | `#205ea6` | blue | flexoki-light |
+| `glass-light` | Glass Light | light | `#006be0` | blue | Default Light Modern |
+| `glass` | Glass | dark | `#4da3ff` | blue | Default Dark Modern |
+| `gruvbox` | Gruvbox | dark | `#7daea3` | teal | Gruvbox Dark Medium |
+| `hackerman` | Hackerman | dark | `#82fb9c` | green | Hackerman |
+| `high-contrast` | High Contrast | dark | `#ffd400` | yellow | Default High Contrast |
+| `jade-horse` | Jade Horse | dark | `#8bcbb1` | teal | Default Dark Modern |
+| `kanagawa` | Kanagawa | dark | `#dcd7ba` | yellow | Kanagawa |
+| `last-horizon` | Last Horizon | dark | `#b59790` | red | Ship at Sea |
+| `lumon` | Lumon | dark | `#8bc9eb` | blue | Lumon |
+| `lupine` | Lupine | light | `#3264eb` | blue | Default Light Modern |
+| `matte-black` | Matte Black | dark | `#e68e0d` | orange | Matte Black |
+| `miasma` | Miasma | dark | `#7b844f` | yellow | Default Dark Modern |
+| `nord` | Nord | dark | `#81a1c1` | blue | Nord |
+| `retro-82` | Retro 82 | dark | `#faa968` | orange | Retro '82 |
+| `ristretto` | Ristretto | dark | `#f38d70` | red | Default Dark Modern |
+| `rose-pine` | Rosé Pine | light | `#45767f` | teal | Rosé Pine Dawn |
+| `solitude` | Solitude | dark | `#798186` | slate | Noctokai |
+| `starship` | Starship | dark | `#ff9f0a` | orange | Default Dark Modern |
+| `tokyo-night` | Tokyo Night | dark | `#7aa2f7` | blue | Tokyo Night |
+| `vantablack` | Vantablack | dark | `#8d8d8d` | slate | Default Dark Modern |
+| `white` | White | light | `#6e6e6e` | slate | Default Light Modern |
 
 **Glass** and **Glass Light** are the macOS-style pair. Their panels are mostly glass: the card under a panel, the dock and the OSD keep about 30% (dark) or 40% (light) of their fill instead of 85%, tiles and hover states are a thin white veil instead of a second dark layer, popup notifications get a denser fill of their own (`shell.notice`, 72% dark and 80% light, while other themes keep `raised`) so their text reads over any page, and the stroke is brighter, with an 82–85% terminal and `glassStyle = "liquid"`: Hyprglass draws a lens rim that bends and mirrors what is around each card, toast and menu, a thin lit bevel and a little dispersion on the rim, over a flat, lightly frosted center ([plugins](../guide/plugins.md#behavior)). Without Hyprglass loaded they keep Hyprland's native blur and stay readable, only flatter. Both use the local wallpaper folders, like Graphite; glass shows best over a colourful wallpaper.
 
 **High Contrast** is for reading comfort: black surfaces, white text, a yellow accent, opaque panels and terminal, a 32 px cursor, an 11 pt interface font and 2 px window borders (yellow on the active window, white on the others; a border width chosen in the panel wins). It uses the local wallpaper folders.
 
-Graphite uses VS Code's own Default Dark Modern. Their surfaces and terminal colours come from each project's published palette and Kitty port.
+Graphite uses VS Code's own Default Dark Modern, as do the Omarchy themes that name no VS Code theme (Default Light Modern for a light one).
 
 A theme is one `theme.json` with:
 - `mode`, `fonts` and `system` (GTK, icon and cursor theme, GSettings accent);
@@ -102,7 +121,7 @@ Each consumer keeps Graphite as its fallback, so a missing state directory chang
 Other applications:
 - **VS Code:** `desktop-theme set` replaces (or adds) `workbench.colorTheme` and the preferred theme for the mode in `~/.config/Code/User/settings.json`. The preferred key is `workbench.preferredDarkColorTheme` or `workbench.preferredLightColorTheme`; VS Code uses it instead of `colorTheme` while `window.autoDetectColorScheme` is on, as it is here. The edit is targeted and leaves the rest of the file alone, and VS Code applies it live.
   - It is skipped when the theme's extension is not installed or the file is not valid JSON.
-  - The four extensions are Catppuccin.catppuccin-vsc, enkia.tokyo-night, jdinhlife.gruvbox and sainnhe.everforest.
+  - Each Omarchy theme names its extension as Omarchy does (`catppuccin.catppuccin-vsc`, `enkia.tokyo-night`, `jdinhlife.gruvbox`, `arcticicestudio.nord-visual-studio-code`…); it applies once that extension is installed.
   - Before the themes, `workbench.colorTheme` was unset (Default Dark Modern).
 - **btop:** every theme, Graphite included, is written to `~/.config/btop/themes/desktop.theme`. `btop.conf` gets `color_theme = "desktop"`, and a running btop reloads on `SIGUSR2`.
   - The main background stays empty, so the translucent Kitty background shows through.
@@ -138,6 +157,10 @@ Commands:
 - `python3 ~/.local/libexec/desktop/theme.py render --theme <id> --out <dir>` previews the output without applying it.
 
 ### Omarchy themes
+
+The Omarchy themes that ship here come from `scripts/omarchy-themes.py OMARCHY_CHECKOUT` (a clone of `basecamp/omarchy`, read, never run). It converts each `colors.toml` as **Import** does, takes `vscode.json` as the VS Code theme, picks the GSettings accent nearest to the accent colour, and lists the theme's backgrounds pinned to that commit with their sha256 (downloaded once, to a cache, for the checksums). A shipped theme of the same id is replaced; Glass, Glass Light, Graphite and High Contrast are never touched, and Omarchy's `catppuccin` (Mocha) keeps the id `catppuccin-mocha`. Run it again when Omarchy adds themes.
+
+The conversion keeps the contrasts every shipped theme must have (`scripts/tests/test_theme.py`): text 7:1 on the background, secondary text 4.5:1, text on the accent 4.5:1 (light text on a light theme, dark on a dark one, the accent moved just enough when it does not read), and on a light theme dark text that still reads 3:1 on a mid-grey wallpaper. Three themes needed it: Catppuccin Latte and Rosé Pine (a slightly darker accent and text) and Miasma (a slightly lighter accent).
 
 An Omarchy theme (its `colors.toml`, the folder that holds it, or an https git URL of a theme repository) becomes a theme of this desktop: the **Import** field above the cards on the Theme tab, or `desktop-theme import SOURCE [--name NAME]`. Its colours map onto the palette and the 16 terminal colours (`base` from `dark_background`, `raised` from `lighter_background`, `fg` from `bright_foreground`, the accent text from whichever of its backgrounds and text reads best on the accent, the rest derived as for any theme), and the images of its `backgrounds/` folder, when it has one, become its wallpapers. It goes into `~/.config/desktop/themes/<id>/` (the id from the folder or repository name: `omarchy-nord-theme` is `nord`), so it shows among the cards and in the switcher, and importing it again replaces it. An imported card has a trash button; `desktop-theme remove ID` does the same, going back to Graphite first when it is the current theme. Only imports are removed: a theme of your own with the same id is refused, not replaced. Its own app files (Neovim, VS Code, keyboard RGB) are not used.
 
@@ -187,12 +210,7 @@ Switching theme also switches the wallpaper:
 - Wallpapers picked with `Super + Shift + W`, `Super + Ctrl + W` or `Super + Ctrl + Shift + W` are remembered the same way.
 - `Super + Ctrl + Shift + W` cycles through the current theme's set in order. If nothing is downloaded yet, it starts the download and shows a notification.
 
-Sources:
-- Omarchy's theme backgrounds (`basecamp/omarchy`, MIT);
-- `zhichaoh/catppuccin-wallpapers` (MIT);
-- `AngelJumbo/gruvbox-wallpapers` and `Apeiros-46B/everforest-walls`.
-
-The last two declare no licence; their images are fetched for personal use and not redistributed. To change a set, edit `wallpapers` in the theme: a removed entry stays on disk until deleted from `~/.local/share/desktop/wallpapers/`.
+Sources: Omarchy's theme backgrounds (`basecamp/omarchy`, MIT), at the last commit that kept them in the repository (`c2ea2d8`; they now ship as Omarchy's own package). To change a set, edit `wallpapers` in the theme: a removed entry stays on disk until deleted from `~/.local/share/desktop/wallpapers/`.
 
 State data is excluded from Git and follows this repository's standard XDG layout. The script serializes concurrent requests, passes paths as arguments, and normalizes the name sent through IPC, including spaces, commas, and special characters.
 

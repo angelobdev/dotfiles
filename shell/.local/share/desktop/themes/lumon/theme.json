@@ -1,0 +1,71 @@
+{
+  "name": "Lumon",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "blue"
+  },
+  "palette": {
+    "bg": "#16242d",
+    "base": "#101b21",
+    "raised": "#1b2d40",
+    "border": "#2a425b",
+    "fg": "#f2fcff",
+    "muted": "#d6e2ee",
+    "dim": "#4d86b0",
+    "accent": "#8bc9eb",
+    "accentFg": "#0b1216",
+    "link": "#d1eef8",
+    "danger": "#4d86b0",
+    "success": "#5e95bc",
+    "warning": "#6fa4c9"
+  },
+  "ansi": [
+    "#243d56",
+    "#4d86b0",
+    "#5e95bc",
+    "#6fa4c9",
+    "#6fb8e3",
+    "#8bc9eb",
+    "#b4e4f6",
+    "#d6e2ee",
+    "#4d86b0",
+    "#73a6cb",
+    "#86b7d8",
+    "#9dcae5",
+    "#f2fcff",
+    "#b1d8ee",
+    "#d1eef8",
+    "#f2fcff"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Lumon",
+    "extension": "oldjobobo.lumon-theme"
+  },
+  "wallpapers": [
+    {
+      "file": "01-united-in-severance.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lumon/backgrounds/01-united-in-severance.webp",
+      "sha256": "cdfb3d4cb22077ed5f2a73ac8822b6c4e3614a210c5947194c046078ab5073a5",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-opinions-equally.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lumon/backgrounds/02-opinions-equally.webp",
+      "sha256": "ecf20fa95f659643fb37e05910b92e82195aa673f3c58a2a51e20ce1127dc7c5",
+      "source": "omarchy"
+    }
+  ]
+}

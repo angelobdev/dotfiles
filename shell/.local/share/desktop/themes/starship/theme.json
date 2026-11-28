@@ -1,0 +1,82 @@
+{
+  "name": "Starship",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "orange"
+  },
+  "palette": {
+    "bg": "#1c1c1e",
+    "base": "#161618",
+    "raised": "#2c2c2e",
+    "border": "#646468",
+    "fg": "#ffffff",
+    "muted": "#fbfbfd",
+    "dim": "#98989d",
+    "accent": "#ff9f0a",
+    "accentFg": "#0e0e10",
+    "link": "#cdeefa",
+    "danger": "#ff5f4a",
+    "success": "#ff9f0a",
+    "warning": "#ffc27a"
+  },
+  "ansi": [
+    "#3a3a3c",
+    "#ff5f4a",
+    "#ff9f0a",
+    "#ffc27a",
+    "#8fb8de",
+    "#ff8fa3",
+    "#a6dcef",
+    "#fbfbfd",
+    "#98989d",
+    "#ff8373",
+    "#ffb340",
+    "#ffd8a8",
+    "#b5d0ea",
+    "#ffb3c1",
+    "#cdeefa",
+    "#ffffff"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Default Dark Modern"
+  },
+  "wallpapers": [
+    {
+      "file": "01-starbase.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/starship/backgrounds/1-starbase.webp",
+      "sha256": "17a9a0abe34fb70262e16a6f000fb503f49a9297602860d92c89f6b5ffc0a1b3",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-flight14-dawn.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/starship/backgrounds/2-flight14-dawn.webp",
+      "sha256": "9bc22a2c279c8e0ee2927ff5723732d1d05249b1c5e1e37fdb5fd9ecc4969dbf",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-engine-cluster.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/starship/backgrounds/3-engine-cluster.webp",
+      "sha256": "6449ce53472da5026c5dc39fbadeda3aaa32c6ed0655c8f7b019ae27f566fdf0",
+      "source": "omarchy"
+    },
+    {
+      "file": "04-morning-pad.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/starship/backgrounds/4-morning-pad.webp",
+      "sha256": "b6b1b89badc712b6b591b54290fec005bcbc3cd7b39ee539046f5ff7afdf3f35",
+      "source": "omarchy"
+    }
+  ]
+}

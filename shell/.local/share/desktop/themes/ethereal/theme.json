@@ -1,0 +1,76 @@
+{
+  "name": "Ethereal",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "blue"
+  },
+  "palette": {
+    "bg": "#060b1e",
+    "base": "#040816",
+    "raised": "#131a3a",
+    "border": "#495686",
+    "fg": "#ffcead",
+    "muted": "#c9b8a6",
+    "dim": "#6d7db6",
+    "accent": "#7d82d9",
+    "accentFg": "#030610",
+    "link": "#dfeaf0",
+    "danger": "#ed5b5a",
+    "success": "#92a593",
+    "warning": "#e9bb4f"
+  },
+  "ansi": [
+    "#252e56",
+    "#ed5b5a",
+    "#92a593",
+    "#e9bb4f",
+    "#7d82d9",
+    "#c89dc1",
+    "#a3bfd1",
+    "#c9b8a6",
+    "#6d7db6",
+    "#faaaa9",
+    "#c4cfc4",
+    "#f7dc9c",
+    "#c2c4f0",
+    "#ead7e7",
+    "#dfeaf0",
+    "#ffcead"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Default Dark Modern"
+  },
+  "wallpapers": [
+    {
+      "file": "01-cosmic.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/ethereal/backgrounds/1-cosmic.webp",
+      "sha256": "e3241507d4ba5cc25ae4bdf746401e4b65ce7a06cead4d83c49461587addab63",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-meadow.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/ethereal/backgrounds/2-meadow.webp",
+      "sha256": "60b1eeb738d876094738388ac061e0daa739250eac52b49e4fb83b35d9395f6d",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-roadster-starlight.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/ethereal/backgrounds/3-roadster-starlight.webp",
+      "sha256": "c9ab5ddc623da4f648418a37fa48e5026727af3e1a841343d022209307b70e97",
+      "source": "omarchy"
+    }
+  ]
+}

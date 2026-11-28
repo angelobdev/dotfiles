@@ -46,6 +46,15 @@ def mix(first, second, amount):
     return '#' + ''.join('%02x' % round(int(a[i:i + 2], 16) * (1 - amount) + int(b[i:i + 2], 16) * amount) for i in (0, 2, 4))
 
 
+def readable(value, against, ratio):
+    """value moved toward black or white, whichever is away from against, just until it reads at ratio on it."""
+    target = '#000000' if luminance(value) <= luminance(against) else '#ffffff'
+    amount = 0.0
+    while contrast(value if amount == 0 else mix(value, target, amount), against) < ratio and amount < 1:
+        amount = min(1.0, amount + 0.02)
+    return value if amount == 0 else mix(value, target, amount)
+
+
 def convert(colors, name):
     """A theme.json (dict) from the parsed colors.toml; ValueError when its basic colours are missing."""
     bg, fg, accent = color(colors, 'background'), color(colors, 'bright_foreground', 'foreground'), color(colors, 'accent', 'blue')
@@ -74,6 +83,22 @@ def convert(colors, name):
         'success': green,
         'warning': yellow,
     }
+    # The contrasts every shipped theme keeps (scripts/tests/test_theme.py): text 7:1 on the background, secondary
+    # text 4.5:1, text on the accent 4.5:1; on a light theme the dark text also reads 3:1 on a mid-grey wallpaper
+    # under a transparent bar. A theme that falls short gets its colours moved just enough.
+    palette['fg'] = readable(palette['fg'], bg, 7.2)
+    if light:
+        palette['fg'] = readable(palette['fg'], '#999999', 3.1)
+    palette['muted'] = readable(palette['muted'], bg, 4.6)
+    # Text on the accent is the light background on a light theme and the darkest background on a dark one (the bar
+    # takes it as its other text colour, so it must stay the opposite of the text); a mid-tone accent that does not
+    # read with it is darkened, or lightened, just enough.
+    if light:
+        palette['accentFg'] = bg
+        palette['accent'] = readable(accent, bg, 4.6)
+    elif contrast(palette['accentFg'], accent) < 4.6:
+        palette['accentFg'] = dark
+        palette['accent'] = readable(accent, dark, 4.6)
     ansi = [selection, red, green, yellow, blue, magenta, cyan, color(colors, 'light_foreground') or text,
             color(colors, 'dark_foreground') or mix(fg, bg, 0.5)]
     for key, normal in (('bright_red', red), ('bright_green', green), ('bright_yellow', yellow), ('bright_blue', blue),

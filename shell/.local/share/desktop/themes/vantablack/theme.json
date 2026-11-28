@@ -1,0 +1,82 @@
+{
+  "name": "Vantablack",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "slate"
+  },
+  "palette": {
+    "bg": "#000000",
+    "base": "#090909",
+    "raised": "#1a1a1a",
+    "border": "#4a4a4a",
+    "fg": "#ffffff",
+    "muted": "#ececec",
+    "dim": "#505050",
+    "accent": "#8d8d8d",
+    "accentFg": "#000000",
+    "link": "#b0b0b0",
+    "danger": "#a4a4a4",
+    "success": "#b6b6b6",
+    "warning": "#cecece"
+  },
+  "ansi": [
+    "#1a1a1a",
+    "#a4a4a4",
+    "#b6b6b6",
+    "#cecece",
+    "#8d8d8d",
+    "#9b9b9b",
+    "#b0b0b0",
+    "#ececec",
+    "#505050",
+    "#a4a4a4",
+    "#b6b6b6",
+    "#cecece",
+    "#8d8d8d",
+    "#9b9b9b",
+    "#b0b0b0",
+    "#ffffff"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Default Dark Modern"
+  },
+  "wallpapers": [
+    {
+      "file": "01-dot-hands.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/vantablack/backgrounds/0-dot-hands.webp",
+      "sha256": "a51e0dc5406d054ddfe16dc732ada4061c733a9e6f985a3ff773ba1e803ad3a0",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-twisted-stairs.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/vantablack/backgrounds/1-twisted-stairs.webp",
+      "sha256": "05e1442a8b8b344b3123e1760a9d19c11f97c3db6dd3353a0c83b4ef18d61e06",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-layers-deep.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/vantablack/backgrounds/2-layers-deep.webp",
+      "sha256": "059720c4eb4967bbce84a7e8be2e86e9cd7f9c2c1ea0880c215462f7270b31cd",
+      "source": "omarchy"
+    },
+    {
+      "file": "04-layers-stacked.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/vantablack/backgrounds/3-layers-stacked.webp",
+      "sha256": "6c00ce0c4fb8c4248a939820184d9b92e0ccffebbc7a22a6687f8b293437bad3",
+      "source": "omarchy"
+    }
+  ]
+}

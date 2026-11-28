@@ -1,0 +1,76 @@
+{
+  "name": "Jade Horse",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "teal"
+  },
+  "palette": {
+    "bg": "#142620",
+    "base": "#0f1e19",
+    "raised": "#203b31",
+    "border": "#486c61",
+    "fg": "#f0faf4",
+    "muted": "#bed6c9",
+    "dim": "#91ad9f",
+    "accent": "#8bcbb1",
+    "accentFg": "#0a1713",
+    "link": "#a2dcda",
+    "danger": "#d88d91",
+    "success": "#8bcbb1",
+    "warning": "#c5cc91"
+  },
+  "ansi": [
+    "#2b5147",
+    "#d88d91",
+    "#8bcbb1",
+    "#c5cc91",
+    "#96b7d0",
+    "#b7a1c8",
+    "#86c7c5",
+    "#bed6c9",
+    "#91ad9f",
+    "#e6a6aa",
+    "#a7dfc5",
+    "#dce1ac",
+    "#b0cde3",
+    "#cfbce0",
+    "#a2dcda",
+    "#f0faf4"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Default Dark Modern"
+  },
+  "wallpapers": [
+    {
+      "file": "01-mountain-horses.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/jade-horse/backgrounds/01-mountain-horses.webp",
+      "sha256": "4a5818847934c452b41323c7c4514eb1a46e563a7614f001c87cbef3ed73cfc2",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-ink-horse.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/jade-horse/backgrounds/02-ink-horse.webp",
+      "sha256": "0125e22563618023ba5519bc5f7d2a7ecc67dc60317a195c6d4200b0fbf93b7b",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-carved-jade-horse.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/jade-horse/backgrounds/03-carved-jade-horse.webp",
+      "sha256": "7c39a46e9772dd0e1914ce52a553eb6fd717a81d3f700ab4233263ca674da308",
+      "source": "omarchy"
+    }
+  ]
+}

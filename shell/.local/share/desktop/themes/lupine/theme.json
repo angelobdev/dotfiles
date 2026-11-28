@@ -1,0 +1,94 @@
+{
+  "name": "Lupine",
+  "mode": "light",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3",
+    "iconTheme": "Papirus-Light",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "blue"
+  },
+  "palette": {
+    "bg": "#fafafa",
+    "base": "#ececec",
+    "raised": "#f5f5f5",
+    "border": "#b7b7b7",
+    "fg": "#000000",
+    "muted": "#424242",
+    "dim": "#757575",
+    "accent": "#3264eb",
+    "accentFg": "#fafafa",
+    "link": "#3986ff",
+    "danger": "#c900c4",
+    "success": "#4a2fd0",
+    "warning": "#026fde"
+  },
+  "ansi": [
+    "#d0d0d0",
+    "#c900c4",
+    "#4a2fd0",
+    "#026fde",
+    "#3264eb",
+    "#8a4ad7",
+    "#0c67de",
+    "#424242",
+    "#757575",
+    "#f930fb",
+    "#9f85e0",
+    "#358fff",
+    "#5482ff",
+    "#b363ff",
+    "#3986ff",
+    "#000000"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Default Light Modern"
+  },
+  "wallpapers": [
+    {
+      "file": "01-cherry-blossom-bokeh.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lupine/backgrounds/01-cherry-blossom-bokeh.webp",
+      "sha256": "99ad4abf2685fab5aab31ebcea09988ca1f689c80b1e2f1c50f6e3d6e7c9296a",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-cherry-blossom-white.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lupine/backgrounds/02-cherry-blossom-white.webp",
+      "sha256": "175cf3ad34a1d5fcec8fbec12c7c700a23fbb1fd800e5e4a0e1f766e05a04e24",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-pastel-clouds.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lupine/backgrounds/03-pastel-clouds.webp",
+      "sha256": "134bb172af81e60457f90bc8142e06dd43db27cbb1eb15ddb57d3b8fcce8698f",
+      "source": "omarchy"
+    },
+    {
+      "file": "04-elegant-blue-wave.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lupine/backgrounds/04-elegant-blue-wave.webp",
+      "sha256": "0fb09c0d2dd456cfe31980ed102b8cac91a08d9ceda342780d11778b9423356c",
+      "source": "omarchy"
+    },
+    {
+      "file": "05-abstract-wave.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lupine/backgrounds/05-abstract-wave.webp",
+      "sha256": "f7ed1e829d3a53a9451c91b7f59cde257bffe6901c8810f352dd944e2f65d67f",
+      "source": "omarchy"
+    },
+    {
+      "file": "06-omarchy.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/lupine/backgrounds/06-omarchy.webp",
+      "sha256": "069bca2eb0e28b6c6edbc54940e7a63f647a203d95243b26bdd3f3721e32b21a",
+      "source": "omarchy"
+    }
+  ]
+}

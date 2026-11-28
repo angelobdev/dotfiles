@@ -1,0 +1,71 @@
+{
+  "name": "Hackerman",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "green"
+  },
+  "palette": {
+    "bg": "#0b0c16",
+    "base": "#080910",
+    "raised": "#151828",
+    "border": "#262c45",
+    "fg": "#ddf7ff",
+    "muted": "#b5c5db",
+    "dim": "#6a6e95",
+    "accent": "#82fb9c",
+    "accentFg": "#06060c",
+    "link": "#d1fffe",
+    "danger": "#50f872",
+    "success": "#4fe88f",
+    "warning": "#50f7d4"
+  },
+  "ansi": [
+    "#1f253a",
+    "#50f872",
+    "#4fe88f",
+    "#50f7d4",
+    "#829dd4",
+    "#86a7df",
+    "#7cf8f7",
+    "#b5c5db",
+    "#6a6e95",
+    "#85ff9d",
+    "#9cf7c2",
+    "#a4ffec",
+    "#c4d2ed",
+    "#cddbf4",
+    "#d1fffe",
+    "#ddf7ff"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Hackerman",
+    "extension": "Bjarne.hackerman-omarchy"
+  },
+  "wallpapers": [
+    {
+      "file": "01-synth-scape.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/hackerman/backgrounds/1-synth-scape.jpg",
+      "sha256": "c7d2594935f204e0df1b43dfe7a12389ea1c1d3fd8e57a92a9f08497f27a377e",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-geometric.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/hackerman/backgrounds/2-geometric.webp",
+      "sha256": "dd1f1e02be3b3a36be7cacee503a68d1a1ee154202307211746afafbde51481e",
+      "source": "omarchy"
+    }
+  ]
+}

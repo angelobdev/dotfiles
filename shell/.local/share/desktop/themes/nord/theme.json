@@ -1,0 +1,77 @@
+{
+  "name": "Nord",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "blue"
+  },
+  "palette": {
+    "bg": "#2e3440",
+    "base": "#222730",
+    "raised": "#3b4252",
+    "border": "#485164",
+    "fg": "#d8dee9",
+    "muted": "#adb5c4",
+    "dim": "#667080",
+    "accent": "#81a1c1",
+    "accentFg": "#191c23",
+    "link": "#8fbcbb",
+    "danger": "#bf616a",
+    "success": "#a3be8c",
+    "warning": "#ebcb8b"
+  },
+  "ansi": [
+    "#434c5e",
+    "#bf616a",
+    "#a3be8c",
+    "#ebcb8b",
+    "#81a1c1",
+    "#b48ead",
+    "#88c0d0",
+    "#adb5c4",
+    "#667080",
+    "#bf616a",
+    "#a3be8c",
+    "#ebcb8b",
+    "#81a1c1",
+    "#b48ead",
+    "#8fbcbb",
+    "#d8dee9"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Nord",
+    "extension": "arcticicestudio.nord-visual-studio-code"
+  },
+  "wallpapers": [
+    {
+      "file": "01-black-moon.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/nord/backgrounds/0-black-moon.jpg",
+      "sha256": "6873fbf7d4cbb9a39604094dd8d804eb6d231e63ecf56e5c297aae90358eff81",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-city-view.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/nord/backgrounds/1-city-view.webp",
+      "sha256": "b649b9082dd4b75ab232c2d4981b4ee6f42df2b822785dbc9e3a939e6e8e2894",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-night-hawks.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/nord/backgrounds/2-night-hawks.webp",
+      "sha256": "43ff26ab2a1b1f50afd49c7a797280f4f31765bc3fea1a15661bbf5774824089",
+      "source": "omarchy"
+    }
+  ]
+}

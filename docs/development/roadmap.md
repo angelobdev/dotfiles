@@ -373,6 +373,7 @@ Asked by the user, in this order: Esc as back, the Wi-Fi password under its netw
 
 - [x] Esc goes one step back before it closes: `Overlay.goBack()` (a panel with inner views replaces it: Network's details, the launcher's categories, the clipboard's clear question), then back to the Control Center for the sub-panel it opened (`ShellState.pushed`), else close.
 - [x] The Wi-Fi password prompt opens under the row of its network (a Loader in the row of `NetworkView.qml`, the list growing by its height and scrolling it into view) instead of at the end of the panel; Esc closes it first.
+- [x] The 23 Omarchy themes ship (`scripts/omarchy-themes.py`): Catppuccin Mocha, Everforest, Gruvbox and Tokyo Night replaced, 19 added, the desktop's own four untouched; backgrounds pinned to `c2ea2d8` with sha256; `theme_import.convert` now keeps the contrast floors of the shipped themes (three themes moved slightly).
 
 ### System time zone from the calendar (2026-11-26)
 

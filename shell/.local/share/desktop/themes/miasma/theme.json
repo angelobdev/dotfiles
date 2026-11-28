@@ -1,0 +1,70 @@
+{
+  "name": "Miasma",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "yellow"
+  },
+  "palette": {
+    "bg": "#222222",
+    "base": "#191919",
+    "raised": "#2c2c2c",
+    "border": "#4f4f4f",
+    "fg": "#c2c2b0",
+    "muted": "#8c8c81",
+    "dim": "#555555",
+    "accent": "#7b844f",
+    "accentFg": "#121212",
+    "link": "#c9a554",
+    "danger": "#685742",
+    "success": "#5f875f",
+    "warning": "#b36d43"
+  },
+  "ansi": [
+    "#383838",
+    "#685742",
+    "#5f875f",
+    "#b36d43",
+    "#78824b",
+    "#bb7744",
+    "#c9a554",
+    "#8a8a7e",
+    "#555555",
+    "#685742",
+    "#5f875f",
+    "#b36d43",
+    "#78824b",
+    "#bb7744",
+    "#c9a554",
+    "#c2c2b0"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Default Dark Modern"
+  },
+  "wallpapers": [
+    {
+      "file": "01-nature-of-fear.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/miasma/backgrounds/01-nature-of-fear.webp",
+      "sha256": "8bc5f2863a9eea9e3eff738d4461ab45f0fca83fc1b1d7d289edcd03c05540a4",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-crowned.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/miasma/backgrounds/02-crowned.webp",
+      "sha256": "b2871e00f96ed65f8c179bfc14dd2388d695bd618543478c2e5f7b8875f6417d",
+      "source": "omarchy"
+    }
+  ]
+}

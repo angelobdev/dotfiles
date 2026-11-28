@@ -1,0 +1,83 @@
+{
+  "name": "Last Horizon",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "red"
+  },
+  "palette": {
+    "bg": "#0c0b0c",
+    "base": "#090809",
+    "raised": "#0c0b0c",
+    "border": "#584e51",
+    "fg": "#e2dddc",
+    "muted": "#cfd3cd",
+    "dim": "#584e51",
+    "accent": "#b59790",
+    "accentFg": "#060606",
+    "link": "#a5a0b6",
+    "danger": "#c38b7b",
+    "success": "#87a9b0",
+    "warning": "#6b5e73"
+  },
+  "ansi": [
+    "#584e51",
+    "#c38b7b",
+    "#87a9b0",
+    "#6b5e73",
+    "#b59790",
+    "#c4d8e2",
+    "#a5a0b6",
+    "#cfd3cd",
+    "#584e51",
+    "#c38b7b",
+    "#87a9b0",
+    "#6b5e73",
+    "#b59790",
+    "#c4d8e2",
+    "#a5a0b6",
+    "#e2dddc"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Ship at Sea",
+    "extension": "rikkarth.ship-at-sea"
+  },
+  "wallpapers": [
+    {
+      "file": "01-eyes-wide.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/last-horizon/backgrounds/1-eyes-wide.webp",
+      "sha256": "53cc2eea25bd75435d77d2b3cc9339841dfdcd5a52c51a1e02dda14a3e527bd4",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-blink.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/last-horizon/backgrounds/2-blink.webp",
+      "sha256": "eaec03ab843739754979987944064bb46d283e47e36aa5d8d8f9d75cd9997155",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-bokeh.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/last-horizon/backgrounds/3-bokeh.webp",
+      "sha256": "f91b253da6bb173d6cccf41a165e683d5d656bbf5d9169493831f96422781c30",
+      "source": "omarchy"
+    },
+    {
+      "file": "04-new-horizons.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/last-horizon/backgrounds/4-new-horizons.jpg",
+      "sha256": "6b13ec842e3617d7c9c113612664f56b8ffec5fb76d0613bb1c84914f12feb5f",
+      "source": "omarchy"
+    }
+  ]
+}

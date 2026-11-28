@@ -1,0 +1,65 @@
+{
+  "name": "Kanagawa",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "yellow"
+  },
+  "palette": {
+    "bg": "#1f1f28",
+    "base": "#17171e",
+    "raised": "#223249",
+    "border": "#45455a",
+    "fg": "#dcd7ba",
+    "muted": "#c8c093",
+    "dim": "#727169",
+    "accent": "#dcd7ba",
+    "accentFg": "#111116",
+    "link": "#7aa89f",
+    "danger": "#c34043",
+    "success": "#76946a",
+    "warning": "#c0a36e"
+  },
+  "ansi": [
+    "#363646",
+    "#c34043",
+    "#76946a",
+    "#c0a36e",
+    "#7e9cd8",
+    "#957fb8",
+    "#6a9589",
+    "#c8c093",
+    "#727169",
+    "#e82424",
+    "#98bb6c",
+    "#e6c384",
+    "#7fb4ca",
+    "#938aa9",
+    "#7aa89f",
+    "#dcd7ba"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Kanagawa",
+    "extension": "qufiwefefwoyn.kanagawa"
+  },
+  "wallpapers": [
+    {
+      "file": "01-kanagawa.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/kanagawa/backgrounds/1-kanagawa.jpg",
+      "sha256": "9b817d717688539f0db87603b661992839c3cbb5d4918a02a4efc05c9f88b27d",
+      "source": "omarchy"
+    }
+  ]
+}

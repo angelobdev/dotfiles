@@ -1,0 +1,65 @@
+{
+  "name": "Catppuccin Latte",
+  "mode": "light",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3",
+    "iconTheme": "Papirus-Light",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "blue"
+  },
+  "palette": {
+    "bg": "#eff1f5",
+    "base": "#e3e4e8",
+    "raised": "#dce0e8",
+    "border": "#bcc0cc",
+    "fg": "#464861",
+    "muted": "#5c5f77",
+    "dim": "#9ca0b0",
+    "accent": "#1d62eb",
+    "accentFg": "#eff1f5",
+    "link": "#179299",
+    "danger": "#d20f39",
+    "success": "#40a02b",
+    "warning": "#df8e1d"
+  },
+  "ansi": [
+    "#ccd0da",
+    "#d20f39",
+    "#40a02b",
+    "#df8e1d",
+    "#1e66f5",
+    "#ea76cb",
+    "#179299",
+    "#5c5f77",
+    "#9ca0b0",
+    "#d20f39",
+    "#40a02b",
+    "#df8e1d",
+    "#1e66f5",
+    "#ea76cb",
+    "#179299",
+    "#4c4f69"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Catppuccin Latte",
+    "extension": "catppuccin.catppuccin-vsc"
+  },
+  "wallpapers": [
+    {
+      "file": "01-color-fade.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/catppuccin-latte/backgrounds/1-color-fade.webp",
+      "sha256": "c4cb211770713984e630ef6eebfb6cfb03169124c98765fd52f82ee0bfd36603",
+      "source": "omarchy"
+    }
+  ]
+}

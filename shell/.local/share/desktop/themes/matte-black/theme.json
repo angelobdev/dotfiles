@@ -1,0 +1,77 @@
+{
+  "name": "Matte Black",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "orange"
+  },
+  "palette": {
+    "bg": "#121212",
+    "base": "#0d0d0d",
+    "raised": "#1e1e1e",
+    "border": "#2e2e2e",
+    "fg": "#bebebe",
+    "muted": "#8a8a8d",
+    "dim": "#555555",
+    "accent": "#e68e0d",
+    "accentFg": "#090909",
+    "link": "#eaeaea",
+    "danger": "#d35f5f",
+    "success": "#ffc107",
+    "warning": "#b91c1c"
+  },
+  "ansi": [
+    "#2a2a2a",
+    "#d35f5f",
+    "#ffc107",
+    "#b91c1c",
+    "#e68e0d",
+    "#d35f5f",
+    "#bebebe",
+    "#8a8a8d",
+    "#555555",
+    "#b91c1c",
+    "#ffc107",
+    "#b90a0a",
+    "#f59e0b",
+    "#b91c1c",
+    "#eaeaea",
+    "#bebebe"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Matte Black",
+    "extension": "TahaYVR.matteblack"
+  },
+  "wallpapers": [
+    {
+      "file": "01-ship-at-sea.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/matte-black/backgrounds/0-ship-at-sea.jpg",
+      "sha256": "55fa691adfd3fb8a9102b826a28d8de679938f04879799da499b8ace2fe039ac",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-dark-waters.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/matte-black/backgrounds/1-dark-waters.webp",
+      "sha256": "317ef6c39eedde976c59a6eb4c782837a661a91089ab7857516368dc92d0481b",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-dot-hands.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/matte-black/backgrounds/2-dot-hands.webp",
+      "sha256": "a51e0dc5406d054ddfe16dc732ada4061c733a9e6f985a3ff773ba1e803ad3a0",
+      "source": "omarchy"
+    }
+  ]
+}

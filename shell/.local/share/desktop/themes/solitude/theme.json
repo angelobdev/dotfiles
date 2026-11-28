@@ -1,0 +1,89 @@
+{
+  "name": "Solitude",
+  "mode": "dark",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3-dark",
+    "iconTheme": "Papirus-Dark",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "slate"
+  },
+  "palette": {
+    "bg": "#101315",
+    "base": "#0c0e10",
+    "raised": "#101315",
+    "border": "#40464b",
+    "fg": "#a5aeb4",
+    "muted": "#cbc2be",
+    "dim": "#4b4e55",
+    "accent": "#798186",
+    "accentFg": "#080a0b",
+    "link": "#707070",
+    "danger": "#565d60",
+    "success": "#9fa5a9",
+    "warning": "#d9dbdc"
+  },
+  "ansi": [
+    "#343d41",
+    "#565d60",
+    "#9fa5a9",
+    "#d9dbdc",
+    "#798186",
+    "#aeaeae",
+    "#707070",
+    "#cbc2be",
+    "#4b4e55",
+    "#de6145",
+    "#343d41",
+    "#c9c2b4",
+    "#5d6367",
+    "#9a9a9a",
+    "#707070",
+    "#a5aeb4"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Noctokai",
+    "extension": "farigab.noctokai-theme"
+  },
+  "wallpapers": [
+    {
+      "file": "01-on-pole.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/solitude/backgrounds/1-on-pole.webp",
+      "sha256": "09c685ceed958826924f258a3f19d63c1e546b85200e725f0f7b478b458eee71",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-wreakage.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/solitude/backgrounds/2-wreakage.webp",
+      "sha256": "a73f0bdedef731b3aec8654cc3f9d71a02093cf2c43f1f023623602908013cac",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-climb.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/solitude/backgrounds/3-climb.jpg",
+      "sha256": "aa7a31ba7f87b6b0a88ff3c9e57241672a71f862251e9ba5659ffa004cda66b7",
+      "source": "omarchy"
+    },
+    {
+      "file": "04-ether.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/solitude/backgrounds/4-ether.webp",
+      "sha256": "a2f4e10bcb17b8ecec151c37f1335f7b365111619525d597c8f3852c2db53e97",
+      "source": "omarchy"
+    },
+    {
+      "file": "05-eyed.jpg",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/solitude/backgrounds/5-eyed.jpg",
+      "sha256": "eb88ed0233f58f4427ea96879469393751126ac115ed06f2bc1aaa1f9b6f22c6",
+      "source": "omarchy"
+    }
+  ]
+}

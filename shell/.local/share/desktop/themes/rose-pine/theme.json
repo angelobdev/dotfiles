@@ -1,0 +1,77 @@
+{
+  "name": "Rosé Pine",
+  "mode": "light",
+  "fonts": {
+    "sans": "Adwaita Sans",
+    "mono": "Adwaita Mono",
+    "size": 10,
+    "terminalSize": 11
+  },
+  "system": {
+    "gtkTheme": "adw-gtk3",
+    "iconTheme": "Papirus-Light",
+    "cursorTheme": "Adwaita",
+    "cursorSize": 24,
+    "accentColor": "teal"
+  },
+  "palette": {
+    "bg": "#faf4ed",
+    "base": "#ede7e1",
+    "raised": "#f2e9e1",
+    "border": "#d6d2d3",
+    "fg": "#4a4567",
+    "muted": "#6e6a86",
+    "dim": "#9893a5",
+    "accent": "#45767f",
+    "accentFg": "#faf4ed",
+    "link": "#d7827e",
+    "danger": "#b4637a",
+    "success": "#286983",
+    "warning": "#ea9d34"
+  },
+  "ansi": [
+    "#dfdad9",
+    "#b4637a",
+    "#286983",
+    "#ea9d34",
+    "#56949f",
+    "#907aa9",
+    "#d7827e",
+    "#6e6a86",
+    "#9893a5",
+    "#b4637a",
+    "#286983",
+    "#ea9d34",
+    "#56949f",
+    "#907aa9",
+    "#d7827e",
+    "#575279"
+  ],
+  "terminal": {
+    "opacity": 0.94
+  },
+  "vscode": {
+    "theme": "Rosé Pine Dawn",
+    "extension": "mvllow.rose-pine"
+  },
+  "wallpapers": [
+    {
+      "file": "01-funky-shapes.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/rose-pine/backgrounds/1-funky-shapes.webp",
+      "sha256": "f8920bfbe3fdff6a42a9c920e87aa4b7d590d4b01862948ffbc4e484339f2b81",
+      "source": "omarchy"
+    },
+    {
+      "file": "02-dot-map.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/rose-pine/backgrounds/2-dot-map.webp",
+      "sha256": "0353093a4aafcefd8193914e4f9c82db0c9d2867cb0e16556ff86693bd8690ab",
+      "source": "omarchy"
+    },
+    {
+      "file": "03-omarchy-plants.webp",
+      "url": "https://raw.githubusercontent.com/basecamp/omarchy/c2ea2d87ce0330a318c7bd9e8c6352b7bfa29d35/themes/rose-pine/backgrounds/3-omarchy-plants.webp",
+      "sha256": "1cf5444e546016a26c8d0335fe0743a21f0499820f41444a8d95e2fe4c65dca1",
+      "source": "omarchy"
+    }
+  ]
+}
