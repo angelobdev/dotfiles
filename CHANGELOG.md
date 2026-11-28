@@ -4,6 +4,24 @@ What changed in each release of the desktop. The desktop shows the sections of t
 
 Releases are `vMAJOR.MINOR.PATCH`: a new minor version brings new features, a patch only fixes, and a new major version changes something you may have to act on (said in its notes). How a release is made: [Releasing](docs/development/releasing.md).
 
+## v1.5.0 - 2026-11-28
+
+### Added
+
+- **A global menu on the bar**, as on macOS: the `globalMenu` widget, which you add from the bar's gallery, shows the menus of the app on each monitor. They are read from the app itself (Firefox and its family, Qt and GTK apps through accessibility; Electron apps such as VS Code under X11, which the shell offers to set up when you add it), and an app without one gets a generic File, Edit, View, Window and Help. A right click opens its options: how the focus follows the pointer, the menu for apps without one, the app icon. An app open before the widget was added shows its own menu once restarted ([bar](docs/features/bar.md#global-menu)). Its reading of menus follows [Oma Top Menu](https://github.com/Somnius/oma.top.menu).
+- **The 23 themes of Omarchy**, from Catppuccin Latte to Vantablack, in **Settings → Appearance → Theme** and the switcher, each with its wallpapers.
+- **More default apps** in **Settings → Apps**: the text editor, images, PDF, video, music and mail. A choice there, and the browser and file manager of the shortcuts, is also what other apps open links, folders and files with; where you have chosen nothing, Files, Loupe, Papers and Showtime are set at login.
+
+### Changed
+
+- Esc goes one step back before it closes a panel: out of the details of a network, a category of the launcher or a question first, and back to the Control Center from Network, Bluetooth and Sound.
+- Catppuccin Mocha, Everforest, Gruvbox and Tokyo Night are now Omarchy's: Gruvbox is its Gruvbox Material, with a teal accent instead of yellow. They change at the next login, or when you choose them again.
+
+### Fixed
+
+- Folders opened from other apps (a download, "Show in folder") open in Files, not in a terminal.
+- The Wi-Fi password is asked right under its network instead of at the end of the panel.
+
 ## v1.4.0 - 2026-11-27
 
 ### Added
