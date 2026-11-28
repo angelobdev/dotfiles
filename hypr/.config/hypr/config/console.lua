@@ -64,6 +64,46 @@ function desktop_console_hide(name)
     end
 end
 
+-- A reload (hyprctl reload: a theme switch, a settings change) gives the focus back to the last focused window, and
+-- a hidden console window keeps it (with no window on the workspace below nothing else takes it): the console would
+-- show again. The old config notes the monitors where it is hidden as it unloads (the Lua state does not survive the
+-- reload), and the new one hides it there again.
+local HIDDEN = (os.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/desktop-console-hidden"
+
+hl.on("config.unload", function()
+    local file = io.open(HIDDEN, "w")
+    if not file then
+        return
+    end
+    for _, monitor in ipairs(hl.get_monitors()) do
+        if not console_on(monitor) then
+            file:write(monitor.name, "\n")
+        end
+    end
+    file:close()
+end)
+
+hl.on("config.reloaded", function()
+    local file = io.open(HIDDEN, "r")
+    if not file then
+        return
+    end
+    local hidden = {}
+    for line in file:lines() do
+        hidden[line] = true
+    end
+    file:close()
+    os.remove(HIDDEN)
+    -- The focus comes back just after this event: a moment later.
+    hl.timer(function()
+        for _, monitor in ipairs(hl.get_monitors()) do
+            if hidden[monitor.name] and console_on(monitor) then
+                monitor:set_special_workspace(nil)
+            end
+        end
+    end, { timeout = 50, type = "oneshot" })
+end)
+
 -- desktop-ai, when the console window was moved out of it: back in, tiled again, and the console shown on
 -- the focused monitor.
 function desktop_console_show()
