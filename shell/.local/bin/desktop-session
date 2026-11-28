@@ -26,6 +26,9 @@ case "${1:-start}" in
         "$HOME/.local/bin/desktop-theme" || echo "Theme not applied." >&2
         # Electron apps get their Chromium flags through generated desktop entries (electron.py).
         python3 "$HOME/.local/libexec/desktop/electron.py" apply || echo "Electron flags not applied." >&2
+        # The desktop's default apps for xdg-open where none was chosen (Files for folders, Loupe, Papers, Showtime,
+        # the browser of Settings → Apps); a new install gets them at its first login (apps.py defaults).
+        python3 "$HOME/.local/libexec/desktop/apps.py" defaults >/dev/null || echo "Default apps not set." >&2
         # X11 clients take DPI and cursor size from X resources matching the monitor scale.
         "$HOME/.local/bin/desktop-xwayland" apply >/dev/null || echo "XWayland profile not applied." >&2
         systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal-gtk.service xdg-desktop-portal.service ||

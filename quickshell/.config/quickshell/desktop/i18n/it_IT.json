@@ -6,11 +6,11 @@
     "default": "Predefinita: %1",
     "defaultMissing": "Predefinita: %1, non installata",
     "errors": {
-      "usage": "Uso: apps.py launch {terminal|browser|passwords|files} | launch {terminal|files} --here | list"
+      "usage": "Uso: apps.py launch {terminal|browser|passwords|files} | launch {terminal|files} --here | list | default ROLE ID | defaults"
     },
     "fileManager": "File manager",
     "group": "Aperte dalle scorciatoie",
-    "hint": "Un comando viene eseguito così com'è scritto, senza shell. Un'app non installata cede il posto alla prima installata dello stesso tipo.",
+    "hint": "Un comando viene eseguito così com’è scritto, senza shell. Un’app non installata lascia il posto alla prima installata del suo tipo. Il browser, il file manager e le app che aprono i file sono anche quelle che usano le altre app per aprire link, cartelle e file.",
     "missing": "Nessun %1 installato: scegline uno in Impostazioni → App.",
     "none": "%1 non apre nulla: nessuna di queste è installata",
     "opens": "%1 apre %2",
@@ -25,12 +25,29 @@
       "passwordsDefault": "Accesso rapido di 1Password",
       "passwordsTitle": "Password manager",
       "terminal": "terminale",
-      "terminalTitle": "Terminale"
+      "terminalTitle": "Terminale",
+      "editorTitle": "Editor di testo",
+      "imagesTitle": "Immagini",
+      "pdfTitle": "Documenti PDF",
+      "videoTitle": "Video",
+      "musicTitle": "Musica",
+      "mailTitle": "Posta"
     },
     "terminal": "Terminale",
     "title": "App predefinite",
     "terminalHere": "Terminale nella cartella corrente",
-    "filesHere": "File nella cartella corrente"
+    "filesHere": "File nella cartella corrente",
+    "files": {
+      "editor": "File di testo e Markdown",
+      "images": "Immagini: PNG, JPEG, WebP, SVG…",
+      "pdf": "File PDF",
+      "video": "Video: MP4, MKV, WebM…",
+      "music": "Musica: MP3, FLAC, Ogg…",
+      "mail": "Link email (mailto:)",
+      "none": "%1: nessuna app installata li apre",
+      "unset": "Non scelta"
+    },
+    "filesGroup": "Apertura dei file"
   },
   "assistant": {
     "errors": {

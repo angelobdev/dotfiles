@@ -95,5 +95,55 @@ class AppsTests(unittest.TestCase):
         self.assertEqual(apps.chosen('terminal', self.config), 'kitty.desktop')
 
 
+class FileRoleTests(unittest.TestCase):
+    """The apps that open files: what declares them, the system default, and the defaults set only where none was
+    chosen."""
+
+    def setUp(self):
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.root = Path(folder.name)
+        system = self.root / 'applications'
+        system.mkdir()
+        (system / 'org.gnome.Loupe.desktop').write_text(entry('Image Viewer', 'Graphics;', 'MimeType=image/png;image/jpeg;'))
+        # A whole family (image/*) is not the type itself: kitty is no image viewer.
+        (system / 'kitty-open.desktop').write_text(entry('kitty URL Launcher', '', 'MimeType=image/*;inode/directory;'))
+        (system / 'org.gnome.Nautilus.desktop').write_text(entry('Files', 'FileManager;', 'MimeType=inode/directory;'))
+        (system / 'org.gnome.Showtime.desktop').write_text(entry('Video Player', 'Video;', 'MimeType=video/mp4;'))
+        self.known = apps.entries([system])
+        self.mimeapps = self.root / 'mimeapps.list'
+        patcher = mock.patch.object(apps, 'MIMEAPPS', self.mimeapps)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def test_handlers_declare_the_type_itself(self):
+        self.assertEqual(apps.handlers('images', self.known), ['org.gnome.Loupe.desktop'])
+        self.assertEqual(apps.handlers('video', self.known), ['org.gnome.Showtime.desktop'])
+
+    def test_a_default_writes_every_type_of_the_role(self):
+        with mock.patch.object(apps.subprocess, 'run', return_value=mock.Mock(returncode=0)) as run:
+            self.assertTrue(apps.set_default('images', 'org.gnome.Loupe.desktop'))
+        self.assertEqual(run.call_args[0][0][:3], ['xdg-mime', 'default', 'org.gnome.Loupe.desktop'])
+        self.assertEqual(tuple(run.call_args[0][0][3:]), apps.TYPES['images'])
+        self.assertFalse(apps.set_default('images', 'loupe --flag'))
+
+    def test_defaults_only_where_none_was_chosen(self):
+        # Folders open in kitty only because nobody chose; videos were chosen by hand and stay.
+        self.mimeapps.write_text('[Default Applications]\nvideo/mp4=mpv.desktop\n')
+        current = {'files': 'kitty-open.desktop', 'video': 'mpv.desktop', 'images': 'org.gnome.Loupe.desktop', 'pdf': '', 'browser': ''}
+        with mock.patch.object(apps, 'system_default', side_effect=lambda role: current.get(role, '')), \
+                mock.patch.object(apps, 'resolve', return_value=None), \
+                mock.patch.object(apps, 'set_default', return_value=True) as written:
+            done = apps.defaults(self.known)
+        self.assertEqual(done, {'files': 'org.gnome.Nautilus.desktop'})
+        written.assert_called_once_with('files', 'org.gnome.Nautilus.desktop')
+
+    def test_a_choice_in_mimeapps(self):
+        self.assertFalse(apps.chosen_in_mimeapps('files'))
+        self.mimeapps.write_text('[Added Associations]\ninode/directory=x.desktop;\n[Default Applications]\ninode/directory=org.gnome.Nautilus.desktop\n')
+        self.assertTrue(apps.chosen_in_mimeapps('files'))
+        self.assertFalse(apps.chosen_in_mimeapps('images'))
+
+
 if __name__ == '__main__':
     unittest.main()

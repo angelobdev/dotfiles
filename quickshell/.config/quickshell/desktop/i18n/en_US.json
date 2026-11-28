@@ -6,11 +6,11 @@
     "default": "Default: %1",
     "defaultMissing": "Default: %1, not installed",
     "errors": {
-      "usage": "Usage: apps.py launch {terminal|browser|passwords|files} | launch {terminal|files} --here | list"
+      "usage": "Usage: apps.py launch {terminal|browser|passwords|files} | launch {terminal|files} --here | list | default ROLE ID | defaults"
     },
     "fileManager": "File manager",
     "group": "Opened by the shortcuts",
-    "hint": "A command runs as typed, without a shell. An app that is not installed gives way to the first installed one of its kind.",
+    "hint": "A command runs as typed, without a shell. An app that is not installed gives way to the first installed one of its kind. The browser, the file manager and the apps that open files are also what other apps use to open links, folders and files.",
     "missing": "No %1 is installed: choose one in Settings → Apps.",
     "none": "%1 opens nothing: none of these is installed",
     "opens": "%1 opens %2",
@@ -25,12 +25,29 @@
       "passwordsDefault": "1Password Quick Access",
       "passwordsTitle": "Password manager",
       "terminal": "terminal",
-      "terminalTitle": "Terminal"
+      "terminalTitle": "Terminal",
+      "editorTitle": "Text editor",
+      "imagesTitle": "Images",
+      "pdfTitle": "PDF documents",
+      "videoTitle": "Video",
+      "musicTitle": "Music",
+      "mailTitle": "Mail"
     },
     "terminal": "Terminal",
     "title": "Default apps",
     "terminalHere": "Terminal in the current folder",
-    "filesHere": "Files in the current folder"
+    "filesHere": "Files in the current folder",
+    "files": {
+      "editor": "Text files and Markdown",
+      "images": "Pictures: PNG, JPEG, WebP, SVG…",
+      "pdf": "PDF files",
+      "video": "Videos: MP4, MKV, WebM…",
+      "music": "Music: MP3, FLAC, Ogg…",
+      "mail": "Email links (mailto:)",
+      "none": "%1: no installed app opens these",
+      "unset": "Not chosen"
+    },
+    "filesGroup": "Open files"
   },
   "assistant": {
     "errors": {

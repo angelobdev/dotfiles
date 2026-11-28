@@ -9,7 +9,9 @@ import "../../services/BindKeys.js" as BindKeys
 // Settings → Apps: the app each shortcut opens (desktop-app, apps.py): the terminal (Super + Return), the browser
 // (Super + Shift + Return), the password manager (Super + Shift + Space) and the file manager (Super + Shift + F).
 // Each is one of the installed apps of its kind, the default, or a command typed by hand; kept under "defaultApps"
-// in shell.json and read at every press, so a change applies at once.
+// in shell.json and read at every press, so a change applies at once. The browser and the file manager are also
+// what xdg-open uses for links and folders, and so are the apps for text, images, PDF, video, music and mail (Open
+// files): one choice for both, written to ~/.config/mimeapps.list (apps.py default).
 ColumnLayout {
     id: root
     Layout.fillWidth: true
@@ -50,8 +52,37 @@ ColumnLayout {
                 terminal: I18n.tr("apps.roles.terminalTitle"),
                 browser: I18n.tr("apps.roles.browserTitle"),
                 passwords: I18n.tr("apps.roles.passwordsTitle"),
-                files: I18n.tr("apps.roles.filesTitle")
+                files: I18n.tr("apps.roles.filesTitle"),
+                editor: I18n.tr("apps.roles.editorTitle"),
+                images: I18n.tr("apps.roles.imagesTitle"),
+                pdf: I18n.tr("apps.roles.pdfTitle"),
+                video: I18n.tr("apps.roles.videoTitle"),
+                music: I18n.tr("apps.roles.musicTitle"),
+                mail: I18n.tr("apps.roles.mailTitle")
             })[role] ?? role;
+    }
+    // The roles that only open files, and what each one opens.
+    readonly property var fileRoles: ["editor", "images", "pdf", "video", "music", "mail"]
+    function opensKey(role) {
+        return ({
+                editor: "apps.files.editor",
+                images: "apps.files.images",
+                pdf: "apps.files.pdf",
+                video: "apps.files.video",
+                music: "apps.files.music",
+                mail: "apps.files.mail"
+            })[role] ?? "";
+    }
+    // The system default for the files of a role (xdg-open), then the listing again.
+    function setDefault(role, id) {
+        if (!id.endsWith(".desktop"))
+            return;
+        writer.command = ["python3", helper, "default", role, id];
+        writer.running = true;
+    }
+    Process {
+        id: writer
+        onExited: root.refresh()
     }
     // Per role, as apps.py list gives it: {choice, default, resolved, apps: [{id, name}], names}.
     property var listing: ({})
@@ -69,7 +100,12 @@ ColumnLayout {
         else
             next[role] = value;
         Config.set("defaultApps", next, {});
-        refresh();
+        // The browser and the file manager are also what xdg-open uses: the app chosen, or the default.
+        const app = value === "" ? listing[role]?.default ?? "" : value;
+        if ((role === "browser" || role === "files") && app.endsWith(".desktop"))
+            setDefault(role, app);
+        else
+            refresh();
     }
     function label(role, id) {
         const entry = listing[role];
@@ -202,6 +238,64 @@ ColumnLayout {
                         });
                         root.set(row.role, text.trim());
                     }
+                }
+            }
+        }
+    }
+    Text {
+        Layout.topMargin: 8
+        text: I18n.tr("apps.filesGroup")
+        color: Theme.muted
+        font.family: Theme.font
+        font.pixelSize: Theme.textSize(12)
+        font.weight: Font.DemiBold
+    }
+    GroupCard {
+        Layout.fillWidth: true
+        verticalPadding: 10
+        spacing: 12
+        Repeater {
+            model: root.fileRoles
+            RowLayout {
+                id: fileRow
+                required property string modelData
+                readonly property var entry: root.listing[modelData] ?? {}
+                Layout.fillWidth: true
+                spacing: 14
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 2
+                    Text {
+                        text: root.title(fileRow.modelData)
+                        color: Theme.text
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(13)
+                    }
+                    Text {
+                        Layout.fillWidth: true
+                        text: (fileRow.entry.apps ?? []).length === 0 ? I18n.tr("apps.files.none", [I18n.tr(root.opensKey(fileRow.modelData))]) : I18n.tr(root.opensKey(fileRow.modelData))
+                        wrapMode: Text.WordWrap
+                        textFormat: Text.PlainText
+                        color: Theme.muted
+                        font.family: Theme.font
+                        font.pixelSize: Theme.textSize(11)
+                    }
+                }
+                ChoiceCombo {
+                    visible: (fileRow.entry.apps ?? []).length > 0
+                    // Nothing chosen yet: the first entry says so until an app is picked.
+                    options: (fileRow.entry.choice ? [] : [
+                            {
+                                name: "",
+                                label: I18n.tr("apps.files.unset")
+                            }
+                        ]).concat((fileRow.entry.apps ?? []).map(app => ({
+                                name: app.id,
+                                label: app.name
+                            })))
+                    current: fileRow.entry.choice ?? ""
+                    Accessible.name: root.title(fileRow.modelData)
+                    onChosen: name => root.setDefault(fileRow.modelData, name)
                 }
             }
         }

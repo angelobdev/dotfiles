@@ -8,6 +8,13 @@ theirs is open. --here (terminal and files) opens in the folder of the focused t
 list: as JSON, per role the choice, the default and the installed apps of its kind, for Settings → Apps.
 
 A choice is a desktop entry id ("kitty.desktop") or a command line ("1password --quick-access").
+
+The roles that open files (the browser and the file manager too, and the text editor, images, PDF, video, music and
+mail) are also what xdg-open uses: one choice for both, written with xdg-mime to ~/.config/mimeapps.list.
+default ROLE ID: make ID the system default for the file types of ROLE.
+defaults: the desktop's own defaults (Files for folders, Loupe, Papers, Showtime, the browser of Settings) where no
+default was chosen in ~/.config/mimeapps.list; one chosen there, by Settings or by an app, is kept. Run by the
+installer and at every login.
 """
 from i18n import tr
 import configparser
@@ -27,6 +34,25 @@ ROLES = {
     'passwords': ('1password --quick-access', None),
     'files': ('org.gnome.Nautilus.desktop', 'FileManager'),
 }
+# The file types each role opens for xdg-open; the first one decides which apps are of its kind (those that declare
+# it), and its default is the default of the role.
+TYPES = {
+    'browser': ('x-scheme-handler/http', 'x-scheme-handler/https', 'text/html', 'application/xhtml+xml'),
+    'files': ('inode/directory',),
+    'editor': ('text/plain', 'text/markdown'),
+    'images': ('image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml', 'image/bmp', 'image/tiff', 'image/heif',
+               'image/avif'),
+    'pdf': ('application/pdf',),
+    'video': ('video/mp4', 'video/x-matroska', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/mpeg', 'video/ogg'),
+    'music': ('audio/mpeg', 'audio/flac', 'audio/ogg', 'audio/x-vorbis+ogg', 'audio/x-wav', 'audio/mp4', 'audio/aac', 'audio/opus'),
+    'mail': ('x-scheme-handler/mailto',),
+}
+# The roles that only open files (no shortcut), in the order of Settings → Apps.
+FILE_ROLES = ('editor', 'images', 'pdf', 'video', 'music', 'mail')
+# The desktop's own defaults, set where nobody chose (the browser is the one of Settings).
+DEFAULTS = {'files': 'org.gnome.Nautilus.desktop', 'images': 'org.gnome.Loupe.desktop', 'pdf': 'org.gnome.Papers.desktop',
+            'video': 'org.gnome.Showtime.desktop'}
+MIMEAPPS = Path(os.environ.get('XDG_CONFIG_HOME') or Path.home() / '.config') / 'mimeapps.list'
 # Roles whose shortcut brings an open window forward rather than opening another.
 FOCUSED = ('browser', 'passwords', 'files')
 PASSWORD_MANAGERS = ('1password.desktop', 'bitwarden.desktop', 'com.bitwarden.desktop.desktop', 'org.keepassxc.KeePassXC.desktop',
@@ -57,6 +83,7 @@ def read_entry(path):
         return None
     return {'name': entry.get('Name', path.stem), 'icon': entry.get('Icon', ''), 'wmclass': entry.get('StartupWMClass', ''),
             'categories': [part for part in entry.get('Categories', '').split(';') if part],
+            'types': [part for part in entry.get('MimeType', '').split(';') if part],
             'shown': entry.get('NoDisplay', '').lower() != 'true'}
 
 
@@ -90,6 +117,55 @@ def of_kind(role, known):
         return sorted((identifier for identifier in PASSWORD_MANAGERS if identifier in known), key=lambda identifier: known[identifier]['name'].lower())
     return sorted((identifier for identifier, entry in known.items() if category in entry['categories'] and entry['shown']),
                   key=lambda identifier: known[identifier]['name'].lower())
+
+
+def handlers(role, known):
+    """The apps that open the files of a role: those that declare its first type (not a whole family, as image/*)."""
+    main = TYPES[role][0]
+    return sorted((identifier for identifier, entry in known.items() if main in entry.get('types', []) and entry['shown']),
+                  key=lambda identifier: known[identifier]['name'].lower())
+
+
+def system_default(role):
+    """The app xdg-open uses for the files of a role, '' for none."""
+    try:
+        result = subprocess.run(['xdg-mime', 'query', 'default', TYPES[role][0]], capture_output=True, text=True, timeout=5, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return ''
+    return result.stdout.strip() if result.returncode == 0 else ''
+
+
+def chosen_in_mimeapps(role, path=None):
+    """Whether ~/.config/mimeapps.list names a default for the files of a role (Settings, or an app, chose it)."""
+    parser = configparser.RawConfigParser(interpolation=None, strict=False, delimiters=('=',))
+    parser.optionxform = str
+    try:
+        parser.read(path or MIMEAPPS, encoding='utf-8')
+    except (OSError, configparser.Error, UnicodeDecodeError):
+        return False
+    return parser.has_section('Default Applications') and bool(parser['Default Applications'].get(TYPES[role][0], '').strip())
+
+
+def set_default(role, app_id):
+    """ID becomes what xdg-open uses for every type of the role."""
+    if role not in TYPES or not app_id.endswith('.desktop'):
+        return False
+    result = subprocess.run(['xdg-mime', 'default', app_id, *TYPES[role]], capture_output=True, text=True, timeout=10, check=False)
+    return result.returncode == 0
+
+
+def defaults(known=None):
+    """The desktop's defaults where none was chosen; the roles set, as {role: id}."""
+    known = entries() if known is None else known
+    wanted = dict(DEFAULTS)
+    browser = resolve('browser', known)
+    if browser and browser.endswith('.desktop'):
+        wanted['browser'] = browser
+    done = {}
+    for role, app_id in wanted.items():
+        if app_id in known and not chosen_in_mimeapps(role) and system_default(role) != app_id and set_default(role, app_id):
+            done[role] = app_id
+    return done
 
 
 def available(choice, known):
@@ -189,6 +265,14 @@ def launch(role, here=False):
 def listing():
     known = entries()
     result = {}
+    # The roles that only open files: what xdg-open uses now, and the apps that declare their files.
+    for role in FILE_ROLES:
+        current = system_default(role)
+        apps = handlers(role, known)
+        if current and current not in apps and current in known:
+            apps.append(current)
+        result[role] = {'choice': current, 'apps': [{'id': identifier, 'name': known[identifier]['name'], 'icon': known[identifier]['icon']}
+                                                    for identifier in apps]}
     for role, (default, category) in ROLES.items():
         kinds = of_kind(role, known)
         result[role] = {'choice': chosen(role), 'default': default, 'resolved': resolve(role, known) or '',
@@ -196,6 +280,8 @@ def listing():
                                  for identifier in kinds],
                         'names': {identifier: entry['name'] for identifier, entry in known.items()
                                   if identifier in (default, chosen(role))}}
+        if role in TYPES:
+            result[role]['system'] = system_default(role)
     return result
 
 
@@ -207,6 +293,11 @@ def main(arguments=None):
         return launch(arguments[1], here=True)
     if arguments == ['list']:
         print(json.dumps(listing(), ensure_ascii=False))
+        return 0
+    if len(arguments) == 3 and arguments[0] == 'default' and arguments[1] in TYPES:
+        return 0 if set_default(arguments[1], arguments[2]) else 1
+    if arguments == ['defaults']:
+        print(json.dumps(defaults()))
         return 0
     print(tr('apps.errors.usage'), file=sys.stderr)
     return 2
