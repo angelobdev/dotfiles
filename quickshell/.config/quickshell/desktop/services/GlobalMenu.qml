@@ -70,18 +70,15 @@ Singleton {
                 Hyprland.dispatch("hl.dsp.window.close({ window = \"address:" + client.address + "\" })");
     }
 
-    // Started once at login with the widget there; added later, the apps to start under X11 are asked for.
+    // Started once at login with the widget there. Added later, the apps to start under X11 are asked for by
+    // BarLayout.save, where the user places it: here the layout of shell.json can arrive after the start.
     property bool ready: false
     Component.onCompleted: {
         sync();
         ready = true;
         refresh();
     }
-    onPlacedChanged: {
-        sync();
-        if (placed && ready)
-            ShellState.open("globalmenu");
-    }
+    onPlacedChanged: sync()
     // At start only started: the registrar keeps the menus of the apps already open, so a shell restart must never
     // stop it; it stops when the widget leaves the bar.
     function sync() {

@@ -53,7 +53,14 @@ Singleton {
         latched = false;
     }
     function save(layout) {
+        const placing = !holds(saved, "globalMenu") && holds(layout, "globalMenu");
         Config.set("barLayout", layout, Model.presets.classic);
+        // The global menu just added by the user: its options and the apps to start under X11 (GlobalMenuPanel).
+        if (placing)
+            ShellState.open("globalmenu");
+    }
+    function holds(layout, id) {
+        return Object.values(layout).some(ids => Array.isArray(ids) && ids.includes(id));
     }
     // Outside editing (the bar menu) a change is saved at once.
     function apply(layout) {
