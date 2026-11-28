@@ -4,6 +4,20 @@ What changed in each release of the desktop. The desktop shows the sections of t
 
 Releases are `vMAJOR.MINOR.PATCH`: a new minor version brings new features, a patch only fixes, and a new major version changes something you may have to act on (said in its notes). How a release is made: [Releasing](docs/development/releasing.md).
 
+## v1.7.0 - 2026-11-28
+
+### Added
+
+- **Wallpapers for Glass, Glass Light, Graphite and High Contrast**: four each, drawn for the desktop in each theme's colours, and the first one moves, as in the Omarchy themes: an aurora of colour for Glass and Glass Light, flowing contour lines for Graphite, a striped sun on the horizon for High Contrast. They download at login with the others ([theming](docs/features/theming.md#the-desktops-own-wallpapers)).
+
+### Changed
+
+- These four themes no longer take their wallpapers from `~/Pictures/Wallpapers` and `~/.local/share/wallpapers`: Custom… in the Wallpaper tab and `Super + Shift + W` still show any image, remembered for the theme. Only the dynamic theme has no wallpapers of its own.
+
+### Fixed
+
+- With the console hidden over an empty workspace, the keys no longer go to it.
+
 ## v1.6.0 - 2026-11-28
 
 ### Added
